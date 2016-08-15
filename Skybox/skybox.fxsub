@@ -1,0 +1,68 @@
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+
+#ifndef SKYBOX_SIZE
+#   define SKYBOX_SIZE 1000
+#endif
+
+#ifndef SKYDOME_ENABLE
+#   define SKYDOME_ENABLE 0
+#endif
+
+float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
+
+texture decal : MATERIALTEXTURE;
+sampler decalMap = sampler_state
+{
+    texture = <decal>;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = NONE;
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
+};
+
+void SkyboxVS(
+    in float4 Position : POSITION,
+    out float4 oNormal   : TEXCOORD0,
+    out float4 oPosition : SV_Position)
+{
+#if SKYDOME_ENABLE
+    oNormal = normalize(Position);
+    oNormal.y = oNormal.y < -0.05 ? -0.05 : oNormal.y;
+    oNormal.y += 0.04999;
+    oPosition = mul(oNormal , matWorldViewProject);
+    oNormal.y -= 0.04999;
+#else
+    oNormal = normalize(Position);
+    oPosition = mul(oNormal , matWorldViewProject);
+#endif
+}
+
+float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
+{
+    float3 N = normalize(normal).xyz;
+    return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+}
+
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass; \
+    string Script = \
+        "RenderColorTarget0=;" \
+        "RenderDepthStencilTarget=;" \
+        "Pass=DrawObject;" \
+    ; \
+    > { \
+        pass DrawObject { \
+            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            VertexShader = compile vs_3_0 SkyboxVS(); \
+            PixelShader  = compile ps_3_0 SkyboxPS(); \
+        } \
+    }
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTec1, "object_ss")
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTec < string MMDPass = "shadow"; > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}

@@ -1,0 +1,153 @@
+#include "../ray.conf"
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+#include "../shader/gbuffer.fx"
+#include "../shader/gbuffer_sampler.fx"
+#include "../shader/lighting.fx"
+
+bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
+
+shared texture2D ShadowmapMap : RENDERCOLORTARGET;
+sampler ShadowmapSamp = sampler_state {
+    texture = <ShadowmapMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+static float LightScale = 1.0;
+static float3 LightColor = LightSpecular;
+
+texture ObjectTexture: MATERIALTEXTURE;
+sampler ObjTexSampler = sampler_state
+{
+    texture = <ObjectTexture>;
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
+    MIPFILTER = LINEAR;
+    MAXANISOTROPY = 16;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+
+float4 GetTextureColor(float4 albedo, float2 uv)
+{
+    if (use_texture)
+    {
+        float4 TexColor = tex2D(ObjTexSampler, uv);
+        TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
+        TexColor.rgb = TexColor.rgb;
+        albedo *= TexColor;
+    }
+
+    return srgb2linear(albedo);
+}
+
+void DrawObjectVS(
+    in float4 Position : POSITION,
+    in float3 Normal   : NORMAL,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float3 oNormal    : TEXCOORD1,
+    out float3 oViewdir   : TEXCOORD2,
+    out float4 oTexcoord2 : TEXCOORD3,
+    out float4 oPosition  : SV_Position)
+{
+    oTexcoord = Texcoord.xyxy;
+    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
+    oNormal = mul(Normal, (float3x3)matWorld);
+    oPosition = mul(Position, matWorldViewProject);
+    oTexcoord2 = oPosition;
+}
+
+float4 DrawObjectPS(
+    float4 texcoord : TEXCOORD0,
+    float3 normal   : TEXCOORD1,
+    float3 viewdir  : TEXCOORD2,
+    float4 texcoord2 : TEXCOORD3) : SV_Target
+{
+    float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
+
+    if (ExistRay)
+    {
+        float2 texCoord = texcoord2.xy / texcoord2.w;
+        texCoord = PosToCoord(texCoord);
+        texCoord += ViewportOffset;
+
+        float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
+        float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
+        float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+
+        MaterialParam material;
+        DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+        float3 V = normalize(viewdir);
+        float3 L = normalize(-LightDirection);
+        float3 N = mul(material.normal, (float3x3)matViewInverse);
+
+        float3 lighting = 0;
+
+        if (material.lightModel == LIGHTINGMODEL_NORMAL)
+            lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightSpecular;
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            lighting = TranslucencyBRDF(N, L, material.transmittance) * LightSpecular;
+
+        lighting *= material.albedo;
+        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
+#if SHADOW_QUALITY > 0
+        lighting *= tex2D(ShadowmapSamp, texCoord).r;
+#endif
+
+        return float4(lighting, albedo.a);
+    }
+    else
+    {
+        float3 L = normalize(-LightDirection);
+        float3 V = normalize(viewdir);
+        float3 N = normalize(normal);
+
+        float MaterialSmoothness = ShininessToSmoothness(MaterialPower);
+
+    #if defined(ENABLE_EMMISIVE)
+        return albedo;
+    #endif
+
+        float3 f0 = albedo.rgb * MaterialSpecular;
+        float3 specular = SpecularBRDF(N, L, V, MaterialSmoothness, f0);
+
+        float3 diffuse;
+
+    #if defined(ENABLE_SSS_SKIN)
+        float3 transmittance = SkinTransmittance(translucency);
+        diffuse = TranslucencyBRDF(N, L, V, MaterialSmoothness, transmittance);
+    #elif defined(ENABLE_SSS)
+        transmittance *= transmittance;
+        diffuse = TranslucencyBRDF(N, L, V, MaterialSmoothness, transmittance);
+    #else
+        diffuse = DiffuseBRDF(N, L, V, MaterialSmoothness);
+    #endif
+
+        float4 lighting = albedo;
+        lighting.rgb *= diffuse * LightColor;
+        lighting.rgb += specular;
+
+        return linear2srgb(lighting);
+    }
+}
+
+
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+    > { \
+        pass DrawObject { \
+            VertexShader = compile vs_3_0 DrawObjectVS(); \
+            PixelShader  = compile ps_3_0 DrawObjectPS(); \
+        } \
+    }
+
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTech < string MMDPass = "shadow";  > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}

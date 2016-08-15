@@ -1,0 +1,148 @@
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+#include "../shader/gbuffer.fx"
+#include "../shader/gbuffer_sampler.fx"
+#include "../shader/lighting.fx"
+
+#ifndef AlphaThreshold
+#   define AlphaThreshold 0.5
+#endif
+
+texture ObjectTexture: MATERIALTEXTURE;
+sampler ObjTexSampler = sampler_state
+{
+    texture = <ObjectTexture>;
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
+    MIPFILTER = LINEAR;
+    MAXANISOTROPY = 16;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+
+struct VS_OUTPUT
+{
+    float4 Position : POSITION;
+    float3 Normal   : TEXCOORD0;
+    float2 Texcoord : TEXCOORD1;
+    float  Distance : TEXCOORD2;
+};
+
+struct PS_OUTPUT
+{
+    float4 Gbuffer1 : COLOR0;
+    float4 Gbuffer2 : COLOR1;
+    float4 Gbuffer3 : COLOR2;
+};
+
+float3 ColorSynthesis(float3 diffuse, float m)
+{
+    float3 melanin = diffuse * luminance(diffuse);
+    return diffuse * lerp(1.0, melanin, m);
+}
+
+float3 SkinTransmittance(float translucency)
+{
+    return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
+}
+
+float4 GetTextureColor(float4 albedo, float2 uv, bool use_texture)
+{
+    if (use_texture)
+    {
+        float4 TexColor = tex2D(ObjTexSampler, uv);
+        TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
+        TexColor.rgb = TexColor.rgb;
+        albedo *= TexColor;
+    }
+
+    return albedo;
+}
+
+VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 Texcoord: TEXCOORD0)
+{
+    VS_OUTPUT Out;
+    Out.Position = mul(Position, matWorldViewProject);
+    Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
+    Out.Texcoord = Texcoord;
+    Out.Distance = Out.Position.w;
+    return Out;
+}
+
+GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
+{
+    float4 albedo = GetTextureColor(MaterialDiffuse, IN.Texcoord, useTexture);
+    albedo.rgb = ColorSynthesis(albedo.rgb, melanin);
+
+    clip(albedo.a - 0.5);
+
+    MaterialParam material;
+    material.normal = IN.Normal;
+    material.distance = IN.Distance;
+
+#if defined(ENABLE_EMMISIVE)
+    material.lightModel = LIGHTINGMODEL_EMISSIVE;
+#else
+    material.lightModel = LIGHTINGMODEL_NORMAL;
+#endif
+
+    #if defined(USE_CUSTOM_MATERIAL)
+        float3 diffColor = albedo.rgb * (1.0 - metalness);
+        float3 specColor = lerp(reflection.rgb, albedo.rgb, metalness);
+
+        material.albedo = diffColor;
+        material.specular = specColor;
+        material.smoothness = smoothness;
+
+        #if defined(ENABLE_SSS_SKIN)
+            material.transmittance = SkinTransmittance(translucency) * (1.0 - metalness);
+            material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+            material.index = SUBSURFACESCATTERING_SKIN;
+        #elif defined(ENABLE_SSS)
+            material.transmittance = transmittance * (1.0 - metalness);
+            material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+            material.index = SUBSURFACESCATTERING_MARBLE;
+        #endif
+    #else
+        float3 dielectricColor = float3(0.04, 0.04, 0.04);
+
+        material.albedo = albedo.rgb;
+        material.transmittance = 0.0f;
+        material.specular = max(0.04, MaterialSpecular);
+        material.smoothness = ShininessToSmoothness(MaterialPower);
+    #endif
+
+    return EncodeGbuffer(material);
+}
+
+#define OBJECT_TEC(name, mmdpass, tex, sphere) \
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
+    string Script = \
+        "RenderColorTarget0=;" \
+        "RenderColorTarget1=Gbuffer2RT;" \
+        "RenderColorTarget2=Gbuffer3RT;" \
+        "RenderDepthStencilTarget=;" \
+        "Pass=DrawObject;" \
+        "RenderColorTarget1=;" \
+        "RenderColorTarget2=;" \
+    ; \
+    > { \
+        pass DrawObject { \
+            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            VertexShader = compile vs_3_0 MaterialVS(); \
+            PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
+        } \
+    }
+
+OBJECT_TEC(MainTec0, "object", false, false)
+OBJECT_TEC(MainTec1, "object", true, false)
+OBJECT_TEC(MainTec2, "object", false, true)
+OBJECT_TEC(MainTec3, "object", true, true)
+OBJECT_TEC(MainTecBS0, "object_ss", false, false)
+OBJECT_TEC(MainTecBS1, "object_ss", true, false)
+OBJECT_TEC(MainTecBS2, "object_ss", false, true)
+OBJECT_TEC(MainTecBS3, "object_ss", true, true)
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTech < string MMDPass = "shadow";  > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}
