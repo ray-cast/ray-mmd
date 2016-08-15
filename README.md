@@ -28,7 +28,7 @@ Ray-MMD
 ##### 3.0 调整全局设定 :
 * 3.1 将ray_controller.pmx载入MMD中  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/3.1.png">
- <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.5.png" width="70%" height="70%" align=left/>
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/3.1.png" width="70%" height="70%" align=left/>
  </a>
 * 3.2 DirectLight+/-调整光照中整体光强
 * 3.2 IndirectLight+/-调整间接光照中整体光强 (暂时只能控制SSAO产生的GI)
