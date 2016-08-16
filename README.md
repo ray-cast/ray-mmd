@@ -13,14 +13,14 @@ Ray-MMD
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 
 ##### 2.0 载入模型 :
-* 2.1 将ray.x载入到MMD中
-* 2.2 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
+* 将ray.x载入到MMD中
+* 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.2.png">
      <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.2.png" align=left/>
  </a>
-* 2.3 添加任意模型到MMD，并在Main板块选择Main.fx
-* 2.4 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
-* 2.5 分配完后效果图如下:  
+* 添加任意模型到MMD，并在Main板块选择Main.fx
+* 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
+* 分配完后效果图如下:  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.5.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.5.png" width="50%" height="50%" align=left/>
  </a>
@@ -43,30 +43,30 @@ Ray-MMD
 ```
     https://github.com/dariomanesku/cmftStudio
 ```
-* 4.1 启动cmftstudio
-* 4.2 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
-* 4.3 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
+* 启动cmftstudio
+* 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
+* 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.1.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.1.png" width="50%" height="50%" align=left/>
  </a>
-* 4.4 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
+* 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.2.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.2.png" width="50%" height="50%" align=left/>
  </a>
-* 4.5 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
+* 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.3.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.3.png" width="50%" height="50%" align=left/>
  </a>
-* 4.6 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
+* 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.4.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.4.png" width="50%" height="50%" align=left/>
  </a>  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png" width="50%" height="50%" align=left/>
  </a>
-* 4.7 将导出的output_iem.dds和output_pmrem.dds放入Skybox/textures/目录中
-* 4.8 如图PMXEditor打开skybox.pmx，这里Texture里放Radiance中的纹理SphereMap放Irradiance中的纹理  
+* 将导出的output_iem.dds和output_pmrem.dds放入Skybox/textures/目录中
+* 如图PMXEditor打开skybox.pmx，这里Texture里放Radiance中的纹理SphereMap放Irradiance中的纹理  
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png">
 <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png" width="50%" height="50%" align=left/>
 </a>
-* 4.9 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
+* 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
