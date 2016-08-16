@@ -54,7 +54,7 @@ Ray-MMD
 * 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
 
 #### 借物表 :
-Model : 
+* Model :  
 　　TDA China Dress Luo Tianyi Canary Ver1.00 [Silver]
-Scene :
+* Scene :  
 　　シンプル風ステージ
