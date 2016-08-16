@@ -53,7 +53,7 @@ Ray-MMD
 [![link text](Screenshot/4.5_small.png)](Screenshot/4.5.png)
 * 将导出的Irradiance和Radiance放入Skybox/textures/目录中
 * 如图PMXEditor打开skybox.pmx，这里Texture里放渲染天空的纹理，Tone放Irradiance中的纹理SphereMap放Radiance中的纹理  
-[![link text](Screenshot/4.6_small.png)](Screenshot/4.6.png)
+[![link text](Screenshot/4.6.png)](Screenshot/4.6.png)
 * 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
 
 #### 借物表 :
