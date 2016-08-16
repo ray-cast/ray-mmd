@@ -215,10 +215,10 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 #if HDR_ENABLE
 
 #if HDR_BLOOM_ENABLE > 0
-    color += tex2D(BloomSampX2, coord).rgb * 64 / 120.0f * (mBloomIntensityP * 2 + 1);
-    color += tex2D(BloomSampX3, coord).rgb * 32 / 120.0f * (mBloomIntensityP * 2 + 1);
-    color += tex2D(BloomSampX4, coord).rgb * 16 / 120.0f * (mBloomIntensityP * 2 + 1);
-    color += tex2D(BloomSampX5, coord).rgb *  8 / 120.0f * (mBloomIntensityP * 2 + 1);
+    color += tex2D(BloomSampX2, coord).rgb * (mBloomIntensityP * 10 + 1);
+    color += tex2D(BloomSampX3, coord).rgb * (mBloomIntensityP * 10 + 1);
+    color += tex2D(BloomSampX4, coord).rgb * (mBloomIntensityP * 10 + 1);
+    color += tex2D(BloomSampX5, coord).rgb * (mBloomIntensityP * 10 + 1);
 #endif
 
     color = ToneBlueShift(color, luminance(color));

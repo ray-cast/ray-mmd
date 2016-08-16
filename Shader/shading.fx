@@ -27,7 +27,11 @@ float4 DeferredLightingPS(
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
     float3 background = tex2D(ScnSamp, coord).rgb;
-    float3 lighting = background * ((mDirectLightP + 1) - mDirectLightM);
+    float3 lighting = background;
+    if (material.lightModel != LIGHTINGMODEL_EMISSIVE)
+    {
+        lighting *= ((mDirectLightP + 1) - mDirectLightM);
+    }
 
 #if SSAO_SAMPLER_COUNT > 0
         float4 ssgi = tex2D(ReflectionWorkMapSamp, coord);

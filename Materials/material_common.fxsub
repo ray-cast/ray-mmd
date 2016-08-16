@@ -88,7 +88,7 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
     Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
     Out.Texcoord = Texcoord;
     Out.Distance = Out.Position.w;
-    Out.Viewdir = CameraPosition - mul(Position, matWorld).xyz;
+    Out.Viewdir = mul(CameraPosition - mul(Position, matWorld).xyz, (float3x3)matView);
     return Out;
 }
 
@@ -97,10 +97,12 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     float4 albedo = GetTextureColor(MaterialDiffuse, IN.Texcoord, useTexture);
     albedo.rgb = ColorSynthesis(albedo.rgb, melanin);
 
+#if !defined(ALBEDOMAP_AHLPA_AS_METALNESS)
     clip(albedo.a - 0.5);
+#endif
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(IN.Normal), normalize(IN.Viewdir), IN.Texcoord);
+    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.index = 0;
 
 #if defined(ENABLE_EMMISIVE)
@@ -110,29 +112,60 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     #if defined(USE_CUSTOM_MATERIAL)
+#if defined(ALBEDOMAP_AHLPA_AS_METALNESS)
+        float3 diffColor = albedo.rgb * (1.0 - albedo.a);
+        float3 specColor = lerp(reflection.rgb, albedo.rgb, albedo.a);
+#else
         float3 diffColor = albedo.rgb * (1.0 - metalness);
         float3 specColor = lerp(reflection.rgb, albedo.rgb, metalness);
+#endif
 
         material.albedo = diffColor;
         material.specular = specColor;
+        
+#if defined(NORMALMAP_ENABLE) && defined(NORMALMAP_ALPHA_AS_ROUGHNESS)
+        material.smoothness = RoughnessToSmoothness(tex2D(NormalMapSamp, IN.Texcoord).a);
+#elif defined(NORMALMAP_ENABLE) && defined(NORMALMAP_ALPHA_AS_SMOOTHNESS)
+        material.smoothness = tex2D(NormalMapSamp, IN.Texcoord).a;
+#else
         material.smoothness = smoothness;
+#endif
 
         #if defined(ENABLE_SSS_SKIN)
+#if defined(ALBEDOMAP_AHLPA_AS_METALNESS)
+            material.transmittance = SkinTransmittance(translucency) * albedo.a;
+#else
             material.transmittance = SkinTransmittance(translucency) * (1.0 - metalness);
+#endif
             material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
             material.index = SUBSURFACESCATTERING_SKIN;
         #elif defined(ENABLE_SSS)
+#if defined(ALBEDOMAP_AHLPA_AS_METALNESS)
+            material.transmittance = transmittance * (1.0 - albedo.a);
+#else
             material.transmittance = transmittance * (1.0 - metalness);
+#endif
             material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
             material.index = SUBSURFACESCATTERING_MARBLE;
         #endif
     #else
+        float metalness = 0.0f;
+#if defined(ALBEDOMAP_AHLPA_AS_METALNESS)
+        metalness = albedo.a;
+#endif    
         float3 dielectricColor = float3(0.04, 0.04, 0.04);
 
-        material.albedo = albedo.rgb;
+        material.albedo = albedo.rgb * (1 - metalness);
         material.transmittance = 0.0f;
-        material.specular = max(0.04, MaterialSpecular);
-        material.smoothness = ShininessToSmoothness(MaterialPower);
+        material.specular = lerp(max(dielectricColor, MaterialSpecular), albedo.rgb, metalness);
+        
+        #if defined(NORMALMAP_ENABLE) && defined(NORMALMAP_ALPHA_AS_ROUGHNESS)
+            material.smoothness = RoughnessToSmoothness(tex2D(NormalMapSamp, IN.Texcoord).a);
+        #elif defined(NORMALMAP_ENABLE) && defined(NORMALMAP_ALPHA_AS_SMOOTHNESS)
+            material.smoothness = tex2D(NormalMapSamp, IN.Texcoord).a;
+        #else
+            material.smoothness = ShininessToSmoothness(MaterialPower);
+        #endif
     #endif
 
     return EncodeGbuffer(material, IN.Distance);
