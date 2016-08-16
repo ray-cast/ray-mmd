@@ -64,3 +64,8 @@ Ray-MMD
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png" width="50%" height="50%" align=left/>
  </a>
+* 4.7 将导出的output_iem.dds和output_pmrem.dds放入Skybox/textures/目录中
+* 4.8 如图PMXEditor打开skybox.pmx，这里Texture里放Radiance中的纹理SphereMap放Irradiance中的纹理  
+<a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png">
+<img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png" width="50%" height="50%" align=left/>
+</a>
