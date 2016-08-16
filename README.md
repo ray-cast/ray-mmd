@@ -25,8 +25,7 @@ Ray-MMD
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.5.png" width="50%" height="50%" align=left/>
  </a>
 
-##### 3.0 全局设置 :
-* 将ray_controller.pmx载入MMD中  
+##### 3.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
 * DirectLight+/-调整光照中整体光强
 * IndirectLight+/-调整间接光照中整体光强 (暂时只能控制SSAO产生的GI)
 * EnvLight+-调整来至天空盒的环境光强
@@ -40,7 +39,7 @@ Ray-MMD
  </a>
 
 ##### 4.0 制作基于物理的环境光贴图(IBL) :
-　　预处理的环境光贴图需要对天空盒纹理处理所以需要以下工具
+　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
 ```
     https://github.com/dariomanesku/cmftStudio
 ```
