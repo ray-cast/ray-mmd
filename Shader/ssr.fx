@@ -1,4 +1,4 @@
-
+#if SSR_SAMPLER_COUNT > 0
 const float maxDistance = 4000;
 const float zThickness = 2.0;
 const float nearZ = 1.0;
@@ -35,3 +35,5 @@ float4 LocalReflectionPS(in float2 coord : TEXCOORD) : SV_Target
 
     return 0.0f;
 }
+
+#endif

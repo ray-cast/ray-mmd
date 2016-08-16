@@ -7,16 +7,25 @@ static float2 SSAORadiusB = (64.0 / 1024.0) / SSAO_SAMPLER_COUNT * ViewportAspec
 
 float linearizeDepth(float2 texcoord)
 {
-    float depth;
-    DecodeLinearDepth(tex2D(Gbuffer2Map, texcoord), depth);
-    return depth;
+    return tex2D(Gbuffer4Map, texcoord).r;
+}
+
+float3 GetPosition(float2 uv)
+{
+    float depth = tex2D(Gbuffer4Map, uv).r;
+    return ReconstructPos(uv, matProjectInverse, depth);
+}
+
+float3 GetNormal(float2 uv)
+{
+    float4 MRT1 = tex2D(Gbuffer2Map, uv);
+    return DecodeGBufferNormal(MRT1);
 }
 
 float4 AmbientOcclustionPS(in float2 coord : TEXCOORD0) : SV_TARGET0
 {
-    float3 viewNormal;
-    float3 viewPosition;
-    DecodePositionAndNormal(Gbuffer2Map, coord, viewPosition, viewNormal);
+    float3 viewPosition = GetPosition(coord);
+    float3 viewNormal = GetNormal(coord);
 
     int2 rndTexOffset = int2(coord * ViewportSize);
     float radMul = 1.0 / SSAO_SAMPLER_COUNT * (3.14 * 2.0 * 7.0);
@@ -34,7 +43,7 @@ float4 AmbientOcclustionPS(in float2 coord : TEXCOORD0) : SV_TARGET0
         sincos(j * radMul + radAdd, sc.x, sc.y);
 
         float2 sampleOffset = coord + sc * (j * radiusMul + radiusAdd);
-        float3 samplePosition = DecodePosition(Gbuffer2Map, sampleOffset);
+        float3 samplePosition = GetPosition(sampleOffset);
         float3 sampleDirection = samplePosition - viewPosition;
 
         float sampleLength2 = dot(sampleDirection, sampleDirection);
@@ -97,4 +106,5 @@ float4 BilateralFilterPS(in float2 coord : TEXCOORD0, uniform sampler smp, unifo
 
     return total_c / total_w;
 }
+
 #endif

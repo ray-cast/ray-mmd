@@ -1,4 +1,11 @@
+#if SSSS_QUALITY > 0
+
 #define DEPTH_LENGTH (1.0 / (10000.0f + 1.0))
+
+float SSSSlinearizeDepth(float2 texcoord)
+{
+    return tex2D(Gbuffer4Map, texcoord).r;
+}
 
 float4 GuassBlurPS(
     in float2 coord : TEXCOORD0,
@@ -27,11 +34,12 @@ float4 GuassBlurPS(
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
+    float depthM = SSSSlinearizeDepth(coord);
+    
     float3 V = normalize(viewdir);
-    float3 P = V * material.distance / V.z;
+    float3 P = V * depthM / V.z;
 
     float4 colorM = tex2D(source, coord.xy);
-    float depthM = tex2D(Gbuffer2Map, coord.xy).w;
 
     if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
     {
@@ -57,8 +65,8 @@ float4 GuassBlurPS(
             float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
             float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
 
-            float sampleDepth1 = tex2D(Gbuffer2Map, offset1).w;
-            float sampleDepth2 = tex2D(Gbuffer2Map, offset2).w;
+            float sampleDepth1 = SSSSlinearizeDepth(offset1).r;
+            float sampleDepth2 = SSSSlinearizeDepth(offset2).r;
 
             float3 sampleColor1 = tex2D(source, offset1).rgb;
             float3 sampleColor2 = tex2D(source, offset2).rgb;
@@ -82,3 +90,4 @@ float4 GuassBlurPS(
         return float4(totalColor, colorM.a);
     }
 }
+#endif

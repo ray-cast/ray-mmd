@@ -78,7 +78,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 
     MaterialParam material;
     material.normal = IN.Normal;
-    material.distance = IN.Distance;
+    material.index = 0;
 
 #if defined(ENABLE_EMMISIVE)
     material.lightModel = LIGHTINGMODEL_EMISSIVE;
@@ -112,7 +112,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
         material.smoothness = ShininessToSmoothness(MaterialPower);
     #endif
 
-    return EncodeGbuffer(material);
+    return EncodeGbuffer(material, IN.Distance);
 }
 
 #define OBJECT_TEC(name, mmdpass, tex, sphere) \
@@ -121,6 +121,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
         "RenderColorTarget0=;" \
         "RenderColorTarget1=Gbuffer2RT;" \
         "RenderColorTarget2=Gbuffer3RT;" \
+        "RenderColorTarget3=Gbuffer4RT;" \
         "RenderDepthStencilTarget=;" \
         "Pass=DrawObject;" \
         "RenderColorTarget1=;" \

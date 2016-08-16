@@ -18,7 +18,6 @@ struct MaterialParam
     float3 specular;
     float3 transmittance;
     float smoothness;
-    float distance;
     int index;
     int lightModel;
 };
@@ -28,6 +27,7 @@ struct GbufferParam
     float4 buffer1 : COLOR0;
     float4 buffer2 : COLOR1;
     float4 buffer3 : COLOR2;
+    float4 buffer4 : COLOR3;
 };
 
 float3 EncodeFloatRGB(float v)
@@ -80,14 +80,14 @@ float3 DecodeNormal(float3 enc)
     return normalize(normal);
 }
 
-GbufferParam EncodeGbuffer(MaterialParam material)
+GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
     gbuffer.buffer1.xyz = srgb2linear(material.albedo);
     gbuffer.buffer1.w = material.smoothness;
 
-    gbuffer.buffer2.xyz = normalize(material.normal);
-    gbuffer.buffer2.w = material.distance;
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = material.index;
 
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
@@ -100,16 +100,9 @@ GbufferParam EncodeGbuffer(MaterialParam material)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    return gbuffer;
-}
-
-GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float alphaDiffuse, float alphaNormals, float alphaSpecular)
-{
-    GbufferParam gbuffer;
-    gbuffer = EncodeGbuffer(material);
-    gbuffer.buffer1.w = alphaDiffuse;
-    gbuffer.buffer2.w = alphaNormals;
-    gbuffer.buffer3.w = alphaSpecular;
+    
+    gbuffer.buffer4 = linearDepth;
+    
     return gbuffer;
 }
 
@@ -120,9 +113,8 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     material.albedo = buffer1.xyz;
     material.smoothness = buffer1.w;
 
-    material.normal = normalize(buffer2.xyz);
-    material.distance = buffer2.w;
-    material.index = 1;
+    material.normal = DecodeNormal(buffer2.xyz);
+    material.index = buffer2.w;
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
@@ -136,36 +128,15 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     }
 }
 
-void DecodeLinearDepth(float4 buffer2, out float depth)
+float3 DecodeGBufferNormal(float4 buffer2)
 {
-    depth = buffer2.w;
+    return DecodeNormal(buffer2.rgb);
 }
 
-void DecodeNormalAndDepth(float4 buffer2, out float3 N, out float depth)
-{
-    N = normalize(buffer2.xyz);
-    DecodeLinearDepth(buffer2, depth);
-}
-
-float3 ReconstructPos(float2 Tex, float depth)
+float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
 {
     float3 v = mul(float4(CoordToPos(Tex), 0, 1), matProjectInverse).xyz;
     return v * depth / v.z;
-}
-
-void DecodePositionAndNormal(sampler Gbuffer2Map, float2 coord, out float3 WPos, out float3 N)
-{
-    float4 ND = tex2D(Gbuffer2Map, coord);
-    float depth;
-    DecodeNormalAndDepth(ND, N, depth);
-    WPos = ReconstructPos(coord - ViewportOffset, depth);
-}
-
-float3 DecodePosition(sampler Gbuffer2Map, float2 coord)
-{
-    float depth;
-    DecodeLinearDepth(tex2D(Gbuffer2Map, coord), depth);
-    return ReconstructPos(coord - ViewportOffset, depth);
 }
 
 #endif

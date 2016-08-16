@@ -64,7 +64,7 @@ sampler Gbuffer1Map = sampler_state {
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A16B16G16R16F" ;
+    string Format = "A8R8G8B8" ;
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
@@ -88,6 +88,20 @@ shared texture Gbuffer3RT: RENDERCOLORTARGET <
 
 sampler Gbuffer3Map = sampler_state {
     texture = <Gbuffer3RT>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+shared texture Gbuffer4RT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "R32F" ;
+    bool AntiAlias = false;
+    int MipLevels = 1;
+>;
+
+sampler Gbuffer4Map = sampler_state {
+    texture = <Gbuffer4RT>;
     MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
