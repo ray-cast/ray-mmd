@@ -1,6 +1,8 @@
 Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
+#### Screenshot :
+    [![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
 #### 教程 :
 ##### 1.0 文件夹介绍 :
 * EnvLighting : 环境光(IBL)相关特效
@@ -15,11 +17,11 @@ Ray-MMD
 ##### 2.0 载入模型 :
 * 将ray.x载入到MMD中
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
-[![link text](Tutorial/2.2.png)](Tutorial/2.2.png)
+[![link text](Screenshot/2.2.png)](Screenshot/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
 * 分配完后效果图如下:  
-[![link text](Tutorial/2.5_small.png)](Tutorial/2.5.png)
+[![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
 
 ##### 3.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
 * DirectLight+/-调整光照中整体光强
@@ -30,7 +32,7 @@ Ray-MMD
 * BloomIntensity 调整泛光的整体强度
 * Vignette+- 调整窗口四周的暗角 (初始不产生暗角)
 * SSAO+- 调整环境光遮蔽强度  
-[![link text](Tutorial/3.1_small.png)](Tutorial/3.1.png)
+[![link text](Screenshot/3.1_small.png)](Screenshot/3.1.png)
 
 ##### 4.0 制作基于物理的环境光贴图(IBL) :
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
@@ -40,17 +42,17 @@ Ray-MMD
 * 启动cmftstudio
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
-[![link text](Tutorial/4.1_small.png)](Tutorial/4.1.png)
+[![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
 * 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
-[![link text](Tutorial/4.2_small.png)](Tutorial/4.2.png)
+[![link text](Screenshot/4.2_small.png)](Screenshot/4.2.png)
 * 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
-[![link text](Tutorial/4.3_small.png)](Tutorial/4.3.png)
+[![link text](Screenshot/4.3_small.png)](Screenshot/4.3.png)
 * 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
-[![link text](Tutorial/4.4_small.png)](Tutorial/4.4.png)
-[![link text](Tutorial/4.5_small.png)](Tutorial/4.5.png)
-* 将导出的output_iem.dds和output_pmrem.dds放入Skybox/textures/目录中
-* 如图PMXEditor打开skybox.pmx，这里Texture里放Radiance中的纹理SphereMap放Irradiance中的纹理  
-[![link text](Tutorial/4.6_small.png)](Tutorial/4.6.png)
+[![link text](Screenshot/4.4_small.png)](Screenshot/4.4.png)
+[![link text](Screenshot/4.5_small.png)](Screenshot/4.5.png)
+* 将导出的Irradiance和Radiance放入Skybox/textures/目录中
+* 如图PMXEditor打开skybox.pmx，这里Texture里放渲染天空的纹理，Tone放Irradiance中的纹理SphereMap放Radiance中的纹理  
+[![link text](Screenshot/4.6_small.png)](Screenshot/4.6.png)
 * 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
 
 #### 借物表 :

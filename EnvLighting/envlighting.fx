@@ -5,21 +5,21 @@
 #include "../shader/gbuffer_sampler.fx"
 #include "../shader/lighting.fx"
 
-texture IBLSpecularTexture : MATERIALTEXTURE;
+texture IBLDiffuseTexture: MATERIALTOONTEXTURE;
+sampler IBLDiffuseSampler = sampler_state {
+    texture = <IBLDiffuseTexture>;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+    ADDRESSU  = CLAMP;  ADDRESSV  = CLAMP;
+};
+
+texture IBLSpecularTexture : MATERIALSPHEREMAP;
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
-    MINFILTER = LINEAR;
+    MINFILTER = LINEAR; 
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
-};
-
-texture IBLDiffuseTexture : MATERIALSPHEREMAP;
-sampler IBLDiffuseSampler = sampler_state {
-    texture = <IBLDiffuseTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR;
-    ADDRESSU  = CLAMP;   ADDRESSV  = CLAMP;
 };
 
 void EnvLightingVS(

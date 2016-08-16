@@ -9,6 +9,8 @@
 #   define SKYDOME_ENABLE 0
 #endif
 
+bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
+
 float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
 
 texture decal : MATERIALTEXTURE;
@@ -42,7 +44,14 @@ void SkyboxVS(
 float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
 {
     float3 N = normalize(normal).xyz;
-    return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+    if (ExistRay)
+    {
+        return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+    }
+    else
+    {
+        return tex2D(decalMap, computeSphereCoord(N));
+    }
 }
 
 #define OBJECT_TEC(name, mmdpass) \

@@ -184,6 +184,21 @@ float2 computeSphereCoord(float3 normal)
     return coord;
 }
 
+float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+{
+    float3 dp1 = ddx(viewdir);
+    float3 dp2 = ddy(viewdir);
+    float2 duv1 = ddx(coord);
+    float2 duv2 = ddy(coord);
+
+    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+    float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+    float3 T = mul(float2(duv1.x, duv2.x), I);
+    float3 B = mul(float2(duv1.y, duv2.y), I);
+
+    return float3x3(normalize(T), normalize(B), N);
+}
+
 static float JitterOffsets[16] = {
      6/16.0, 1/16.0,12/16.0,11/16.0,
      9/16.0,14/16.0, 5/16.0, 2/16.0,
