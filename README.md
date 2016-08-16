@@ -52,3 +52,9 @@ Ray-MMD
 * 如图PMXEditor打开skybox.pmx，这里Texture里放Radiance中的纹理SphereMap放Irradiance中的纹理  
 [![link text](Tutorial/4.6_small.png)](Tutorial/4.6.png)
 * 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
+
+#### 借物表 :
+Model : 
+　　TDA China Dress Luo Tianyi Canary Ver1.00 [Silver]
+Scene :
+　　シンプル風ステージ
