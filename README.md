@@ -43,3 +43,24 @@ Ray-MMD
 ```
     https://github.com/dariomanesku/cmftStudio
 ```
+* 4.1 启动cmftstudio
+* 4.2 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
+* 4.3 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
+ <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.1.png">
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.1.png" width="50%" height="50%" align=left/>
+ </a>
+* 4.4 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
+ <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.2.png">
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.2.png" width="50%" height="50%" align=left/>
+ </a>
+* 4.5 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
+ <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.3.png">
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.3.png" width="50%" height="50%" align=left/>
+ </a>
+* 4.6 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
+ <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.4.png">
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.4.png" width="50%" height="50%" align=left/>
+ </a>  
+ <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png">
+ <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.5.png" width="50%" height="50%" align=left/>
+ </a>
