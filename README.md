@@ -2,7 +2,8 @@ Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
 #### Screenshot :
-    [![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
+[![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
+
 #### 教程 :
 ##### 1.0 文件夹介绍 :
 * EnvLighting : 环境光(IBL)相关特效
