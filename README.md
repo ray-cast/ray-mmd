@@ -69,3 +69,4 @@ Ray-MMD
 <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png">
 <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/4.6.png" width="50%" height="50%" align=left/>
 </a>
+* 4.9 至此完成了IBL需要的纹理，这里SphereMap模式需要改为加算，不然会无效
