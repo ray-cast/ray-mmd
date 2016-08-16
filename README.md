@@ -25,16 +25,22 @@ Ray-MMD
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/2.5.png" width="50%" height="50%" align=left/>
  </a>
 
-##### 3.0 调整全局设定 :
-* 3.1 将ray_controller.pmx载入MMD中  
-* 3.2 DirectLight+/-调整光照中整体光强
-* 3.2 IndirectLight+/-调整间接光照中整体光强 (暂时只能控制SSAO产生的GI)
-* 3.3 EnvLight+-调整来至天空盒的环境光强
-* 3.4 Exposure+- 调整整体的曝光强度
-* 3.5 BloomThreshold 调整提取最亮部分的阈值
-* 3.6 BloomIntensity 调整泛光的整体强度
-* 3.7 Vignette+- 调整窗口四周的暗角 (初始不产生暗角)
-* 3.8 SSAO+- 调整环境光遮蔽强度  
+##### 3.0 全局设置 :
+* 将ray_controller.pmx载入MMD中  
+* DirectLight+/-调整光照中整体光强
+* IndirectLight+/-调整间接光照中整体光强 (暂时只能控制SSAO产生的GI)
+* EnvLight+-调整来至天空盒的环境光强
+* Exposure+- 调整整体的曝光强度
+* BloomThreshold 调整提取最亮部分的阈值
+* BloomIntensity 调整泛光的整体强度
+* Vignette+- 调整窗口四周的暗角 (初始不产生暗角)
+* SSAO+- 调整环境光遮蔽强度  
  <a target="_Blank" href="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/3.1.png">
  <img src="https://coding.net/u/raycast/p/ray-mmd/git/raw/master/Tutorial/3.1.png" width="50%" height="50%" align=left/>
  </a>
+
+##### 4.0 制作基于物理的环境光贴图(IBL) :
+　　预处理的环境光贴图需要对天空盒纹理处理所以需要以下工具
+```
+    https://github.com/dariomanesku/cmftStudio
+```
