@@ -34,7 +34,7 @@ float4 DeferredLightingPS(
     }
 
 #if SSAO_SAMPLER_COUNT > 0
-        float4 ssgi = tex2D(ReflectionWorkMapSamp, coord);
+        float4 ssgi = tex2D(SSAOMapSamp, coord);
         ssgi = pow(ssgi, mSSAOP + 1 - mSSAOM);
         lighting *= ssgi.a;
 #   if SSAO_EANBLE_GI

@@ -53,16 +53,6 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
         "*.x=shadow/lightdepth.fx;";
 >;
 
-shared texture2D ShadowmapMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "G16R16F";
->;
-sampler ShadowmapSamp = sampler_state {
-    texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-
 float CalcShadowBlurWeight(float d0, float d1, float depthRate)
 {
     float dd = (d0 - d1) * depthRate;
