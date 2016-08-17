@@ -16,7 +16,7 @@ const float3 reflection = 0.04;
 #define ENABLE_SSS_SKIN
 
 // 皮肤的次表面散射通透度
-const float translucency = 0.75;
+const float translucency = 0.65;
 const float3 transmittance = float3(1, 0, 0);
 
 #include "material_common.fxsub"

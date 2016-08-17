@@ -1,21 +1,24 @@
+#include "../ray.conf"
 #include "../shader/math.fx"
 #include "../shader/common.fx"
 #include "../shader/gbuffer.fx"
 #include "../shader/gbuffer_sampler.fx"
 #include "../shader/lighting.fx"
 
-#ifndef AlphaThreshold
-#   define AlphaThreshold 0.5
-#endif
-
 texture ObjectTexture: MATERIALTEXTURE;
 sampler ObjTexSampler = sampler_state
 {
     texture = <ObjectTexture>;
+#if TEXTURE_ANISOTROPY > 0
     MINFILTER = ANISOTROPIC;
     MAGFILTER = ANISOTROPIC;
+#else
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+#endif
     MIPFILTER = LINEAR;
-    MAXANISOTROPY = 16;
+    
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
     ADDRESSU = WRAP;
     ADDRESSV = WRAP;
 };
@@ -47,13 +50,6 @@ struct VS_OUTPUT
     float3 Viewdir  : TEXCOORD3; 
 };
 
-struct PS_OUTPUT
-{
-    float4 Gbuffer1 : COLOR0;
-    float4 Gbuffer2 : COLOR1;
-    float4 Gbuffer3 : COLOR2;
-};
-
 float3 ColorSynthesis(float3 diffuse, float m)
 {
     float3 melanin = diffuse * luminance(diffuse);
@@ -83,6 +79,11 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 #if defined(SPHEREMAP_RGB_AS_NORMAL)
     float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);    
     float3 tangentNormal = normalize(tex2D(SphereMapSamp, coord).rgb * 2 - 1);
+    float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
+    return highNormal;
+#elif defined(TONEMAP_RGB_AS_NORMAL)
+    float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);    
+    float3 tangentNormal = normalize(tex2D(ToneMapSamp, coord).rgb * 2 - 1);
     float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
     return highNormal;
 #else
@@ -138,6 +139,33 @@ float GetMetalness(float2 coord)
 #endif
 }
 
+float3 GetSpecular(float2 coord)
+{
+#if defined(TONEMAP_RGB_AS_SPECULAR)
+    return tex2D(ToneMapSamp, coord).rgb;
+#elif defined(SPHEREMAP_RGB_AS_SPECULAR)
+    return tex2D(SphereMapSamp, coord).rgb;
+#elif defined(USE_CUSTOM_MATERIAL)
+    return reflection.rgb;
+#else
+    float3 dielectricColor = float3(0.04, 0.04, 0.04);
+    return max(dielectricColor, MaterialSpecular);
+#endif
+}
+
+float3 GetTransmittance(float2 coord)
+{
+#if defined(USE_CUSTOM_MATERIAL) && defined(ENABLE_SSS)
+#   if defined(ENABLE_SSS_SKIN)
+        return SkinTransmittance(translucency);
+#   else
+        return transmittance;
+#   endif
+#else
+    return 0.0;
+#endif
+}
+
 VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 Texcoord: TEXCOORD0)
 {
     VS_OUTPUT Out;
@@ -155,51 +183,30 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     albedo.rgb = ColorSynthesis(albedo.rgb, melanin);
 
     clip(albedo.a - AlphaThreshold);
+    
+    float MaterialMetalness = GetMetalness(IN.Texcoord);
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.index = 0;
-
-#if defined(ENABLE_EMMISIVE)
+    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
+    material.smoothness = GetSmoothness(IN.Texcoord);
+    material.albedo = albedo.rgb * (1 - MaterialMetalness);
+    material.transmittance = 0.0f;
+    material.specular = lerp(GetSpecular(IN.Texcoord), albedo.rgb, MaterialMetalness);
+    material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+    
+#if defined(ENABLE_SSS)
+    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+#   if defined(ENABLE_SSS_SKIN)
+        material.index = SUBSURFACESCATTERING_SKIN;
+#   elif defined(USE_CUSTOM_MATERIAL) && defined(ENABLE_SSS)
+        material.index = SUBSURFACESCATTERING_MARBLE;
+#   endif
+#elif defined(ENABLE_EMMISIVE)
     material.lightModel = LIGHTINGMODEL_EMISSIVE;
 #else
     material.lightModel = LIGHTINGMODEL_NORMAL;
 #endif
-
-    #if defined(USE_CUSTOM_MATERIAL)
-        float MaterialMetalness = GetMetalness(IN.Texcoord);
-
-        material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
-        material.specular = lerp(reflection.rgb, albedo.rgb, MaterialMetalness);
-        material.smoothness = GetSmoothness(IN.Texcoord);
-        
-        #if defined(ENABLE_SSS_SKIN)
-            #if defined(TONEMAP_AHLPA_AS_METALNESS)
-                material.transmittance = SkinTransmittance(translucency) * albedo.a;
-            #else
-                material.transmittance = SkinTransmittance(translucency) * (1.0 - MaterialMetalness);
-            #endif
-            material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-            material.index = SUBSURFACESCATTERING_SKIN;
-        #elif defined(ENABLE_SSS)
-            #if defined(TONEMAP_AHLPA_AS_METALNESS)
-                material.transmittance = transmittance * (1.0 - albedo.a);
-            #else
-                material.transmittance = transmittance * (1.0 - MaterialMetalness);
-            #endif
-            material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-            material.index = SUBSURFACESCATTERING_MARBLE;
-        #endif
-    #else
-        float MaterialMetalness = GetMetalness(IN.Texcoord);
-        
-        float3 dielectricColor = float3(0.04, 0.04, 0.04);
-
-        material.albedo = albedo.rgb * (1 - MaterialMetalness);
-        material.transmittance = 0.0f;
-        material.specular = lerp(max(dielectricColor, MaterialSpecular), albedo.rgb, MaterialMetalness);
-        material.smoothness = GetSmoothness(IN.Texcoord);
-    #endif
 
     return EncodeGbuffer(material, IN.Distance);
 }
