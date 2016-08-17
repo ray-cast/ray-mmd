@@ -18,7 +18,7 @@ struct MaterialParam
     float3 specular;
     float3 transmittance;
     float smoothness;
-    int index;
+    float index;
     int lightModel;
 };
 

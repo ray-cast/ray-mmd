@@ -23,8 +23,8 @@ float4 GuassBlurPS(
 
     const float4 profileSpikeRadArr[2] =
     {
-        float4( 0.03, 0.03, 0.08, 8.0 ),  // marble
-        float4( 0.015, 0.020, 0.025, 1.0) // skin
+        float4( 0.5,  0.5, 0.5, 8.0 ),  // marble
+        float4( 0.15, 0.2, 0.25, 1.0) // skin
     };
 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -51,10 +51,13 @@ float4 GuassBlurPS(
         float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
         float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
-        float radius = 0.0055 * profileSpikeRadArr[material.index].w;
+        float profileIndex = floor(material.index);
+        float sssAmount = frac(material.index);
+        float radius = 0.0055 * profileSpikeRadArr[profileIndex].w;
+        
         float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
 
-        float3 blurFalloff = -1.0f / (2 * profileVarArr[material.index]);
+        float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
 
         float3 totalWeight = 1;
         float3 totalColor = colorM.rgb;
@@ -85,7 +88,7 @@ float4 GuassBlurPS(
         }
 
         totalColor /= totalWeight;
-        totalColor = lerp(totalColor, colorM.rgb, profileSpikeRadArr[material.index].xyz);
+        totalColor = lerp(totalColor, colorM.rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
 
         return float4(totalColor, colorM.a);
     }

@@ -108,11 +108,11 @@ sampler Gbuffer4Map = sampler_state {
 #if SHADOW_QUALITY > 0
 shared texture2D ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "R16F";
+    string Format = "G16R16F";
 >;
 texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "R16F";
+    string Format = "A16B16G16R16F";
 >;
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
