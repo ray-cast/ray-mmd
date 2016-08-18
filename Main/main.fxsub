@@ -87,12 +87,12 @@ float4 DrawObjectPS(
         float3 lighting = 0;
 
         if (material.lightModel == LIGHTINGMODEL_NORMAL)
-            lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightSpecular;
+            lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
         else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-            lighting = TranslucencyBRDF(N, L, material.transmittance) * LightSpecular;
+            lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
 
         lighting *= material.albedo;
-        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
+        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;
 #if SHADOW_QUALITY > 0
         lighting *= tex2D(ShadowmapSamp, texCoord).r;
 #endif
@@ -128,7 +128,7 @@ float4 DrawObjectPS(
 
         float4 lighting = albedo;
         lighting.rgb *= diffuse * LightColor;
-        lighting.rgb += specular;
+        lighting.rgb += specular * LightColor;
 
         return linear2srgb(lighting);
     }

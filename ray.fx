@@ -43,8 +43,6 @@ float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string i
 float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
 float mIndirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "IndirectLight+"; >;
 float mIndirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "IndirectLight-"; >;
-float mEnvLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight+"; >;
-float mEnvLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight-"; >;
 float mExposureP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure+"; >;
 float mExposureM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure-"; >;
 float mVignetteP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette+"; >;

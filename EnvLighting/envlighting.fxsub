@@ -43,6 +43,11 @@ sampler IBLSpecularSampler = sampler_state {
     ADDRESSV  = CLAMP;
 };
 
+float mEnvLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight+";>;
+float mEnvLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+
 void EnvLightingVS(
     in float4 Position : POSITION,
     in float3 Normal   : NORMAL,
@@ -111,15 +116,13 @@ float4 EnvLightingPS(
         prefilteredTransmittance = srgb2linear(prefilteredTransmittance);
 #endif
 
-        float3 diffuse = prefilteredDiffuse * material.albedo;
-
-#if IBL_ENABLE_SS
-        diffuse += prefilteredTransmittance * material.transmittance;
-#endif
-
+        float3 diffuse = prefilteredDiffuse * material.albedo + prefilteredTransmittance * material.transmittance;
         float3 specular = prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular);
 
 #if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
+        diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
+        specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
+        
         diffuse = rgb2ycbcr(diffuse);
         specular = rgb2ycbcr(specular);
 
@@ -129,7 +132,8 @@ float4 EnvLightingPS(
         lighting.b = specular.r;
         lighting.a = (pattern) ? specular.g: specular.b;
 #else
-        lighting.rgb = diffuse + specular;
+        lighting.rgb += diffuse * (lerp(1, 5, mEnvLightP) - mEnvLightM);
+        lighting.rgb += specular * (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
 #endif
     }
 
