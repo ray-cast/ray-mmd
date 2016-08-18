@@ -101,9 +101,19 @@ float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
     return color * smoothstep(outer, inner, L);
 }
 
+float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
+{
+    float L = length(CoordToPos(coord));
+    L = 1 - smoothstep(outer, inner, L);
+    float3 color = tex2D(source, coord);
+    color.g = tex2D(source, coord + ViewportOffset2 * L * 8).g;
+    color.b = tex2D(source, coord + ViewportOffset2 * L * 16).b;
+    return color;
+}
+
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
-    float3 color = tex2D(source, coord).rgb;
+    float3 color = AppleDispersion(source, coord, 1.5 - mVignetteP + mVignetteM, 2.5 - mVignetteP + mVignetteM);
 
 #if HDR_ENABLE
 
