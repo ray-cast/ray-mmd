@@ -12,13 +12,13 @@ sampler ObjTexSampler = sampler_state
 #if TEXTURE_ANISOTROPY > 0
     MINFILTER = ANISOTROPIC;
     MAGFILTER = ANISOTROPIC;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
 #else
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
 #endif
     MIPFILTER = LINEAR;
     
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
     ADDRESSU = WRAP;
     ADDRESSV = WRAP;
 };
@@ -71,7 +71,7 @@ float4 GetTextureColor(float4 albedo, float2 uv, bool use_texture)
         albedo *= TexColor;
     }
 
-    return albedo;
+    return srgb2linear(albedo);
 }
 
 float3 GetNormal(float3 N, float3 viewdir, float2 coord)
@@ -190,7 +190,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.index = 0;
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
-    material.albedo = albedo.rgb * (1 - MaterialMetalness);
+    material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
     material.transmittance = 0.0f;
     material.specular = lerp(GetSpecular(IN.Texcoord), albedo.rgb, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);

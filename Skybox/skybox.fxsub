@@ -46,7 +46,11 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
     float3 N = normalize(normal).xyz;
     if (ExistRay)
     {
+#if SKYBOX_GAMMA_CORRECTION > 0
         return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+#else
+        return tex2D(decalMap, computeSphereCoord(N));
+#endif
     }
     else
     {

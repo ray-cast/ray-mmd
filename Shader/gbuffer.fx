@@ -83,7 +83,7 @@ float3 DecodeNormal(float3 enc)
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
-    gbuffer.buffer1.xyz = srgb2linear(material.albedo);
+    gbuffer.buffer1.xyz = material.albedo;
     gbuffer.buffer1.w = material.smoothness;
 
     gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));

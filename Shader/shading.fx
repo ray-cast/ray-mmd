@@ -30,7 +30,7 @@ float4 DeferredLightingPS(
     float3 lighting = background;
     if (material.lightModel != LIGHTINGMODEL_EMISSIVE)
     {
-        lighting *= ((mDirectLightP + 1) - mDirectLightM);
+        lighting *= (lerp(1, 5, mDirectLightP) - mDirectLightM);
     }
 
 #if SSAO_SAMPLER_COUNT > 0
@@ -38,7 +38,7 @@ float4 DeferredLightingPS(
         ssgi = pow(ssgi, mSSAOP + 1 - mSSAOM);
         lighting *= ssgi.a;
 #   if SSAO_EANBLE_GI
-        lighting += material.albedo * ssgi.rgb * ((mIndirectLightP + 1) - mIndirectLightM);
+        lighting += material.albedo * ssgi.rgb * (lerp(1, 5, mIndirectLightP) - mIndirectLightM);
 #   endif
 #endif
 
@@ -67,16 +67,16 @@ float4 DeferredLightingPS(
 #   if SSAO_SAMPLER_COUNT > 0
             float diffOcclusion = ssgi.a * ssgi.a;
             float specOcclusion= DeriveSpecularOcclusion(abs(dot(worldNormal, worldView) + 1e-5), diffOcclusion, material.smoothness);
-            lighting += (diffuse * diffOcclusion + specular * specOcclusion) * ((mEnvLightP + 1) - mEnvLightM);
+            lighting += (diffuse * diffOcclusion + specular * specOcclusion) * (lerp(1, 5, mEnvLightP) - mEnvLightM);
 #   else
-            lighting += (diffuse + specular) * ((mEnvLightP + 1) - mEnvLightM);
+            lighting += (diffuse + specular) * (lerp(1, 5, mEnvLightP) - mEnvLightM);
 #   endif
 
 #else
 #   if SSAO_SAMPLER_COUNT > 0
         envLighting *= (ssgi.a * ssgi.a);
 #   endif
-    lighting += envLighting.rgb * ((mEnvLightP + 1) - mEnvLightM);
+    lighting += envLighting.rgb * (lerp(1, 5, mEnvLightP) - mEnvLightM);
 #endif
 
 #endif

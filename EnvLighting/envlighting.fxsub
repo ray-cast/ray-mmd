@@ -8,16 +8,37 @@
 texture IBLDiffuseTexture: MATERIALTOONTEXTURE;
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-    ADDRESSU  = CLAMP;  ADDRESSV  = CLAMP;
+    
+#if TEXTURE_ANISOTROPY > 0
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
+#else
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+#endif
+
+    MIPFILTER = NONE;
+    
+    ADDRESSU  = CLAMP;  
+    ADDRESSV  = CLAMP;
 };
 
 texture IBLSpecularTexture : MATERIALSPHEREMAP;
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
-    MINFILTER = LINEAR; 
+    
+#if TEXTURE_ANISOTROPY > 0
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
+#else
+    MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
+#endif
+
     MIPFILTER = LINEAR;
+    
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
@@ -82,6 +103,12 @@ float4 EnvLightingPS(
         float3 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
         float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
         float3 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
+#endif
+
+#if IBL_ENABLE_GAMMA_CORRECTION > 0
+        prefilteredDiffuse = srgb2linear(prefilteredDiffuse);
+        prefilteredSpeculr = srgb2linear(prefilteredSpeculr);
+        prefilteredTransmittance = srgb2linear(prefilteredTransmittance);
 #endif
 
         float3 diffuse = prefilteredDiffuse * material.albedo;

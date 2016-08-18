@@ -108,10 +108,13 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 #if HDR_ENABLE
 
 #if HDR_BLOOM_ENABLE > 0
-    float3 bloom1 = tex2D(BloomSampX2, coord).rgb * (mBloomIntensityP * 10 + 1);
-    float3 bloom2 = tex2D(BloomSampX3, coord).rgb * (mBloomIntensityP * 10 + 1);
-    float3 bloom3 = tex2D(BloomSampX4, coord).rgb * (mBloomIntensityP * 10 + 1);
-    float3 bloom4 = tex2D(BloomSampX5, coord).rgb * (mBloomIntensityP * 10 + 1);
+    float bloomIntensity = lerp(1, 5, mBloomIntensityP);
+    
+    float3 bloom1 = tex2D(BloomSampX2, coord).rgb * bloomIntensity;
+    float3 bloom2 = tex2D(BloomSampX3, coord).rgb * bloomIntensity;
+    float3 bloom3 = tex2D(BloomSampX4, coord).rgb * bloomIntensity;
+    float3 bloom4 = tex2D(BloomSampX5, coord).rgb * bloomIntensity;
+    
     color += bloom1 *  8.0 / 120.0;
     color += bloom2 * 16.0 / 120.0;
     color += bloom3 * 32.0 / 120.0;
@@ -119,7 +122,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 #endif
 
     color = ToneBlueShift(color, luminance(color));
-    color = FilmicTonemap(color, (mExposureP * 2 + 1 - mExposureM));
+    color = FilmicTonemap(color, (lerp(1, 5, mExposureP) - mExposureM));
     color = AppleVignette(color, coord, 1.5 - mVignetteP + mVignetteM, 2.5 - mVignetteP + mVignetteM);
 #endif
 
