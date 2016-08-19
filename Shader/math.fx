@@ -2,23 +2,27 @@
 #define _H_MATH_H_
 
 #ifndef InvLog2
-#define InvLog2 3.32192809489f
+#   define InvLog2 3.32192809489f
 #endif
 
 #ifndef InvPIE
-#define InvPIE 0.318309886142f
+#   define InvPIE 0.318309886142f
 #endif
 
 #ifndef InvPIE8
-#define InvPIE8 0.039788735767f
+#   define InvPIE8 0.039788735767f
 #endif
 
 #ifndef InvPIE4
-#define InvPIE4 0.079577471535f
+#   define InvPIE4 0.079577471535f
 #endif
 
 #ifndef PI
-#define PI 3.141592654f
+#   define PI 3.141592654f
+#endif
+
+#ifndef EPSILON
+#   define EPSILON 1e-5
 #endif
 
 float3 srgb2linear(float3 rgb)

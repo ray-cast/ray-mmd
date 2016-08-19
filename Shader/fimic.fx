@@ -1,10 +1,7 @@
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target0
-{
-    const float threshold = max(1e-5, 1.0f - mBloomThresholdP);
-    const float intensity = 1.0f;
-
-    float4 color = tex2D(source, coord) * (lerp(1, 5, mExposureP) - mExposureM);
-    return float4(max(color.rgb - threshold / (1.0 - threshold), 0.0), color.a);
+{  
+    float4 color = tex2D(source, coord);
+    return max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
@@ -35,7 +32,7 @@ float3 ColorBalance(float3 color, float4 balance)
 
 float3 Uncharted2Tonemap(float3 x)
 {
-    const float A = lerp(0.22, 1, mShoStrength); // Shoulder Strength
+    const float A = lerp(0.50, 1, mShoStrength); // Shoulder Strength
     const float B = lerp(0.30, 1, mLinStrength); // Linear Strength
     const float C = 0.10; // Linear Angle
     const float D = 0.20; // Toe Strength
@@ -83,7 +80,7 @@ float3 FilmicTonemap(float3 color, float exposure)
     #endif
 }
 
-float3 noise3( float2 seed )
+float3 noise3(float2 seed)
 {
     return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
 }
@@ -105,7 +102,7 @@ float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
 {
     float L = length(CoordToPos(coord));
     L = 1 - smoothstep(outer, inner, L);
-    float3 color = tex2D(source, coord);
+    float3 color = tex2D(source, coord).rgb;
     color.g = tex2D(source, coord + ViewportOffset2 * L * 4).g;
     color.b = tex2D(source, coord + ViewportOffset2 * L * 8).b;
     return color;
@@ -113,27 +110,31 @@ float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
 
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
-    float3 color = AppleDispersion(source, coord, 1.5 - mVignetteP + mVignetteM, 2.5 - mVignetteP + mVignetteM);
+    float3 color = AppleDispersion(source, coord, 1.5 - mVignette, 2.5 - mVignette);
 
 #if HDR_ENABLE
 
 #if HDR_BLOOM_ENABLE > 0
-    float bloomIntensity = lerp(1, 10, mBloomIntensityP);
+    float bloomIntensity = lerp(1, 10, mBloomIntensity);
     
     float3 bloom1 = tex2D(BloomSampX2, coord).rgb * bloomIntensity;
     float3 bloom2 = tex2D(BloomSampX3, coord).rgb * bloomIntensity;
     float3 bloom3 = tex2D(BloomSampX4, coord).rgb * bloomIntensity;
     float3 bloom4 = tex2D(BloomSampX5, coord).rgb * bloomIntensity;
     
-    color += bloom1 *  8.0 / 120.0;
-    color += bloom2 * 16.0 / 120.0;
-    color += bloom3 * 32.0 / 120.0;
-    color += bloom4 * 64.0 / 120.0;
+    float3 bloom = 0.0f;
+    bloom += bloom1 *  8.0 / 120.0;
+    bloom += bloom2 * 16.0 / 120.0;
+    bloom += bloom3 * 32.0 / 120.0;
+    bloom += bloom4 * 64.0 / 120.0;
+    
+    color -= max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);    
+    color += bloom;
 #endif
 
-    color = ColorBalance(color, float4(1, 1, 1, mColBalance));
-    color = FilmicTonemap(color, (1 + mExposureP * 10 - mExposureM));
-    color = AppleVignette(color, coord, 1.5 - mVignetteP + mVignetteM, 2.5 - mVignetteP + mVignetteM);
+    color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
+    color = FilmicTonemap(color, (1 + mExposure * 10));
+    color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
 #endif
 
     color = saturate(color);

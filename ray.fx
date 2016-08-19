@@ -45,17 +45,19 @@ float mIndirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string
 float mIndirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "IndirectLight-"; >;
 float mSSAOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO+"; >;
 float mSSAOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO-"; >;
-float mExposureP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure+"; >;
-float mExposureM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure-"; >;
-float mVignetteP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette+"; >;
-float mVignetteM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette-"; >;
-float mBloomThresholdP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold+"; >;
-float mBloomIntensityP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity+"; >;
-float mColBalance :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ColBalance"; >;
+float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure"; >;
+float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
+float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
+float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
 float mShoStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ShoStrength"; >;
 float mLinStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinStrength"; >;
 float mLinWhite : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinWhite"; >;
 float mToeNum : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToeNum"; >;
+
+float mColBalanceR :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Red-"; >;
+float mColBalanceG :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Green-"; >;
+float mColBalanceB :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Blue-"; >;
+float mColBalance  :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Weight"; >;
 
 #include "shader/math.fx"
 #include "shader/common.fx"

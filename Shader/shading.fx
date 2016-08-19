@@ -65,11 +65,11 @@ float4 DeferredLightingPS(
     specular = ycbcr2rgb(specular);
 
 #   if SSAO_SAMPLER_COUNT > 0
-            float diffOcclusion = ssgi.a * ssgi.a;
-            float specOcclusion= DeriveSpecularOcclusion(abs(dot(worldNormal, worldView) + 1e-5), diffOcclusion, material.smoothness);
-            lighting += (diffuse * diffOcclusion + specular * specOcclusion);
+        float diffOcclusion = ssgi.a * ssgi.a;
+        float specOcclusion= DeriveSpecularOcclusion(abs(dot(worldNormal, worldView) + 1e-5), diffOcclusion, material.smoothness);
+        lighting += (diffuse * diffOcclusion + specular * specOcclusion);
 #   else
-            lighting += (diffuse + specular);
+        lighting += (diffuse + specular);
 #   endif
 
 #else
