@@ -15,6 +15,7 @@ Ray-MMD
 * ray.conf : 配置文件(可自行修改)
 * ray.x : 渲染主文件
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
+* ColorBalance.pmx : 色彩平衡
 
 ##### 2.0 载入模型 :
 * 将ray.x载入到MMD中
