@@ -41,28 +41,20 @@ float3 Uncharted2Tonemap(float3 x)
     return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
+float3 ACESFilm2Tonemap(float3 x)
+{
+    const float A = 2.51f;
+    const float B = 0.03f;
+    const float C = 2.43f;
+    const float D = 0.59f;
+    const float E = 0.14f;
+    return (x * (A * x + B)) / (x * (C * x + D) + E);   
+}
+
 float3 FilmicTonemap(float3 color, float exposure)
 {
     #if TONEMAP_OPERATOR == TONEMAP_LINEAR
         return exposure * color;
-    #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL
-        color = 1.0 - exp2(-exposure * color);
-        return color;
-    #elif TONEMAP_OPERATOR == TONEMAP_EXPONENTIAL_HSV
-        color = rgb2hsv(color);
-        color.b = 1.0 - exp2(-exposure * color.b);
-        color = hsv2rgb(color);
-        return color;
-    #elif TONEMAP_OPERATOR == TONEMAP_REINHARD
-        float burnout = 11.2;
-        color = xyz2yxy(rgb2xyz(color));
-        float L = color.r;
-        L *= exposure;
-        float LL = 1 + L / (burnout * burnout);
-        float L_d = L * LL / (1 + L);
-        color.r = L_d;
-        color = xyz2rgb(yxy2xyz(color));
-        return color;
     #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
         const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
         color = color * exposure;
@@ -76,6 +68,10 @@ float3 FilmicTonemap(float3 color, float exposure)
         float3 curr = Uncharted2Tonemap(2 * color);
         float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
         curr *= whiteScale;
+        return lerp(curr, color, mToneMapping);
+    #elif TONEMAP_OPERATOR == TONEMAP_ACESFILM
+        color = color * exposure;
+        float3 curr = ACESFilm2Tonemap(color);
         return lerp(curr, color, mToneMapping);
     #else
         return color;
@@ -130,7 +126,6 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom3 * 32.0 / 120.0;
     bloom += bloom4 * 64.0 / 120.0;
     
-    color -= max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);    
     color += bloom;
 #endif
 

@@ -145,11 +145,9 @@ float3 GetSpecular(float2 coord)
     return tex2D(ToneMapSamp, coord).rgb;
 #elif defined(SPHEREMAP_RGB_AS_SPECULAR)
     return tex2D(SphereMapSamp, coord).rgb;
-#elif defined(USE_CUSTOM_MATERIAL)
-    return reflection.rgb;
 #else
     float3 dielectricColor = float3(0.04, 0.04, 0.04);
-    return max(dielectricColor, MaterialSpecular);
+    return dielectricColor;
 #endif
 }
 

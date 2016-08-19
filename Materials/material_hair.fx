@@ -9,9 +9,6 @@ const float smoothness = 0.3;
 // 黑色素
 const float melanin = 0.0;
 
-// 反射率
-const float3 reflection = 0.04;
-
 #define ENABLE_SSS
 #define ENABLE_SSS_SKIN
 
