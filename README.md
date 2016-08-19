@@ -26,15 +26,21 @@ Ray-MMD
 [![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
 
 ##### 3.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
-* DirectLight+/-调整光照中整体光强
-* IndirectLight+/-调整间接光照中整体光强 (暂时只能控制SSAO产生的GI)
-* EnvLight+-调整来至天空盒的环境光强
-* Exposure+- 调整整体的曝光强度
-* BloomThreshold 调整提取最亮部分的阈值
-* BloomIntensity 调整泛光的整体强度
-* Vignette+- 调整窗口四周的暗角 (初始不产生暗角)
-* SSAO+- 调整环境光遮蔽强度  
-[![link text](Screenshot/3.1_small.png)](Screenshot/3.1.png)
+* DirectLight+/-直接光照中整体光强
+* IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
+* EnvLight+-环境光的漫反射光强
+* EnvSpecLight+-环境光的镜面光强
+* SSAO+- 环境光遮蔽强度  
+* BloomThreshold 提取最亮部分的阈值
+* BloomIntensity 泛光的整体强度
+* Exposure+- 曝光强度
+* Vignette+- 窗口四周的暗角
+* ToneMapping 色调映射的鲜艳度 (为0时采用FimicToneMapping, 为1时线性曝光)
+* ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
+* LinStrength 灰度 (当ToneMapping越大时改值影响越大)
+* LinWhite    消光 (当ToneMapping越大时改值影响越大)
+* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)
+[![link text](Screenshot/3.1.png)](Screenshot/3.1.png)
 
 ##### 4.0 制作基于物理的环境光贴图(IBL) :
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具

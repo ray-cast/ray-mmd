@@ -53,6 +53,7 @@ float mShoStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string it
 float mLinStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinStrength"; >;
 float mLinWhite : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinWhite"; >;
 float mToeNum : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToeNum"; >;
+float mToneMapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToneMapping"; >;
 
 float mColBalanceR :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Red-"; >;
 float mColBalanceG :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Green-"; >;

@@ -32,7 +32,7 @@ float3 ColorBalance(float3 color, float4 balance)
 
 float3 Uncharted2Tonemap(float3 x)
 {
-    const float A = lerp(0.50, 1, mShoStrength); // Shoulder Strength
+    const float A = lerp(0.22, 1, mShoStrength); // Shoulder Strength
     const float B = lerp(0.30, 1, mLinStrength); // Linear Strength
     const float C = 0.10; // Linear Angle
     const float D = 0.20; // Toe Strength
@@ -65,16 +65,18 @@ float3 FilmicTonemap(float3 color, float exposure)
         return color;
     #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
         const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
-        color = 2 * Uncharted2Tonemap(exposure * color);
+        color = color * exposure;
+        color = 2 * Uncharted2Tonemap(color);
         float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
         color *= whiteScale;
-        return color;
+        return lerp(curr, color, mToneMapping);
     #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
         const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
-        color = Uncharted2Tonemap(2 * exposure * color);
+        color = color * exposure;
+        float3 curr = Uncharted2Tonemap(2 * color);
         float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
-        color *= whiteScale;
-        return color;
+        curr *= whiteScale;
+        return lerp(curr, color, mToneMapping);
     #else
         return color;
     #endif
@@ -134,11 +136,12 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 
     color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
     color = FilmicTonemap(color, (1 + mExposure * 10));
-    color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
 #endif
 
     color = saturate(color);
     color = linear2srgb(color);
+    
+    color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = ApplyDithering(color, coord);
 
     return float4(color, luminance(color));
