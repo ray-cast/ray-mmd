@@ -12,8 +12,8 @@ sampler ObjTexSampler = sampler_state
 };
 
 struct DrawObject_OUTPUT {
-    float4 Pos      : POSITION;     // 射影変換座標
-    float2 Tex      : TEXCOORD0;    // テクスチャ
+    float4 Pos      : POSITION;
+    float2 Tex      : TEXCOORD0;
     float2 Tex2     : TEXCOORD1;
     float4 PPos     : TEXCOORD2;
 };
