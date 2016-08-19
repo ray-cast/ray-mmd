@@ -110,20 +110,20 @@ float3 yxy2xyz(float3 Yxy)
     return xyz;
 }
 
-float3 rgb2hsv(float3 rgb)
+float3 rgb2hsv(float3 rgb) 
 {
     float minValue = min(min(rgb.r, rgb.g), rgb.b);
     float maxValue = max(max(rgb.r, rgb.g), rgb.b);
     float d = maxValue - minValue;
 
-    float3 hsv = float3(0.0, 0.0, 0.0);
+    float3 hsv = 0.0;
     hsv.b = maxValue;
-    if (d != 0.0f)
+    if (d != 0) 
     {
         hsv.g = d / maxValue;
 
-        float3 delrgb = (((float3(maxValue, maxValue, maxValue)-rgb) / 6.0) + d / 2.0) / d;
-        if (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
+        float3 delrgb = (((maxValue.xxx - rgb) / 6.0) + d / 2.0) / d;
+        if      (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
         else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
         else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
 
@@ -139,11 +139,11 @@ float3 hsv2rgb(float3 hsv)
     float s = hsv.g;
     float v = hsv.b;
 
-    float3 rgb = float3(v, v, v);
+    float3 rgb = v;
     if (hsv.g != 0.0)
     {
-        int h_i = int(h) * 6;
-        float f = 6.0f * h - float(h_i);
+        float h_i = floor(6 * h);
+        float f = 6 * h - h_i;
 
         float p = v * (1.0f - s);
         float q = v * (1.0f - f * s);

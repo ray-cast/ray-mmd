@@ -66,7 +66,7 @@ float4 DrawObjectPS(
     float4 texcoord2 : TEXCOORD3) : SV_Target
 {
     float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
-
+    
     if (ExistRay)
     {
         float2 texCoord = texcoord2.xy / texcoord2.w;
@@ -90,6 +90,8 @@ float4 DrawObjectPS(
             lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
         else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
             lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
+        else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            lighting = material.albedo;
 
         lighting *= material.albedo;
         lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;
@@ -106,10 +108,6 @@ float4 DrawObjectPS(
         float3 N = normalize(normal);
 
         float MaterialSmoothness = ShininessToSmoothness(MaterialPower);
-
-    #if defined(ENABLE_EMMISIVE)
-        return albedo;
-    #endif
 
         float3 f0 = albedo.rgb * MaterialSpecular;
         float3 specular = SpecularBRDF(N, L, V, MaterialSmoothness, f0);

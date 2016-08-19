@@ -23,7 +23,7 @@ float4 GuassBlurPS(
 
     const float4 profileSpikeRadArr[2] =
     {
-        float4( 0.5,  0.5, 0.5, 8.0 ),  // marble
+        float4( 0.7,  0.7, 0.7, 8.0 ),  // marble
         float4( 0.15, 0.2, 0.25, 1.0) // skin
     };
 

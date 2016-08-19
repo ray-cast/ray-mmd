@@ -3,7 +3,7 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     const float threshold = max(1e-5, 1.0f - mBloomThresholdP);
     const float intensity = 1.0f;
 
-    float4 color = tex2D(source, coord);    
+    float4 color = tex2D(source, coord) * (lerp(1, 5, mExposureP) - mExposureM);
     return float4(max(color.rgb - threshold / (1.0 - threshold), 0.0), color.a);
 }
 
@@ -25,22 +25,22 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, unifor
     return color;
 }
 
-float3 ToneBlueShift(float3 color, float lum)
+float3 ColorBalance(float3 color, float4 balance)
 {
-    // martin's modified blue shift
-    const float3 BLUE_SHIFT = float3(0.4f, 0.4f, 0.7f);
-    return lerp(lum * BLUE_SHIFT, color, saturate(16.0f * lum));
+    float3 lum = luminance(color);
+    color = lerp(lum, color, 1 - balance.a);
+    color *= balance.rgb;
+    return color;
 }
 
 float3 Uncharted2Tonemap(float3 x)
 {
-    const float A = 0.22; // Shoulder Strength
-    const float B = 0.30; // Linear Strength
+    const float A = lerp(0.22, 1, mShoStrength); // Shoulder Strength
+    const float B = lerp(0.30, 1, mLinStrength); // Linear Strength
     const float C = 0.10; // Linear Angle
     const float D = 0.20; // Toe Strength
-    const float E = 0.01; // Toe Numerator
+    const float E = 0.01 *  (mToeNum * 10); // Toe Numerator
     const float F = 0.30; // Toe Denominator E/F = Toe Angle
-    const float W = 11.2; // Linear White Point Value
     return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
@@ -67,13 +67,15 @@ float3 FilmicTonemap(float3 color, float exposure)
         color = xyz2rgb(yxy2xyz(color));
         return color;
     #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
+        const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
         color = 2 * Uncharted2Tonemap(exposure * color);
-        float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
+        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
         color *= whiteScale;
         return color;
     #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
-        color = Uncharted2Tonemap(exposure * color);
-        float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
+        const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
+        color = Uncharted2Tonemap(2 * exposure * color);
+        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
         color *= whiteScale;
         return color;
     #else
@@ -88,8 +90,6 @@ float3 noise3( float2 seed )
 
 float3 ApplyDithering(float3 color, float2 uv)
 {
-    // Apply dithering in sRGB space to minimize quantization artifacts
-    // Use a triangular distribution which gives a more uniform noise by avoiding low-noise areas
     float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
     color += noise / 255.0;
     return color;
@@ -106,8 +106,8 @@ float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
     float L = length(CoordToPos(coord));
     L = 1 - smoothstep(outer, inner, L);
     float3 color = tex2D(source, coord);
-    color.g = tex2D(source, coord + ViewportOffset2 * L * 8).g;
-    color.b = tex2D(source, coord + ViewportOffset2 * L * 16).b;
+    color.g = tex2D(source, coord + ViewportOffset2 * L * 4).g;
+    color.b = tex2D(source, coord + ViewportOffset2 * L * 8).b;
     return color;
 }
 
@@ -118,7 +118,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 #if HDR_ENABLE
 
 #if HDR_BLOOM_ENABLE > 0
-    float bloomIntensity = lerp(1, 5, mBloomIntensityP);
+    float bloomIntensity = lerp(1, 10, mBloomIntensityP);
     
     float3 bloom1 = tex2D(BloomSampX2, coord).rgb * bloomIntensity;
     float3 bloom2 = tex2D(BloomSampX3, coord).rgb * bloomIntensity;
@@ -131,8 +131,8 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color += bloom4 * 64.0 / 120.0;
 #endif
 
-    color = ToneBlueShift(color, luminance(color));
-    color = FilmicTonemap(color, (lerp(1, 5, mExposureP) - mExposureM));
+    color = ColorBalance(color, float4(1, 1, 1, mColBalance));
+    color = FilmicTonemap(color, (1 + mExposureP * 10 - mExposureM));
     color = AppleVignette(color, coord, 1.5 - mVignetteP + mVignetteM, 2.5 - mVignetteP + mVignetteM);
 #endif
 
