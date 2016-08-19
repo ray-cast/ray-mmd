@@ -40,7 +40,7 @@ Ray-MMD
 * ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)
-* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)
+* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
 [![link text](Screenshot/3.1.png)](Screenshot/3.1.png)
 
 ##### 4.0 制作基于物理的环境光贴图(IBL) :
