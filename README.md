@@ -51,6 +51,7 @@ Ray-MMD
 * 启动cmftstudio
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
+* 如果是HDR文件，点ToneMapping，然后Apply即可
 [![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
 * 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
 [![link text](Screenshot/4.2_small.png)](Screenshot/4.2.png)
@@ -67,5 +68,3 @@ Ray-MMD
 #### 借物表 :
 * Model :  
 　　TDA China Dress Luo Tianyi Canary Ver1.00 [Silver]
-* Scene :  
-　　シンプル風ステージ
