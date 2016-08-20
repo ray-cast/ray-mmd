@@ -216,7 +216,7 @@ float GetSmoothness(float2 coord)
         #endif
         
         #if SMOOTHNESS_MAP_IS_ROUGHNESS
-            smoothness = RoughnessToSmoothness(smoothness);
+            smoothness = 1 - smoothness;
         #endif
         
         return smoothness;
