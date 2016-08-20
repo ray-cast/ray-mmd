@@ -23,7 +23,7 @@
     };
 #endif
 
-#if SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_ENABLE != 1
+#if SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TONEMAP != 1
     texture2D SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
     sampler SmoothnessMapSamp = sampler_state
     {
