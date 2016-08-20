@@ -23,6 +23,15 @@
     };
 #endif
 
+#if NORMAL_MAP_SUB_ENABLE
+    texture2D NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
+    sampler NormalSubMapSamp = sampler_state
+    {
+        texture = NormalSubMap;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+    };
+#endif
+
 #if SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TONEMAP != 1
     texture2D SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
     sampler SmoothnessMapSamp = sampler_state
@@ -171,18 +180,38 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 #if USE_CUSTOM_MATERIAL
     #if NORMAL_MAP_ENABLE
         #if NORMAL_MAP_IN_SPHEREMAP
-            float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);
             float3 tangentNormal = normalize(tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
-            tangentNormal = lerp(float3(0,0,1), tangentNormal, normalMapScale); 
-            float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
-            return highNormal;
         #else    
-            float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);
             float3 tangentNormal = normalize(tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
-            tangentNormal = lerp(float3(0,0,1), tangentNormal, normalMapScale); 
-            float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
-            return highNormal;
         #endif
+        
+        tangentNormal = lerp(float3(0,0,1), tangentNormal, normalMapScale);
+        
+        #if NORMAL_MAP_SUB_ENABLE
+            #if NORMAL_MAP_SUB_UV_ROTATE
+                coord = float2(coord.y, coord.x);
+            #endif
+        
+            float3 tangentSubNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);
+            tangentSubNormal = lerp(float3(0,0,1), tangentSubNormal, normalMapSubScale);
+            tangentSubNormal = normalize(tangentSubNormal);
+            
+            #if NORMAL_MAP_SUB_NORMAL_ROTATE
+                float c, s;
+                sincos(normalMapSubRotate, c, s);
+                float2 coord2;
+                coord2.x = tangentSubNormal.x * c + tangentSubNormal.y * s;
+                coord2.y = tangentSubNormal.x * -s + tangentSubNormal.y * c;
+                tangentSubNormal.xy = coord2;
+            #endif
+            
+            tangentNormal.rg += tangentSubNormal.rg;
+            tangentNormal.rgb = normalize(tangentNormal.rgb);
+        #endif
+        
+        float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);
+        float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
+        return highNormal;
     #else
         return N;
     #endif
@@ -311,7 +340,7 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
     VS_OUTPUT Out;
     Out.Position = mul(Position, matWorldViewProject);
     Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
-    Out.Texcoord = Texcoord;
+    Out.Texcoord = float2(Texcoord.x,Texcoord.y);
     Out.Distance = Out.Position.w;
     Out.Viewdir = mul(CameraPosition - mul(Position, matWorld).xyz, (float3x3)matView);
     return Out;

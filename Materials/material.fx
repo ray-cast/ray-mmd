@@ -17,6 +17,16 @@ const float albedoMapLoopNum = 1.0;
 const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
 
+// 子法线贴图
+#define NORMAL_MAP_SUB_ENABLE 0
+#define NORMAL_MAP_SUB_UV_ROTATE 0
+#define NORMAL_MAP_SUB_NORMAL_ROTATE 0
+#define NORMAL_MAP_SUB_FILE "C:/Users/ray/Desktop/zeratul/NM-Skin02.png"
+
+const float normalMapSubLoopNum = 1.0;
+const float normalMapSubScale = 1;
+const float normalMapSubNoise = 0.1415926;
+
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TONEMAP 0
