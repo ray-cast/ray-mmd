@@ -21,11 +21,11 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_ENABLE 0
 #define NORMAL_MAP_SUB_UV_ROTATE 0
 #define NORMAL_MAP_SUB_NORMAL_ROTATE 0
-#define NORMAL_MAP_SUB_FILE "C:/Users/ray/Desktop/zeratul/NM-Skin02.png"
+#define NORMAL_MAP_SUB_FILE "normal.png"
 
 const float normalMapSubLoopNum = 1.0;
 const float normalMapSubScale = 1;
-const float normalMapSubNoise = 0.1415926;
+const float normalMapSubNoise = 3.1415926;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
