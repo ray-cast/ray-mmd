@@ -4,6 +4,7 @@ Ray-MMD
 #### Screenshot :
 [![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
 [![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
+[![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
 
 #### 教程 :
 ##### 1.0 文件夹介绍 :
