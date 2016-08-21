@@ -45,6 +45,8 @@ float mIndirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string
 float mIndirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "IndirectLight-"; >;
 float mSSAOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO+"; >;
 float mSSAOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO-"; >;
+float mSSAORadiusP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO Radius+"; >;
+float mSSAORadiusM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO Radius-"; >;
 float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure"; >;
 float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;

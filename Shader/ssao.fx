@@ -52,8 +52,9 @@ float2 tapLocation(int index, float noise)
 {
     float alpha = 2.0 * PI * 7 / SSAO_SAMPLER_COUNT;
     float angle = index * alpha + noise;
-    float2 radius = ((ViewportSize.x / 16.0) / ViewportSize) / SSAO_SAMPLER_COUNT;
-    return float2(cos(angle), sin(angle)) * (index * radius + ViewportOffset2);
+    float radius = (mSSAORadiusM - mSSAORadiusP + 1) * 16;
+    float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) / SSAO_SAMPLER_COUNT;
+    return float2(cos(angle), sin(angle)) * (index * radiusStep + ViewportOffset2);
 }
 
 float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
