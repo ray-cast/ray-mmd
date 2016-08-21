@@ -7,6 +7,9 @@
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
+float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
+float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
+
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
@@ -96,6 +99,7 @@ float4 DrawObjectPS(
 #if SHADOW_QUALITY > 0
         lighting *= tex2D(ShadowmapSamp, texCoord).r;
 #endif
+        lighting *= (lerp(1, 10, mDirectLightP) - mDirectLightM);
 
         return float4(lighting, albedo.a);
     }

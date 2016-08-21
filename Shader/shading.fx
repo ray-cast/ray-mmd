@@ -28,10 +28,6 @@ float4 DeferredLightingPS(
 
     float3 background = tex2D(ScnSamp, coord).rgb;
     float3 lighting = background;
-    if (material.lightModel != LIGHTINGMODEL_EMISSIVE)
-    {
-        lighting *= (lerp(1, 5, mDirectLightP) - mDirectLightM);
-    }
 
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;

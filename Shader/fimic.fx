@@ -7,15 +7,16 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
+    float4 color = tex2D(source, coord);
+    
+    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
+    
     if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
     {
-        return float4(material.emissive, 0);
+        bloom += float4(material.emissive, 0);
     }
-    else
-    {
-        float4 color = tex2D(source, coord);
-        return max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
-    }
+
+    return bloom;
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
@@ -138,10 +139,10 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     float3 bloom4 = tex2D(BloomSampX5, coord).rgb * bloomIntensity;
     
     float3 bloom = 0.0f;
-    bloom += bloom1 * 8 / 120;
-    bloom += bloom2 * 16 / 120;
-    bloom += bloom3 * 32 / 120;
-    bloom += bloom4 * 64 / 120;
+    bloom += bloom1;
+    bloom += bloom2;
+    bloom += bloom3;
+    bloom += bloom4;
     
     color += bloom;
 #endif
