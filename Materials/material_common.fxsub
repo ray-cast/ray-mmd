@@ -184,7 +184,7 @@ float3 GetEmissiveColor(float2 uv)
             return srgb2linear(tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
         #endif
     #else
-        return emmisive;
+        return emmisive.rgb;
     #endif
 #else
     return 0.0f;

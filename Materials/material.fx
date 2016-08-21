@@ -71,13 +71,14 @@ const float transmittanceMapLoopNum = 1.0;
 const float melanin = 0.0;
 const float melaninMapLoopNum = 0.0;
 
+// 发光贴图
 #define EMMISIVE_ENABLE 0
 #define EMMISIVE_MAP_ENABLE 0
 #define EMMISIVE_IN_TEXTURE 0
 #define EMMISIVE_APPLY_COLOR 0
 #define EMMISIVE_MAP_FILE "emmisive.png"
 
-const float4 emmisive = 0.0;
+const float3 emmisive = 0.0;
 const float emmisiveMapLoopNum = 1.0;
 
 #include "material_common.fxsub"
