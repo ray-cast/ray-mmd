@@ -68,7 +68,7 @@
     };
 #endif
 
-#if EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
+#if EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
     texture2D EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
     sampler EmissiveMapSamp = sampler_state
     {

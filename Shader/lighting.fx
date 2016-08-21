@@ -107,7 +107,7 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3
     float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
 
     float k = min(1.0f, gloss + 0.545f);
-    float G = rcp(k * lh * lh + 1 - k);
+    float G = 1.0 / (k * lh * lh + 1 - k);
 
     float3 F = fresnelSchlick(f0, 1.0, lh);
 
