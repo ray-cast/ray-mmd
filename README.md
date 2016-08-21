@@ -18,6 +18,15 @@ Ray-MMD
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 * ColorBalance.pmx : 色彩平衡
 
+##### 2.0 载入模型 :
+* 将ray.x载入到MMD中
+* 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
+[![link text](Screenshot/2.2.png)](Screenshot/2.2.png)
+* 添加任意模型到MMD，并在Main板块选择Main.fx
+* 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
+* 分配完后效果图如下:  
+[![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
+
 ##### 3.0 材质介绍 :
 * 基于物理的模型大体分为 
 * albedo 物体的反照率，可以认为是物体的颜色/贴图
@@ -95,18 +104,7 @@ Ray-MMD
     ```
     #define XXXXX_MAP_UV_FLIP 1
     ```
-
-##### 2.0 载入模型 :
-* 将ray.x载入到MMD中
-* 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
-[![link text](Screenshot/2.2.png)](Screenshot/2.2.png)
-* 添加任意模型到MMD，并在Main板块选择Main.fx
-* 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
-* 分配完后效果图如下:  
-[![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
-
-##### 3.0 材质介绍 :
-
+    
 ##### 4.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
 * DirectLight+/-直接光照中整体光强
 * IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
