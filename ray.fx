@@ -120,6 +120,14 @@ technique DeferredLighting<
     "RenderColorTarget0=OpaqueMap;"
     "RenderDepthStencilTarget=;"
     "Pass=DeferredLighting;"
+    
+#if SSGI_SAMPLER_COUNT > 0
+    "RenderColorTarget0=SSAOMap;  Pass=SSGI;"
+#if SSGI_BLUR_RADIUS > 0
+    "RenderColorTarget0=SSAOMapTemp; Pass=SSGIBlurX;"
+    "RenderColorTarget0=OpaqueMap;   Pass=SSGIBlurY;"
+#endif
+#endif
 
 #if SSSS_QUALITY > 0
     "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSBlurX;"
@@ -175,7 +183,6 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadowMappingPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
 #endif
-
 #if SSAO_SAMPLER_COUNT > 0
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
@@ -183,7 +190,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 AmbientOcclustionPS();
+        PixelShader  = compile ps_3_0 SSAO();
     }
 #   if SSAO_BLUR_RADIUS > 0
     pass SSAOBlurX < string Script= "Draw=Buffer;"; > {
@@ -192,7 +199,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BilateralFilterPS(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
+        PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass SSAOBlurY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
@@ -200,7 +207,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BilateralFilterPS(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
+        PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
 #   endif
 #endif
@@ -212,6 +219,34 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 DeferredLightingPS();
     }
+#if SSAO_SAMPLER_COUNT > 0
+    pass SSGI < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSGI();
+    }
+#   if SSGI_BLUR_RADIUS > 0
+    pass SSGIBlurX < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSGIBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
+    }
+    pass SSGIBlurY < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = true;
+        SrcBlend = ONE;
+        DestBlend = ONE;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSGIBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
+    }
+#   endif
+#endif
 #if SSSS_QUALITY > 0
     pass SSSSBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
@@ -271,7 +306,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 2, 0.0));
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 4, 0.0));
     }
     pass BloomBlurY3 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
@@ -287,7 +322,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3, float2(ViewportOffset2.x * 4, 0.0));
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3, float2(ViewportOffset2.x * 8, 0.0));
     }
     pass BloomBlurY4 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
@@ -303,7 +338,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4, float2(ViewportOffset2.x * 8, 0.0));
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4, float2(ViewportOffset2.x * 16, 0.0));
     }
     pass BloomBlurY5 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;

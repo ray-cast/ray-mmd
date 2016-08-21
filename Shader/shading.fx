@@ -34,12 +34,9 @@ float4 DeferredLightingPS(
     }
 
 #if SSAO_SAMPLER_COUNT > 0
-        float4 ssgi = tex2D(SSAOMapSamp, coord);
-        ssgi = pow(ssgi, mSSAOP + 1 - mSSAOM);
-        lighting *= ssgi.a;
-#   if SSAO_EANBLE_GI
-        lighting += material.albedo * ssgi.rgb * (lerp(1, 5, mIndirectLightP) - mIndirectLightM);
-#   endif
+    float ssao = tex2D(SSAOMapSamp, coord).r;
+    ssao = pow(ssao, mSSAOP + 1 - mSSAOM);
+    lighting *= ssao;
 #endif
 
 #if IBL_QUALITY > 0
@@ -65,16 +62,15 @@ float4 DeferredLightingPS(
     specular = ycbcr2rgb(specular);
 
 #   if SSAO_SAMPLER_COUNT > 0
-        float diffOcclusion = ssgi.a * ssgi.a;
+        float diffOcclusion = ssao * ssao;
         float specOcclusion= DeriveSpecularOcclusion(abs(dot(worldNormal, worldView) + 1e-5), diffOcclusion, material.smoothness);
         lighting += (diffuse * diffOcclusion + specular * specOcclusion);
 #   else
         lighting += (diffuse + specular);
 #   endif
-
 #else
 #   if SSAO_SAMPLER_COUNT > 0
-        envLighting *= (ssgi.a * ssgi.a);
+        envLighting *= (ssao * ssao);
 #   endif
     lighting += envLighting.rgb;
 #endif

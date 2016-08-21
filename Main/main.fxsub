@@ -86,12 +86,10 @@ float4 DrawObjectPS(
 
         float3 lighting = 0;
 
-        if (material.lightModel == LIGHTINGMODEL_NORMAL)
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
             lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
         else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
             lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
-        else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-            lighting = material.albedo;
 
         lighting *= material.albedo;
         lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;

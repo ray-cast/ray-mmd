@@ -1,4 +1,5 @@
 #define USE_CUSTOM_MATERIAL 1
+#define SKYBOX_ENABLE 1
 
 // 金属程度
 #define ALBEDO_MAP_ENABLE 1
@@ -61,7 +62,7 @@ const float transmittanceMapLoopNum = 1.0;
 const float melanin = 0.0;
 const float melaninMapLoopNum = 1.0;
 
-#define EMMISIVE_ENABLE 1
+#define EMMISIVE_ENABLE 0
 #define EMMISIVE_MAP_FILE "emmisive.png"
 
 const float3 emmisive = 0.0;

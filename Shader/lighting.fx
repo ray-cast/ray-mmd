@@ -95,6 +95,25 @@ float3 TranslucencyBRDF(float3 N, float3 L, float3 V, float smoothness, float3 t
     return diffuse + transmittanceColor * transmittance;
 }
 
+float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3 f0)
+{
+    float3 H = normalize(L + V);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L));
+    float lh = saturate(dot(L, H));
+
+    float alpha = exp2(10 * gloss + 1); // 2 - 2048
+    float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
+
+    float k = min(1.0f, gloss + 0.545f);
+    float G = rcp(k * lh * lh + 1 - k);
+
+    float3 F = fresnelSchlick(f0, 1.0, lh);
+
+    return D * F * G * nl;
+}
+
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
 {
     float m2 = m * m;

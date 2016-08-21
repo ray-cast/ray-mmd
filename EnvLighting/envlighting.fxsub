@@ -91,51 +91,48 @@ float4 EnvLightingPS(
     float4 lighting = 0.0f;
 #endif
 
-    if (material.lightModel != LIGHTINGMODEL_EMISSIVE)
-    {
-        float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-        float3 worldView = V;
+    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+    float3 worldView = V;
 
-        float mipLayer = EnvironmentMip(material.smoothness, IBL_MIPMAP_LEVEL);
+    float mipLayer = EnvironmentMip(material.smoothness, IBL_MIPMAP_LEVEL);
 
-        float3 R = EnvironmentReflect(worldNormal, worldView);
+    float3 R = EnvironmentReflect(worldNormal, worldView);
 
 #if IBL_QUALITY >= 2
-        float3 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal)).rgb;
-        float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
-        float3 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal)).rgb;
+    float3 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal)).rgb;
+    float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
+    float3 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal)).rgb;
 #else
-        float3 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
-        float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
-        float3 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
+    float3 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
+    float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
+    float3 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
 #endif
 
 #if IBL_ENABLE_GAMMA_CORRECTION > 0
-        prefilteredDiffuse = srgb2linear(prefilteredDiffuse);
-        prefilteredSpeculr = srgb2linear(prefilteredSpeculr);
-        prefilteredTransmittance = srgb2linear(prefilteredTransmittance);
+    prefilteredDiffuse = srgb2linear(prefilteredDiffuse);
+    prefilteredSpeculr = srgb2linear(prefilteredSpeculr);
+    prefilteredTransmittance = srgb2linear(prefilteredTransmittance);
 #endif
 
-        float3 diffuse = prefilteredDiffuse * material.albedo + prefilteredTransmittance * material.transmittance;
-        float3 specular = prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular);
+    float3 diffuse = prefilteredDiffuse * material.albedo + prefilteredTransmittance * material.transmittance;
+    float3 specular = prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular);
 
 #if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
-        diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
-        specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
-        
-        diffuse = rgb2ycbcr(diffuse);
-        specular = rgb2ycbcr(specular);
+    diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
+    specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
+    
+    diffuse = rgb2ycbcr(diffuse);
+    specular = rgb2ycbcr(specular);
 
-        bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
-        lighting.r = diffuse.r;
-        lighting.g = (pattern) ? diffuse.g: diffuse.b;
-        lighting.b = specular.r;
-        lighting.a = (pattern) ? specular.g: specular.b;
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+    lighting.r = diffuse.r;
+    lighting.g = (pattern) ? diffuse.g: diffuse.b;
+    lighting.b = specular.r;
+    lighting.a = (pattern) ? specular.g: specular.b;
 #else
-        lighting.rgb += diffuse * (lerp(1, 5, mEnvLightP) - mEnvLightM);
-        lighting.rgb += specular * (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
+    lighting.rgb += diffuse * (lerp(1, 5, mEnvLightP) - mEnvLightM);
+    lighting.rgb += specular * (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
 #endif
-    }
 
     return lighting;
 }

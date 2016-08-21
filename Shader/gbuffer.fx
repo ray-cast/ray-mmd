@@ -17,6 +17,7 @@ struct MaterialParam
     float3 albedo;
     float3 specular;
     float3 transmittance;
+    float3 emissive;
     float smoothness;
     float index;
     int lightModel;
@@ -98,6 +99,12 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
         gbuffer.buffer3.yz = material.transmittance.gb;
         gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
     }
+    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
     
@@ -120,6 +127,11 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     {
         material.specular = buffer3.xxx;
         material.transmittance = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+    }
+    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.specular = buffer3.xxx;
+        material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
     }
     else
     {

@@ -1,7 +1,21 @@
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target0
-{  
-    float4 color = tex2D(source, coord);
-    return max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
+{ 
+    float4 MRT0 = tex2D(Gbuffer1Map, coord);
+    float4 MRT1 = tex2D(Gbuffer2Map, coord);
+    float4 MRT2 = tex2D(Gbuffer3Map, coord);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    
+    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        return float4(material.emissive, 0);
+    }
+    else
+    {
+        float4 color = tex2D(source, coord);
+        return max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
+    }
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
@@ -10,7 +24,7 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, unifor
     const float weightSum = 262106.0;
 
     float4 color = 0.0f;
-    float2 coords = coord - offset * 7.0;
+    float2 coords = coord - offset * 6.2;
 
     [unroll]
     for (int i = 0; i < 15; ++i)
@@ -112,6 +126,9 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 
 #if HDR_ENABLE
 
+    color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
+    color = FilmicTonemap(color, (1 + mExposure * 10));
+    
 #if HDR_BLOOM_ENABLE > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
     
@@ -121,16 +138,13 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     float3 bloom4 = tex2D(BloomSampX5, coord).rgb * bloomIntensity;
     
     float3 bloom = 0.0f;
-    bloom += bloom1 *  8.0 / 120.0;
-    bloom += bloom2 * 16.0 / 120.0;
-    bloom += bloom3 * 32.0 / 120.0;
-    bloom += bloom4 * 64.0 / 120.0;
+    bloom += bloom1 * 8 / 120;
+    bloom += bloom2 * 16 / 120;
+    bloom += bloom3 * 32 / 120;
+    bloom += bloom4 * 64 / 120;
     
     color += bloom;
 #endif
-
-    color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
-    color = FilmicTonemap(color, (1 + mExposure * 10));
 #endif
 
     color = saturate(color);
@@ -138,6 +152,6 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = ApplyDithering(color, coord);
-
+       
     return float4(color, luminance(color));
 }

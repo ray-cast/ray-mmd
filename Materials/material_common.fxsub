@@ -68,11 +68,11 @@
     };
 #endif
 
-#if EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 0
-    texture2D EmmisiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
-    sampler EmmisiveMapSamp = sampler_state
+#if EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
+    texture2D EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
+    sampler EmissiveMapSamp = sampler_state
     {
-        texture = EmmisiveMap;
+        texture = EmissiveMap;
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -119,24 +119,12 @@ float3 ColorSynthesis(float3 diffuse, float m)
 
 float4 GetTextureColor(float2 uv, bool use_texture)
 {
+#if SKYBOX_ENABLE
+    return float4(0,0,0,1);
+#endif
+
 #if USE_CUSTOM_MATERIAL
-    #if EMMISIVE_ENABLE
-        #if EMMISIVE_IN_TEXTURE
-            #if EMMISIVE_APPLY_COLOR
-                return srgb2linear(float4(emmisive.rgb, 1) * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum));
-            #else
-                return srgb2linear(tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum));
-            #endif
-        #elif EMMISIVE_MAP_ENABLE
-            #if EMMISIVE_APPLY_COLOR
-                return srgb2linear(float4(emmisive.rgb, 1) * tex2D(EmmisiveMap, uv * emmisiveMapLoopNum));
-            #else
-                return srgb2linear(tex2D(EmmisiveMap, uv * emmisiveMapLoopNum));
-            #endif
-        #else
-            return float4(emmisive, 1);
-        #endif
-    #elif  ALBEDO_MAP_ENABLE
+    #if  ALBEDO_MAP_ENABLE
         float4 diffuse = MaterialDiffuse;
         #if ALBEDO_MAP_IN_TEXTURE
             if (use_texture)
@@ -172,6 +160,29 @@ float4 GetTextureColor(float2 uv, bool use_texture)
     }
     
     return srgb2linear(diffuse);
+#endif
+}
+
+float3 GetEmissiveColor(float2 uv)
+{
+#if EMMISIVE_ENABLE
+    #if EMMISIVE_IN_TEXTURE
+        #if EMMISIVE_APPLY_COLOR
+            return srgb2linear(emmisive.rgb * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #else
+            return srgb2linear(tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #endif
+    #elif EMMISIVE_MAP_ENABLE
+        #if EMMISIVE_APPLY_COLOR
+            return srgb2linear(emmisive.rgb * tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #else
+            return srgb2linear(tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #endif
+    #else
+        return emmisive;
+    #endif
+#else
+    return 0.0f;
 #endif
 }
 
@@ -362,6 +373,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
     material.specular = lerp(0.04, albedo.rgb, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+    material.emissive = GetEmissiveColor(IN.Texcoord);
     
 #if SSS_ENABLE
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
