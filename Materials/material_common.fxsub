@@ -122,8 +122,10 @@ float4 GetTextureColor(float2 uv, bool use_texture)
 #if SKYBOX_ENABLE
     return float4(0,0,0,1);
 #endif
-
 #if USE_CUSTOM_MATERIAL
+    #if ALBEDO_MAP_UV_FLIP
+        uv.y = 1 - uv.y;
+    #endif
     #if  ALBEDO_MAP_ENABLE
         float4 diffuse = MaterialDiffuse;
         #if ALBEDO_MAP_IN_TEXTURE
@@ -166,6 +168,9 @@ float4 GetTextureColor(float2 uv, bool use_texture)
 float3 GetEmissiveColor(float2 uv)
 {
 #if EMMISIVE_ENABLE
+    #if EMMISIVE_MAP_UV_FLIP
+        uv.y = 1 - uv.y;
+    #endif
     #if EMMISIVE_IN_TEXTURE
         #if EMMISIVE_APPLY_COLOR
             return srgb2linear(emmisive.rgb * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
@@ -190,6 +195,9 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if NORMAL_MAP_ENABLE
+        #if NORMAL_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif    
         #if NORMAL_MAP_IN_SPHEREMAP
             float3 tangentNormal = normalize(tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
         #else    
@@ -199,6 +207,9 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
         tangentNormal = lerp(float3(0,0,1), tangentNormal, normalMapScale);
         
         #if NORMAL_MAP_SUB_ENABLE
+            #if NORMAL_MAP_SUB_UV_FLIP && NORMAL_MAP_UV_FLIP == 0
+                coord.y = 1 - coord.y;
+            #endif
             #if NORMAL_MAP_SUB_UV_ROTATE
                 coord = float2(coord.y, coord.x);
             #endif
@@ -235,6 +246,10 @@ float GetSmoothness(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if SMOOTHNESS_MAP_ENABLE
+        #if SMOOTHNESS_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+    
         sampler smoothnessMapSamper;
         #if SMOOTHNESS_MAP_IN_TONEMAP
             smoothnessMapSamper = ToneMapSamp;
@@ -276,6 +291,10 @@ float GetMetalness(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if METALNESS_MAP_ENABLE
+        #if METALNESS_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+        
         #if METALNESS_MAP_IN_TONEMAP
             sampler metalnessMapSamper = ToneMapSamp;
         #else
@@ -311,6 +330,10 @@ float4 GetTransmittance(float2 coord)
 #if USE_CUSTOM_MATERIAL
     #if SSS_ENABLE
         #if SSS_MAP_ENABLE
+            #if SSS_MAP_UV_FLIP
+                coord.y = 1 - coord.y;
+            #endif
+        
             return srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum));
         #else
             return transmittance;
@@ -327,6 +350,10 @@ float GetMelanin(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if MELANIN_MAP_ENABLE
+        #if MELANIN_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+    
         #if MELANIN_MAP_SWIZZLE_R
             return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
         #elif MELANIN_MAP_SWIZZLE_G
@@ -351,7 +378,7 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
     VS_OUTPUT Out;
     Out.Position = mul(Position, matWorldViewProject);
     Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
-    Out.Texcoord = float2(Texcoord.x,Texcoord.y);
+    Out.Texcoord = Texcoord;
     Out.Distance = Out.Position.w;
     Out.Viewdir = mul(CameraPosition - mul(Position, matWorld).xyz, (float3x3)matView);
     return Out;
