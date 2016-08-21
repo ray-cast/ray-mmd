@@ -7,6 +7,23 @@ float SSSSlinearizeDepth(float2 texcoord)
     return tex2D(Gbuffer4Map, texcoord).r;
 }
 
+float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
+{
+    float4 MRT0 = tex2D(Gbuffer1Map, coord);
+    float4 MRT1 = tex2D(Gbuffer2Map, coord);
+    float4 MRT2 = tex2D(Gbuffer3Map, coord);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    {
+        clip(-1);
+    }
+    
+    return 1;
+}
+
 float4 GuassBlurPS(
     in float2 coord : TEXCOORD0,
     in float3 viewdir : TEXCOORD1,
@@ -41,56 +58,50 @@ float4 GuassBlurPS(
 
     float4 colorM = tex2D(source, coord.xy);
 
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    float perspectiveScaleX = dot(normalize(material.normal.xz), normalize(-P.xz));
+    float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
+    float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
+
+    float profileIndex = floor(material.index);
+    float sssAmount = frac(material.index);
+    float radius = 0.0055 * profileSpikeRadArr[profileIndex].w;
+    
+    float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
+
+    float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
+
+    float3 totalWeight = 1;
+    float3 totalColor = colorM.rgb;
+
+    [unroll]
+    for (int i = 0; i < 6; i++)
     {
-        return colorM;
+        float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
+        float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
+
+        float sampleDepth1 = SSSSlinearizeDepth(offset1).r;
+        float sampleDepth2 = SSSSlinearizeDepth(offset2).r;
+
+        float3 sampleColor1 = tex2D(source, offset1).rgb;
+        float3 sampleColor2 = tex2D(source, offset2).rgb;
+
+        float depthDiff1 = abs(sampleDepth1 - depthM) * 1000 * DEPTH_LENGTH;
+        float depthDiff2 = abs(sampleDepth2 - depthM) * 1000 * DEPTH_LENGTH;
+
+        float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
+        float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
+
+        totalWeight += weight1;
+        totalWeight += weight2;
+
+        totalColor += weight1 * sampleColor1;
+        totalColor += weight2 * sampleColor2;
     }
-    else
-    {
-        float perspectiveScaleX = dot(normalize(material.normal.xz), normalize(-P.xz));
-        float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
-        float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
-        float profileIndex = floor(material.index);
-        float sssAmount = frac(material.index);
-        float radius = 0.0055 * profileSpikeRadArr[profileIndex].w;
-        
-        float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
+    totalColor /= totalWeight;
+    totalColor = lerp(totalColor, colorM.rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
 
-        float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
-
-        float3 totalWeight = 1;
-        float3 totalColor = colorM.rgb;
-
-        [unroll]
-        for (int i = 0; i < 6; i++)
-        {
-            float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
-            float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
-
-            float sampleDepth1 = SSSSlinearizeDepth(offset1).r;
-            float sampleDepth2 = SSSSlinearizeDepth(offset2).r;
-
-            float3 sampleColor1 = tex2D(source, offset1).rgb;
-            float3 sampleColor2 = tex2D(source, offset2).rgb;
-
-            float depthDiff1 = abs(sampleDepth1 - depthM) * 1000 * DEPTH_LENGTH;
-            float depthDiff2 = abs(sampleDepth2 - depthM) * 1000 * DEPTH_LENGTH;
-
-            float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
-            float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
-
-            totalWeight += weight1;
-            totalWeight += weight2;
-
-            totalColor += weight1 * sampleColor1;
-            totalColor += weight2 * sampleColor2;
-        }
-
-        totalColor /= totalWeight;
-        totalColor = lerp(totalColor, colorM.rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
-
-        return float4(totalColor, colorM.a);
-    }
+    return float4(totalColor, colorM.a);
 }
+
 #endif

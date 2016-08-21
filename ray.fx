@@ -99,6 +99,7 @@ technique DeferredLighting<
     "RenderDepthStencilTarget=DepthBuffer;"
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
+    "ClearSetStencil=0;"
 
 #if SHADOW_QUALITY > 0
     "RenderColorTarget0=ShadowmapMapTemp;  Pass=ShadowBlurPassX;"
@@ -132,6 +133,8 @@ technique DeferredLighting<
 #endif
 
 #if SSSS_QUALITY > 0
+    "RenderDepthStencilTarget=DepthBuffer;"
+    "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSStencilTestPS;"
     "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSBlurX;"
     "RenderColorTarget0=OpaqueMap;      Pass=SSSSBlurY;"
 #endif
@@ -154,7 +157,6 @@ technique DeferredLighting<
 
 #if AA_QUALITY > 0
     "RenderColorTarget0=OpaqueMapTemp;"
-    "RenderDepthStencilTarget=;"
     "Pass=FimicToneMapping;"
 
     "RenderColorTarget0=;"
@@ -250,11 +252,30 @@ technique DeferredLighting<
 #   endif
 #endif
 #if SSSS_QUALITY > 0
+    pass SSSSStencilTestPS < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        StencilEnable = true;
+        StencilFunc = ALWAYS;
+        StencilRef = 1;
+        StencilPass = REPLACE;
+        StencilFail = KEEP;
+        StencilZFail = KEEP;
+        StencilWriteMask = 1;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSSSStencilTestPS();
+    }
     pass SSSSBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
+        StencilEnable = true;
+        StencilFunc = EQUAL;
+        StencilRef = 1;
+        StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 GuassBlurPS(OpaqueSamp, float2(ViewportOffset2.x, 0.0f));
     }
@@ -263,6 +284,10 @@ technique DeferredLighting<
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
+        StencilEnable = true;
+        StencilFunc = EQUAL;
+        StencilRef = 1;
+        StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 GuassBlurPS(OpaqueSampTemp, float2(0.0f, ViewportOffset2.y));
     }
