@@ -17,37 +17,6 @@ float3 GetNormal(float2 uv)
     return DecodeGBufferNormal(MRT1);
 }
 
-float hash(float n) { return frac(sin(n) * 1e4); }
-float hash(float2 p) { return frac(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
-
-float noise1(float2 x) 
-{
-    float2 i = floor(x);
-    float2 f = frac(x);
-
-    // Four corners in 2D of a tile
-    float a = hash(i);
-    float b = hash(i + float2(1.0, 0.0));
-    float c = hash(i + float2(0.0, 1.0));
-    float d = hash(i + float2(1.0, 1.0));
-
-    // Simple 2D lerp using smoothstep envelope between the values.
-    // return float3(lerp(lerp(a, b, smoothstep(0.0, 1.0, f.x)),
-    //          lerp(c, d, smoothstep(0.0, 1.0, f.x)),
-    //          smoothstep(0.0, 1.0, f.y)));
-
-    // Same code, with the clamps in smoothstep and common subexpressions
-    // optimized away.
-    float2 u = f * f * (3.0 - 2.0 * f);
-    return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-}
-
-float2 RotateDirection(float2 Dir, float2 CosSin)
-{
-    return float2(Dir.x*CosSin.x - Dir.y*CosSin.y,
-                  Dir.x*CosSin.y + Dir.y*CosSin.x);
-}
-
 float2 tapLocation(int index, float noise)
 {
     float alpha = 2.0 * PI * 7 / SSAO_SAMPLER_COUNT;
