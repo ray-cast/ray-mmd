@@ -1,9 +1,372 @@
-#include "../ray.conf"
-#include "../shader/math.fx"
-#include "../shader/common.fx"
-#include "../shader/gbuffer.fx"
-#include "../shader/gbuffer_sampler.fx"
-#include "../shader/lighting.fx"
+float time : TIME;
+float elapsed : ELAPSEDTIME;
+
+float2 MousePositionn : MOUSEPOSITION;
+
+float4x4 matWorld                 : WORLD;
+float4x4 matWorldView             : WORLDVIEW;
+float4x4 matWorldViewProject      : WORLDVIEWPROJECTION;
+float4x4 matView                  : VIEW;
+float4x4 matViewInverse           : VIEWINVERSE;
+float4x4 matProject               : PROJECTION;
+float4x4 matProjectInverse        : PROJECTIONINVERSE;
+float4x4 matViewProject           : VIEWPROJECTION;
+float4x4 matViewProjectInverse    : VIEWPROJECTIONINVERSE;
+
+float3 CameraPosition  : POSITION  < string Object = "Camera"; >;
+float3 CameraDirection : DIRECTION < string Object = "Camera"; >;
+
+float3  LightDiffuse    : DIFFUSE   < string Object = "Light"; >;
+float3  LightSpecular   : SPECULAR  < string Object = "Light"; >;
+float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+
+float4  MaterialDiffuse     : DIFFUSE  < string Object = "Geometry"; >;
+float3  MaterialAmbient     : AMBIENT  < string Object = "Geometry"; >;
+float3  MaterialEmissive    : EMISSIVE < string Object = "Geometry"; >;
+float3  MaterialSpecular    : SPECULAR < string Object = "Geometry"; >;
+float3  MaterialToon        : TOONCOLOR;
+float   MaterialPower       : SPECULARPOWER < string Object = "Geometry"; >;
+
+float4  TextureAddValue   : ADDINGTEXTURE;
+float4  TextureMulValue   : MULTIPLYINGTEXTURE;
+float4  SphereAddValue    : ADDINGSPHERETEXTURE;
+float4  SphereMulValue    : MULTIPLYINGSPHERETEXTURE;
+
+float2 ViewportSize : VIEWPORTPIXELSIZE;
+
+static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
+static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
+static float2 ViewportAspect  = float2(1, ViewportSize.x / ViewportSize.y);
+
+uniform bool use_texture;
+uniform bool use_subtexture;
+uniform bool use_spheremap;
+uniform bool use_toon;
+
+uniform bool opadd;
+
+#define AlphaThreshold 0.5
+
+#define PI 3.141592654f
+
+#define InvLog2 3.32192809489f
+
+#define LIGHTINGMODEL_NORMAL         0
+#define LIGHTINGMODEL_TRANSMITTANCE  1
+#define LIGHTINGMODEL_EMISSIVE       2
+
+#define SUBSURFACESCATTERING_MARBLE 0
+#define SUBSURFACESCATTERING_SKIN   1
+
+#define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
+#define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
+
+shared texture MaterialMap: OFFSCREENRENDERTARGET;
+shared texture Gbuffer2RT: RENDERCOLORTARGET;
+shared texture Gbuffer3RT: RENDERCOLORTARGET;
+shared texture Gbuffer4RT: RENDERCOLORTARGET;
+
+sampler Gbuffer1Map = sampler_state {
+    texture = <MaterialMap>;
+    MinFilter = NONE;
+    MagFilter = NONE;
+    MipFilter = NONE;
+    AddressU  = CLAMP;
+    AddressV  = CLAMP;
+};
+
+sampler Gbuffer2Map = sampler_state {
+    texture = <Gbuffer2RT>;
+    MinFilter = NONE;
+    MagFilter = NONE;
+    MipFilter = NONE;
+    AddressU  = CLAMP;
+    AddressV  = CLAMP;
+};
+
+sampler Gbuffer3Map = sampler_state {
+    texture = <Gbuffer3RT>;
+    MinFilter = NONE;
+    MagFilter = NONE;
+    MipFilter = NONE;
+    AddressU  = CLAMP;
+    AddressV  = CLAMP;
+};
+
+sampler Gbuffer4Map = sampler_state {
+    texture = <Gbuffer4RT>;
+    MinFilter = NONE;
+    MagFilter = NONE;
+    MipFilter = NONE;
+    AddressU  = CLAMP;
+    AddressV  = CLAMP;
+};
+
+struct MaterialParam
+{
+    float3 normal;
+    float3 albedo;
+    float3 specular;
+    float3 transmittance;
+    float3 emissive;
+    float smoothness;
+    float index;
+    int lightModel;
+};
+
+struct GbufferParam
+{
+    float4 buffer1 : COLOR0;
+    float4 buffer2 : COLOR1;
+    float4 buffer3 : COLOR2;
+    float4 buffer4 : COLOR3;
+};
+
+float3 EncodeNormal(float3 normal)
+{
+    float p = sqrt(-normal.z * 8 + 8);
+    float2 enc = normal.xy / p + 0.5f;
+    float2 enc255 = enc * 255;
+    float2 residual = floor(frac(enc255) * 16);
+    return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
+}
+
+float3 DecodeNormal(float3 enc)
+{
+    float nz = floor(enc.z * 255) / 16;
+    enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
+    float2 fenc = enc.xy * 4 - 2;
+    float f = dot(fenc, fenc);
+    float g = sqrt(1 - f / 4);
+    float3 normal;
+    normal.xy = fenc * g;
+    normal.z = f / 2 - 1;
+    return normalize(normal);
+}
+
+float luminance(float3 rgb)
+{
+    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+    return dot(rgb, lumfact);
+}
+
+float3 srgb2linear(float3 rgb)
+{
+    const float ALPHA = 0.055f;
+    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+}
+
+float3 linear2srgb(float3 srgb)
+{
+    const float ALPHA = 0.055f;
+    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(srgb, 1.0f / 2.4f) - ALPHA;
+}
+
+float4 srgb2linear(float4 c)
+{
+    return float4(srgb2linear(c.rgb), c.a);
+}
+
+float4 linear2srgb(float4 c)
+{
+    return float4(linear2srgb(c.rgb), c.a);
+}
+
+float3 rgb2ycbcr(float3 rgb)
+{
+    float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+    float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
+    float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
+    return float3(Y, Cb, Cr);
+}
+
+float3 ycbcr2rgb(float3 YCbCr)
+{
+    float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
+    float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
+    float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
+    return float3(R, G, B);
+}
+
+float2 CoordToPos(float2 coord)
+{
+    coord.y = 1 - coord.y;
+    return coord * 2 - 1;
+}
+
+GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1.xyz = material.albedo;
+    gbuffer.buffer1.w = material.smoothness;
+
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = material.index;
+
+    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+    gbuffer.buffer3.w = 0;
+
+    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+    {
+        material.transmittance = rgb2ycbcr(material.transmittance);
+        gbuffer.buffer3.yz = material.transmittance.gb;
+        gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
+    }
+    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
+
+    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
+    
+    gbuffer.buffer4 = linearDepth;
+    
+    return gbuffer;
+}
+
+float SmoothnessToRoughness(float smoothness)
+{
+    return (1.0f - smoothness) * (1.0f - smoothness);
+}
+
+float RoughnessToSmoothness(float roughness)
+{
+    return 1.0f - sqrt(roughness);
+}
+
+float ShininessToSmoothness(float spec)
+{
+    // http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html
+    return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
+}
+
+float SmoothnessToShininess(float smoothness)
+{
+    float roughness = SmoothnessToRoughness(smoothness);
+    return 2.0f / (roughness * roughness) - 2.0f;
+}
+
+float fresnelSchlick(float f0, float f9, float LdotH)
+{
+    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+}
+
+float3 fresnelSchlick(float3 f0, float f9, float LdotH)
+{
+    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+}
+
+float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
+{
+    float sigma2 = roughness * roughness;
+
+    float nl = dot(N, L);
+    float nv = dot(N, V);
+    float lv = dot(L, V);
+
+    float s = lv - nl * nv;
+    float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
+    float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
+    float B = A * sigma2;
+
+    return max(0, nl) * max(A + B * (s / t), 0);
+}
+
+float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
+{
+    float3 H = normalize(V + L);
+
+    float energyBias = 0.5 * roughness;
+    float energyFactor = lerp(1, 1 / 1.51, roughness);
+
+    float nl = saturate(dot(N, L));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+
+    float fd90 = energyBias + 2.0 * vh * vh * roughness;
+
+    float FL = fresnelSchlick(1, fd90, nl);
+    float FV = fresnelSchlick(1, fd90, nv);
+
+    return FL * FV * energyFactor * nl;
+}
+
+float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
+{
+    float roughness = SmoothnessToRoughness(gloss);
+    return BurleyBRDF(N, L, V, roughness);
+}
+
+float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
+{
+    float w = lerp(0, 0.5, luminance(transmittanceColor));
+    float wn = 1.0 / ((1 + w) * (1 + w));
+    float nl = dot(N, L);
+    float transmittance = saturate((-nl + w) * wn);
+    float diffuse = saturate((nl + w) * wn);
+    return diffuse + transmittanceColor * transmittance;
+}
+
+float3 TranslucencyBRDF(float3 N, float3 L, float3 V, float smoothness, float3 transmittanceColor)
+{
+    float w = lerp(0, 0.5, luminance(transmittanceColor));
+    float wn = 1.0 / ((1 + w) * (1 + w));
+    float nl = dot(N, L);
+    float transmittance = saturate((-nl + w) * wn);
+    float brdf = DiffuseBRDF(N, L, V, smoothness);
+    float diffuse = saturate((brdf + w) * wn);
+    return diffuse + transmittanceColor * transmittance;
+}
+
+float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3 f0)
+{
+    float3 H = normalize(L + V);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L));
+    float lh = saturate(dot(L, H));
+
+    float alpha = exp2(10 * gloss + 1); // 2 - 2048
+    float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
+
+    float k = min(1.0f, gloss + 0.545f);
+    float G = 1.0 / (k * lh * lh + 1 - k);
+
+    float3 F = fresnelSchlick(f0, 1.0, lh);
+
+    return D * F * G * nl;
+}
+
+float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
+{
+    float m2 = m * m;
+    float3 H = normalize( V + L );
+
+    float NdotH = saturate( dot( N, H ) );
+    float NdotL = saturate( dot( N, L ) );
+    float NdotV = abs( dot( N, V ) ) + 1e-5h;
+
+    float spec = (NdotH * m2 - NdotH) * NdotH + 1;
+    spec = m2 / (spec * spec) * NormalizationFactor;
+
+    float Gv = NdotL * sqrt( (-NdotV * m2 + NdotV) * NdotV + m2 );
+    float Gl = NdotV * sqrt( (-NdotL * m2 + NdotL) * NdotL + m2 );
+    spec *= 0.5h / (Gv + Gl);
+
+    f0 = max(0.04, f0);
+    float f90 = saturate( dot( f0, 0.33333h ) / 0.02h );
+    float3 fresnel = lerp( f0, f90, pow( 1 - saturate( dot( L, H ) ), 5 ) );
+
+    return fresnel * spec * NdotL;
+}
+
+float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
+{
+    float roughness = SmoothnessToRoughness(gloss);
+    return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
+}
 
 #if ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
     texture2D AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 

@@ -115,7 +115,7 @@ Ray-MMD
 * BloomIntensity 泛光的整体强度
 * Exposure+- 曝光强度
 * Vignette+- 窗口四周的暗角
-* ToneMapping 色调映射的鲜艳度 (为0时采用FimicToneMapping, 为1时线性曝光)
+* ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
 * ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)

@@ -85,9 +85,13 @@ float3 FilmicTonemap(float3 color, float exposure)
         curr *= whiteScale;
         return lerp(curr, color, mToneMapping);
     #elif TONEMAP_OPERATOR == TONEMAP_ACESFILM
+        const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
         color = color * exposure;
+        float3 uncharted = Uncharted2Tonemap(2 * color);
+        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
+        uncharted *= whiteScale;
         float3 curr = ACESFilm2Tonemap(color);
-        return lerp(curr, color, mToneMapping);
+        return lerp(curr, uncharted, mToneMapping);
     #else
         return color;
     #endif
