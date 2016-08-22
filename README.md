@@ -112,14 +112,17 @@ Ray-MMD
 * SSAO Radius+- 环境光遮蔽的范围
 * BloomThreshold 提取最亮部分的阈值
 * BloomIntensity 泛光的整体强度
-* Exposure+- 曝光强度
-* Vignette+- 窗口四周的暗角
+* Exposure 曝光强度
+* Vignette 窗口四周的暗角
+* Dispersion 相机色散的效果
+* DispersionRadius 相机色散的区域大小
+* Noise 相机因曝光不足参数的噪点
 * ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
 * ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)
 * ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
-[![link text](Screenshot/3.1.png)](Screenshot/3.1.png)
+[![link text](Screenshot/3.1.jpg)](Screenshot/3.1.jpg)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL) :
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
