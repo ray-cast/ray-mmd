@@ -50,10 +50,8 @@ Ray-MMD
         #define NORMAL_MAP_SUB_ENABLE
         #define SMOOTHNESS_MAP_ENABLE
         #define METALNESS_MAP_ENABLE
-        #define SSS_ENABLE
         #define SSS_MAP_ENABLE
         #define MELANIN_MAP_ENABLE
-        #define EMMISIVE_ENABLE
         #define EMMISIVE_MAP_ENABLE
     ```
 
@@ -111,6 +109,7 @@ Ray-MMD
 * EnvLight+-环境光的漫反射光强
 * EnvSpecLight+-环境光的镜面光强
 * SSAO+- 环境光遮蔽强度  
+* SSAO Radius+- 环境光遮蔽的范围
 * BloomThreshold 提取最亮部分的阈值
 * BloomIntensity 泛光的整体强度
 * Exposure+- 曝光强度

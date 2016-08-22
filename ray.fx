@@ -49,6 +49,9 @@ float mSSAORadiusP : CONTROLOBJECT < string name="ray_controller.pmx"; string it
 float mSSAORadiusM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO Radius-"; >;
 float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure"; >;
 float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
+float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
+float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DispersionRadius"; >;
+float mNoise : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Noise"; >;
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
 float mShoStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ShoStrength"; >;

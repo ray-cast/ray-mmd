@@ -1,3 +1,10 @@
+texture2D NoiseMap<string ResourceName = "shader/noise.png";>; 
+sampler NoiseMapSamp = sampler_state
+{
+    texture = NoiseMap;
+    MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target0
 { 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -120,14 +127,32 @@ float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
     float L = length(CoordToPos(coord));
     L = 1 - smoothstep(outer, inner, L);
     float3 color = tex2D(source, coord).rgb;
-    color.g = tex2D(source, coord + ViewportOffset2 * L * 4).g;
-    color.b = tex2D(source, coord + ViewportOffset2 * L * 8).b;
+    color.g = tex2D(source, coord - ViewportOffset2 * L * (mDispersion * 8)).g;
+    color.b = tex2D(source, coord + ViewportOffset2 * L * (mDispersion * 8)).b;
     return color;
+}
+
+float3 Overlay(float3 a, float3 b)
+{
+    return pow(abs(b), 2.2) < 0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
+}
+
+float3 AppleNoise(float3 color, float2 coord) 
+{
+    float noiseIntensity = mNoise * 2;
+    coord.x *= (ViewportSize.y / ViewportSize.x);
+    coord.x += time * 6;
+    
+    float noise = tex2D(NoiseMapSamp, coord);
+    float exposureFactor = (2 + mExposure * 10) / 2.0;
+    exposureFactor = sqrt(exposureFactor);
+    float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
+    return Overlay(color, lerp(0.5, noise, t));
 }
 
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
-    float3 color = AppleDispersion(source, coord, 1.5 - mVignette, 2.5 - mVignette);
+    float3 color = AppleDispersion(source, coord, 1.0 - mDispersionRadius, 2.0 - mDispersionRadius);
 
 #if HDR_ENABLE
 
@@ -157,6 +182,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = ApplyDithering(color, coord);
+    color = AppleNoise(color, coord);
        
     return float4(color, luminance(color));
 }

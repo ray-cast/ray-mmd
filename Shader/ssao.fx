@@ -31,7 +31,7 @@ float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
     float3 viewPosition = GetPosition(coord);
     float3 viewNormal = GetNormal(coord);
 
-    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize)) * (PI * 2.0);  
+    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize)) * (PI * 2.0);
     
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;

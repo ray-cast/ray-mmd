@@ -61,46 +61,9 @@ uniform bool opadd;
 #define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
 
-shared texture MaterialMap: OFFSCREENRENDERTARGET;
 shared texture Gbuffer2RT: RENDERCOLORTARGET;
 shared texture Gbuffer3RT: RENDERCOLORTARGET;
 shared texture Gbuffer4RT: RENDERCOLORTARGET;
-
-sampler Gbuffer1Map = sampler_state {
-    texture = <MaterialMap>;
-    MinFilter = NONE;
-    MagFilter = NONE;
-    MipFilter = NONE;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-
-sampler Gbuffer2Map = sampler_state {
-    texture = <Gbuffer2RT>;
-    MinFilter = NONE;
-    MagFilter = NONE;
-    MipFilter = NONE;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-
-sampler Gbuffer3Map = sampler_state {
-    texture = <Gbuffer3RT>;
-    MinFilter = NONE;
-    MagFilter = NONE;
-    MipFilter = NONE;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-
-sampler Gbuffer4Map = sampler_state {
-    texture = <Gbuffer4RT>;
-    MinFilter = NONE;
-    MagFilter = NONE;
-    MipFilter = NONE;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
 
 struct MaterialParam
 {
@@ -383,7 +346,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
 }
 
-#if ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
+#if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
     texture2D AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
     sampler AlbedoMapSamp = sampler_state
     {
@@ -392,7 +355,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
+#if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
     texture2D NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
     sampler NormalMapSamp = sampler_state
     {
@@ -401,7 +364,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if NORMAL_MAP_SUB_ENABLE
+#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE
     texture2D NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
     sampler NormalSubMapSamp = sampler_state
     {
@@ -410,7 +373,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TONEMAP != 1
+#if USE_CUSTOM_MATERIAL && SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TONEMAP != 1
     texture2D SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
     sampler SmoothnessMapSamp = sampler_state
     {
@@ -419,7 +382,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TONEMAP != 1
+#if USE_CUSTOM_MATERIAL && METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TONEMAP != 1
     texture2D MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
     sampler MetalnessMapSamp = sampler_state
     {
@@ -428,7 +391,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if SSS_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
     texture2D TransmittanceMap<string ResourceName = SSS_MAP_FILE;>; 
     sampler TransmittanceMapSamp = sampler_state
     {
@@ -437,7 +400,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if MELANIN_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && MELANIN_MAP_ENABLE
     texture2D MelaninMap<string ResourceName = MELANIN_MAP_FILE;>; 
     sampler MelaninMapSamp = sampler_state
     {
@@ -446,7 +409,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     };
 #endif
 
-#if EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
+#if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
     texture2D EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
     sampler EmissiveMapSamp = sampler_state
     {

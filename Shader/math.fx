@@ -169,6 +169,27 @@ float luminance(float3 rgb)
     return dot(rgb, lumfact);
 }
 
+const static float3x3 InverseLogLuv = float3x3(
+    6.0013,    -2.700,    -1.7995,
+    -1.332,    3.1029,    -5.7720,
+    .3007,    -1.088,    5.6268);
+
+float3 DecodeLogLuv(in float4 vLogLuv)
+{
+    float Le = vLogLuv.z * 255 + vLogLuv.w;
+    float3 Xp_Y_XYZp;
+    Xp_Y_XYZp.y = exp2((Le - 127) / 2);
+    Xp_Y_XYZp.z = Xp_Y_XYZp.y / vLogLuv.y;
+    Xp_Y_XYZp.x = vLogLuv.x * Xp_Y_XYZp.z;
+    float3 vRGB = mul(Xp_Y_XYZp, InverseLogLuv);
+    return max(vRGB, 0);
+}
+
+float3 DecodeRGBM(in float4 rgbm)
+{
+    return 6 * rgbm.rgb * rgbm.a;
+}
+
 float2 PosToCoord(float2 position)
 {
     position = position * 0.5 + 0.5;
@@ -203,14 +224,14 @@ float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
     return float3x3(normalize(T), normalize(B), N);
 }
 
-static float JitterOffsets[16] = {
+const static float JitterOffsets[16] = {
      6/16.0, 1/16.0,12/16.0,11/16.0,
      9/16.0,14/16.0, 5/16.0, 2/16.0,
      0/16.0, 7/16.0,10/16.0,13/16.0,
     15/16.0, 8/16.0, 3/16.0, 4/16.0,
 };
 
-inline float GetJitterOffset(int2 iuv)
+float GetJitterOffset(int2 iuv)
 {
     int index = (iuv.x % 4) * 4 + (iuv.y % 4);
 #if 0
