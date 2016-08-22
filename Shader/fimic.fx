@@ -152,7 +152,7 @@ float3 AppleNoise(float3 color, float2 coord)
 
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
-    float3 color = AppleDispersion(source, coord, 1.0 - mDispersionRadius, 2.0 - mDispersionRadius);
+    float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
 
 #if HDR_ENABLE
 
