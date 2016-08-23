@@ -85,7 +85,7 @@ Ray-MMD
     #define EMMISIVE_MAP_FILE ...
     ```
 
-* 制定图片通道存放了哪些数据需要用到Swizzle
+* 指定图片通道存放了哪些数据需要用到Swizzle
 
     ```
     #define XXXXXXX_MAP_SWIZZLE_R 表示某种材质R里存放了它的数据
@@ -124,7 +124,7 @@ Ray-MMD
 * Vignette 窗口四周的暗角
 * Dispersion 相机色散的效果
 * DispersionRadius 相机色散的区域大小
-* Noise 相机因曝光不足参数的噪点
+* FilmGrain 相机因曝光不足参数的噪点
 * ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
 * ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
