@@ -508,7 +508,7 @@ float4 GetTextureColor(float2 uv, bool use_texture)
 
 float3 GetEmissiveColor(float2 uv)
 {
-#if EMMISIVE_ENABLE
+#if EMMISIVE_ENABLE && USE_CUSTOM_MATERIAL
     #if EMMISIVE_MAP_UV_FLIP
         uv.y = 1 - uv.y;
     #endif
