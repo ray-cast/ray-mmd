@@ -137,23 +137,25 @@ float3 Overlay(float3 a, float3 b)
     return pow(abs(b), 2.2) < 0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
 }
 
-float3 AppleNoise(float3 color, float2 coord) 
+float3 AppleFilmGrain(float3 color, float2 coord) 
 {
-    float noiseIntensity = mNoise * 2;
+    float noiseIntensity = mFilmGrain * 2;
     coord.x *= (ViewportSize.y / ViewportSize.x);
     coord.x += time * 6;
     
-    float noise = tex2D(NoiseMapSamp, coord);
+    float noise = tex2D(NoiseMapSamp, coord).r;
     float exposureFactor = (2 + mExposure * 10) / 2.0;
     exposureFactor = sqrt(exposureFactor);
     float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
+    
+    // Overlay blending
     return Overlay(color, lerp(0.5, noise, t));
 }
 
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
-
+    
 #if HDR_ENABLE
 
     color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
@@ -176,13 +178,15 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color += bloom;
 #endif
 #endif
-
-    color = saturate(color);
-    color = linear2srgb(color);
-    
+  
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = ApplyDithering(color, coord);
-    color = AppleNoise(color, coord);
+    color = AppleFilmGrain(color, coord);
+    
+    float lum = luminance(color);
+    
+    color = saturate(color);
+    color = linear2srgb(color);
        
-    return float4(color, luminance(color));
+    return float4(color, lum);
 }
