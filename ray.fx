@@ -51,7 +51,7 @@ float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item 
 float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
 float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
 float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DispersionRadius"; >;
-float mNoise : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Noise"; >;
+float mFilmGrain : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FilmGrain"; >;
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
 float mShoStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ShoStrength"; >;
