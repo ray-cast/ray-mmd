@@ -154,6 +154,7 @@ Ray-MMD
 [![link text](Screenshot/4.6.png)](Screenshot/4.6.png)
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
 * 这里提供一个天空盒的地址，文件是hdr要在cmftstudio里Tonemapping
+
 ```
     http://www.hdrlabs.com/sibl/archive.html
 ```
