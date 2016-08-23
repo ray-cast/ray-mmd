@@ -743,7 +743,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.emissive = GetEmissiveColor(IN.Texcoord);
     
-#if SSS_ENABLE
+#if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
 #   if defined(SSS_SKIN_ENABLE)
         material.index = SUBSURFACESCATTERING_SKIN;
@@ -751,7 +751,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
         material.index = SUBSURFACESCATTERING_MARBLE;
 #   endif
 #elif EMMISIVE_ENABLE
-    material.lightModel = LIGHTINGMODEL_EMISSIVE;
+    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
 #else
     material.lightModel = LIGHTINGMODEL_NORMAL;
 #endif
