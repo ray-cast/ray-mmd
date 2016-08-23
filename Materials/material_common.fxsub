@@ -179,13 +179,16 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer1.w = material.smoothness;
 
     gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
-    gbuffer.buffer2.w = material.index;
+    gbuffer.buffer2.w = 0;
 
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
+        float scatteringAmount = frac(material.index);
+        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.index / TWO_BITS_EXTRACTION_FACTOR : 0;
+        
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
         gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
@@ -202,11 +205,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer4 = linearDepth;
     
     return gbuffer;
-}
 
-float SmoothnessToRoughness(float smoothness)
-{
-    return (1.0f - smoothness) * (1.0f - smoothness);
 }
 
 float RoughnessToSmoothness(float roughness)
@@ -218,132 +217,6 @@ float ShininessToSmoothness(float spec)
 {
     // http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html
     return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
-}
-
-float SmoothnessToShininess(float smoothness)
-{
-    float roughness = SmoothnessToRoughness(smoothness);
-    return 2.0f / (roughness * roughness) - 2.0f;
-}
-
-float fresnelSchlick(float f0, float f9, float LdotH)
-{
-    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
-}
-
-float3 fresnelSchlick(float3 f0, float f9, float LdotH)
-{
-    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
-}
-
-float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
-{
-    float sigma2 = roughness * roughness;
-
-    float nl = dot(N, L);
-    float nv = dot(N, V);
-    float lv = dot(L, V);
-
-    float s = lv - nl * nv;
-    float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
-    float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
-    float B = A * sigma2;
-
-    return max(0, nl) * max(A + B * (s / t), 0);
-}
-
-float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
-{
-    float3 H = normalize(V + L);
-
-    float energyBias = 0.5 * roughness;
-    float energyFactor = lerp(1, 1 / 1.51, roughness);
-
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = abs(dot(N, V)) + 1e-5h;
-
-    float fd90 = energyBias + 2.0 * vh * vh * roughness;
-
-    float FL = fresnelSchlick(1, fd90, nl);
-    float FV = fresnelSchlick(1, fd90, nv);
-
-    return FL * FV * energyFactor * nl;
-}
-
-float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
-{
-    float roughness = SmoothnessToRoughness(gloss);
-    return BurleyBRDF(N, L, V, roughness);
-}
-
-float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
-{
-    float w = lerp(0, 0.5, luminance(transmittanceColor));
-    float wn = 1.0 / ((1 + w) * (1 + w));
-    float nl = dot(N, L);
-    float transmittance = saturate((-nl + w) * wn);
-    float diffuse = saturate((nl + w) * wn);
-    return diffuse + transmittanceColor * transmittance;
-}
-
-float3 TranslucencyBRDF(float3 N, float3 L, float3 V, float smoothness, float3 transmittanceColor)
-{
-    float w = lerp(0, 0.5, luminance(transmittanceColor));
-    float wn = 1.0 / ((1 + w) * (1 + w));
-    float nl = dot(N, L);
-    float transmittance = saturate((-nl + w) * wn);
-    float brdf = DiffuseBRDF(N, L, V, smoothness);
-    float diffuse = saturate((brdf + w) * wn);
-    return diffuse + transmittanceColor * transmittance;
-}
-
-float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3 f0)
-{
-    float3 H = normalize(L + V);
-
-    float nh = saturate(dot(N, H));
-    float nl = saturate(dot(N, L));
-    float lh = saturate(dot(L, H));
-
-    float alpha = exp2(10 * gloss + 1); // 2 - 2048
-    float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
-
-    float k = min(1.0f, gloss + 0.545f);
-    float G = 1.0 / (k * lh * lh + 1 - k);
-
-    float3 F = fresnelSchlick(f0, 1.0, lh);
-
-    return D * F * G * nl;
-}
-
-float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
-{
-    float m2 = m * m;
-    float3 H = normalize( V + L );
-
-    float NdotH = saturate( dot( N, H ) );
-    float NdotL = saturate( dot( N, L ) );
-    float NdotV = abs( dot( N, V ) ) + 1e-5h;
-
-    float spec = (NdotH * m2 - NdotH) * NdotH + 1;
-    spec = m2 / (spec * spec) * NormalizationFactor;
-
-    float Gv = NdotL * sqrt( (-NdotV * m2 + NdotV) * NdotV + m2 );
-    float Gl = NdotV * sqrt( (-NdotL * m2 + NdotL) * NdotL + m2 );
-    spec *= 0.5h / (Gv + Gl);
-
-    f0 = max(0.04, f0);
-    float f90 = saturate( dot( f0, 0.33333h ) / 0.02h );
-    float3 fresnel = lerp( f0, f90, pow( 1 - saturate( dot( L, H ) ), 5 ) );
-
-    return fresnel * spec * NdotL;
-}
-
-float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
-{
-    float roughness = SmoothnessToRoughness(gloss);
-    return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
 }
 
 #if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
@@ -666,7 +539,7 @@ float3 SkinTransmittance(float translucency)
     return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
 }
 
-float4 GetTransmittance(float2 coord)
+float3 GetTransmittance(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if SSS_ENABLE
@@ -675,7 +548,11 @@ float4 GetTransmittance(float2 coord)
                 coord.y = 1 - coord.y;
             #endif
         
-            return srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum));
+            #if SSS_APPLY_COLOR
+                return srgb2linear(transmittance * tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
+            #else
+                return srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
+            #endif
         #else
             return transmittance;
         #endif
@@ -735,21 +612,16 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     float MaterialMetalness = GetMetalness(IN.Texcoord);
 
     MaterialParam material;
-    material.index = 0;
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
     material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
     material.specular = lerp(0, albedo.rgb, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+    material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord);
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-#   if defined(SSS_SKIN_ENABLE)
-        material.index = SUBSURFACESCATTERING_SKIN;
-#   elif defined(USE_CUSTOM_MATERIAL)
-        material.index = SUBSURFACESCATTERING_MARBLE;
-#   endif
 #elif EMMISIVE_ENABLE
     material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
 #else

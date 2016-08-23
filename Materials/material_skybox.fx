@@ -46,9 +46,12 @@ const float metalnessMapLoopNum = 1.0;
 // 次表面散射
 #define SSS_ENABLE 0
 #define SSS_MAP_ENABLE 0
+#define SSS_MAP_UV_FLIP 0
+#define SSS_MAP_APPLY_COLOR 0
 #define SSS_MAP_FILE "transmittance.png"
 
-const float4 transmittance = 0.0;
+const float3 transmittance = 0.0;
+const float transmittanceStrength = 0.0f;
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素

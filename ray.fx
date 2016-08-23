@@ -143,10 +143,6 @@ technique DeferredLighting<
     "RenderColorTarget0=OpaqueMap;      Pass=SSSSBlurY;"
 #endif
 
-#if SSR_SAMPLER_COUNT > 0
-    "RenderColorTarget0=OpaqueMapTemp;  Pass=SSR;"
-#endif
-
 #if HDR_BLOOM_QUALITY > 0
 #if HDR_BLOOM_QUALITY > 2
     "RenderColorTarget0=BloomMapX1;      Pass=GlareDetection;"

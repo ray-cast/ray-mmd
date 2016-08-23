@@ -88,13 +88,16 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer1.w = material.smoothness;
 
     gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
-    gbuffer.buffer2.w = material.index;
+    gbuffer.buffer2.w = 0;
 
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
+        float scatteringAmount = frac(material.index);
+        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.index / TWO_BITS_EXTRACTION_FACTOR : 0;
+        
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
         gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
@@ -121,7 +124,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     material.smoothness = buffer1.w;
 
     material.normal = DecodeNormal(buffer2.xyz);
-    material.index = buffer2.w;
+    material.index = buffer2.w * TWO_BITS_EXTRACTION_FACTOR;
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {

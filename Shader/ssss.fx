@@ -40,7 +40,7 @@ float4 GuassBlurPS(
 
     const float4 profileSpikeRadArr[2] =
     {
-        float4( 0.7,  0.7, 0.7, 8.0 ),  // marble
+        float4( 0.35, 0.35, 0.35, 8.0 ), // marble
         float4( 0.15, 0.2, 0.25, 1.0) // skin
     };
 
@@ -64,7 +64,8 @@ float4 GuassBlurPS(
 
     float profileIndex = floor(material.index);
     float sssAmount = frac(material.index);
-    float radius = 0.0055 * profileSpikeRadArr[profileIndex].w;
+    float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount:1.0;
+    float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
     
     float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
 
