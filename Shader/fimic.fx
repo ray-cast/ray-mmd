@@ -178,7 +178,7 @@ float3 AppleFilmGrain(float3 color, float2 coord)
 float BloomFactor(const in float factor) 
 {
     float mirrorFactor = 1.2 - factor;
-    return lerp(factor, mirrorFactor, 1);
+    return lerp(factor, mirrorFactor, mBloomRadius);
 }
     
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
