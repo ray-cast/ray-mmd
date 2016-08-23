@@ -205,7 +205,7 @@ float2 CoordToPos(float2 coord)
 float2 computeSphereCoord(float3 normal)
 {
     const float invPI = 1.0f / 3.1415926;
-    float2 coord = float2(atan2(normal.x, normal.z) * invPI * 0.5f + 0.5f, acos(normal.y) * invPI);
+    float2 coord = float2(1 - (atan2(normal.x, normal.z) * invPI * 0.5f + 0.5f), acos(normal.y) * invPI);
     return coord;
 }
 
