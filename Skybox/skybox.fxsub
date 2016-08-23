@@ -46,15 +46,23 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
     float3 N = normalize(normal).xyz;
     if (ExistRay)
     {
-#if SKYBOX_GAMMA_CORRECTION > 0
+#if SKYBOX_GAMMA_CORRECTION
         return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+#elif SKYBOX_HDR_ENABLE
+        float4 rgbm = tex2D(decalMap, computeSphereCoord(N));
+        return float4(DecodeRGBM(rgbm), 1);
 #else
         return tex2D(decalMap, computeSphereCoord(N));
 #endif
     }
     else
     {
+#if SKYBOX_HDR_ENABLE
+        float4 rgbm = tex2D(decalMap, computeSphereCoord(N));
+        return float4(linear2srgb(DecodeRGBM(rgbm)), 1);
+#else
         return tex2D(decalMap, computeSphereCoord(N));
+#endif
     }
 }
 

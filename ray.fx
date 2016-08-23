@@ -146,8 +146,14 @@ technique DeferredLighting<
     "RenderColorTarget0=OpaqueMapTemp;  Pass=SSR;"
 #endif
 
-#if HDR_BLOOM_ENABLE > 0
+#if HDR_BLOOM_QUALITY > 0
+#if HDR_BLOOM_QUALITY > 2
+    "RenderColorTarget0=BloomMapX1;      Pass=GlareDetection;"
+    "RenderColorTarget0=BloomMapX1Temp;  Pass=BloomBlurX1;"
+    "RenderColorTarget0=BloomMapX1;      Pass=BloomBlurY1;"
+#else
     "RenderColorTarget0=BloomMapX2;      Pass=GlareDetection;"
+#endif
     "RenderColorTarget0=BloomMapX2Temp;  Pass=BloomBlurX2;"
     "RenderColorTarget0=BloomMapX2;      Pass=BloomBlurY2;"
     "RenderColorTarget0=BloomMapX3Temp;  Pass=BloomBlurX3;"
@@ -305,7 +311,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 LocalReflectionPS();
     }
 #endif
-#if HDR_BLOOM_ENABLE > 0
+#if HDR_BLOOM_QUALITY > 0
     pass GlareDetection < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
@@ -314,69 +320,91 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 GlareDetectionPS(OpaqueSamp, ViewportOffset2);
     }
+#if HDR_BLOOM_QUALITY > 2
+    pass BloomBlurX1 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 BloomBlurVS(1);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX1, float2(ViewportOffset2.x, 0.0), 3);
+    }
+    pass BloomBlurY1 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 BloomBlurVS(1);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX1Temp, float2(0.0f, ViewportOffset2.y), 3);
+    }
+#endif
     pass BloomBlurX2 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 2, 0.0));
+        VertexShader = compile vs_3_0 BloomBlurVS(2);
+#if HDR_BLOOM_QUALITY > 2
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX1, float2(ViewportOffset2.x, 0.0), 5);
+#else
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 2, 0.0), 5);
+#endif
     }
     pass BloomBlurY2 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2Temp, float2(0.0f, ViewportOffset2.y * 2));
+        VertexShader = compile vs_3_0 BloomBlurVS(2);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2Temp, float2(0.0f, ViewportOffset2.y * 2), 5);
     }
     pass BloomBlurX3 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 4, 0.0));
+        VertexShader = compile vs_3_0 BloomBlurVS(4);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX2, float2(ViewportOffset2.x * 4, 0.0), 7);
     }
     pass BloomBlurY3 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3Temp, float2(0.0f, ViewportOffset2.y * 4));
+        VertexShader = compile vs_3_0 BloomBlurVS(4);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3Temp, float2(0.0f, ViewportOffset2.y * 4), 7);
     }
     pass BloomBlurX4 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3, float2(ViewportOffset2.x * 8, 0.0));
+        VertexShader = compile vs_3_0 BloomBlurVS(8);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX3, float2(ViewportOffset2.x * 8, 0.0), 9);
     }
     pass BloomBlurY4 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4Temp, float2(0.0f, ViewportOffset2.y * 8));
+        VertexShader = compile vs_3_0 BloomBlurVS(8);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4Temp, float2(0.0f, ViewportOffset2.y * 8), 9);
     }
     pass BloomBlurX5 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4, float2(ViewportOffset2.x * 16, 0.0));
+        VertexShader = compile vs_3_0 BloomBlurVS(16);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX4, float2(ViewportOffset2.x * 16, 0.0), 11);
     }
     pass BloomBlurY5 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX5Temp, float2(0.0f, ViewportOffset2.y * 16));
+        VertexShader = compile vs_3_0 BloomBlurVS(16);
+        PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX5Temp, float2(0.0f, ViewportOffset2.y * 16), 11);
     }
 #endif
     pass FimicToneMapping < string Script= "Draw=Buffer;"; > {

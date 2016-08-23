@@ -26,22 +26,45 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     return bloom;
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
+void BloomBlurVS(
+    in float4 Position : POSITION,
+    in float4 Texcoord : TEXCOORD,
+    out float4 oTexcoord : TEXCOORD0,
+    out float3 oViewdir : TEXCOORD1,
+    out float4 oPosition : SV_Position,
+    uniform int n)
+{
+    oPosition = Position;
+    oViewdir = mul(Position, matProjectInverse).xyz;
+    oTexcoord = Texcoord;
+    oTexcoord.xy += ViewportOffset  * n;
+}
+
+float gaussianPdf(in float x, in float sigma) 
+{
+    return 0.39894 * exp( -0.5 * x * x/( sigma * sigma))/sigma;
+}
+
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : SV_Target
 {
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
 
     float4 color = 0.0f;
-    float2 coords = coord - offset * 6.2;
+    float weight = 0.0;
+    
+    float2 coords = coord;
 
-    [unroll]
-    for (int i = 0; i < 15; ++i)
+    for (int i = 0; i < n; ++i)
     {
-        color += tex2D(source, coords) * (weights[i] / weightSum);
-        coords += offset;
+        float x = float(i);
+        float w = gaussianPdf(x, n);
+        color += tex2D(source, coords + offset * i) * w;
+        color += tex2D(source, coords - offset * i) * w;
+        weight += 2.0 * w;
     }
 
-    return color;
+    return color / weight;
 }
 
 float3 ColorBalance(float3 color, float4 balance)
@@ -152,6 +175,12 @@ float3 AppleFilmGrain(float3 color, float2 coord)
     return Overlay(color, lerp(0.5, noise, t));
 }
 
+float BloomFactor(const in float factor) 
+{
+    float mirrorFactor = 1.2 - factor;
+    return lerp(factor, mirrorFactor, 1);
+}
+    
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
@@ -161,21 +190,30 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
     color = FilmicTonemap(color, (1 + mExposure * 10));
     
-#if HDR_BLOOM_ENABLE > 0
+#if HDR_BLOOM_QUALITY > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
+    float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};
     
-    float3 bloom1 = tex2D(BloomSampX2, coord).rgb * bloomIntensity;
-    float3 bloom2 = tex2D(BloomSampX3, coord).rgb * bloomIntensity;
-    float3 bloom3 = tex2D(BloomSampX4, coord).rgb * bloomIntensity;
-    float3 bloom4 = tex2D(BloomSampX5, coord).rgb * bloomIntensity;
+#if HDR_BLOOM_QUALITY > 2
+    float3 bloom0 = BloomFactor(bloomFactors[0]) * tex2D(BloomSampX1, coord).rgb;
+#endif
+
+    float3 bloom1 = BloomFactor(bloomFactors[1]) * tex2D(BloomSampX2, coord).rgb;
+    float3 bloom2 = BloomFactor(bloomFactors[2]) * tex2D(BloomSampX3, coord).rgb;
+    float3 bloom3 = BloomFactor(bloomFactors[3]) * tex2D(BloomSampX4, coord).rgb;
+    float3 bloom4 = BloomFactor(bloomFactors[4]) * tex2D(BloomSampX5, coord).rgb;
     
     float3 bloom = 0.0f;
-    bloom += bloom1;
-    bloom += bloom2;
-    bloom += bloom3;
+#if HDR_BLOOM_QUALITY > 2
+    bloom += bloom0;
+#endif 
+
     bloom += bloom4;
+    bloom += bloom3;
+    bloom += bloom2;
+    bloom += bloom1;
     
-    color += bloom;
+    color += bloomIntensity * bloom;
 #endif
 #endif
   
@@ -187,6 +225,6 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     
     color = saturate(color);
     color = linear2srgb(color);
-       
+
     return float4(color, lum);
 }

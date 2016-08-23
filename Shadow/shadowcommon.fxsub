@@ -1,3 +1,4 @@
+#include "../ray.conf"
 #include "../shader/common.fx"
 #include "../shader/math.fx"
 
@@ -16,18 +17,9 @@ const float CasterAlphaThreshold = 0.2;
 
 #define BIAS_SCALE      0.005
 
-#define SHADOW_QUALITY  2
-// 1: 低品質：MMD標準相当
-// 2: 標準：MMD美影モード相当
-// 3: 高品質
+#define ENABLE_DOUBLE_SIDE_SHADOW   0
+#define ENABLE_HARD_SHADOW          0
 
-// MMD標準のシャドウマップを加算するか?
-// #define ADD_DEFAULT_SHADOW
-
-#define ENABLE_DOUBLE_SIDE_SHADOW   0   // 片面ポリゴンの裏面も影とみなす
-#define ENABLE_HARD_SHADOW          0   // 影をあまりボカさない
-
-// シャドウバッファのサイズ。
 #if SHADOW_QUALITY < 2
 #define SHADOW_MAP_SIZE 2048
 #elif SHADOW_QUALITY == 2
