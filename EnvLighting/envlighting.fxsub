@@ -99,23 +99,29 @@ float4 EnvLightingPS(
     float3 R = EnvironmentReflect(worldNormal, worldView);
 
 #if IBL_QUALITY >= 2
-    float3 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal)).rgb;
-    float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
-    float3 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal)).rgb;
+    float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal));
+    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
+    float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal));
 #else
-    float3 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
-    float3 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer)).rgb;
-    float3 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL)).rgb;
+    float4 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL));
+    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
+    float4 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL));
 #endif
 
-#if IBL_ENABLE_GAMMA_CORRECTION > 0
-    prefilteredDiffuse = srgb2linear(prefilteredDiffuse);
-    prefilteredSpeculr = srgb2linear(prefilteredSpeculr);
-    prefilteredTransmittance = srgb2linear(prefilteredTransmittance);
+#if IBL_ENABLE_GAMMA_CORRECTION
+    prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
+    prefilteredSpeculr.rgb = srgb2linear(prefilteredSpeculr.rgb);
+    prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
 #endif
 
-    float3 diffuse = prefilteredDiffuse * material.albedo + prefilteredTransmittance * material.transmittance;
-    float3 specular = prefilteredSpeculr * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular);
+#if IBL_HDR_ENABLE
+    prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse);
+    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr);
+    prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
+#endif
+
+    float3 diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
+    float3 specular = prefilteredSpeculr.rgb * EnvironmentSpecularBlackOpsII(worldNormal, worldView, material.smoothness, material.specular);
 
 #if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);

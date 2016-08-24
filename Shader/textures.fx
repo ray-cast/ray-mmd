@@ -29,7 +29,8 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "skybox*.* = ./EnvLighting/envlighting.fx;"
+        "skybox_hdr.* = ./EnvLighting/envlighting_hdr.fx;"
+        "skybox.* = ./EnvLighting/envlighting.fx;"
         "* = hide;";
 >;
 
@@ -50,7 +51,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "skybox.pmx = ./materials/material_skybox.fx;"
+        "skybox*.* = ./materials/material_skybox.fx;"
         "*.pmd = ./materials/material.fx;"
         "*.pmx = ./materials/material.fx;"
         "*.x = ./materials/material.fx;"

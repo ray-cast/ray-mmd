@@ -615,7 +615,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
     material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
-    material.specular = lerp(0, albedo.rgb, MaterialMetalness);
+    material.specular = lerp(metalnessBaseSpecular, albedo.rgb, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord);
