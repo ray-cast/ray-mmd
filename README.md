@@ -6,6 +6,9 @@ Ray-MMD
 [![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
 [![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
 
+#### 下载地址 :
+    https://codeload.github.com/ray-cast/ray-mmd/zip/1.0.2
+
 #### 更新内容 :
 ##### 2016-8-25 ver 1.0.2
 * 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
@@ -65,7 +68,7 @@ Ray-MMD
 ###### 3.2 纹理
 * 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
     
-    ```
+    ```cpp
         #define ALBEDO_MAP_ENABLE
         #define NORMAL_MAP_ENABLE
         #define NORMAL_MAP_SUB_ENABLE
@@ -78,7 +81,7 @@ Ray-MMD
 
 * 如果材质在pmx文件中，可以启用以下
     
-    ```
+    ```cpp
     #define ALBEDO_MAP_IN_TEXTURE // 物体的基本贴图在Tex里
     #define NORMAL_MAP_IN_SPHEREMAP // 物体的法线贴图在Sph map里
     #define SMOOTHNESS_MAP_IN_TONEMAP // 物体的光滑度贴图在Toon map里
@@ -87,7 +90,7 @@ Ray-MMD
 
 * 如果没有指定在pmx中，可以将文件路径写到下面这些定义里
 
-    ```
+    ```cpp
     #define ALBEDO_MAP_FILE "c:\xxxx\yyyy.png"
     #define NORMAL_MAP_FILE ...
     #define NORMAL_MAP_SUB_FILE ...
@@ -100,7 +103,7 @@ Ray-MMD
 
 * 指定图片通道存放了哪些数据需要用到Swizzle
 
-    ```
+    ```cpp
     #define XXXXXXX_MAP_SWIZZLE_R 表示某种材质R里存放了它的数据
     #define XXXXXXX_MAP_SWIZZLE_G 表示某种材质G里存放了它的数据
     #define XXXXXXX_MAP_SWIZZLE_B 表示某种材质B里存放了它的数据
@@ -110,7 +113,7 @@ Ray-MMD
 
 * 贴图迭代次数，和法线高度
 
-    ```
+    ```cpp
     const float xxxxxMapLoopNum = 1.0; 应用在一个平面时大小是 1x1
     const float xxxxxMapLoopNum = 2.0; 应用在一个平面时大小是 2x2
     
@@ -120,7 +123,7 @@ Ray-MMD
 
 * 有些时候UV的图片似乎上下颠倒了，可以将如下设置成 1
     
-    ```
+    ```cpp
     #define XXXXX_MAP_UV_FLIP 1
     ```
     
