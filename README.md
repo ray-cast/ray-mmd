@@ -6,9 +6,6 @@ Ray-MMD
 [![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
 [![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
 
-#### 下载地址 :
-    https://codeload.github.com/ray-cast/ray-mmd/zip/1.0.2
-
 #### 更新内容 :
 ##### 2016-8-25 ver 1.0.2
 * 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
