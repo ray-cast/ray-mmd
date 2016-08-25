@@ -24,7 +24,7 @@ Ray-MMD
 * 增加材质单独存放其它目录(必须和 material_common.fxsub) 一起打包
 * 增加控制SSAO产生阴影半径的大小
 * 增加了相机色散，以及色散半径的效果 (表情: Dispersion && Dispersion Radius)
-* 增加了因相机曝光不足参数的噪点效果 (表情: Noise)
+* 增加了因相机曝光不足产生的噪点效果 (表情: Noise)
 * 优化了SSSS (提高了一定的fps)
 
 #### 教程 :
