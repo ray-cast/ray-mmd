@@ -464,11 +464,10 @@ float GetSmoothness(float2 coord)
             coord.y = 1 - coord.y;
         #endif
     
-        sampler smoothnessMapSamper;
         #if SMOOTHNESS_MAP_IN_TONEMAP
-            smoothnessMapSamper = ToneMapSamp;
+            sampler smoothnessMapSamper = ToneMapSamp;
         #else
-            smoothnessMapSamper = SmoothnessMapSamp;
+            sampler smoothnessMapSamper = SmoothnessMapSamp;
         #endif
         
         float smoothness = 0;
@@ -485,13 +484,13 @@ float GetSmoothness(float2 coord)
         #endif
         
         #if SMOOTHNESS_MAP_IS_ROUGHNESS
-            smoothness = 1 - smoothness;
+            smoothness = RoughnessToSmoothness(smoothness);
         #endif
         
         return smoothness;
     #else
         #if SMOOTHNESS_MAP_IS_ROUGHNESS
-            return RoughnessToSmoothness(smoothness);
+            return SmoothnessToRoughness(smoothness);
         #endif
         
         return smoothness;
