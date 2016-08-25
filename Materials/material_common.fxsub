@@ -465,22 +465,29 @@ float GetSmoothness(float2 coord)
         #endif
     
         #if SMOOTHNESS_MAP_IN_TONEMAP
-            sampler smoothnessMapSamper = ToneMapSamp;
+            #if SMOOTHNESS_MAP_SWIZZLE_R
+                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).r;
+            #elif SMOOTHNESS_MAP_SWIZZLE_G
+                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).g;
+            #elif SMOOTHNESS_MAP_SWIZZLE_B
+                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).b;
+            #elif SMOOTHNESS_MAP_SWIZZLE_A
+                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).a;
+            #else
+                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).r;
+            #endif
         #else
-            sampler smoothnessMapSamper = SmoothnessMapSamp;
-        #endif
-        
-        float smoothness = 0;
-        #if SMOOTHNESS_MAP_SWIZZLE_R
-            smoothness = tex2D(smoothnessMapSamper, coord * smoothnessMapLoopNum).r;
-        #elif SMOOTHNESS_MAP_SWIZZLE_G
-            smoothness = tex2D(smoothnessMapSamper, coord * smoothnessMapLoopNum).g;
-        #elif SMOOTHNESS_MAP_SWIZZLE_B
-            smoothness = tex2D(smoothnessMapSamper, coord * smoothnessMapLoopNum).b;
-        #elif SMOOTHNESS_MAP_SWIZZLE_A
-            smoothness = tex2D(smoothnessMapSamper, coord * smoothnessMapLoopNum).a;
-        #else
-            smoothness = tex2D(smoothnessMapSamper, coord * smoothnessMapLoopNum).r;
+            #if SMOOTHNESS_MAP_SWIZZLE_R
+                float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).r;
+            #elif SMOOTHNESS_MAP_SWIZZLE_G
+                float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).g;
+            #elif SMOOTHNESS_MAP_SWIZZLE_B
+                float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).b;
+            #elif SMOOTHNESS_MAP_SWIZZLE_A
+                float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).a;
+            #else
+                float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).r;
+            #endif
         #endif
         
         #if SMOOTHNESS_MAP_IS_ROUGHNESS
@@ -509,21 +516,29 @@ float GetMetalness(float2 coord)
         #endif
         
         #if METALNESS_MAP_IN_TONEMAP
-            sampler metalnessMapSamper = ToneMapSamp;
+            #if METALNESS_MAP_SWIZZLE_R
+                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).r;
+            #elif METALNESS_MAP_SWIZZLE_G
+                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).g;
+            #elif METALNESS_MAP_SWIZZLE_B
+                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).b;
+            #elif METALNESS_MAP_SWIZZLE_A
+                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).a;
+            #else
+                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).r;
+            #endif
         #else
-            sampler metalnessMapSamper = MetalnessMapSamp;
-        #endif
-        
-        #if METALNESS_MAP_SWIZZLE_R
-            return tex2D(metalnessMapSamper, coord * metalnessMapLoopNum).r;
-        #elif METALNESS_MAP_SWIZZLE_G
-            return tex2D(metalnessMapSamper, coord * metalnessMapLoopNum).g;
-        #elif METALNESS_MAP_SWIZZLE_B
-            return tex2D(metalnessMapSamper, coord * metalnessMapLoopNum).b;
-        #elif METALNESS_MAP_SWIZZLE_A
-            return tex2D(metalnessMapSamper, coord * metalnessMapLoopNum).a;
-        #else
-            return tex2D(metalnessMapSamper, coord * metalnessMapLoopNum).r;
+            #if METALNESS_MAP_SWIZZLE_R
+                return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).r;
+            #elif METALNESS_MAP_SWIZZLE_G
+                return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).g;
+            #elif METALNESS_MAP_SWIZZLE_B
+                return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).b;
+            #elif METALNESS_MAP_SWIZZLE_A
+                return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).a;
+            #else
+                return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).r;
+            #endif
         #endif
     #else
         return metalness;
