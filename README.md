@@ -91,7 +91,7 @@ Ray-MMD
 * 如果没有指定在pmx中，可以将文件路径写到下面这些定义里
 
     ```cpp
-    #define ALBEDO_MAP_FILE "c:\xxxx\yyyy.png"
+    #define ALBEDO_MAP_FILE "c:/xxxx/yyyy.png"
     #define NORMAL_MAP_FILE ...
     #define NORMAL_MAP_SUB_FILE ...
     #define SMOOTHNESS_MAP_FILE ...
@@ -151,7 +151,7 @@ Ray-MMD
 ##### 5.0 制作基于物理的环境光贴图(IBL) :
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
 ```
-    https://github.com/dariomanesku/cmftStudio
+    [https://github.com/dariomanesku/cmftStudio](https://github.com/dariomanesku/cmftStudio)
 ```
 * 启动cmftstudio
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
@@ -172,7 +172,7 @@ Ray-MMD
 * 这里提供一个天空盒的地址，文件是hdr要在cmftstudio里Tonemapping
 
 ```
-    http://www.hdrlabs.com/sibl/archive.html
+    [https://github.com/dariomanesku/cmftStudio](http://www.hdrlabs.com/sibl/archive.html)
 ```
 
 #### 借物表 :
