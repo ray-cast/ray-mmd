@@ -55,7 +55,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;
-const float metalnessBaseSpecular = 0.0;
+const float metalnessBaseSpecular = 0.04;
 const float metalnessMapLoopNum = 1.0;
 
 // 次表面散射
