@@ -31,7 +31,7 @@ float4 DeferredLightingPS(
 
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
-    ssao = pow(ssao, mSSAOP + 1 - mSSAOM);
+    ssao = pow(ssao, mSSAOP - mSSAOM);
     lighting *= ssao;
 #endif
 

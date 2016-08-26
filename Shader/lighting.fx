@@ -192,6 +192,16 @@ float attenuationTerm(float3 lightPosition, float3 P, float3 atten)
     return 1.0 / (dot(atten, float3(1, d, d2)));
 }
 
+float GetPhysicalLightAttenuation(float3 lightPosition, float3 P, float radius, float attenuationBulbSize)
+{
+    float invRadius = 1 / radius;    
+    float d = distance(lightPosition, P);
+    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2));
+    float denom = 1 + max(d - attenuationBulbSize, 0) / attenuationBulbSize;
+    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);    
+    return attenuation;
+}
+
 float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 atten, float3 pos)
 {
     float3 v = pos - lightPosition;

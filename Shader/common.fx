@@ -7,6 +7,7 @@ float elapsed : ELAPSEDTIME;
 float2 MousePositionn : MOUSEPOSITION;
 
 float4x4 matWorld                 : WORLD;
+float4x4 matWorldInverse          : WORLDINVERSE;
 float4x4 matWorldView             : WORLDVIEW;
 float4x4 matWorldViewProject      : WORLDVIEWPROJECTION;
 float4x4 matView                  : VIEW;
