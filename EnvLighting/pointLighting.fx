@@ -63,10 +63,15 @@ float4 PointLightingPS(
 
     float3 P = GetPosition(texCoord);
     float3 V = normalize(viewdir);
-    float3 L = normalize(mul(mPosition, matView).xyz - P);
+    float3 L = normalize(mul(float4(mPosition, 1), matView).xyz - P);
 
     float4 lighting = 0.0f;
-    lighting.rgb += DiffuseBRDF(material.normal, L, V, material.smoothness) * material.albedo;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+    
     lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB);
     lighting *= (1 + mIntensityP * POINTLIGHT_MAX_INTENSITY);
