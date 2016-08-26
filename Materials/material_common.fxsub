@@ -660,6 +660,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
         "Pass=DrawObject;" \
         "RenderColorTarget1=;" \
         "RenderColorTarget2=;" \
+        "RenderColorTarget3=;" \
     ; \
     > { \
         pass DrawObject { \

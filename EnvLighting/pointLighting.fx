@@ -11,6 +11,7 @@ float mB : CONTROLOBJECT < string name="PointLight.pmx"; string item = "B+"; >;
 float mRadiusP : CONTROLOBJECT < string name="PointLight.pmx"; string item = "Radius+"; >;
 float mIntensityP : CONTROLOBJECT < string name="PointLight.pmx"; string item = "Intensity+"; >;
 float mBlubP : CONTROLOBJECT < string name="PointLight.pmx"; string item = "Blub+"; >;
+float3 mPosition : CONTROLOBJECT < string name="PointLight.pmx"; string item = "Position"; >;
 
 #define POINTLIGHT_MAX_RADIUS 500
 #define POINTLIGHT_MAX_INTENSITY 1000
@@ -23,18 +24,14 @@ void PointLightingVS(
     out float3 oNormal    : TEXCOORD1,
     out float3 oViewdir   : TEXCOORD2,
     out float4 oTexcoord2 : TEXCOORD3,
-    out float4 oLightDir  : TEXCOORD4,
     out float4 oPosition  : SV_Position)
 {
     oTexcoord = Texcoord.xyxy;
-    oViewdir = CameraPosition - Position.xyz;
+    oViewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
     oNormal = normalize(Normal);
     
-    float3 center = Position.xyz - Normal;
-    Position.xyz = center + Normal * (1 + mRadiusP * POINTLIGHT_MAX_RADIUS);
+    Position.xyz = mPosition + Normal * (1 + mRadiusP * POINTLIGHT_MAX_RADIUS);
     
-    oLightDir = float4(center.xyz, 1);
-
     oPosition = mul(float4(Position.xyz, 1), matViewProject);
     oTexcoord2 = float4(oPosition.xyz, oPosition.w);
 }
@@ -50,7 +47,6 @@ float4 PointLightingPS(
     float3 normal   : TEXCOORD1,
     float3 viewdir  : TEXCOORD2,
     float4 texcoord2 : TEXCOORD3,
-    float4 lightPos  : TEXCOORD4,
     float4 screenPosition : SV_Position,
     uint isFrontFace : SV_IsFrontFace) : SV_Target
 {
@@ -66,18 +62,15 @@ float4 PointLightingPS(
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
     float3 P = GetPosition(texCoord);
-    float3 V = normalize(mul(viewdir, matView));
-    float3 L = normalize(mul(lightPos, matView).xyz - P);
-
-    float3 v = lightPos - mul(float4(P, 1), matViewInverse).xyz;
-    float d2 = 1 / dot(v, v);
+    float3 V = normalize(viewdir);
+    float3 L = normalize(mul(mPosition, matView).xyz - P);
 
     float4 lighting = 0.0f;
     lighting.rgb += DiffuseBRDF(material.normal, L, V, material.smoothness) * material.albedo;
     lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB);
     lighting *= (1 + mIntensityP * POINTLIGHT_MAX_INTENSITY);
-    lighting *= GetPhysicalLightAttenuation(lightPos, mul(float4(P, 1), matViewInverse), (1 + mRadiusP * POINTLIGHT_MAX_RADIUS), 1 - mBlubP);
+    lighting *= GetPhysicalLightAttenuation(mPosition, mul(float4(P, 1), matViewInverse), (1 + mRadiusP * POINTLIGHT_MAX_RADIUS), 1 - mBlubP);
 
     return lighting;
 }
