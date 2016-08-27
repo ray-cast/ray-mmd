@@ -171,7 +171,3 @@ Ray-MMD
 ```
     http://www.hdrlabs.com/sibl/archive.html
 ```
-
-#### 借物表 :
-* Model :  
-　　TDA China Dress Luo Tianyi Canary Ver1.00 [Silver]
