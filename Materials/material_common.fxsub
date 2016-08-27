@@ -367,6 +367,8 @@ float4 GetTextureColor(float2 uv, bool use_texture)
     #endif
 #else
     float4 diffuse = MaterialDiffuse;
+    diffuse.rgb += MaterialSpecular;
+    
     if (use_texture)
     {
         float4 TexColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum);
@@ -511,7 +513,7 @@ float GetSmoothness(float2 coord)
 #endif
 }
 
-float GetMetalness(float2 coord)
+float3 GetMetalness(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL
     #if METALNESS_MAP_ENABLE
@@ -548,7 +550,7 @@ float GetMetalness(float2 coord)
         return metalness;
     #endif
 #else
-    return 0.0f;
+    return max(0, MaterialSpecular / (MaterialDiffuse.rgb + MaterialSpecular));
 #endif
 }
 
@@ -627,7 +629,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 
     clip(albedo.a - AlphaThreshold);
     
-    float MaterialMetalness = GetMetalness(IN.Texcoord);
+    float3 MaterialMetalness = GetMetalness(IN.Texcoord);
 
     MaterialParam material;
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
