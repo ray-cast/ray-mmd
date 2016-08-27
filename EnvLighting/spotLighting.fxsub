@@ -1,0 +1,114 @@
+#include "../ray.conf"
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+#include "../shader/gbuffer.fx"
+#include "../shader/gbuffer_sampler.fx"
+#include "../shader/lighting.fx"
+
+float mR : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "R+"; >;
+float mG : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "G+"; >;
+float mB : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "B+"; >;
+float mRangeP : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Range+"; >;
+float mAngleM : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Angle-"; >;
+float mIntensityM : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Intensity-"; >;
+float3 mPosition : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Position"; >;
+float3 mDirection : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Direction"; >;
+
+float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
+
+static float LightRange = 1 + mRangeP * SPOTLIGHT_MAX_RADIUS;
+static float LightSpotAngle = 1 - mAngleM;
+static float LightIntensity = (1 - mIntensityM) * SPOTLIGHT_MAX_INTENSITY;
+
+void SpotLightingVS(
+    in float4 Position : POSITION,
+    in float3 Normal   : NORMAL,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float3 oNormal    : TEXCOORD1,
+    out float3 oViewdir   : TEXCOORD2,
+    out float4 oTexcoord2 : TEXCOORD3,
+    out float4 oPosition  : SV_Position)
+{
+    oTexcoord = Texcoord.xyxy;
+    oViewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
+    oNormal = normalize(Normal);
+    
+    if (length(Position.xyz - mPosition) > 0.1)
+    {
+        Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1 + LightSpotAngle), LightSpotAngle);
+    }
+    
+    Position.xyz = mPosition + (Position.xyz - mPosition) * LightRange;
+    
+    oPosition = mul(float4(Position.xyz, 1), matViewProject);
+    oTexcoord2 = float4(oPosition.xyz, oPosition.w);
+}
+
+float3 GetPosition(float2 uv)
+{
+    float depth = tex2D(Gbuffer4Map, uv).r;
+    return ReconstructPos(uv, matProjectInverse, depth);
+}
+
+float4 SpotLightingPS(
+    float4 texcoord : TEXCOORD0,
+    float3 normal   : TEXCOORD1,
+    float3 viewdir  : TEXCOORD2,
+    float4 texcoord2 : TEXCOORD3,
+    float4 screenPosition : SV_Position,
+    uint isFrontFace : SV_IsFrontFace) : SV_Target
+{
+    float2 texCoord = texcoord2.xy / texcoord2.w;
+    texCoord = PosToCoord(texCoord);
+    texCoord += ViewportOffset;
+
+    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
+    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
+    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+
+    float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
+    float3 LightDirection = normalize(mul(mDirection - mPosition, (float3x3)matView));
+    
+    float3 P = GetPosition(texCoord);
+    float3 V = normalize(viewdir);
+    float3 L = normalize(LightPosition - P);    
+
+    float4 lighting = 0.0f;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+    
+    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
+    lighting.rgb *= GetSpotAttenuation(P, LightPosition, LightDirection, LightSpotAngle, LightRange);
+    lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);
+
+    return lighting;
+}
+
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+    > { \
+        pass DrawObject { \
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
+            CullMode = CW;\
+            VertexShader = compile vs_3_0 SpotLightingVS(); \
+            PixelShader  = compile ps_3_0 SpotLightingPS(); \
+        } \
+    }
+
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTech < string MMDPass = "shadow";  > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}

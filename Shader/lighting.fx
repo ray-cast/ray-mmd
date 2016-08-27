@@ -202,13 +202,13 @@ float GetPhysicalLightAttenuation(float3 lightPosition, float3 P, float radius, 
     return attenuation;
 }
 
-float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 atten, float3 pos)
+float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, float angle, float radius)
 {
-    float3 v = pos - lightPosition;
-    float d2 = dot(v, v);
-    float d = sqrt(d2);
-    float spotFactor = dot(normalize(v), lightDirection);
-    return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor) * (spotFactor / dot(atten, float3(1, d, d2)));
+    float3 v = normalize(P - lightPosition);
+    float spotAngle = max(0, dot(v, lightDirection));   
+    float spotFalloff = cos(angle) / (spotAngle + 1e-6);
+    float spotAttenuation = 1.0h - pow(saturate(spotFalloff), radius);
+    return spotAttenuation;
 }
 
 float3 ShadingLight(float3 albedo, float4 lighting)
