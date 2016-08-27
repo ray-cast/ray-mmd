@@ -155,7 +155,7 @@ Ray-MMD
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
 * 如果是HDR文件，点ToneMapping，然后Apply即可  
 [![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
-* 点击Radiance中的Filter skybox with cmft，选中Exclude base和PhongBRDF以及Wrap模式并Process  
+* 点击Radiance中的Filter skybox with cmft，选中Wrap模式并Process  
 [![link text](Screenshot/4.2_small.png)](Screenshot/4.2.png)
 * 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
 [![link text](Screenshot/4.3_small.png)](Screenshot/4.3.png)
