@@ -84,12 +84,9 @@ float4 PointLightingPS(
     technique name < string MMDPass = mmdpass;\
     > { \
         pass DrawObject { \
-            ZEnable = false; \
-            ZWriteEnable = false;\
-            AlphaBlendEnable = TRUE; \
-            AlphaTestEnable = FALSE;\
-            SrcBlend = ONE;\
-            DestBlend = ONE;\
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
             CullMode = CW;\
             VertexShader = compile vs_3_0 PointLightingVS(); \
             PixelShader  = compile ps_3_0 PointLightingPS(); \

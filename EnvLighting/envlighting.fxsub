@@ -147,7 +147,8 @@ float4 EnvLightingPS(
     technique name < string MMDPass = mmdpass;\
     > { \
         pass DrawObject { \
-            AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
             VertexShader = compile vs_3_0 EnvLightingVS(); \
             PixelShader  = compile ps_3_0 EnvLightingPS(); \
         } \
