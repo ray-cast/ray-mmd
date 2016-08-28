@@ -13,6 +13,15 @@ bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
 float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
 
+float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
+float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
+float EnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
+
+static float rotateX = EnvRotateX * PI_2;
+static float rotateY = EnvRotateY * PI_2;
+static float rotateZ = EnvRotateZ * PI_2;
+static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
+
 texture decal : MATERIALTEXTURE;
 sampler decalMap = sampler_state
 {
@@ -20,8 +29,8 @@ sampler decalMap = sampler_state
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MIPFILTER = NONE;
-    ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
 };
 
 void SkyboxVS(
@@ -43,12 +52,12 @@ void SkyboxVS(
 
 float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
 {
-    float3 N = normalize(normal).xyz;
+    float3 N = normalize(mul(rotate, normal)).xyz;   
     if (ExistRay)
     {
 #if SKYBOX_GAMMA_CORRECTION
         return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
-#elif SKYBOX_HDR_ENABLE
+#elif SKYBOX_HDR_ENABLE  
         float4 rgbm = tex2D(decalMap, computeSphereCoord(N));
         return float4(DecodeRGBM(rgbm), 1);
 #else

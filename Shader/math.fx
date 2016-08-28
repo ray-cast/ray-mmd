@@ -21,6 +21,10 @@
 #   define PI 3.141592654f
 #endif
 
+#ifndef PI_2
+#   define PI_2 (3.141592654f * 2.0)
+#endif
+
 #ifndef EPSILON
 #   define EPSILON 1e-5
 #endif
@@ -200,6 +204,39 @@ float2 CoordToPos(float2 coord)
 {
     coord.y = 1 - coord.y;
     return coord * 2 - 1;
+}
+
+float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
+{
+    float sj, cj, si, ci, sh, ch;
+
+    sincos(eulerX, si, ci);
+    sincos(eulerY, sj, cj);
+    sincos(eulerZ, sh, ch);
+
+    float cc = ci * ch;
+    float cs = ci * sh;
+    float sc = si * ch;
+    float ss = si * sh;
+
+    float a1 = cj * ch;
+    float a2 = sj * sc - cs;
+    float a3 = sj * cc + ss;
+
+    float b1 = cj * sh;
+    float b2 = sj * ss + cc;
+    float b3 = sj * cs - sc;
+
+    float c1 = -sj;
+    float c2 = cj * si;
+    float c3 = cj * ci;
+    
+    float3x3 rotate;
+    rotate[0] = float3(a1, a2, a3);
+    rotate[1] = float3(b1, b2, b3);
+    rotate[2] = float3(c1, c2, c3);
+    
+    return rotate;
 }
 
 float2 computeSphereCoord(float3 normal)

@@ -5,6 +5,15 @@
 #include "../shader/gbuffer_sampler.fx"
 #include "../shader/lighting.fx"
 
+float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
+float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
+float EnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
+
+static float rotateX = EnvRotateX * PI_2;
+static float rotateY = EnvRotateY * PI_2;
+static float rotateZ = EnvRotateZ * PI_2;
+static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
+
 texture IBLDiffuseTexture: MATERIALTOONTEXTURE;
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
@@ -97,6 +106,9 @@ float4 EnvLightingPS(
     float mipLayer = EnvironmentMip(material.smoothness, IBL_MIPMAP_LEVEL);
 
     float3 R = EnvironmentReflect(worldNormal, worldView);
+
+    worldNormal = mul(rotate, worldNormal);
+    R = mul(rotate, R);
 
 #if IBL_QUALITY >= 2
     float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal));
