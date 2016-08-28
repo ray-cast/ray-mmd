@@ -7,4 +7,4 @@
 // 绑定的PMX文件
 #define POINTLIGHT_CONTROLLER "PointLight.pmx"
 
-#include "pointLighting.fxsub"
+#include "point_lighting.fxsub"

@@ -211,9 +211,27 @@ float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, 
     return spotAttenuation;
 }
 
-float3 ShadingLight(float3 albedo, float4 lighting)
+float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 {
-    return lighting.rgb * (albedo + lighting.a / (luminance(lighting.rgb) + 1e-6f));
+    float3 R = reflect(V, N);
+    float3 centerToRay = dot(L, R) * R - L;
+    float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
+    return normalize(closestPoint);
+}
+
+float SphereNormalization(float len, float radius, float gloss)
+{
+    float dist = saturate(radius / len);
+    float normFactor = gloss / saturate( gloss + 0.5 * dist );
+    return normFactor * normFactor;
+}
+
+float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float gloss, float3 f0)
+{
+    float len = max(length(L),  1e-6);
+    L = SphereLightDirection(N, V, L, radius);
+    float roughness = SmoothnessToRoughness(gloss);
+    return SpecularBRDF(N, V, L, roughness, f0, SphereNormalization(len, radius, gloss));
 }
 
 #endif

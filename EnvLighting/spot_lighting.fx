@@ -7,4 +7,4 @@
 // 绑定的PMX文件
 #define SPOTLIGHT_CONTROLLER "SpotLight.pmx"
 
-#include "spotLighting.fxsub"
+#include "spot_lighting.fxsub"

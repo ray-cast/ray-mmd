@@ -29,8 +29,9 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "SpotLight*.* =./EnvLighting/spotLighting.fx;"
-        "PointLight*.* =./EnvLighting/pointLighting.fx;"
+        "SpotLight*.* =./EnvLighting/spot_lighting.fx;"
+        "PointLight*.* =./EnvLighting/point_lighting.fx;"
+        "SphereLight*.* =./EnvLighting/sphere_lighting.fx;"
         "skybox_hdr.* = ./EnvLighting/envlighting_hdr.fx;"
         "skybox.* = ./EnvLighting/envlighting.fx;"
         "* = hide;";

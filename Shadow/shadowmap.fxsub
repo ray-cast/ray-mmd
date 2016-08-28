@@ -28,6 +28,7 @@ texture ShadowMap : OFFSCREENRENDERTARGET <
         "ray_controller.pmx=hide;"
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
+        "SphereLight*.*=hide;"
         "*.pmx=shadow/shadow.fx;"
         "*.pmd=shadow/shadow.fx;"
         "*.x=shadow/shadow.fx;";
@@ -52,6 +53,7 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
         "ray_controller.pmx=hide;"
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
+        "SphereLight*.*=hide;"
         "*.pmx=shadow/lightdepth.fx;"
         "*.pmd=shadow/lightdepth.fx;"
         "*.x=shadow/lightdepth.fx;";
