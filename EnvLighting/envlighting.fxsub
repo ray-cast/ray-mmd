@@ -8,14 +8,6 @@
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
 float EnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
-float EnvShadow  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;
-
-shared texture2D ShadowmapMap : RENDERCOLORTARGET;
-sampler ShadowmapSamp = sampler_state {
-    texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
 
 static float rotateX = EnvRotateX * PI_2;
 static float rotateY = EnvRotateY * PI_2;
@@ -143,13 +135,7 @@ float4 EnvLightingPS(
     float3 diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
     float3 specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
-#if SHADOW_QUALITY > 0
-    float shadow = lerp(1, tex2D(ShadowmapSamp, texCoord).r, EnvShadow);
-    diffuse *= shadow;
-    specular *= shadow;
-#endif
-
-#if (IBL_QUALITY > 3) && (SSAO_SAMPLER_COUNT > 0)
+#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
     specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
     
@@ -173,8 +159,7 @@ float4 EnvLightingPS(
     technique name < string MMDPass = mmdpass;\
     > { \
         pass DrawObject { \
-            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-            SrcBlend = ONE; DestBlend = ONE;\
+            AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
             VertexShader = compile vs_3_0 EnvLightingVS(); \
             PixelShader  = compile ps_3_0 EnvLightingPS(); \
         } \

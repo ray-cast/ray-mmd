@@ -27,7 +27,7 @@ float4 DeferredLightingPS(
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
     float3 background = tex2D(ScnSamp, coord).rgb;
-    float3 lighting = background;
+    float3 lighting = background + tex2D(LightingSampler, coord).rgb;
 
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
@@ -37,7 +37,7 @@ float4 DeferredLightingPS(
 
 #if IBL_QUALITY > 0
     float4 envLighting = tex2D(EnvLightingSampler, coord);
-#if (IBL_QUALITY > 3) && (SSAO_SAMPLER_COUNT > 0)
+#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldView = mul(normalize(viewdir), (float3x3)matViewInverse);
 
@@ -56,6 +56,12 @@ float4 DeferredLightingPS(
 
     diffuse = ycbcr2rgb(diffuse);
     specular = ycbcr2rgb(specular);
+    
+#if SHADOW_QUALITY > 0
+    float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
+    diffuse *= shadow;
+    specular *= shadow;
+#endif
 
 #   if SSAO_SAMPLER_COUNT > 0
         float diffOcclusion = ssao * ssao;
@@ -68,6 +74,11 @@ float4 DeferredLightingPS(
 #   if SSAO_SAMPLER_COUNT > 0
         envLighting *= (ssao * ssao);
 #   endif
+
+#if SHADOW_QUALITY > 0
+    envLighting *= lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
+#endif
+
     lighting += envLighting.rgb;
 #endif
 

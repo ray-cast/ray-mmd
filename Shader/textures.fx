@@ -14,6 +14,31 @@ sampler ScnSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
+texture LightingMap: OFFSCREENRENDERTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string DefaultEffect =
+        "self = hide;"
+        "ray_controller.pmx=hide;"
+        "skybox_hdr.*=hide;"
+        "skybox.*=hide;"
+        "SpotLight*.* =./EnvLighting/spot_lighting.fx;"
+        "PointLight*.* =./EnvLighting/point_lighting.fx;"
+        "SphereLight*.* =./EnvLighting/sphere_lighting.fx;"
+        "RectangleLight*.* =./EnvLighting/rectangle_lighting.fx;"
+        "* = hide;";
+>;
+
+sampler LightingSampler = sampler_state {
+    texture = <LightingMap>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
 #if IBL_QUALITY > 0
 texture EnvLightingMap: OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
@@ -29,11 +54,11 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "SpotLight*.* =./EnvLighting/spot_lighting.fx;"
-        "PointLight*.* =./EnvLighting/point_lighting.fx;"
-        "SphereLight*.* =./EnvLighting/sphere_lighting.fx;"
-        "skybox_hdr.* = ./EnvLighting/envlighting_hdr.fx;"
-        "skybox.* = ./EnvLighting/envlighting.fx;"
+        "SpotLight*.*=hide;"
+        "PointLight*.*=hide;"
+        "SphereLight*.*=hide;"
+        "skybox_hdr.*=./EnvLighting/envlighting_hdr.fx;"
+        "skybox.*=./EnvLighting/envlighting.fx;"
         "* = hide;";
 >;
 
