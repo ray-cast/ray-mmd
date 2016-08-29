@@ -101,7 +101,7 @@ float4 RectangleLightingPS(
     L = RectangleLight(R, LightPosition - P, LightRight, LightUp, LightDirection, float2(LightWidth, LightHeight));
     L = normalize(L);
     
-    //lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= GetPhysicalLightAttenuation(distance, LightRange, 1 - mBlubP);
     lighting *= RectangleLightDiffuse(normalize(distance), -LightDirection);
