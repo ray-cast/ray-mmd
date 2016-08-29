@@ -94,14 +94,14 @@ float4 RectangleLightingPS(
     float4 lighting = 0.0f;
     
     if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L, V, material.smoothness);
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L, material.transmittance);
         
     L = RectangleLight(R, LightPosition - P, LightRight, LightUp, LightDirection, float2(LightWidth, LightHeight));
     L = normalize(L);
     
-    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+    //lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= GetPhysicalLightAttenuation(distance, LightRange, 1 - mBlubP);
     lighting *= RectangleLightDiffuse(normalize(distance), -LightDirection);
