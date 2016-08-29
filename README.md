@@ -145,7 +145,7 @@ Ray-MMD
 * ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
 [![link text](Screenshot/3.1.jpg)](Screenshot/3.1.jpg)
 
-##### 5.0 制作基于物理的环境光贴图(IBL) :
+##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
 ```
     https://github.com/dariomanesku/cmftStudio
@@ -166,27 +166,29 @@ Ray-MMD
 * 如图PMXEditor打开skybox.pmx，这里Texture里放渲染天空的纹理，Tone放Irradiance中的纹理SphereMap放Radiance中的纹理  
 [![link text](Screenshot/4.6.png)](Screenshot/4.6.png)
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
+
+##### 6.0 制作基于物理的环境光贴图(IBL) 新:
+* 以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用
+* 因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中
+* 因为作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染
+* 首先启动cmftstudio
+* 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
+* 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
+* 这里因为处理的是HDR文件了，不要再ToneMapping了  
+[![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
+* 点击Radiance中的Filter skybox with cmft，选中Wrap模式，以及Gamma中全改为None并Process  
+[![link text](Screenshot/6.1.png)](Screenshot/6.1.png)
+* 点击Irradiance中的Fiter skybox with cmft，Gamma中全改为None，Process即可  
+[![link text](Screenshot/6.2.png)](Screenshot/6.2.png)
+* 处理完后效果图如下
+[![link text](Screenshot/6.3.png)](Screenshot/6.3.png)
+* 接着将它们以RGBA16F或者RGBA32F的格式保存，并放入RGBMencode的同级目录下  
+[![link text](Screenshot/6.4.png)](Screenshot/6.4.png)
+* 分次拖拽它们到RGBMencode 依次输出对应的文件
+* 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
+[![link text](Screenshot/6.5.png)](Screenshot/6.5.png)
 * 这里提供一个天空盒的地址，文件是hdr要在cmftstudio里Tonemapping
 
 ```
     http://www.hdrlabs.com/sibl/archive.html
 ```
-* 以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用
-* 因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中
-* 我写一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染
-* 首先启动cmftstudio
-* 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
-* 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
-* 这里因为处理的是HDR文件了，不要再ToneMapping了
-[![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
-* 点击Radiance中的Filter skybox with cmft，选中Wrap模式，以及Gamma中全改为None并Process  
-[![link text](Screenshot/5.7.png)](Screenshot/5.7.png)
-* 点击Irradiance中的Fiter skybox with cmft，Gamma中全改为None，Process即可  
-[![link text](Screenshot/5.8.png)](Screenshot/5.8.png)
-* 处理完后效果图如下
-[![link text](Screenshot/5.9.png)](Screenshot/5.9.png)
-* 接着将它们以RGBA16F或者RGBA32F的格式保存，并放入RGBMencode的同级目录下
-[![link text](Screenshot/5.10.png)](Screenshot/5.10.png)
-* 分次拖拽它们到RGBMencode 依次输出对应的文件
-* 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用
-[![link text](Screenshot/5.11.png)](Screenshot/5.11.png)
