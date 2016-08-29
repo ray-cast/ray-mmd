@@ -117,30 +117,29 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
 {
     float m2 = m * m;
-    float3 H = normalize( V + L );
+    float3 H = normalize(V + L);
 
-    float NdotH = saturate( dot( N, H ) );
-    float NdotL = saturate( dot( N, L ) );
-    float NdotV = abs( dot( N, V ) ) + 1e-5h;
+    float NdotH = saturate(dot(N, H));
+    float NdotL = saturate(dot(N, L));
+    float NdotV = abs(dot(N, V)) + 1e-5h;
 
     float spec = (NdotH * m2 - NdotH) * NdotH + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
 
-    float Gv = NdotL * sqrt( (-NdotV * m2 + NdotV) * NdotV + m2 );
-    float Gl = NdotV * sqrt( (-NdotL * m2 + NdotL) * NdotL + m2 );
+    float Gv = NdotL * sqrt((-NdotV * m2 + NdotV) * NdotV + m2);
+    float Gl = NdotV * sqrt((-NdotL * m2 + NdotL) * NdotL + m2);
     spec *= 0.5h / (Gv + Gl);
 
-    f0 = max(0.04, f0);
-    float f90 = saturate( dot( f0, 0.33333h ) / 0.02h );
-    float3 fresnel = lerp( f0, f90, pow( 1 - saturate( dot( L, H ) ), 5 ) );
+    float f90 = saturate(dot(f0, 0.33333h) / 0.02h);
+    float3 fresnel = fresnelSchlick(f0, f90, saturate(dot(L, H)));
 
-    return fresnel * spec * NdotL;
+    return fresnel * spec;
 }
 
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
 {
     float roughness = SmoothnessToRoughness(gloss);
-    return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
+    return SpecularBRDF(N, L, V, roughness, f0, 1.0f) * saturate(dot(N, L));
 }
 
 void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxCenter, in float3 envBoxMin, in float3 envBoxMax)
@@ -222,16 +221,16 @@ float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 float SphereNormalization(float len, float radius, float gloss)
 {
     float dist = saturate(radius / len);
-    float normFactor = gloss / saturate( gloss + 0.5 * dist );
+    float normFactor = gloss / saturate(gloss + 0.5 * dist);
     return normFactor * normFactor;
 }
 
 float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float gloss, float3 f0)
 {
     float len = max(length(L),  1e-6);
-    L = SphereLightDirection(N, V, L, radius);
+    float3 L2 = SphereLightDirection(N, V, L, radius);
     float roughness = SmoothnessToRoughness(gloss);
-    return SpecularBRDF(N, V, L, roughness, f0, SphereNormalization(len, radius, gloss));
+    return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, gloss)) * saturate(dot(N, L));
 }
 
 #endif

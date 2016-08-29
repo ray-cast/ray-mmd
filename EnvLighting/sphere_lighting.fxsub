@@ -8,13 +8,13 @@
 float mR : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "R+"; >;
 float mG : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "G+"; >;
 float mB : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "B+"; >;
-float mRadiusP : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "Radius+"; >;
+float mRangeP : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "Range+"; >;
 float mIntensityM : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "Intensity-"; >;
 float3 mPosition : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string item = "Position"; >;
 
 float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
 
-static float LightRange = (1 + mRadiusP * SPHERELIGHT_MAX_RADIUS);
+static float LightRange = (1 + mRangeP * SPHERELIGHT_MAX_RADIUS);
 static float LightRange2 = LightRange * SPHERELIGHT_MAX_ATTENUATION;
 static float LightIntensity = (1 - mIntensityM) * SPHERELIGHT_MAX_INTENSITY;
 
