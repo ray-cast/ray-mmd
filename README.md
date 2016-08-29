@@ -184,7 +184,7 @@ Ray-MMD
 [![link text](Screenshot/6.1.png)](Screenshot/6.1.png)
 * 点击Irradiance中的Fiter skybox with cmft，Gamma中全改为None，Process即可  
 [![link text](Screenshot/6.2.png)](Screenshot/6.2.png)
-* 处理完后效果图如下
+* 处理完后效果图如下  
 [![link text](Screenshot/6.3_small.png)](Screenshot/6.3.png)
 * 接着将它们以RGBA16F或者RGBA32F的格式保存，并放入RGBMencode的同级目录下  
 [![link text](Screenshot/6.4.png)](Screenshot/6.4.png)
