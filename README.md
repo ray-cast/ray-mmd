@@ -132,6 +132,7 @@ Ray-MMD
 * EnvLight+-环境光的漫反射光强
 * EnvSpecLight+-环境光的镜面光强
 * EnvRotateX/Y/Z 旋转天空盒的X/Y/Z轴
+* EnvShadow 主光源阴影用于环境光阴影的强度
 * BloomThreshold 提取最亮部分的阈值
 * BloomRadius 产生泛光的大小
 * BloomIntensity 泛光的整体强度
@@ -146,7 +147,6 @@ Ray-MMD
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)
 * ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
-[![link text](Screenshot/4.0.png)](Screenshot/4.0.png)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
