@@ -26,9 +26,11 @@ texture ShadowMap : OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
+        "skybox*.*=hide;"
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
+        "RectangleLight*.*=hide;"
         "*.pmx=shadow/shadow.fx;"
         "*.pmd=shadow/shadow.fx;"
         "*.x=shadow/shadow.fx;";
@@ -51,9 +53,11 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
+        "skybox*.*=hide;"
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
+        "RectangleLight*.*=hide;"
         "*.pmx=shadow/lightdepth.fx;"
         "*.pmd=shadow/lightdepth.fx;"
         "*.x=shadow/lightdepth.fx;";
