@@ -146,7 +146,7 @@ Ray-MMD
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)
 * ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
-[![link text](Screenshot/3.1.jpg)](Screenshot/3.1.jpg)
+[![link text](Screenshot/4.0.png)](Screenshot/4.0.png)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
