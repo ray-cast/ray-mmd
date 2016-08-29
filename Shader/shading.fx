@@ -37,7 +37,7 @@ float4 DeferredLightingPS(
 
 #if IBL_QUALITY > 0
     float4 envLighting = tex2D(EnvLightingSampler, coord);
-#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
+#if (IBL_QUALITY > 3) && (SSAO_SAMPLER_COUNT > 0)
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldView = mul(normalize(viewdir), (float3x3)matViewInverse);
 

@@ -135,7 +135,7 @@ float4 EnvLightingPS(
     float3 diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
     float3 specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
-#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
+#if (IBL_QUALITY > 3) && (SSAO_SAMPLER_COUNT > 0)
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
     specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
     
