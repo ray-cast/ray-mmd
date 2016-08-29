@@ -47,18 +47,6 @@ float3 GetPosition(float2 uv)
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
-float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
-{
-    float RdotN = dot(Ln, R) + 1e-6;
-    float intersectLen = dot(Ln, L) / RdotN;
-    float3 I = R * intersectLen - L;
-
-    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-    
-    return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
-}
-
 int RectangleLightDiffuse(float3 L, float3 lightDirection)
 {
    return step(0, dot(L, lightDirection));
@@ -83,28 +71,26 @@ float4 RectangleLightingPS(
     float3 LightDirection = normalize(mul(mDirection - mPosition, (float3x3)matView));
     float3 LightRight = normalize(mul((mRightTop + mRightBottom) / 2 - mPosition, (float3x3)matView));
     float3 LightUp = normalize(cross(LightDirection, LightRight));
+    float2 LightRect = float2(LightWidth, LightHeight);
     
     float3 P = GetPosition(texcoord.xy);
     float3 V = normalize(viewdir);
     float3 R = reflect(V, material.normal);
-    
-    float3 distance = RectangleDirection(P, LightPosition, LightRight, LightUp, LightDirection, float2(LightWidth, LightHeight));
-    float3 L = normalize(distance);
+    float3 L = LightPosition - P;
+    float3 Lw = RectangleDirection(L, LightRight, LightUp, LightDirection, LightRect);
+    float3 L2 = normalize(Lw);
     
     float4 lighting = 0.0f;
     
     if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L, V, material.smoothness);
+        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness);
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L, material.transmittance);
+        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L2, material.transmittance);
         
-    L = RectangleLight(R, LightPosition - P, LightRight, LightUp, LightDirection, float2(LightWidth, LightHeight));
-    L = normalize(L);
-    
-    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+    lighting.rgb += RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting *= GetPhysicalLightAttenuation(distance, LightRange, 1 - mBlubP);
-    lighting *= RectangleLightDiffuse(normalize(distance), -LightDirection);
+    lighting *= GetPhysicalLightAttenuation(Lw, LightRange, 1 - mBlubP);
+    lighting *= RectangleLightDiffuse(L, -LightDirection);
 
     return lighting;
 }
