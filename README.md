@@ -7,7 +7,7 @@ Ray-MMD
 [![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
 
 #### 更新内容 :
-##### 2016-8-35 ver 1.0.3 beta
+##### 2016-8-30 ver 1.0.3 beta
 * 改进默认材质对Diff&Spec的兼容
 * 添加了新的HDR和工具，以及更新HDR制作教程(现在可以支持HDR的天空了)
 * 添加了LightMap用于渲染多个光源
