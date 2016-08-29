@@ -168,9 +168,10 @@ Ray-MMD
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
 
 ##### 6.0 制作基于物理的环境光贴图(IBL) 新:
-* 以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用
-* 因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中
-* 因为作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染
+　　以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用
+　　因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中
+　　因此作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染
+
 * 首先启动cmftstudio
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
