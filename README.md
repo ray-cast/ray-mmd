@@ -127,14 +127,17 @@ Ray-MMD
 ##### 4.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
 * DirectLight+/-直接光照中整体光强
 * IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
-* EnvLight+-环境光的漫反射光强
-* EnvSpecLight+-环境光的镜面光强
 * SSAO+- 环境光遮蔽强度  
 * SSAO Radius+- 环境光遮蔽的范围
+* EnvLight+-环境光的漫反射光强
+* EnvSpecLight+-环境光的镜面光强
+* EnvRotateX/Y/Z 旋转天空盒的X/Y/Z轴
 * BloomThreshold 提取最亮部分的阈值
+* BloomRadius 产生泛光的大小
 * BloomIntensity 泛光的整体强度
+* Vignette 窗口四周的暗角(虚角)
 * Exposure 曝光强度
-* Vignette 窗口四周的暗角
+* Blub 相机中的B快门
 * Dispersion 相机色散的效果
 * DispersionRadius 相机色散的区域大小
 * FilmGrain 相机因曝光不足参数的噪点
@@ -188,7 +191,7 @@ Ray-MMD
 * 分次拖拽它们到RGBMencode 依次输出对应的文件
 * 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
 [![link text](Screenshot/6.5.png)](Screenshot/6.5.png)
-* 这里提供一个天空盒的地址，文件是hdr要在cmftstudio里Tonemapping
+* 这里提供一个天空盒的地址
 
 ```
     http://www.hdrlabs.com/sibl/archive.html
