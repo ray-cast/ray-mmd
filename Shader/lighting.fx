@@ -201,6 +201,16 @@ float GetPhysicalLightAttenuation(float3 lightPosition, float3 P, float radius, 
     return attenuation;
 }
 
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+{
+    float invRadius = 1 / radius;    
+    float d = length(L);
+    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2));
+    float denom = 1 + max(d - attenuationBulbSize, 0) / attenuationBulbSize;
+    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);    
+    return attenuation;
+}
+
 float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, float angle, float radius)
 {
     float3 v = normalize(P - lightPosition);
@@ -231,6 +241,15 @@ float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float glo
     float3 L2 = SphereLightDirection(N, V, L, radius);
     float roughness = SmoothnessToRoughness(gloss);
     return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, gloss)) * saturate(dot(N, L));
+}
+
+float3 RectangleDirection(float3 P, float3 Lp, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
+{
+    float3 L = Lp - P;
+    float3 I = dot(Ln, L) * Ln - L;
+    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
+    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
+    return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
 }
 
 #endif
