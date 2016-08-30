@@ -1,9 +1,9 @@
-#include "../ray.conf"
-#include "../shader/math.fx"
-#include "../shader/common.fx"
-#include "../shader/gbuffer.fx"
-#include "../shader/gbuffer_sampler.fx"
-#include "../shader/lighting.fx"
+#include "../../ray.conf"
+#include "../../shader/math.fx"
+#include "../../shader/common.fx"
+#include "../../shader/gbuffer.fx"
+#include "../../shader/gbuffer_sampler.fx"
+#include "../../shader/lighting.fx"
 
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;

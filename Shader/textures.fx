@@ -26,10 +26,10 @@ texture LightingMap: OFFSCREENRENDERTARGET <
         "ray_controller.pmx=hide;"
         "skybox_hdr.*=hide;"
         "skybox.*=hide;"
-        "SpotLight*.* =./EnvLighting/spot_lighting.fx;"
-        "PointLight*.* =./EnvLighting/point_lighting.fx;"
-        "SphereLight*.* =./EnvLighting/sphere_lighting.fx;"
-        "RectangleLight*.* =./EnvLighting/rectangle_lighting.fx;"
+        "SpotLight*.* =./Lighting/shader/spot_lighting.fx;"
+        "PointLight*.* =./Lighting/shader/point_lighting.fx;"
+        "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"
+        "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
         "* = hide;";
 >;
 
@@ -57,8 +57,8 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
         "SpotLight*.*=hide;"
         "PointLight*.*=hide;"
         "SphereLight*.*=hide;"
-        "skybox_hdr.*=./EnvLighting/envlighting_hdr.fx;"
-        "skybox.*=./EnvLighting/envlighting.fx;"
+        "skybox_hdr.*=./Lighting/shader/envlighting_hdr.fx;"
+        "skybox.*=./Lighting/shader/envlighting.fx;"
         "* = hide;";
 >;
 
