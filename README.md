@@ -15,6 +15,7 @@ Ray-MMD
 * 添加了天空盒旋转表情 (EnvRotateX/Y/Z)
 * 添加了主光源阴影用于IBL的表情 (EnvShadow)
 * 添加了Blub表情 (B快门)
+* 修复只启用次法线时normalMapSubScale无效
 
 ##### 2016-8-25 ver 1.0.2
 * 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
