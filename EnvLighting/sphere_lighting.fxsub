@@ -69,17 +69,18 @@ float4 SphereLightingPS(
     float3 P = GetPosition(texCoord);
     float3 V = normalize(viewdir);
     float3 L = LightPosition - P;
+    float3 L2 = normalize(L);
     
     float4 lighting = 0.0f;
     
     if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = DiffuseBRDF(material.normal, normalize(L), V, material.smoothness);
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = TranslucencyBRDF(material.normal, normalize(L), material.transmittance);
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
     
     lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightRange, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange2, 1 - mBlubP);
+    lighting *= GetPhysicalLightAttenuation(L - L2 * LightRange, LightRange2, 1 - mBlubP);
 
     return lighting;
 }
