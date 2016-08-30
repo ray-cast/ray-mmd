@@ -417,14 +417,17 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 
         #if NORMAL_MAP_IN_SPHEREMAP
             float3 tangentNormal = normalize(tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
+            tangentNormal.rg *= normalMapScale;
+            tangentNormal = normalize(tangentNormal);
         #elif NORMAL_MAP_SUB_ENABLE && !NORMAL_MAP_ENABLE
-            float3 tangentNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);            
+            float3 tangentNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);
+            tangentNormal.rg *= normalMapSubScale;
+            tangentNormal = normalize(tangentNormal);            
         #else    
             float3 tangentNormal = normalize(tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
+            tangentNormal.rg *= normalMapScale;
+            tangentNormal = normalize(tangentNormal);
         #endif
-        
-        tangentNormal = lerp(float3(0,0,1), tangentNormal, normalMapScale);
-        tangentNormal = normalize(tangentNormal);
         
         #if NORMAL_MAP_ENABLE && NORMAL_MAP_SUB_ENABLE
             #if NORMAL_MAP_SUB_UV_FLIP && NORMAL_MAP_UV_FLIP == 0
@@ -435,7 +438,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             #endif
         
             float3 tangentSubNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);
-            tangentSubNormal = lerp(float3(0,0,1), tangentSubNormal, normalMapSubScale);
+            tangentSubNormal.rg *= normalMapSubScale;
             tangentSubNormal = normalize(tangentSubNormal);
             
             #if NORMAL_MAP_SUB_NORMAL_ROTATE
