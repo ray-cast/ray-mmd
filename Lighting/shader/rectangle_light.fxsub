@@ -31,13 +31,9 @@ void RectangleLightingVS(
     in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
-    out float3 oNormal    : TEXCOORD1,
-    out float3 oViewdir   : TEXCOORD2,
     out float4 oPosition  : SV_Position)
 {
     oTexcoord = Texcoord.xyxy + ViewportOffset.xyxy;
-    oViewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
-    oNormal = normalize(Normal);   
     oPosition = float4(CoordToPos(Texcoord), 0, 1);
 }
 
@@ -52,13 +48,7 @@ int RectangleLightDiffuse(float3 L, float3 lightDirection)
    return step(0, dot(L, lightDirection));
 }
 
-float4 RectangleLightingPS(
-    float4 texcoord : TEXCOORD0,
-    float3 normal   : TEXCOORD1,
-    float3 viewdir  : TEXCOORD2,
-    float4 texcoord2 : TEXCOORD3,
-    float4 screenPosition : SV_Position,
-    uint isFrontFace : SV_IsFrontFace) : SV_Target
+float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
 {
     float4 MRT0 = tex2D(Gbuffer1Map, texcoord.xy);
     float4 MRT1 = tex2D(Gbuffer2Map, texcoord.xy);
@@ -74,7 +64,7 @@ float4 RectangleLightingPS(
     float2 LightRect = float2(LightWidth, LightHeight);
     
     float3 P = GetPosition(texcoord.xy);
-    float3 V = normalize(viewdir);
+    float3 V = normalize(-P);
     float3 R = reflect(V, material.normal);
     float3 L = LightPosition - P;
     float3 Lw = RectangleDirection(L, LightRight, LightUp, LightDirection, LightRect);
