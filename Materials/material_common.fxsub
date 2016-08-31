@@ -621,7 +621,7 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
     Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
     Out.Texcoord = Texcoord;
     Out.Distance = Out.Position.w;
-    Out.Viewdir = mul(CameraPosition - mul(Position, matWorld).xyz, (float3x3)matView);
+    Out.Viewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
     return Out;
 }
 
