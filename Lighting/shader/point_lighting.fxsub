@@ -22,19 +22,13 @@ void PointLightingVS(
     in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
-    out float3 oNormal    : TEXCOORD1,
-    out float3 oViewdir   : TEXCOORD2,
-    out float4 oTexcoord2 : TEXCOORD3,
+    out float4 oTexcoord2 : TEXCOORD1,
     out float4 oPosition  : SV_Position)
 {
-    oTexcoord = Texcoord.xyxy;
-    oViewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
-    oNormal = normalize(Normal);
-    
     Position.xyz = mPosition + Normal * LightRange;
-    
-    oPosition = mul(float4(Position.xyz, 1), matViewProject);
-    oTexcoord2 = float4(oPosition.xyz, oPosition.w);
+
+    oTexcoord = Texcoord.xyxy;    
+    oTexcoord2 = oPosition = mul(Position, matViewProject);
 }
 
 float3 GetPosition(float2 uv)
@@ -43,13 +37,7 @@ float3 GetPosition(float2 uv)
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
-float4 PointLightingPS(
-    float4 texcoord : TEXCOORD0,
-    float3 normal   : TEXCOORD1,
-    float3 viewdir  : TEXCOORD2,
-    float4 texcoord2 : TEXCOORD3,
-    float4 screenPosition : SV_Position,
-    uint isFrontFace : SV_IsFrontFace) : SV_Target
+float4 PointLightingPS(in float4 texcoord : TEXCOORD0, in float4 texcoord2 : TEXCOORD1) : COLOR0
 {
     float2 texCoord = texcoord2.xy / texcoord2.w;
     texCoord = PosToCoord(texCoord);
@@ -65,7 +53,7 @@ float4 PointLightingPS(
     float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
 
     float3 P = GetPosition(texCoord);
-    float3 V = normalize(viewdir);
+    float3 V = normalize(-P);
     float3 L = normalize(LightPosition - P);
 
     float4 lighting = 0.0f;
