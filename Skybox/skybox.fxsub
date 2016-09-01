@@ -30,8 +30,8 @@ texture decal : MATERIALTEXTURE;
 sampler decalMap = sampler_state
 {
     texture = <decal>;
-    MINFILTER = NONE;
-    MAGFILTER = NONE;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
     MIPFILTER = NONE;
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
