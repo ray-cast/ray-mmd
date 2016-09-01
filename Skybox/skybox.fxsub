@@ -1,8 +1,8 @@
 #include "../shader/math.fx"
 #include "../shader/common.fx"
 
-#ifndef SKYBOX_SIZE
-#   define SKYBOX_SIZE 1000
+#ifndef SKYBOX_MAX_SIZE
+#   define SKYBOX_MAX_SIZE 1000
 #endif
 
 #ifndef SKYDOME_ENABLE
@@ -11,7 +11,11 @@
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
-float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
+#if SKYBOX_HDR_ENABLE
+    float mScale : CONTROLOBJECT < string name="skybox_hdr.pmx"; string item = "Scale+"; >;
+#else
+    float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
+#endif
 
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
@@ -26,11 +30,11 @@ texture decal : MATERIALTEXTURE;
 sampler decalMap = sampler_state
 {
     texture = <decal>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
+    MINFILTER = NONE;
+    MAGFILTER = NONE;
     MIPFILTER = NONE;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
 };
 
 void SkyboxVS(
@@ -42,11 +46,11 @@ void SkyboxVS(
     oNormal = normalize(Position);
     oNormal.y = oNormal.y < -0.05 ? -0.05 : oNormal.y;
     oNormal.y += 0.04999;
-    oPosition = mul(oNormal , matWorldViewProject);
+    oPosition = mul(float4(oNormal.xyz * lerp(SKYBOX_MIN_SIZE, SKYBOX_MAX_SIZE, mScale), 1) , matViewProject);
     oNormal.y -= 0.04999;
 #else
     oNormal = normalize(Position);
-    oPosition = mul(oNormal , matWorldViewProject);
+    oPosition = mul(float4(oNormal.xyz * lerp(SKYBOX_MIN_SIZE, SKYBOX_MAX_SIZE, mScale), 1), matViewProject);
 #endif
 }
 
