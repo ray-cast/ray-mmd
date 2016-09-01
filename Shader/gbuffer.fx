@@ -143,6 +143,40 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     }
 }
 
+GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, float alphaDiffuse)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1.xyz = material.albedo;
+    gbuffer.buffer1.w = material.smoothness;
+
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = alphaDiffuse;
+
+    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+    gbuffer.buffer3.w = 0;
+
+    gbuffer.buffer4 = linearDepth;
+    
+    return gbuffer;
+}
+
+void DecodeGbufferWithAlpha(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialParam material, out float alphaDiffuse)
+{
+    material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
+
+    material.albedo = buffer1.xyz;
+    material.smoothness = buffer1.w;
+
+    material.normal = DecodeNormal(buffer2.xyz);
+    material.index = 0;
+
+    material.specular = ycbcr2rgb(buffer3.xyz);
+    material.transmittance = 0;
+    material.emissive = 0;
+    
+    alphaDiffuse = buffer2.w;
+}
+
 float3 DecodeGBufferNormal(float4 buffer2)
 {
     return DecodeNormal(buffer2.rgb);

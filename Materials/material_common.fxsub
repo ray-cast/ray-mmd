@@ -45,7 +45,13 @@ uniform bool use_toon;
 
 uniform bool opadd;
 
-#define AlphaThreshold 0.5
+#define ALHPA_LAYER_ENABLE 0
+
+#if ALHPA_LAYER_ENABLE > 0
+#   define AlphaThreshold 0.999
+#else
+#   define AlphaThreshold 0.5
+#endif
 
 #define PI 3.141592654f
 
@@ -64,6 +70,10 @@ uniform bool opadd;
 shared texture Gbuffer2RT: RENDERCOLORTARGET;
 shared texture Gbuffer3RT: RENDERCOLORTARGET;
 shared texture Gbuffer4RT: RENDERCOLORTARGET;
+shared texture Gbuffer5RT: RENDERCOLORTARGET;
+shared texture Gbuffer6RT: RENDERCOLORTARGET;
+shared texture Gbuffer7RT: RENDERCOLORTARGET;
+shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
 struct MaterialParam
 {
@@ -205,7 +215,23 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer4 = linearDepth;
     
     return gbuffer;
+}
 
+GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, float alphaDiffuse)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1.xyz = material.albedo;
+    gbuffer.buffer1.w = material.smoothness;
+
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = alphaDiffuse;
+
+    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+    gbuffer.buffer3.w = 0;
+
+    gbuffer.buffer4 = linearDepth;
+    
+    return gbuffer;
 }
 
 float RoughnessToSmoothness(float roughness)
@@ -226,6 +252,17 @@ float ShininessToSmoothness(float spec)
         texture = AlbedoMap;
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
+#endif
+
+#if ALHPA_LAYER_ENABLE > 0
+    #if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
+        texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
+        sampler AlphaMapSamp = sampler_state
+        {
+            texture = AlphaMap;
+            MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        };
+    #endif
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
@@ -331,22 +368,75 @@ float3 ColorSynthesis(float3 diffuse, float m)
     return diffuse * lerp(1.0, melanin, m);
 }
 
-float4 GetTextureColor(float2 uv, bool use_texture)
+float GetAlpha(float2 coord, bool use_texture)
+{
+#if USE_CUSTOM_MATERIAL && ALHPA_LAYER_ENABLE > 0
+    #if ALPHA_MAP_ENABLE
+        #if ALPHA_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+    
+        #if ALPHA_MAP_IN_TEXTURE
+            if (use_texture)
+            {
+                #if ALPHA_MAP_SWIZZLE_R
+                    return tex2D(DiffuseMapSamp, coord).r;
+                #elif ALPHA_MAP_SWIZZLE_G
+                    return tex2D(DiffuseMapSamp, coord).g;
+                #elif ALPHA_MAP_SWIZZLE_B
+                    return tex2D(DiffuseMapSamp, coord).b;
+                #elif ALPHA_MAP_SWIZZLE_A
+                    return tex2D(DiffuseMapSamp, coord).a;
+                #else
+                    return tex2D(DiffuseMapSamp, coord).a;
+                #endif            
+            }
+            else
+            {
+                return MaterialDiffuse.a;
+            }
+        #else
+            #if ALPHA_MAP_SWIZZLE_R
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).r;
+            #elif ALPHA_MAP_SWIZZLE_G
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).g;
+            #elif ALPHA_MAP_SWIZZLE_B
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).b;
+            #elif ALPHA_MAP_SWIZZLE_A
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
+            #else
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
+            #endif
+        #endif
+    #else
+        return alpha;
+    #endif
+#else
+    if (use_texture)
+    {
+        return tex2D(DiffuseMapSamp, coord).a;
+    }
+    
+    return MaterialDiffuse.a;
+#endif
+}
+
+float3 GetAlbedo(float2 uv, bool use_texture)
 {
 #if SKYBOX_ENABLE
-    return float4(0,0,0,1);
+    return 0.0;
 #endif
 #if USE_CUSTOM_MATERIAL
     #if ALBEDO_MAP_UV_FLIP
         uv.y = 1 - uv.y;
     #endif
     #if  ALBEDO_MAP_ENABLE
-        float4 diffuse = MaterialDiffuse;
+        float3 diffuse = MaterialDiffuse.rgb;
         #if ALBEDO_MAP_IN_TEXTURE
             if (use_texture)
             {
                 #if ALBEDO_MAP_APPLY_COLOR
-                    return albedo * srgb2linear(albedo * tex2D(DiffuseMapSamp, uv * albedoMapLoopNum));
+                    return albedo.rgb * srgb2linear(albedo.rgb * tex2D(DiffuseMapSamp, uv * albedoMapLoopNum));
                 #else
                     return diffuse * srgb2linear(tex2D(DiffuseMapSamp, uv * albedoMapLoopNum));
                 #endif
@@ -356,25 +446,26 @@ float4 GetTextureColor(float2 uv, bool use_texture)
                 return srgb2linear(diffuse);
             }
         #else
+            diffuse.rgb = srgb2linear(albedo.rgb * tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
+            
             #if ALBEDO_MAP_APPLY_COLOR
-                return albedo * srgb2linear(albedo * tex2D(AlbedoMapSamp, uv * albedoMapLoopNum));
-            #else
-                return srgb2linear(tex2D(AlbedoMapSamp, uv * albedoMapLoopNum));
-            #endif
+                diffuse *= albedo.rgb;
+            #endif           
+            return diffuse;
         #endif
     #else
-        return srgb2linear(albedo);
+        return srgb2linear(albedo.rgb);
     #endif
 #else
-    float4 diffuse = MaterialDiffuse;
-    diffuse.rgb += MaterialSpecular;
+    float3 diffuse = MaterialDiffuse.rgb;
+    diffuse += MaterialSpecular.rgb;
     
     if (use_texture)
     {
         float4 TexColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum);
         TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
         TexColor.rgb = TexColor.rgb;
-        diffuse *= TexColor;
+        diffuse *= TexColor.rgb;
     }
     
     return srgb2linear(diffuse);
@@ -627,18 +718,19 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
 
 GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
 {
-    float4 albedo = GetTextureColor(IN.Texcoord, useTexture);
-    albedo.rgb = ColorSynthesis(albedo.rgb, GetMelanin(IN.Texcoord));
-
-    clip(albedo.a - AlphaThreshold);
+    float alpha = GetAlpha(IN.Texcoord, useTexture);
+    clip(alpha - AlphaThreshold);
+    
+    float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
+    albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
     
     float3 MaterialMetalness = GetMetalness(IN.Texcoord);
 
     MaterialParam material;
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
-    material.albedo = albedo.rgb * (1.0 - MaterialMetalness);
-    material.specular = lerp(metalnessBaseSpecular, albedo.rgb, MaterialMetalness);
+    material.albedo = albedoColor * (1.0 - MaterialMetalness);
+    material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord);
@@ -654,6 +746,40 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     return EncodeGbuffer(material, IN.Distance);
 }
 
+GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
+{
+    float alpha = GetAlpha(IN.Texcoord, useTexture);
+    if (alpha > AlphaThreshold)
+    {
+        return (GbufferParam)0;
+    }
+    
+    float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
+    albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
+   
+    float3 MaterialMetalness = GetMetalness(IN.Texcoord);
+
+    MaterialParam material;
+    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
+    material.smoothness = GetSmoothness(IN.Texcoord);
+    material.albedo = albedoColor * (1.0 - MaterialMetalness);
+    material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
+    material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+    material.index = transmittanceStrength;
+    material.emissive = GetEmissiveColor(IN.Texcoord);
+    
+#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+#elif EMMISIVE_ENABLE
+    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
+#else
+    material.lightModel = LIGHTINGMODEL_NORMAL;
+#endif
+
+    return EncodeGbufferWithAlpha(material, IN.Distance, alpha);
+}
+
+#if ALHPA_LAYER_ENABLE > 0
 #define OBJECT_TEC(name, mmdpass, tex, sphere) \
     technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
     string Script = \
@@ -663,9 +789,35 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
         "RenderColorTarget3=Gbuffer4RT;" \
         "RenderDepthStencilTarget=;" \
         "Pass=DrawObject;" \
-        "RenderColorTarget1=;" \
-        "RenderColorTarget2=;" \
-        "RenderColorTarget3=;" \
+        "RenderColorTarget0=Gbuffer5RT;" \
+        "RenderColorTarget1=Gbuffer6RT;" \
+        "RenderColorTarget2=Gbuffer7RT;" \
+        "RenderColorTarget3=Gbuffer8RT;" \
+        "RenderDepthStencilTarget=;" \
+        "Pass=DrawAlphaObject;"\
+    ; \
+    > { \
+        pass DrawObject { \
+            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            VertexShader = compile vs_3_0 MaterialVS(); \
+            PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
+        } \
+        pass DrawAlphaObject { \
+            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            VertexShader = compile vs_3_0 MaterialVS(); \
+            PixelShader  = compile ps_3_0 Material2PS(tex, sphere); \
+        } \
+    }
+#else
+#define OBJECT_TEC(name, mmdpass, tex, sphere) \
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
+    string Script = \
+        "RenderColorTarget0=;" \
+        "RenderColorTarget1=Gbuffer2RT;" \
+        "RenderColorTarget2=Gbuffer3RT;" \
+        "RenderColorTarget3=Gbuffer4RT;" \
+        "RenderDepthStencilTarget=;" \
+        "Pass=DrawObject;" \
     ; \
     > { \
         pass DrawObject { \
@@ -674,6 +826,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
             PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
         } \
     }
+#endif
 
 OBJECT_TEC(MainTec0, "object", false, false)
 OBJECT_TEC(MainTec1, "object", true, false)

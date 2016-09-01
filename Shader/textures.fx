@@ -139,6 +139,62 @@ sampler Gbuffer4Map = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
+shared texture Gbuffer5RT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "A8R8G8B8";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
+
+sampler Gbuffer5Map = sampler_state {
+    texture = <Gbuffer5RT>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+shared texture Gbuffer6RT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "A8R8G8B8";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
+
+sampler Gbuffer6Map = sampler_state {
+    texture = <Gbuffer6RT>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+shared texture Gbuffer7RT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "A8R8G8B8";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
+
+sampler Gbuffer7Map = sampler_state {
+    texture = <Gbuffer7RT>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+shared texture Gbuffer8RT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "R16F";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
+
+sampler Gbuffer8Map = sampler_state {
+    texture = <Gbuffer8RT>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
 #if SHADOW_QUALITY > 0
 shared texture2D ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};

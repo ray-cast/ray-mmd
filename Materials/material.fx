@@ -7,8 +7,21 @@
 #define ALBEDO_MAP_APPLY_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float4 albedo = 1;
+const float3 albedo = 1;
 const float albedoMapLoopNum = 1.0;
+
+// 透明通道 (内部调试阶段，暂时不支持)
+#define ALPHA_ENABLE 0
+#define ALPHA_MAP_ENABLE 0
+#define ALPHA_MAP_IN_TEXTURE 0
+#define ALPHA_MAP_SWIZZLE_R  0
+#define ALPHA_MAP_SWIZZLE_G  0
+#define ALPHA_MAP_SWIZZLE_B  0
+#define ALPHA_MAP_SWIZZLE_A  0
+#define ALPHA_MAP_FILE "alpha.png"
+
+const float alpha = 1.0;
+const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0

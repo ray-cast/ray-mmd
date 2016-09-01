@@ -45,6 +45,33 @@ float4 GetTextureColor(float4 albedo, float2 uv)
     return srgb2linear(albedo);
 }
 
+float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
+{
+    float3 lighting = 0;
+    
+    float3 N = mul(material.normal, (float3x3)matViewInverse);
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
+
+    lighting *= material.albedo;
+    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;
+    lighting *= (lerp(1, 10, mDirectLightP) - mDirectLightM);
+
+    return lighting;
+}
+
+float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
+{
+    float3 lighting = ShadingMaterial(V, L, material);
+#if SHADOW_QUALITY > 0
+    lighting *= tex2D(ShadowmapSamp, coord).r;
+#endif
+    return lighting;
+}
+
 void DrawObjectVS(
     in float4 Position : POSITION,
     in float3 Normal   : NORMAL,
@@ -67,44 +94,47 @@ float4 DrawObjectPS(
     float3 normal   : TEXCOORD1,
     float3 viewdir  : TEXCOORD2,
     float4 texcoord2 : TEXCOORD3) : SV_Target
-{
+{   
     float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
-    
     if (ExistRay)
     {
-        float2 texCoord = texcoord2.xy / texcoord2.w;
-        texCoord = PosToCoord(texCoord);
-        texCoord += ViewportOffset;
+        float2 coord = texcoord2.xy / texcoord2.w;
+        coord = PosToCoord(coord);
+        coord += ViewportOffset;
 
-        float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
-        float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
-        float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
-
+        float4 MRT1 = tex2D(Gbuffer1Map, coord);
+        float4 MRT2 = tex2D(Gbuffer2Map, coord);
+        float4 MRT3 = tex2D(Gbuffer3Map, coord);
+                
         MaterialParam material;
-        DecodeGbuffer(MRT0, MRT1, MRT2, material);
+        
+        DecodeGbuffer(MRT1, MRT2, MRT3, material);    
 
         float3 V = normalize(viewdir);
         float3 L = normalize(-LightDirection);
-        float3 N = mul(material.normal, (float3x3)matViewInverse);
 
-        float3 lighting = 0;
+        float3 lighting = ShadingMaterial(V, L, coord, material);
 
-        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-            lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
-        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-            lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
-
-        lighting *= material.albedo;
-        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;
-#if SHADOW_QUALITY > 0
-        lighting *= tex2D(ShadowmapSamp, texCoord).r;
-#endif
-        lighting *= (lerp(1, 10, mDirectLightP) - mDirectLightM);
-
+#if ALHPA_ENABLE > 0
+        float4 MRT5 = tex2D(Gbuffer5Map, coord);
+        float4 MRT6 = tex2D(Gbuffer6Map, coord);
+        float4 MRT7 = tex2D(Gbuffer7Map, coord);
+        
+        float alphaDiffuse = 0;
+        MaterialParam materialAlpha;
+        
+        DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+        float3 lighting2 = ShadingMaterial(V, L, materialAlpha);
+        
+        lighting = lerp(lighting, lighting2, alphaDiffuse);
+        
+        return float4(lighting, 1);
+#else
         return float4(lighting, albedo.a);
+#endif  
     }
     else
-    {
+    {        
         float3 L = normalize(-LightDirection);
         float3 V = normalize(viewdir);
         float3 N = normalize(normal);
@@ -134,11 +164,11 @@ float4 DrawObjectPS(
     }
 }
 
-
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
     > { \
         pass DrawObject { \
+            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
             VertexShader = compile vs_3_0 DrawObjectVS(); \
             PixelShader  = compile ps_3_0 DrawObjectPS(); \
         } \

@@ -57,49 +57,8 @@ float mEnvLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item
 float mEnvSpecLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
 float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
 
-void EnvLightingVS(
-    in float4 Position : POSITION,
-    in float3 Normal   : NORMAL,
-    in float2 Texcoord : TEXCOORD0,
-    out float4 oTexcoord  : TEXCOORD0,
-    out float3 oNormal    : TEXCOORD1,
-    out float3 oViewdir   : TEXCOORD2,
-    out float4 oTexcoord2 : TEXCOORD3,
-    out float4 oPosition  : SV_Position)
+void LightingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
-    oTexcoord = Texcoord.xyxy;
-    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
-    oNormal = normalize(mul(Normal, (float3x3)matWorld));
-    oPosition = mul(Position, matWorldViewProject);
-    oTexcoord2 = oPosition;
-}
-
-float4 EnvLightingPS(
-    float4 texcoord : TEXCOORD0,
-    float3 normal   : TEXCOORD1,
-    float3 viewdir  : TEXCOORD2,
-    float4 texcoord2 : TEXCOORD3,
-    float4 screenPosition : SV_Position) : SV_Target
-{
-    float2 texCoord = texcoord2.xy / texcoord2.w;
-    texCoord = PosToCoord(texCoord);
-    texCoord += ViewportOffset;
-
-    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
-    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
-    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
-
-    MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
-
-    float3 V = normalize(viewdir);
-
-#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
-    float4 lighting = float4(0.0, 0.5, 0.0, 0.5);
-#else
-    float4 lighting = 0.0f;
-#endif
-
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldView = V;
 
@@ -132,8 +91,73 @@ float4 EnvLightingPS(
     prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
 #endif
 
-    float3 diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
-    float3 specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
+    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+}
+
+void EnvLightingVS(
+    in float4 Position : POSITION,
+    in float3 Normal   : NORMAL,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float3 oNormal    : TEXCOORD1,
+    out float3 oViewdir   : TEXCOORD2,
+    out float4 oTexcoord2 : TEXCOORD3,
+    out float4 oPosition  : SV_Position)
+{
+    oTexcoord = Texcoord.xyxy;
+    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
+    oNormal = normalize(mul(Normal, (float3x3)matWorld));
+    oPosition = mul(Position, matWorldViewProject);
+    oTexcoord2 = oPosition;
+}
+
+float4 EnvLightingPS(
+    float4 texcoord : TEXCOORD0,
+    float3 normal   : TEXCOORD1,
+    float3 viewdir  : TEXCOORD2,
+    float4 texcoord2 : TEXCOORD3,
+    float4 screenPosition : SV_Position) : SV_Target
+{
+    float2 coord = texcoord2.xy / texcoord2.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
+
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    
+    MaterialParam material;    
+    DecodeGbuffer(MRT1, MRT2, MRT3, material);
+
+    float3 V = normalize(viewdir);
+    
+#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
+    float4 lighting = float4(0.0, 0.5, 0.0, 0.5);
+#else
+    float4 lighting = 0.0f;
+#endif
+    
+    float3 diffuse, specular;
+    
+    LightingMaterial(V, material, diffuse, specular);
+    
+#if ALHPA_ENABLE > 0
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+
+    float alphaDiffuse = 0;
+    MaterialParam materialAlpha;
+    
+    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+    
+    float3 diffuse2, specular2;
+    LightingMaterial(V, materialAlpha, diffuse2, specular2);
+    
+    diffuse = lerp(diffuse, diffuse2, alphaDiffuse);
+    specular = lerp(specular, specular2, alphaDiffuse);
+#endif
 
 #if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
