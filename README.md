@@ -134,7 +134,7 @@ Ray-MMD
     #define XXXXX_MAP_UV_FLIP 1
 ```
 
-##### 4.0 全局设置 <font color=gray>(ray_controller.pmx)</font>:
+##### 4.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
 * IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
 * SSAO+- 环境光遮蔽强度  
