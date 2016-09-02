@@ -43,7 +43,7 @@ sampler LightingSampler = sampler_state {
 texture EnvLightingMap: OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
-#if IBL_QUALITY == 3
+#if IBL_QUALITY > 1
     float4 ClearColor = { 0, 0.5, 0, 0.5 };
 #else
     float4 ClearColor = { 0, 0, 0, 0 };
