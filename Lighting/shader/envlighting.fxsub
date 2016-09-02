@@ -57,7 +57,7 @@ float mEnvLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item
 float mEnvSpecLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
 float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
 
-void LightingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
+void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldView = V;
@@ -93,6 +93,9 @@ void LightingMaterial(float3 V, MaterialParam material, out float3 diffuse, out 
 
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
     specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    
+    diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
+    specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
 }
 
 void EnvLightingVS(
@@ -100,23 +103,19 @@ void EnvLightingVS(
     in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
-    out float3 oNormal    : TEXCOORD1,
-    out float3 oViewdir   : TEXCOORD2,
-    out float4 oTexcoord2 : TEXCOORD3,
+    out float3 oViewdir   : TEXCOORD1,
+    out float4 oTexcoord2 : TEXCOORD2,
     out float4 oPosition  : SV_Position)
 {
     oTexcoord = Texcoord.xyxy;
-    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
-    oNormal = normalize(mul(Normal, (float3x3)matWorld));
-    oPosition = mul(Position, matWorldViewProject);
-    oTexcoord2 = oPosition;
+    oViewdir = CameraPosition - Position.xyz;
+    oTexcoord2 = oPosition = mul(Position, matWorldViewProject);
 }
 
 float4 EnvLightingPS(
     float4 texcoord : TEXCOORD0,
-    float3 normal   : TEXCOORD1,
-    float3 viewdir  : TEXCOORD2,
-    float4 texcoord2 : TEXCOORD3,
+    float3 viewdir  : TEXCOORD1,
+    float4 texcoord2 : TEXCOORD2,
     float4 screenPosition : SV_Position) : SV_Target
 {
     float2 coord = texcoord2.xy / texcoord2.w;
@@ -132,17 +131,10 @@ float4 EnvLightingPS(
 
     float3 V = normalize(viewdir);
     
-#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
-    float4 lighting = float4(0.0, 0.5, 0.0, 0.5);
-#else
-    float4 lighting = 0.0f;
-#endif
+    float3 diffuse, specular;    
+    ShadingMaterial(V, material, diffuse, specular);
     
-    float3 diffuse, specular;
-    
-    LightingMaterial(V, material, diffuse, specular);
-    
-#if ALHPA_ENABLE > 0
+#if (IBL_QUALITY > 1) && (ALHPA_ENABLE > 0)
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -153,30 +145,44 @@ float4 EnvLightingPS(
     DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
     
     float3 diffuse2, specular2;
-    LightingMaterial(V, materialAlpha, diffuse2, specular2);
+    ShadingMaterial(V, materialAlpha, diffuse2, specular2);
     
-    diffuse = lerp(diffuse, diffuse2, alphaDiffuse);
-    specular = lerp(specular, specular2, alphaDiffuse);
-#endif
+    diffuse += specular;
+    diffuse2 += specular2;
 
-#if (IBL_QUALITY >= 3) && (SSAO_SAMPLER_COUNT > 0)
-    diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
-    specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
+    diffuse = rgb2ycbcr(diffuse);
+    diffuse2 = rgb2ycbcr(diffuse2);
+
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
     
+    float4 lighting = 0.0f;
+    lighting.r = diffuse.r;
+    lighting.g = (pattern) ? diffuse.g: diffuse.b;
+    lighting.b = diffuse2.r;
+    lighting.a = (pattern) ? diffuse2.g: diffuse2.b;
+    return lighting;
+    
+#elif (IBL_QUALITY > 1) && (SSAO_SAMPLER_COUNT > 0)
     diffuse = rgb2ycbcr(diffuse);
     specular = rgb2ycbcr(specular);
 
     bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+    
+    float4 lighting = 0.0f;
     lighting.r = diffuse.r;
     lighting.g = (pattern) ? diffuse.g: diffuse.b;
     lighting.b = specular.r;
     lighting.a = (pattern) ? specular.g: specular.b;
-#else
-    lighting.rgb += diffuse * (lerp(1, 5, mEnvLightP) - mEnvLightM);
-    lighting.rgb += specular * (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
-#endif
-
     return lighting;
+    
+#elif IBL_QUALITY > 0
+    lighting.rgb += diffuse;
+    lighting.rgb += specular;
+    return lighting;
+    
+#else
+    return 0.0f;
+#endif
 }
 
 #define OBJECT_TEC(name, mmdpass) \

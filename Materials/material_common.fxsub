@@ -45,7 +45,7 @@ uniform bool use_toon;
 
 uniform bool opadd;
 
-#define ALHPA_LAYER_ENABLE 0
+#define ALHPA_LAYER_ENABLE 1
 
 #if ALHPA_LAYER_ENABLE > 0
 #   define AlphaThreshold 0.999

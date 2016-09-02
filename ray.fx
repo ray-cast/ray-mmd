@@ -88,7 +88,7 @@ void ScreenSpaceQuadVS(
     out float4 oPosition : SV_Position)
 {
     oPosition = Position;
-    oViewdir = mul(Position, matProjectInverse).xyz;
+    oViewdir = -mul(Position, matProjectInverse).xyz;
     oTexcoord = Texcoord;
     oTexcoord.xy += ViewportOffset;
 }

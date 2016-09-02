@@ -17,9 +17,6 @@ sampler ShadowmapSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-static float LightScale = 1.0;
-static float3 LightColor = LightSpecular;
-
 texture ObjectTexture: MATERIALTEXTURE;
 sampler ObjTexSampler = sampler_state
 {
@@ -52,12 +49,12 @@ float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     
     if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightColor;
+        lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightSpecular;
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting = TranslucencyBRDF(N, L, material.transmittance) * LightColor;
+        lighting = TranslucencyBRDF(N, L, material.transmittance) * LightSpecular;
 
     lighting *= material.albedo;
-    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightColor;
+    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightSpecular;
     lighting *= (lerp(1, 10, mDirectLightP) - mDirectLightM);
 
     return lighting;
@@ -106,8 +103,7 @@ float4 DrawObjectPS(
         float4 MRT2 = tex2D(Gbuffer2Map, coord);
         float4 MRT3 = tex2D(Gbuffer3Map, coord);
                 
-        MaterialParam material;
-        
+        MaterialParam material;        
         DecodeGbuffer(MRT1, MRT2, MRT3, material);    
 
         float3 V = normalize(viewdir);
@@ -122,11 +118,12 @@ float4 DrawObjectPS(
         
         float alphaDiffuse = 0;
         MaterialParam materialAlpha;
-        
         DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
-        float3 lighting2 = ShadingMaterial(V, L, materialAlpha);
         
-        lighting = lerp(lighting, lighting2, alphaDiffuse);
+        if (alphaDiffuse > 0 && !any(material.albedo + max(0, material.specular - 0.041)))
+        {
+            clip(-1);
+        }
         
         return float4(lighting, 1);
 #else
@@ -157,13 +154,14 @@ float4 DrawObjectPS(
     #endif
 
         float4 lighting = albedo;
-        lighting.rgb *= diffuse * LightColor;
-        lighting.rgb += specular * LightColor;
+        lighting.rgb *= diffuse * LightSpecular;
+        lighting.rgb += specular * LightSpecular;
 
         return linear2srgb(lighting);
     }
 }
 
+#if ALHPA_ENABLE > 0
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
     > { \
@@ -173,7 +171,16 @@ float4 DrawObjectPS(
             PixelShader  = compile ps_3_0 DrawObjectPS(); \
         } \
     }
-
+#else
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+    > { \
+        pass DrawObject { \
+            VertexShader = compile vs_3_0 DrawObjectVS(); \
+            PixelShader  = compile ps_3_0 DrawObjectPS(); \
+        } \
+    }
+#endif
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
