@@ -240,7 +240,7 @@ float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float glo
     float len = max(length(L),  1e-6);
     float3 L2 = SphereLightDirection(N, V, L, radius);
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness)) * saturate(dot(N, L));
+    return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness)) * saturate(dot(N, L/len));
 }
 
 float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
@@ -269,7 +269,7 @@ float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, fl
     float3 Lw = RectangleLight(R, L, Lt, Lb, Ln, Lwh);
     float3 L2 = normalize(Lw);
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(length(Lw), Lwh.y, roughness)) * saturate(dot(N, L));
+    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(length(Lw), Lwh.y, roughness)) * saturate(dot(N, normalize(L)));
 }
 
 #endif
