@@ -417,7 +417,7 @@ float GetAlpha(float2 coord, bool use_texture)
 #else
     if (use_texture)
     {
-        return tex2D(DiffuseMapSamp, coord).a;
+        return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
     }
     
     return MaterialDiffuse.a;

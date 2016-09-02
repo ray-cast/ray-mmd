@@ -120,7 +120,7 @@ float4 DrawObjectPS(
         MaterialParam materialAlpha;
         DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
         
-        if (alphaDiffuse > 0 && !any(material.albedo + max(0, material.specular - 0.041)))
+        if (alphaDiffuse < 1 && !any(material.albedo + max(0, material.specular - 0.041)))
         {
             clip(-1);
         }

@@ -10,8 +10,7 @@
 const float3 albedo = 1;
 const float albedoMapLoopNum = 1.0;
 
-// 透明通道 (内部调试阶段，暂时不支持)
-#define ALPHA_ENABLE 0
+// 透明通道
 #define ALPHA_MAP_ENABLE 0
 #define ALPHA_MAP_IN_TEXTURE 0
 #define ALPHA_MAP_SWIZZLE_R  0
