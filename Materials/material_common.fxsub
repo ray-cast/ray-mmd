@@ -370,6 +370,9 @@ float3 ColorSynthesis(float3 diffuse, float m)
 
 float GetAlpha(float2 coord, bool use_texture)
 {
+#if SKYBOX_ENABLE
+    return 1;
+#endif
 #if USE_CUSTOM_MATERIAL && ALHPA_LAYER_ENABLE > 0
     #if ALPHA_MAP_ENABLE
         #if ALPHA_MAP_UV_FLIP
