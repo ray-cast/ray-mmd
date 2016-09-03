@@ -756,30 +756,32 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
     {
         return (GbufferParam)0;
     }
-    
-    float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
-    albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
-   
-    float3 MaterialMetalness = GetMetalness(IN.Texcoord);
+    else
+    {
+        float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
+        albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
+       
+        float3 MaterialMetalness = GetMetalness(IN.Texcoord);
 
-    MaterialParam material;
-    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
-    material.smoothness = GetSmoothness(IN.Texcoord);
-    material.albedo = albedoColor * (1.0 - MaterialMetalness);
-    material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
-    material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
-    material.index = transmittanceStrength;
-    material.emissive = GetEmissiveColor(IN.Texcoord);
-    
-#if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-#elif EMMISIVE_ENABLE
-    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
-#else
-    material.lightModel = LIGHTINGMODEL_NORMAL;
-#endif
+        MaterialParam material;
+        material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
+        material.smoothness = GetSmoothness(IN.Texcoord);
+        material.albedo = albedoColor * (1.0 - MaterialMetalness);
+        material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
+        material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+        material.index = transmittanceStrength;
+        material.emissive = GetEmissiveColor(IN.Texcoord);
+        
+    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
+        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #elif EMMISIVE_ENABLE
+        material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
+    #else
+        material.lightModel = LIGHTINGMODEL_NORMAL;
+    #endif
 
-    return EncodeGbufferWithAlpha(material, IN.Distance, alpha);
+        return EncodeGbufferWithAlpha(material, IN.Distance, alpha);
+    }
 }
 
 #if ALHPA_LAYER_ENABLE > 0

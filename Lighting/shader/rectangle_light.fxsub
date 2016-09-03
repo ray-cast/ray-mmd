@@ -121,12 +121,12 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
         diffuse = material.albedo * TranslucencyBRDF(material.normal, Lw, material.transmittance);
         
 #if VIDEO_MAP_ENABLE
-    diffuse *= GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb;
+    diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb);
 #endif
         
     specular = RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular, coord2);
 #if VIDEO_MAP_ENABLE
-    specular *= tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb;
+    specular *= srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
 #endif
 
     float4 lighting = float4(diffuse + specular, 0);
