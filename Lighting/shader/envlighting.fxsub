@@ -69,15 +69,9 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     worldNormal = mul(rotate, worldNormal);
     R = mul(rotate, R);
 
-#if IBL_QUALITY >= 2
     float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
     float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal));
-#else
-    float4 prefilteredDiffuse = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(worldNormal), 0, IBL_MIPMAP_LEVEL));
-    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
-    float4 prefilteredTransmittance = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(-worldNormal), 0, IBL_MIPMAP_LEVEL));
-#endif
 
 #if IBL_ENABLE_GAMMA_CORRECTION
     prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
