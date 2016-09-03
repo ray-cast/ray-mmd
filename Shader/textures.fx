@@ -53,13 +53,9 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
     bool AntiAlias = false;
     string DefaultEffect =
         "self = hide;"
-        "ray_controller.pmx=hide;"
-        "SpotLight*.*=hide;"
-        "PointLight*.*=hide;"
-        "SphereLight*.*=hide;"
-        "skybox_hdr.*=./Lighting/shader/envlighting_hdr.fx;"
-        "skybox.*=./Lighting/shader/envlighting.fx;"
-        "* = hide;";
+        "skybox_hdr*.*=./Lighting/shader/envlighting_hdr.fx;"
+        "skybox*.*=./Lighting/shader/envlighting.fx;"
+        "*= hide;";
 >;
 
 sampler EnvLightingSampler = sampler_state {
@@ -82,7 +78,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
         "skybox*.* = ./materials/material_skybox.fx;"
         "*.pmd = ./materials/material.fx;"
         "*.pmx = ./materials/material.fx;"
-        "*.x = ./materials/material.fx;"
+        "*.x = hide;"
         "* = hide;";
 >;
 

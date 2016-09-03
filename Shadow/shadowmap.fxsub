@@ -31,9 +31,10 @@ texture ShadowMap : OFFSCREENRENDERTARGET <
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
         "RectangleLight*.*=hide;"
+        "LED*.*=hide;"
         "*.pmx=shadow/shadow.fx;"
         "*.pmd=shadow/shadow.fx;"
-        "*.x=shadow/shadow.fx;";
+        "*.x=hide;";
 >;
 
 sampler ShadowSamp = sampler_state {
@@ -58,9 +59,10 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
         "RectangleLight*.*=hide;"
+        "LED*.*=hide;"
         "*.pmx=shadow/lightdepth.fx;"
         "*.pmd=shadow/lightdepth.fx;"
-        "*.x=shadow/lightdepth.fx;";
+        "*.x=hide;";
 >;
 
 float CalcShadowBlurWeight(float d0, float d1, float depthRate)
