@@ -60,12 +60,12 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
     if (ExistRay)
     {
 #if SKYBOX_GAMMA_CORRECTION
-        return srgb2linear(tex2D(decalMap, computeSphereCoord(N)));
+        return tex2D(decalMap, computeSphereCoord(N));
 #elif SKYBOX_HDR_ENABLE  
         float4 rgbm = tex2D(decalMap, computeSphereCoord(N));
-        return float4(DecodeRGBM(rgbm), 1);
+        return float4(linear2srgb(DecodeRGBM(rgbm)), 1);
 #else
-        return tex2D(decalMap, computeSphereCoord(N));
+        return linear2srgb(tex2D(decalMap, computeSphereCoord(N)));
 #endif
     }
     else
