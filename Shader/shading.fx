@@ -47,7 +47,7 @@ float4 DeferredLightingPS(
     float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
-    float3 background = tex2D(ScnSamp, coord).rgb;
+    float3 background = srgb2linear(tex2D(ScnSamp, coord).rgb);
     float3 lighting = background + tex2D(LightingSampler, coord).rgb;
     
 #if SSAO_SAMPLER_COUNT > 0

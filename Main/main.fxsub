@@ -125,9 +125,9 @@ float4 DrawObjectPS(
             clip(-1);
         }
         
-        return float4(lighting, 1);
+        return float4(linear2srgb(lighting), 1);
 #else
-        return float4(lighting, albedo.a);
+        return float4(linear2srgb(lighting), albedo.a);
 #endif  
     }
     else
