@@ -116,9 +116,9 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
     float3 specular = 0.0f;
     
     if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        diffuse = material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness);
+        diffuse = material.albedo * DiffuseBRDF(material.normal, Lw, V, material.smoothness);
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        diffuse = material.albedo * TranslucencyBRDF(material.normal, L2, material.transmittance);
+        diffuse = material.albedo * TranslucencyBRDF(material.normal, Lw, material.transmittance);
         
 #if VIDEO_MAP_ENABLE
     diffuse *= GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb;
