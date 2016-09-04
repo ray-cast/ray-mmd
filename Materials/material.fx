@@ -96,9 +96,9 @@ const float melaninMapLoopNum = 0.0;
 
 // 发光贴图
 #define EMMISIVE_ENABLE 0
-#define EMMISIVE_MAP_UV_FLIP 0
 #define EMMISIVE_MAP_ENABLE 0
-#define EMMISIVE_IN_TEXTURE 0
+#define EMMISIVE_MAP_IN_TEXTURE 0
+#define EMMISIVE_MAP_UV_FLIP 0
 #define EMMISIVE_APPLY_COLOR 0
 #define EMMISIVE_MAP_FILE "emmisive.png"
 

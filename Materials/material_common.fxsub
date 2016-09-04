@@ -319,7 +319,7 @@ float ShininessToSmoothness(float spec)
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_IN_TEXTURE != 1
+#if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_MAP_IN_TEXTURE != 1
     texture2D EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
     sampler EmissiveMapSamp = sampler_state
     {
@@ -481,7 +481,7 @@ float3 GetEmissiveColor(float2 uv)
     #if EMMISIVE_MAP_UV_FLIP
         uv.y = 1 - uv.y;
     #endif
-    #if EMMISIVE_IN_TEXTURE
+    #if EMMISIVE_MAP_IN_TEXTURE
         #if EMMISIVE_APPLY_COLOR
             return srgb2linear(emmisive.rgb * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
         #else
