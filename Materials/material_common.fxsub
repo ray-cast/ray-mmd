@@ -757,7 +757,12 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         return (GbufferParam)0;
     }
     else
-    {
+    {    
+        if (alpha < 0.01)
+        {
+            clip(-1);
+        }
+    
         float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
         albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
        
