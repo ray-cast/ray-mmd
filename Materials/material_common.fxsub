@@ -383,15 +383,15 @@ float GetAlpha(float2 coord, bool use_texture)
             if (use_texture)
             {
                 #if ALPHA_MAP_SWIZZLE_R
-                    return tex2D(DiffuseMapSamp, coord).r;
+                    return tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a;
                 #elif ALPHA_MAP_SWIZZLE_G
-                    return tex2D(DiffuseMapSamp, coord).g;
+                    return tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a;
                 #elif ALPHA_MAP_SWIZZLE_B
-                    return tex2D(DiffuseMapSamp, coord).b;
+                    return tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a;
                 #elif ALPHA_MAP_SWIZZLE_A
-                    return tex2D(DiffuseMapSamp, coord).a;
+                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
                 #else
-                    return tex2D(DiffuseMapSamp, coord).a;
+                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
                 #endif            
             }
             else
