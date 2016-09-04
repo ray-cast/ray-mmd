@@ -220,15 +220,6 @@ float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, 
     return spotAttenuation;
 }
 
-float GetSpotAttenuation(float3 L, float3 lightDirection, float angle, float radius)
-{
-    float3 v = normalize(-L);
-    float spotAngle = max(0, dot(v, lightDirection));   
-    float spotFalloff = cos(angle) / (spotAngle + 1e-6);
-    float spotAttenuation = 1.0h - pow(saturate(spotFalloff), radius);
-    return spotAttenuation;
-}
-
 float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 {
     float3 R = reflect(V, N);
@@ -274,6 +265,13 @@ float3 RectangleLightWithUV(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln,
     float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
     coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
     return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
+}
+
+float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float radius)
+{
+    float3 v = normalize(-L);
+    float rectangleAngle = max(0, dot(v, lightDirection));   
+    return rectangleAngle;
 }
 
 float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)

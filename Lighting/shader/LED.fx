@@ -10,6 +10,9 @@
 // 最大的区域高低
 #define RECTANGLELIGHT_MAX_HEIGHT 50
 
+// 双面光照
+#define RECTANGLELIGHT_TWOSIDE_LIGHTING 1
+
 // 视频贴图
 #define VIDEO_MAP_ENABLE 1
 #define VIDEO_MAP_IN_TEXTURE 1

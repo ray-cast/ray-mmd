@@ -135,7 +135,9 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
     lighting *= float4(mR, mG, mB, 0);
     lighting *= LightIntensity;
     lighting *= GetPhysicalLightAttenuation(Lw, LightRange, 1 - mBlubP);
-    lighting *= RectangleLightDiffuse(L, -LightDirection);
+#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
+    lighting *= RectangleAttenuation(Lw, LightDirection, PI / 2, LightRange);
+#endif
 
     return lighting;
 }

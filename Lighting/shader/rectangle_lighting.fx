@@ -10,6 +10,9 @@
 // 最大的区域高低(对应表情里的最大高度)
 #define RECTANGLELIGHT_MAX_HEIGHT 50
 
+// 双面光照
+#define RECTANGLELIGHT_TWOSIDE_LIGHTING 1
+
 // 视频贴图
 #define VIDEO_MAP_ENABLE 0
 #define VIDEO_MAP_IN_TEXTURE 0
