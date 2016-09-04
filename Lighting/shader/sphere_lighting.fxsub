@@ -15,8 +15,8 @@ float3 mPosition : CONTROLOBJECT < string name=SPHERELIGHT_CONTROLLER; string it
 
 float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
 
-static float LightRange = (1 + mSizeP * SPHERELIGHT_MAX_RADIUS);
-static float LightRange2 = (1 + (mSizeP + mRangeP) * SPHERELIGHT_MAX_RADIUS) * SPHERELIGHT_MAX_ATTENUATION;
+static float LightRange = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
+static float LightRange2 = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * SPHERELIGHT_MAX_RADIUS)) * SPHERELIGHT_MAX_ATTENUATION;
 static float LightIntensity = (1 - mIntensityM) * SPHERELIGHT_MAX_INTENSITY;
 
 void SphereLightingVS(

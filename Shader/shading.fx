@@ -32,6 +32,15 @@ float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
     return lighting;
 }
 
+float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
+{
+    float3 lighting = ShadingMaterial(V, L, material);
+#if SHADOW_QUALITY > 0
+    lighting *= tex2D(ShadowmapSamp, coord).r;
+#endif
+    return lighting;
+}
+
 float4 DeferredLightingPS(
     in float2 coord: TEXCOORD0,
     in float3 viewdir: TEXCOORD1,
@@ -47,8 +56,10 @@ float4 DeferredLightingPS(
     float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
-    float3 background = srgb2linear(tex2D(ScnSamp, coord).rgb);
-    float3 lighting = background + tex2D(LightingSampler, coord).rgb;
+    float3 lighting = 0;
+    lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
+    lighting += tex2D(LightingSampler, coord).rgb;
+    lighting += ShadingMaterial(V, L, coord, material);
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;

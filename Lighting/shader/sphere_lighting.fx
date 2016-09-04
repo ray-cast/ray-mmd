@@ -1,4 +1,7 @@
-// 最大半径
+// 最大大小
+#define SPHERELIGHT_MAX_SIZE 25
+
+// 最大光照范围
 #define SPHERELIGHT_MAX_RADIUS 50
 
 // 最大强度

@@ -4,10 +4,10 @@
 // 最大强度
 #define RECTANGLELIGHT_MAX_INTENSITY 100
 
-// 最大的区域宽度
+// 最大的区域宽度(对应表情里的最大宽度)
 #define RECTANGLELIGHT_MAX_WIDTH 50
 
-// 最大的区域高低
+// 最大的区域高低(对应表情里的最大高度)
 #define RECTANGLELIGHT_MAX_HEIGHT 50
 
 // 视频贴图
