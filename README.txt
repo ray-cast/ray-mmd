@@ -6,6 +6,14 @@ Ray-MMD
     https://github.com/ray-cast/ray-mmd
 
 更新内容 :
+##### 2016-9-4 ver 1.0.3
+* 改进光照模式，以及渲染速度
+* 添加了alpha的支持
+* 添加了纹理作为光源的矩形区域光
+* 添加了视频作为光源的矩形区域光(LED)
+* 添加了skydome的地面阴影
+* 调整ToneMapping在最大时改用线性曝光
+* 略微提高了天空球的清晰度(如果需要更清晰可以把skybox.pmx里的贴图纹理改成HDR文件)
 
 ##### 2016-8-30 ver 1.0.3 beta
 * 改进默认材质对Diff&Spec的兼容
