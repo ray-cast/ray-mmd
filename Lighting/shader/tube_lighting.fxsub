@@ -1,0 +1,104 @@
+#include "../../ray.conf"
+#include "../../shader/math.fx"
+#include "../../shader/common.fx"
+#include "../../shader/gbuffer.fx"
+#include "../../shader/gbuffer_sampler.fx"
+#include "../../shader/lighting.fx"
+
+float mR : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "R+"; >;
+float mG : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "G+"; >;
+float mB : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "B+"; >;
+float mWidthP : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Width+"; >;
+float mRadiusP : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Radius+"; >;
+float mIntensityM : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Intensity-"; >;
+float3 mPosition : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Position"; >;
+float3 mLeft : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Left"; >;
+float3 mRight : CONTROLOBJECT < string name=TUBELIGHT_CONTROLLER; string item = "Right"; >;
+
+float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
+
+static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
+static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS);
+static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RANGE);
+static float LightIntensity = (1 - mIntensityM) * TUBELIGHT_MAX_INTENSITY;
+static float3 LightLeft = mLeft - (mLeft - mPosition) * LightWidth;
+static float3 LightRight = mRight + (mLeft - mPosition) * LightWidth;
+
+void TubeLightingVS(
+    in float4 Position : POSITION,
+    in float3 Normal   : NORMAL,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float4 oTexcoord2 : TEXCOORD1,
+    out float4 oPosition  : SV_Position)
+{
+    Position.xyz = mPosition + (Position.xyz - mPosition) * TUBELIGHT_MAX_RANGE;
+
+    oTexcoord = Texcoord.xyxy;    
+    oTexcoord2 = oPosition = mul(Position, matViewProject);
+}
+
+float3 GetPosition(float2 uv)
+{
+    float depth = tex2D(Gbuffer4Map, uv).r;
+    return ReconstructPos(uv, matProjectInverse, depth);
+}
+
+float4 TubeLightingPS(in float4 texcoord : TEXCOORD0, in float4 texcoord2 : TEXCOORD1) : COLOR0
+{
+    float2 texCoord = texcoord2.xy / texcoord2.w;
+    texCoord = PosToCoord(texCoord);
+    texCoord += ViewportOffset;
+
+    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
+    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
+    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    
+    float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
+
+    float3 P = GetPosition(texCoord);
+    float3 V = normalize(-P);
+    
+    float3 L0 = mul(float4(LightLeft, 1), matView).xyz - P;
+    float3 L1 = mul(float4(LightRight, 1), matView).xyz - P;
+
+    float4 lighting = 0.0f;
+
+    /*float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
+    L = normalize(L);
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L, material.transmittance);*/
+    
+    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
+    lighting *= TubeLightAttenuation(material.normal, L0, L1, P);
+
+    return lighting;
+}
+
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+    > { \
+        pass DrawObject { \
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
+            CullMode = CW;\
+            VertexShader = compile vs_3_0 TubeLightingVS(); \
+            PixelShader  = compile ps_3_0 TubeLightingPS(); \
+        } \
+    }
+
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTech < string MMDPass = "shadow";  > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}

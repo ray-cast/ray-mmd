@@ -243,6 +243,15 @@ float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float glo
     return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness)) * saturate(dot(N, L/len));
 }
 
+float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+{
+    float3 I = dot(Ln, L) * Ln - L;
+    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
+    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
+    coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
+    return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
+}
+
 float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
 {
     float RdotN = dot(Ln, R) + 1e-6;
@@ -274,15 +283,6 @@ float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float r
     return rectangleAngle;
 }
 
-float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
-{
-    float3 I = dot(Ln, L) * Ln - L;
-    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-    coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
-    return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
-}
-
 float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float gloss, float3 f0)
 {
     float3 R = reflect(V, N);
@@ -301,6 +301,57 @@ float3 RectangleLightBRDFWithUV(float3 N, float3 V, float3 L, float3 Lt, float3 
     float3 L2 = Lw / len;
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
     return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness)) * saturate(dot(N, normalize(L)));
+}
+
+float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
+{      
+    float3 Ld = L1 - L0;
+    float3 R = reflect(V, N);
+    
+    float RoL0 = dot(R, L0);
+    float RoLd = dot(R, Ld);
+    float L0oLd = dot(L0, Ld);
+    float T = (RoL0 * RoLd - L0oLd) / (dot(Ld, Ld) - RoLd * RoLd);
+    
+    return L0 + Ld * saturate(T);
+}
+
+float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
+{      
+    float3 Ld = L1 - L0;
+    float3 R = reflect(V, N);
+    
+    float RoL0 = dot(R, L0);
+    float RoLd = dot(R, Ld);
+    float L0oLd = dot(L0, Ld);
+    float T = (RoL0 * RoLd - L0oLd) / (dot(Ld, Ld) - RoLd * RoLd);
+    
+    float3 closestPoint = L0 + Ld * saturate(T);
+    float3 centerToRay = dot(closestPoint, R) * R - closestPoint;
+    
+    return closestPoint + centerToRay * saturate(radius / length(centerToRay));
+}
+
+float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 specular)
+{
+    float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
+    float3 L2 = normalize(Lw);
+    
+    float roughness = SmoothnessToRoughness(smoothness);
+    float normalizeFactor = SphereNormalization(length(Lw), length(float2(LightWidth, LightRadius)), roughness);
+    
+    return SpecularBRDF(N, L2, V, smoothness, specular, normalizeFactor);
+}
+
+float TubeLightAttenuation(float3 N, float3 L0, float3 L1, float3 P)
+{
+    float length1 = length(L0);
+    float length2 = length(L1);
+    
+    float NoL0 = dot(L0, N) / (2.0 * length1);
+    float NoL1 = dot(L1, N) / (2.0 * length2);
+    
+    return (2.0 * clamp(NoL0 + NoL1, 0.0, 1.0)) / (length1 * length2 + dot(L0, L1) + 2.0);
 }
 
 #endif
