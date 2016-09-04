@@ -1,3 +1,4 @@
+#include "../ray.conf"
 #include "../shader/math.fx"
 #include "../shader/common.fx"
 
@@ -8,6 +9,13 @@
 #ifndef SKYDOME_ENABLE
 #   define SKYDOME_ENABLE 0
 #endif
+
+shared texture2D ShadowmapMap : RENDERCOLORTARGET;
+sampler ShadowmapSamp = sampler_state {
+    texture = <ShadowmapMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
@@ -54,19 +62,25 @@ void SkyboxVS(
 #endif
 }
 
-float4 SkyboxPS(in float4 normal : TEXCOORD0) : COLOR
+float4 SkyboxPS(in float4 normal : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
-    float3 N = normalize(mul(rotate, normal)).xyz;   
+    float3 N = normalize(mul(rotate, normal.xyz));   
     if (ExistRay)
     {
-#if SKYBOX_GAMMA_CORRECTION
-        return tex2D(decalMap, computeSphereCoord(N));
-#elif SKYBOX_HDR_ENABLE  
-        float4 rgbm = tex2D(decalMap, computeSphereCoord(N));
-        return float4(linear2srgb(DecodeRGBM(rgbm)), 1);
-#else
-        return linear2srgb(tex2D(decalMap, computeSphereCoord(N)));
-#endif
+        float4 color = tex2D(decalMap, computeSphereCoord(N));
+    #if SKYBOX_HDR_ENABLE
+        color = float4(DecodeRGBM(color), 1);
+    #endif
+
+    #if SKYDOME_ENABLE && SHADOW_QUALITY > 0
+        color *= tex2D(ShadowmapSamp, float2(screenPosition.xy) / ViewportSize + ViewportOffset).r;
+    #endif
+    
+    #if SKYBOX_GAMMA_CORRECTION > 0
+        return color;
+    #else
+        return linear2srgb(color);
+    #endif
     }
     else
     {
