@@ -301,8 +301,8 @@ float3 RectangleLightBRDFWithUV(float3 N, float3 V, float3 L, float3 Lt, float3 
     float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
     float len = max(length(Lw), 1e-6);
     float3 L2 = Lw / len;
-    float roughness = max(SmoothnessToRoughness(max(0.95, gloss)), 0.001);
-    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(len, length(Lwh), roughness)) * saturate(dot(N, normalize(L)));
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
+    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness)) * saturate(dot(N, normalize(L)));
 }
 
 #endif
