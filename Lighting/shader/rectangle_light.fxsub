@@ -27,7 +27,11 @@ static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
 static float LightIntensity = (1 - mIntensityM) * RECTANGLELIGHT_MAX_INTENSITY;
 
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
-    texture2D VideoMap<string ResourceName = VIDEO_MAP_FILE;>; 
+    #if VIDEO_MAP_ANIMATION_ENABLE
+        texture VideoMap : ANIMATEDTEXTURE <string ResourceName = VIDEO_MAP_FILE;>;
+    #else
+        texture VideoMap<string ResourceName = VIDEO_MAP_FILE;>;
+    #endif
     sampler VideoMapSamp = sampler_state
     {
         texture = VideoMap;
