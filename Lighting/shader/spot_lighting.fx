@@ -5,6 +5,6 @@
 #define SPOTLIGHT_MAX_INTENSITY 1000
 
 // 绑定的PMX文件
-#define SPOTLIGHT_CONTROLLER "SpotLight.pmx"
+#define SPOTLIGHT_CONTROLLER "(self)"
 
 #include "spot_lighting.fxsub"

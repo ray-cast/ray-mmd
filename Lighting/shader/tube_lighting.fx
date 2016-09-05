@@ -11,6 +11,6 @@
 #define TUBELIGHT_MAX_INTENSITY 100
 
 // 绑定的PMX文件
-#define TUBELIGHT_CONTROLLER "TubeLight.pmx"
+#define TUBELIGHT_CONTROLLER "(self)"
 
 #include "tube_lighting.fxsub"

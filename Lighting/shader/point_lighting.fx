@@ -5,6 +5,6 @@
 #define POINTLIGHT_MAX_INTENSITY 100
 
 // 绑定的PMX文件
-#define POINTLIGHT_CONTROLLER "PointLight.pmx"
+#define POINTLIGHT_CONTROLLER "(self)"
 
 #include "point_lighting.fxsub"

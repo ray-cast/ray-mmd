@@ -11,6 +11,6 @@
 #define SPHERELIGHT_MAX_ATTENUATION 15
 
 // 绑定的PMX文件
-#define SPHERELIGHT_CONTROLLER "SphereLight.pmx"
+#define SPHERELIGHT_CONTROLLER "(self)"
 
 #include "sphere_lighting.fxsub"

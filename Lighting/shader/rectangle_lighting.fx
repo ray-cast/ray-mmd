@@ -22,6 +22,6 @@
 const float vedioMapLoopNum = 1.0;
 
 // 绑定的PMX文件
-#define RECTANGLELIGHT_CONTROLLER "RectangleLight.pmx"
+#define RECTANGLELIGHT_CONTROLLER "(self)"
 
 #include "rectangle_light.fxsub"
