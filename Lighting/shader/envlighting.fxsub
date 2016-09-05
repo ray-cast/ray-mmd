@@ -144,31 +144,11 @@ float4 EnvLightingPS(
     diffuse += specular;
     diffuse2 += specular2;
 
-    diffuse = rgb2ycbcr(diffuse);
-    diffuse2 = rgb2ycbcr(diffuse2);
-
-    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
-    
-    float4 lighting = 0.0f;
-    lighting.r = diffuse.r;
-    lighting.g = (pattern) ? diffuse.g: diffuse.b;
-    lighting.b = diffuse2.r;
-    lighting.a = (pattern) ? diffuse2.g: diffuse2.b;
-    return lighting;
+    return EncodeYcbcr(screenPosition, diffuse, diffuse2);
     
 #elif (IBL_QUALITY > 1) && (SSAO_SAMPLER_COUNT > 0)
-    diffuse = rgb2ycbcr(diffuse);
-    specular = rgb2ycbcr(specular);
-
-    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
-    
-    float4 lighting = 0.0f;
-    lighting.r = diffuse.r;
-    lighting.g = (pattern) ? diffuse.g: diffuse.b;
-    lighting.b = specular.r;
-    lighting.a = (pattern) ? specular.g: specular.b;
-    return lighting;
-    
+    return EncodeYcbcr(screenPosition, diffuse, specular);
+        
 #elif IBL_QUALITY > 0
     lighting.rgb += diffuse;
     lighting.rgb += specular;

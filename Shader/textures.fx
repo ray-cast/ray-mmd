@@ -6,7 +6,7 @@ texture2D ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
     bool AntiAlias = false;
-    string Format = "A16B16G16R16F";
+    string Format = "A8R8G8B8";
 >;
 sampler ScnSamp = sampler_state {
     texture = <ScnMap>;
@@ -30,6 +30,7 @@ texture LightingMap: OFFSCREENRENDERTARGET <
         "PointLight*.* =./Lighting/shader/point_lighting.fx;"
         "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"
         "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
+        "TubeLight*.* =./Lighting/shader/tube_lighting.fx;"
         "* = hide;";
 >;
 
