@@ -67,15 +67,20 @@ float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float4 texcoord2 : TEXCOORD1)
 
     float4 lighting = 0.0f;
     
-    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L, V, material.smoothness);
-    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L, material.transmittance);
-    
-    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting.rgb *= GetSpotAttenuation(P, LightPosition, LightDirection, LightSpotAngle, LightRange);
-    lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);
+    float vis = saturate(dot(material.normal, L));
+    if (vis > 0)
+    {
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+        
+        lighting.rgb *= material.albedo;
+        lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+        lighting.rgb *= GetSpotAttenuation(P, LightPosition, LightDirection, LightSpotAngle, LightRange);
+        lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);   
+    }
 
     return lighting;
 }

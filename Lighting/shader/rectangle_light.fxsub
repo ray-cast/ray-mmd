@@ -116,32 +116,39 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
     float3 Lw = RectangleDirection(L, LightRight, LightUp, LightDirection, LightRect, coord1);
     float3 L2 = normalize(Lw);
     
-    float3 diffuse = 0.0f;
-    float3 specular = 0.0f;
+    float4 lighting = 0;
     
-    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        diffuse = material.albedo * DiffuseBRDF(material.normal, Lw, V, material.smoothness);
-    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        diffuse = material.albedo * TranslucencyBRDF(material.normal, Lw, material.transmittance);
+    float vis = saturate(dot(material.normal, Lw));
+    if (vis > 0)
+    {
+        float3 diffuse = 0.0f;
+        float3 specular = 0.0f;
+    
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            diffuse = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            diffuse = TranslucencyBRDF(material.normal, L2, material.transmittance);
         
-#if VIDEO_MAP_ENABLE
-    diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb);
-#endif
+        diffuse *= material.albedo;
         
-#if VIDEO_MAP_ENABLE
-    specular = RectangleLightBRDFWithUV(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular, coord2);
-    specular *= srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
-#else
-    specular = RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular);
-#endif
+    #if VIDEO_MAP_ENABLE
+        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb);
+    #endif
+            
+    #if VIDEO_MAP_ENABLE
+        specular = RectangleLightBRDFWithUV(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular, coord2);
+        specular *= srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
+    #else
+        specular = RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, LightDirection, LightRect, material.smoothness, material.specular);
+    #endif
 
-    float4 lighting = float4(diffuse + specular, 0);
-    lighting *= float4(mR, mG, mB, 0);
-    lighting *= LightIntensity;
-    lighting *= GetPhysicalLightAttenuation(Lw, LightRange, 1 - mBlubP);
-#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
-    lighting *= RectangleAttenuation(Lw, LightDirection, PI / 2, LightRange);
-#endif
+        lighting.rgb = diffuse + specular;
+        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+        lighting.rgb *= GetPhysicalLightAttenuation(Lw, LightRange, 1 - mBlubP);
+    #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
+        lighting.rgb *= RectangleAttenuation(Lw, LightDirection, PI / 2, LightRange);
+    #endif
+    }
 
     return lighting;
 }

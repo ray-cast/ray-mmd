@@ -1,14 +1,14 @@
-#define USE_CUSTOM_MATERIAL 0
+#define USE_CUSTOM_MATERIAL 1
 
 // 反照率贴图
 #define ALBEDO_MAP_ENABLE 0
 #define ALBEDO_MAP_IN_TEXTURE 0
 #define ALBEDO_MAP_UV_FLIP 0
-#define ALBEDO_MAP_APPLY_COLOR 0
+#define ALBEDO_MAP_APPLY_COLOR 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = 0.0;
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
@@ -96,12 +96,12 @@ const float melanin = 0.0;
 const float melaninMapLoopNum = 0.0;
 
 // 发光贴图
-#define EMMISIVE_ENABLE 0
+#define EMMISIVE_ENABLE 1
 #define EMMISIVE_MAP_ENABLE 0
 #define EMMISIVE_MAP_IN_TEXTURE 0
 #define EMMISIVE_MAP_UV_FLIP 0
 #define EMMISIVE_APPLY_COLOR 0
-#define EMMISIVE_APPLY_MORPH_COLOR 0
+#define EMMISIVE_APPLY_MORPH_COLOR 1
 #define EMMISIVE_MAP_FILE "emmisive.png"
 
 const float3 emmisive = 1.0;

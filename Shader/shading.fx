@@ -9,15 +9,19 @@ float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
     
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     
-    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting = DiffuseBRDF(N, L, V, material.smoothness) * LightSpecular;
-    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting = TranslucencyBRDF(N, L, material.transmittance) * LightSpecular;
+    float vis = saturate(dot(N, L));
+    if (vis > 0)
+    {
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            lighting = DiffuseBRDF(N, L, V, material.smoothness);
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            lighting = TranslucencyBRDF(N, L, material.transmittance);
 
-    lighting *= material.albedo;
-    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * LightSpecular;
-    lighting *= (lerp(1, 10, mDirectLightP) - mDirectLightM);
-
+        lighting *= material.albedo;
+        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
+        lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM);
+    }
+    
     return lighting;
 }
 

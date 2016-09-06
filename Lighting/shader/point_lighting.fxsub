@@ -16,19 +16,17 @@ float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "
 
 static float LightRange = (1 + mRadiusP * POINTLIGHT_MAX_RADIUS);
 static float LightIntensity = (1 - mIntensityM) * POINTLIGHT_MAX_INTENSITY;
+static float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
 
 void PointLightingVS(
     in float4 Position : POSITION,
     in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
-    out float4 oTexcoord2 : TEXCOORD1,
     out float4 oPosition  : SV_Position)
 {
     Position.xyz = mPosition + Normal * LightRange;
-
-    oTexcoord = Texcoord.xyxy;    
-    oTexcoord2 = oPosition = mul(Position, matViewProject);
+    oTexcoord = oPosition = mul(Position, matViewProject);
 }
 
 float3 GetPosition(float2 uv)
@@ -37,36 +35,39 @@ float3 GetPosition(float2 uv)
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
-float4 PointLightingPS(in float4 texcoord : TEXCOORD0, in float4 texcoord2 : TEXCOORD1) : COLOR0
+float4 PointLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
 {
-    float2 texCoord = texcoord2.xy / texcoord2.w;
-    texCoord = PosToCoord(texCoord);
-    texCoord += ViewportOffset;
+    float2 coord = texcoord.xy / texcoord.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
 
-    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
-    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
-    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+    float4 MRT0 = tex2D(Gbuffer1Map, coord);
+    float4 MRT1 = tex2D(Gbuffer2Map, coord);
+    float4 MRT2 = tex2D(Gbuffer3Map, coord);
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
-    
-    float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
 
-    float3 P = GetPosition(texCoord);
+    float3 P = GetPosition(coord);
     float3 V = normalize(-P);
     float3 L = normalize(LightPosition - P);
 
     float4 lighting = 0.0f;
     
-    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L, V, material.smoothness);
-    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = material.albedo * TranslucencyBRDF(material.normal, L, material.transmittance);
+    float vis = saturate(dot(material.normal, L));
+    if (vis > 0)
+    {
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+        
+        lighting.rgb *= material.albedo;
+        lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+        lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);
+    }
     
-    lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);
-
     return lighting;
 }
 

@@ -32,6 +32,12 @@ float4  TextureMulValue   : MULTIPLYINGTEXTURE;
 float4  SphereAddValue    : ADDINGSPHERETEXTURE;
 float4  SphereMulValue    : MULTIPLYINGSPHERETEXTURE;
 
+#if EMMISIVE_APPLY_MORPH_COLOR
+float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
+#endif
+
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
@@ -434,28 +440,37 @@ float3 GetAlbedo(float2 uv, bool use_texture)
         uv.y = 1 - uv.y;
     #endif
     #if  ALBEDO_MAP_ENABLE
-        float3 diffuse = MaterialDiffuse.rgb;
         #if ALBEDO_MAP_IN_TEXTURE
             if (use_texture)
             {
+                float3 diffuse = srgb2linear(albedo.rgb * tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb);
+                
                 #if ALBEDO_MAP_APPLY_COLOR
-                    return albedo.rgb * srgb2linear(albedo.rgb * tex2D(DiffuseMapSamp, uv * albedoMapLoopNum));
+                    diffuse *= albedo.rgb;
+                #elif ALBEDO_APPLY_MORPH_COLOR
+                    diffuse *= float3(MorphRed, MorphGreen, MorphBlue);
                 #else
-                    return diffuse * srgb2linear(tex2D(DiffuseMapSamp, uv * albedoMapLoopNum));
+                    diffuse *= srgb2linear(MaterialDiffuse.rgb);
                 #endif
+                
+                return diffuse;
             }
             else
             {
-                return srgb2linear(diffuse);
+                return srgb2linear(MaterialDiffuse.rgb);
             }
         #else
-            diffuse.rgb = srgb2linear(albedo.rgb * tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
+            float3 diffuse = srgb2linear(albedo.rgb * tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
             
             #if ALBEDO_MAP_APPLY_COLOR
                 diffuse *= albedo.rgb;
+            #elif ALBEDO_APPLY_MORPH_COLOR
+                diffuse *= float3(MorphRed, MorphGreen, MorphBlue);
             #endif           
             return diffuse;
         #endif
+    #elif ALBEDO_APPLY_MORPH_COLOR
+        return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue));
     #else
         return srgb2linear(albedo.rgb);
     #endif
@@ -484,15 +499,21 @@ float3 GetEmissiveColor(float2 uv)
     #if EMMISIVE_MAP_IN_TEXTURE
         #if EMMISIVE_APPLY_COLOR
             return srgb2linear(emmisive.rgb * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #elif EMMISIVE_APPLY_MORPH_COLOR
+            return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue) * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
         #else
             return srgb2linear(tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
         #endif
     #elif EMMISIVE_MAP_ENABLE
         #if EMMISIVE_APPLY_COLOR
             return srgb2linear(emmisive.rgb * tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
+        #elif EMMISIVE_APPLY_MORPH_COLOR
+            return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue) * tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
         #else
             return srgb2linear(tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
         #endif
+    #elif EMMISIVE_APPLY_MORPH_COLOR
+        return float3(MorphRed, MorphGreen, MorphBlue);
     #else
         return emmisive.rgb;
     #endif
@@ -503,6 +524,9 @@ float3 GetEmissiveColor(float2 uv)
 
 float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 {
+#if SKYBOX_ENABLE
+    return -N;
+#endif
 #if USE_CUSTOM_MATERIAL
     #if NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE
         #if NORMAL_MAP_UV_FLIP

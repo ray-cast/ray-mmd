@@ -14,11 +14,11 @@
 #define RECTANGLELIGHT_TWOSIDE_LIGHTING 0
 
 // 视频贴图
-#define VIDEO_MAP_ENABLE 0
+#define VIDEO_MAP_ENABLE 1
 #define VIDEO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (VIDEO_MAP_IN_TEXTURE 激活时无效)
 #define VIDEO_MAP_IN_TEXTURE 0
 #define VIDEO_MAP_UV_FLIP 0
-#define VIDEO_MAP_FILE "video.png"
+#define VIDEO_MAP_FILE "C:/Users/ray/Desktop/magnetxt=urnbtih.jpg"
 
 const float vedioMapLoopNum = 1.0;
 

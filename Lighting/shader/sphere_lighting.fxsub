@@ -18,19 +18,17 @@ float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "
 static float LightRange = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
 static float LightRange2 = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * SPHERELIGHT_MAX_RADIUS)) * SPHERELIGHT_MAX_ATTENUATION;
 static float LightIntensity = (1 - mIntensityM) * SPHERELIGHT_MAX_INTENSITY;
+static float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
 
 void SphereLightingVS(
     in float4 Position : POSITION,
     in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
-    out float4 oTexcoord2 : TEXCOORD1,
     out float4 oPosition  : SV_Position)
 {
     Position.xyz = mPosition + Normal * LightRange2;
-    
-    oTexcoord = Texcoord.xyxy;
-    oTexcoord2 = oPosition = mul(Position, matViewProject);
+    oTexcoord = oPosition = mul(Position, matViewProject);
 }
 
 float3 GetPosition(float2 uv)
@@ -39,36 +37,40 @@ float3 GetPosition(float2 uv)
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
-float4 SphereLightingPS(in float4 texcoord : TEXCOORD0, in float4 texcoord2 : TEXCOORD1) : COLOR0
+float4 SphereLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
 {
-    float2 texCoord = texcoord2.xy / texcoord2.w;
-    texCoord = PosToCoord(texCoord);
-    texCoord += ViewportOffset;
+    float2 coord = texcoord.xy / texcoord.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
 
-    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
-    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
-    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+    float4 MRT0 = tex2D(Gbuffer1Map, coord);
+    float4 MRT1 = tex2D(Gbuffer2Map, coord);
+    float4 MRT2 = tex2D(Gbuffer3Map, coord);
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
-    float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
-
-    float3 P = GetPosition(texCoord);
-    float3 V = normalize(-P);
+    float3 P = GetPosition(coord);
     float3 L = LightPosition - P;
     float3 L2 = normalize(L);
     
     float4 lighting = 0.0f;
     
-    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
-    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
-    
-    lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightRange, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting *= GetPhysicalLightAttenuation(L - L2 * LightRange, LightRange2, 1 - mBlubP);
+    float vis = saturate(dot(material.normal, L2));
+    if (vis > 0)
+    {
+        float3 V = normalize(-P);
+        
+        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+            lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+            lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+        
+        lighting.rgb *= material.albedo;
+        lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightRange, material.smoothness, material.specular);
+        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+        lighting *= GetPhysicalLightAttenuation(L - L2 * LightRange, LightRange2, 1 - mBlubP);   
+    }
 
     return lighting;
 }
