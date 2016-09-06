@@ -136,7 +136,7 @@ Ray-MMD
 [![link text](Screenshot/LED_2.png)](Screenshot/LED_2.png)
 * 复制一份material.fx改为material_led.fx
 * 将USE_CUSTOM_MATERIAL改为 1，const float3 albedo = 1.0; 改为 0.0;
-* 将发光贴图进行如下设置，修改后保存
+* 将发光贴图进行如下设置，修改后保存  
 [![link text](Screenshot/LED_3.png)](Screenshot/LED_3.png)
 * 最后在MME里MaterialMap将material_led.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
 [![link text](Screenshot/LED_4.png)](Screenshot/LED_4.png)
