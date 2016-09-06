@@ -56,62 +56,62 @@ Ray-MMD
 * 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
     
     ```cpp
-        #define ALBEDO_MAP_ENABLE 1
-        #define NORMAL_MAP_ENABLE 1
-        #define NORMAL_MAP_SUB_ENABLE 1
-        #define SMOOTHNESS_MAP_ENABLE 1
-        #define METALNESS_MAP_ENABLE 1
-        #define SSS_MAP_ENABLE 1
-        #define MELANIN_MAP_ENABLE 1
-        #define EMMISIVE_MAP_ENABLE 1
+    #define ALBEDO_MAP_ENABLE 1
+    #define NORMAL_MAP_ENABLE 1
+    #define NORMAL_MAP_SUB_ENABLE 1
+    #define SMOOTHNESS_MAP_ENABLE 1
+    #define METALNESS_MAP_ENABLE 1
+    #define SSS_MAP_ENABLE 1
+    #define MELANIN_MAP_ENABLE 1
+    #define EMMISIVE_MAP_ENABLE 1
     ```
 
 * 如果材质在pmx文件中，可以启用以下
     
     ```cpp
-        #define ALBEDO_MAP_IN_TEXTURE 1 // 物体的基本贴图在Tex里
-        #define NORMAL_MAP_IN_SPHEREMAP 1 // 物体的法线贴图在Sph map里
-        #define SMOOTHNESS_MAP_IN_TONEMAP 1 // 物体的光滑度贴图在Toon map里
-        #define METALNESS_MAP_IN_TONEMAP 1 // 物体的金属贴图在Toon map里
+    #define ALBEDO_MAP_IN_TEXTURE 1 // 物体的基本贴图在Tex里
+    #define NORMAL_MAP_IN_SPHEREMAP 1 // 物体的法线贴图在Sph map里
+    #define SMOOTHNESS_MAP_IN_TONEMAP 1 // 物体的光滑度贴图在Toon map里
+    #define METALNESS_MAP_IN_TONEMAP 1 // 物体的金属贴图在Toon map里
     ```
 
 * 如果没有指定在pmx中，可以将文件路径写到下面这些定义里
 
     ```cpp
-        #define ALBEDO_MAP_FILE "c:/xxxx/yyyy.png"
-        #define NORMAL_MAP_FILE ...
-        #define NORMAL_MAP_SUB_FILE ...
-        #define SMOOTHNESS_MAP_FILE ...
-        #define METALNESS_MAP_FILE ...
-        #define SSS_MAP_FILE ...
-        #define MELANIN_MAP_FILE ...
-        #define EMMISIVE_MAP_FILE ...
+    #define ALBEDO_MAP_FILE "c:/xxxx/yyyy.png"
+    #define NORMAL_MAP_FILE ...
+    #define NORMAL_MAP_SUB_FILE ...
+    #define SMOOTHNESS_MAP_FILE ...
+    #define METALNESS_MAP_FILE ...
+    #define SSS_MAP_FILE ...
+    #define MELANIN_MAP_FILE ...
+    #define EMMISIVE_MAP_FILE ...
     ```
 
 * 指定图片通道存放了哪些数据需要用到Swizzle
 
     ```cpp
-        #define XXXXXXX_MAP_SWIZZLE_R // 表示某种材质R里存放了它的数据
-        #define XXXXXXX_MAP_SWIZZLE_G // 表示某种材质G里存放了它的数据
-        #define XXXXXXX_MAP_SWIZZLE_B // 表示某种材质B里存放了它的数据
-        #define XXXXXXX_MAP_SWIZZLE_A // 表示某种材质A里存放了它的数据
-        // 这里只对 smoothness，metalness，melanin 有效，也必须要指定
+    #define XXXXXXX_MAP_SWIZZLE_R // 表示某种材质R里存放了它的数据
+    #define XXXXXXX_MAP_SWIZZLE_G // 表示某种材质G里存放了它的数据
+    #define XXXXXXX_MAP_SWIZZLE_B // 表示某种材质B里存放了它的数据
+    #define XXXXXXX_MAP_SWIZZLE_A // 表示某种材质A里存放了它的数据
+    // 这里只对 smoothness，metalness，melanin 有效，也必须要指定
     ```
 
 * 贴图迭代次数，和法线高度
 
     ```cpp
-        const float xxxxxMapLoopNum = 1.0; // 应用在一个平面时大小是 1x1
-        const float xxxxxMapLoopNum = 2.0; // 应用在一个平面时大小是 2x2
+    const float xxxxxMapLoopNum = 1.0; // 应用在一个平面时大小是 1x1
+    const float xxxxxMapLoopNum = 2.0; // 应用在一个平面时大小是 2x2
 
-        const float normalMapScale = 1.0; // 用来指定法线贴图的强度，数值越大越明显
-        const float normalMapSubScale = 1.0; // 用来指定子法线贴图的强度，数值越大越明显
+    const float normalMapScale = 1.0; // 用来指定法线贴图的强度，数值越大越明显
+    const float normalMapSubScale = 1.0; // 用来指定子法线贴图的强度，数值越大越明显
     ```
 
 * 有些时候UV的图片似乎上下颠倒了，可以将如下设置成 1
     
     ```cpp
-        #define XXXXX_MAP_UV_FLIP 1
+    #define XXXXX_MAP_UV_FLIP 1
     ```
 ##### 4.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
