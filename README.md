@@ -144,31 +144,7 @@ Ray-MMD
     #define XXXXX_MAP_UV_FLIP 1
 ```
 
-##### 4.0 全局设置 (ray_controller.pmx):
-* DirectLight+/-直接光照中整体光强
-* IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
-* SSAO+- 环境光遮蔽强度  
-* SSAO Radius+- 环境光遮蔽的范围
-* EnvLight+-环境光的漫反射光强
-* EnvSpecLight+-环境光的镜面光强
-* EnvRotateX/Y/Z 旋转天空盒的X/Y/Z轴
-* EnvShadow 主光源阴影用于环境光阴影的强度
-* BloomThreshold 提取最亮部分的阈值
-* BloomRadius 产生泛光的大小
-* BloomIntensity 泛光的整体强度
-* Vignette 窗口四周的暗角(虚角)
-* Exposure 曝光强度
-* Blub 相机中的B快门
-* Dispersion 相机色散的效果
-* DispersionRadius 相机色散的区域大小
-* FilmGrain 相机因曝光不足参数的噪点
-* ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
-* ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
-* LinStrength 灰度 (当ToneMapping越大时改值影响越大)
-* LinWhite    消光 (当ToneMapping越大时改值影响越大)
-* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
-
-##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
+##### 4.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具
 ```
     https://github.com/dariomanesku/cmftStudio
@@ -190,7 +166,7 @@ Ray-MMD
 [![link text](Screenshot/4.6.png)](Screenshot/4.6.png)
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
 
-##### 6.0 制作基于物理的环境光贴图(IBL) 新:
+##### 5.0 制作基于物理的环境光贴图(IBL) 新:
 　　以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用  
 　　因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中  
 　　因此作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染  
@@ -216,3 +192,37 @@ Ray-MMD
 ```
     http://www.hdrlabs.com/sibl/archive.html
 ```
+
+##### 6.0 多光源
+* 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
+* 先介绍最基本的点光源，首先载入ray、skybox，以及一个地面模型
+[![link text](Screenshot/floor.png)](Screenshot/floor.png)
+* 在Lighting目录中拖拽一个PointLight.pmx至窗口中
+[![link text](Screenshot/point_light.png)](Screenshot/point_light.png)
+* 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有挂载上去)
+* 然后修改表情中的RGB+和Radius+调到最大，效果如图
+[![link text](Screenshot/point_light2.png)](Screenshot/point_light2.png)
+
+##### 7.0 全局设置 (ray_controller.pmx):
+* DirectLight+/-直接光照中整体光强
+* IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
+* SSAO+- 环境光遮蔽强度  
+* SSAO Radius+- 环境光遮蔽的范围
+* EnvLight+-环境光的漫反射光强
+* EnvSpecLight+-环境光的镜面光强
+* EnvRotateX/Y/Z 旋转天空盒的X/Y/Z轴
+* EnvShadow 主光源阴影用于环境光阴影的强度
+* BloomThreshold 提取最亮部分的阈值
+* BloomRadius 产生泛光的大小
+* BloomIntensity 泛光的整体强度
+* Vignette 窗口四周的暗角(虚角)
+* Exposure 曝光强度
+* Blub 相机中的B快门
+* Dispersion 相机色散的效果
+* DispersionRadius 相机色散的区域大小
+* FilmGrain 相机因曝光不足参数的噪点
+* ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
+* ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
+* LinStrength 灰度 (当ToneMapping越大时改值影响越大)
+* LinWhite    消光 (当ToneMapping越大时改值影响越大)
+* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
