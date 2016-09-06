@@ -5,7 +5,7 @@ Ray-MMD
 [![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
 [![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
 [![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
-[![link text](Screenshot/lights_small.png)](Screenshot/lights.png)
+[![link text](Screenshot/lights_small.jpg)](Screenshot/lights.png)
 
 #### 更新内容 :
 ##### 2016-9-4 ver 1.0.3
