@@ -17,36 +17,6 @@ Ray-MMD
 * 调整ToneMapping在最大时改用线性曝光
 * 略微提高了天空球的清晰度(如果需要更清晰可以把skybox.pmx里的贴图纹理改成HDR文件)
 
-##### 2016-8-30 ver 1.0.3 beta
-* 改进默认材质对Diff&Spec的兼容
-* 添加了新的HDR和工具，以及更新HDR制作教程(现在可以支持HDR的天空了)
-* 添加了LightMap用于渲染多个光源
-* 添加了点光源，聚光灯，方形区域光和球形区域光 (都会根据材质进行光照)
-* 添加了天空盒旋转表情 (EnvRotateX/Y/Z)
-* 添加了主光源阴影用于IBL的表情 (EnvShadow)
-* 添加了Blub表情 (B快门)
-* 修复只启用次法线时normalMapSubScale无效
-
-##### 2016-8-25 ver 1.0.2
-* 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
-* 修复了发光贴图的Bug
-* 修复了光滑贴图和金属性贴图的Bug
-* 表情Noise改为FilmGrain
-* 添加了BloomRadius表情，产生更大范围的Bloom
-* 增加了metalnessBaseSpec(默认0.04)，如果不想反射太强改为 0, 用于皮肤的渲染
-* 添加了transmittanceStrength，指定SS的模糊程度
-* 添加了HDR的dds文件支持(下个版本将会出将HDR转DDS支持的工具)
-* 垂直翻转了天空盒纹理
-* 增加了低版本的兼容性
-* 下版本预计会出多光源支持，以及改善alpha的兼容
-
-##### 2016-8-22 ver 1.0.1 版本
-* 增加材质单独存放其它目录(必须和 material_common.fxsub) 一起打包
-* 增加控制SSAO产生阴影半径的大小
-* 增加了相机色散，以及色散半径的效果 (表情: Dispersion && Dispersion Radius)
-* 增加了因相机曝光不足产生的噪点效果 (表情: Noise)
-* 优化了SSSS (提高了一定的fps)
-
 #### 教程 :
 ##### 1.0 文件夹介绍 :
 * EnvLighting : 环境光(IBL)相关特效
@@ -149,7 +119,7 @@ Ray-MMD
 [![link text](Screenshot/floor.png)](Screenshot/floor.png)
 * 在Lighting目录中拖拽一个PointLight.pmx至窗口中  
 [![link text](Screenshot/point_light.png)](Screenshot/point_light.png)
-* 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有挂载上去)
+* 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有，挂载上去)
 * 然后修改表情中的RGB+和Radius+调到最大，效果如图  
 [![link text](Screenshot/point_light2.png)](Screenshot/point_light2.png)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
@@ -230,3 +200,34 @@ Ray-MMD
 * LinStrength 灰度 (当ToneMapping越大时改值影响越大)
 * LinWhite    消光 (当ToneMapping越大时改值影响越大)
 * ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
+
+#### 更新历史 :
+##### 2016-8-30 ver 1.0.3 beta
+* 改进默认材质对Diff&Spec的兼容
+* 添加了新的HDR和工具，以及更新HDR制作教程(现在可以支持HDR的天空了)
+* 添加了LightMap用于渲染多个光源
+* 添加了点光源，聚光灯，方形区域光和球形区域光 (都会根据材质进行光照)
+* 添加了天空盒旋转表情 (EnvRotateX/Y/Z)
+* 添加了主光源阴影用于IBL的表情 (EnvShadow)
+* 添加了Blub表情 (B快门)
+* 修复只启用次法线时normalMapSubScale无效
+
+##### 2016-8-25 ver 1.0.2
+* 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
+* 修复了发光贴图的Bug
+* 修复了光滑贴图和金属性贴图的Bug
+* 表情Noise改为FilmGrain
+* 添加了BloomRadius表情，产生更大范围的Bloom
+* 增加了metalnessBaseSpec(默认0.04)，如果不想反射太强改为 0, 用于皮肤的渲染
+* 添加了transmittanceStrength，指定SS的模糊程度
+* 添加了HDR的dds文件支持(下个版本将会出将HDR转DDS支持的工具)
+* 垂直翻转了天空盒纹理
+* 增加了低版本的兼容性
+* 下版本预计会出多光源支持，以及改善alpha的兼容
+
+##### 2016-8-22 ver 1.0.1 版本
+* 增加材质单独存放其它目录(必须和 material_common.fxsub) 一起打包
+* 增加控制SSAO产生阴影半径的大小
+* 增加了相机色散，以及色散半径的效果 (表情: Dispersion && Dispersion Radius)
+* 增加了因相机曝光不足产生的噪点效果 (表情: Noise)
+* 优化了SSSS (提高了一定的fps)
