@@ -180,7 +180,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};
     
 #if HDR_BLOOM_QUALITY > 2
-    float3 bloom0 = BloomFactor(bloomFactors[0]) * tex2D(BloomSampX1, coord).rgb;
+    float3 bloom0 = tex2D(BloomSampX1, coord).rgb;
 #endif
 
     float3 bloom1 = BloomFactor(bloomFactors[1]) * tex2D(BloomSampX2, coord).rgb;

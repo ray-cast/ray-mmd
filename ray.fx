@@ -147,8 +147,6 @@ technique DeferredLighting<
 #if HDR_BLOOM_QUALITY > 0
 #if HDR_BLOOM_QUALITY > 2
     "RenderColorTarget0=BloomMapX1;      Pass=GlareDetection;"
-    "RenderColorTarget0=BloomMapX1Temp;  Pass=BloomBlurX1;"
-    "RenderColorTarget0=BloomMapX1;      Pass=BloomBlurY1;"
 #else
     "RenderColorTarget0=BloomMapX2;      Pass=GlareDetection;"
 #endif

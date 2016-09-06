@@ -30,9 +30,9 @@ texture ShadowMap : OFFSCREENRENDERTARGET <
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
-        "RectangleLight*.*=hide;"
         "TubeLight*.* =hide;"
-        "LED*.*=hide;"
+        "RectangleLight*.*=shadow/shadow.fx;"
+        "LED*.*=shadow/shadow.fx;"
         "*.pmx=shadow/shadow.fx;"
         "*.pmd=shadow/shadow.fx;"
         "*.x=hide;";
@@ -59,9 +59,9 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
         "PointLight*.*=hide;"
         "SpotLight*.*=hide;"
         "SphereLight*.*=hide;"
-        "RectangleLight*.*=hide;"
         "TubeLight*.* =hide;"
-        "LED*.*=hide;"
+        "LED*.*=shadow/lightdepth.fx;"
+        "RectangleLight*.*=shadow/lightdepth.fx;"
         "*.pmx=shadow/lightdepth.fx;"
         "*.pmd=shadow/lightdepth.fx;"
         "*.x=hide;";

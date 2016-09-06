@@ -253,7 +253,7 @@ float ShininessToSmoothness(float spec)
 
 #if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
     #if ALBEDO_MAP_ANIMATION_ENABLE
-        texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE;>;
+        texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE; float speed=ALBEDO_MAP_ANIMATION_ENABLE;>;
     #else
         texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
     #endif
@@ -331,7 +331,7 @@ float ShininessToSmoothness(float spec)
 
 #if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_MAP_IN_TEXTURE != 1
     #if EMMISIVE_MAP_ANIMATION_ENABLE
-        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMMISIVE_MAP_FILE;>;
+        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMMISIVE_MAP_FILE; float speed=EMMISIVE_MAP_ANIMATION_SPEED;>;
     #else
         texture EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
     #endif
@@ -451,7 +451,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
         #if ALBEDO_MAP_IN_TEXTURE
             if (use_texture)
             {
-                float3 diffuse = srgb2linear(albedo.rgb * tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb);
+                float3 diffuse = srgb2linear(tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb);
                 
                 #if ALBEDO_MAP_APPLY_COLOR
                     diffuse *= albedo.rgb;
@@ -468,7 +468,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
                 return srgb2linear(MaterialDiffuse.rgb);
             }
         #else
-            float3 diffuse = srgb2linear(albedo.rgb * tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
+            float3 diffuse = srgb2linear(tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
             
             #if ALBEDO_MAP_APPLY_COLOR
                 diffuse *= albedo.rgb;

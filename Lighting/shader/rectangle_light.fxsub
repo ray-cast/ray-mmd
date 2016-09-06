@@ -28,7 +28,7 @@ static float LightIntensity = (1 - mIntensityM) * RECTANGLELIGHT_MAX_INTENSITY;
 
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
     #if VIDEO_MAP_ANIMATION_ENABLE
-        texture VideoMap : ANIMATEDTEXTURE <string ResourceName = VIDEO_MAP_FILE;>;
+        texture VideoMap : ANIMATEDTEXTURE <string ResourceName = VIDEO_MAP_FILE; float speed=VIDEO_MAP_ANIMATION_SPEED;>;
     #else
         texture VideoMap<string ResourceName = VIDEO_MAP_FILE;>;
     #endif
