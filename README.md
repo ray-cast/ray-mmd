@@ -56,23 +56,23 @@ Ray-MMD
 * 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
     
 ```cpp
-    #define ALBEDO_MAP_ENABLE
-    #define NORMAL_MAP_ENABLE
-    #define NORMAL_MAP_SUB_ENABLE
-    #define SMOOTHNESS_MAP_ENABLE
-    #define METALNESS_MAP_ENABLE
-    #define SSS_MAP_ENABLE
-    #define MELANIN_MAP_ENABLE
-    #define EMMISIVE_MAP_ENABLE
+    #define ALBEDO_MAP_ENABLE 1
+    #define NORMAL_MAP_ENABLE 1
+    #define NORMAL_MAP_SUB_ENABLE 1
+    #define SMOOTHNESS_MAP_ENABLE 1
+    #define METALNESS_MAP_ENABLE 1
+    #define SSS_MAP_ENABLE 1
+    #define MELANIN_MAP_ENABLE 1
+    #define EMMISIVE_MAP_ENABLE 1
 ```
 
 * 如果材质在pmx文件中，可以启用以下
     
 ```cpp
-    #define ALBEDO_MAP_IN_TEXTURE // 物体的基本贴图在Tex里
-    #define NORMAL_MAP_IN_SPHEREMAP // 物体的法线贴图在Sph map里
-    #define SMOOTHNESS_MAP_IN_TONEMAP // 物体的光滑度贴图在Toon map里
-    #define METALNESS_MAP_IN_TONEMAP // 物体的金属贴图在Toon map里
+    #define ALBEDO_MAP_IN_TEXTURE 1 // 物体的基本贴图在Tex里
+    #define NORMAL_MAP_IN_SPHEREMAP 1 // 物体的法线贴图在Sph map里
+    #define SMOOTHNESS_MAP_IN_TONEMAP 1 // 物体的光滑度贴图在Toon map里
+    #define METALNESS_MAP_IN_TONEMAP 1 // 物体的金属贴图在Toon map里
 ```
 
 * 如果没有指定在pmx中，可以将文件路径写到下面这些定义里
