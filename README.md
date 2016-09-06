@@ -195,11 +195,11 @@ Ray-MMD
 * Dispersion 相机色散的效果
 * DispersionRadius 相机色散的区域大小
 * FilmGrain 相机因曝光不足参数的噪点
-* ToneMapping 色调映射的鲜艳度 (为0时采用ACES, 为1时使用Uncharted2)
-* ShoStrength 亮度 (当ToneMapping越大时改值影响越大)
-* LinStrength 灰度 (当ToneMapping越大时改值影响越大)
-* LinWhite    消光 (当ToneMapping越大时改值影响越大)
-* ToeNum      饱和度 (当ToneMapping越大时改值影响越大)  
+* ToneMapping 色调映射的鲜艳度 (为0时ACES, 为1时线性曝光，可在ray.conf修改其它模式，例:Uncharted2)
+* ShoStrength 亮度 (当ToneMapping的模式是Uncharted2时才有效)
+* LinStrength 灰度 (当ToneMapping的模式是Uncharted2时才有效)
+* LinWhite    消光 (当ToneMapping的模式是Uncharted2时才有效)
+* ToeNum      饱和度 (当ToneMapping的模式是Uncharted2时才有效)
 
 #### 更新历史 :
 ##### 2016-8-30 ver 1.0.3 beta
