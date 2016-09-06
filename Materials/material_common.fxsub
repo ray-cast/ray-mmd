@@ -252,7 +252,11 @@ float ShininessToSmoothness(float spec)
 }
 
 #if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
-    texture2D AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
+    #if ALBEDO_MAP_ANIMATION_ENABLE
+        texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE;>;
+    #else
+        texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
+    #endif
     sampler AlbedoMapSamp = sampler_state
     {
         texture = AlbedoMap;
@@ -326,7 +330,11 @@ float ShininessToSmoothness(float spec)
 #endif
 
 #if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_MAP_IN_TEXTURE != 1
-    texture2D EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
+    #if EMMISIVE_MAP_ANIMATION_ENABLE
+        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMMISIVE_MAP_FILE;>;
+    #else
+        texture EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
+    #endif
     sampler EmissiveMapSamp = sampler_state
     {
         texture = EmissiveMap;
