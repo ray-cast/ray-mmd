@@ -46,7 +46,7 @@ float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
     float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
     float B = A * sigma2;
 
-    return max(A + B * (s / t), 0);
+    return saturate(A + B * (s / t));
 }
 
 float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
@@ -214,7 +214,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, float angle, float radius)
 {
     float3 v = normalize(P - lightPosition);
-    float spotAngle = max(0, dot(v, lightDirection));   
+    float spotAngle = saturate(dot(v, lightDirection));   
     float spotFalloff = cos(angle) / (spotAngle + 1e-6);
     float spotAttenuation = 1.0h - pow(saturate(spotFalloff), radius);
     return spotAttenuation;

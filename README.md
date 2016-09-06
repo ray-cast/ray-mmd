@@ -126,7 +126,21 @@ Ray-MMD
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
 * 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理(点击可以看大图，Github中点开后把链接中的Blob改为Raw)  
 [![link text](Screenshot/point_light3_small.png)](Screenshot/point_light3.png)
-* 待续
+* 接着说下如何使用纹理的方形区域光
+* 首先在Lighting目录中拖拽一个RectangleLight.pmx至窗口
+[![link text](Screenshot/LED_0.png)](Screenshot/LED_0.png)
+* 检查MME面板中，LightingMap板块是否有挂在rectangle_lighting.fx (如果没有，挂载上去)
+* 然后修改表情中的RGB+和Width/Height，以及将Range+调到最大，效果如图  
+[![link text](Screenshot/LED_1.png)](Screenshot/LED_1.png)
+* 修改rectangle_lighting.fx(可复制一份)中的 视频贴图，修改后保存
+[![link text](Screenshot/LED_2.png)](Screenshot/LED_2.png)
+* 复制一份material.fx改为material_led.fx
+* 将USE_CUSTOM_MATERIAL改为 1，const float3 albedo = 1.0; 改为 0.0;
+* 将发光贴图进行如下设置，修改后保存
+[![link text](Screenshot/LED_3.png)](Screenshot/LED_3.png)
+* 最后在MME里MaterialMap将material_led.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
+[![link text](Screenshot/LED_4.png)](Screenshot/LED_4.png)
+* 如果图片是GIF/APNG格式的纹理可以设置 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE为 1
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (以放入了Tools目录中)
