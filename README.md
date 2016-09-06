@@ -195,13 +195,17 @@ Ray-MMD
 
 ##### 6.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
-* 先介绍最基本的点光源，首先载入ray、skybox，以及一个地面模型  
+* 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
 [![link text](Screenshot/floor.png)](Screenshot/floor.png)
 * 在Lighting目录中拖拽一个PointLight.pmx至窗口中  
 [![link text](Screenshot/point_light.png)](Screenshot/point_light.png)
 * 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有挂载上去)
 * 然后修改表情中的RGB+和Radius+调到最大，效果如图  
 [![link text](Screenshot/point_light2.png)](Screenshot/point_light2.png)
+* 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
+* 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
+* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理
+[![link text](Screenshot/point_light3_small.png)](Screenshot/point_light3.png)
 
 ##### 7.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
