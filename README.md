@@ -141,6 +141,7 @@ Ray-MMD
 * 最后在MME里MaterialMap将material_led.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
 [![link text](Screenshot/LED_4.png)](Screenshot/LED_4.png)
 * 如果图片是GIF/APNG格式的纹理可以设置 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE为 1
+* 同时可以用 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED 控制播放速度(最小倍率为1)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (以放入了Tools目录中)
