@@ -145,9 +145,9 @@ Ray-MMD
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (以放入了Tools目录中)
-    ```
+```
     https://github.com/dariomanesku/cmftStudio
-    ```
+```
 * 启动cmftstudio
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
