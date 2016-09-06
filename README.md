@@ -204,7 +204,7 @@ Ray-MMD
 [![link text](Screenshot/point_light2.png)](Screenshot/point_light2.png)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
-* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理
+* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理  
 [![link text](Screenshot/point_light3_small.png)](Screenshot/point_light3.png)
 
 ##### 7.0 全局设置 (ray_controller.pmx):
