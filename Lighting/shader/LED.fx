@@ -15,7 +15,8 @@
 
 // 视频贴图
 #define VIDEO_MAP_ENABLE 1
-#define VIDEO_MAP_IN_TEXTURE 1
+#define VIDEO_MAP_IN_TEXTURE 0
+#define VIDEO_MAP_IN_SCREEN_MAP 1
 #define VIDEO_MAP_UV_FLIP 0
 #define VIDEO_MAP_FILE "video.png"
 

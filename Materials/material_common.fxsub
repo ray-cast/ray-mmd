@@ -251,15 +251,25 @@ float ShininessToSmoothness(float spec)
     return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
 }
 
+#if (ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_SCREEN_MAP) || (EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_SCREEN_MAP)
+    shared texture2D DummyScreenTex : RenderColorTarget;
+#endif
+
 #if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
-    #if ALBEDO_MAP_ANIMATION_ENABLE
-        texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE; float speed=ALBEDO_MAP_ANIMATION_ENABLE;>;
-    #else
-        texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
+    #if ALBEDO_MAP_IN_SCREEN_MAP == 0
+        #if ALBEDO_MAP_ANIMATION_ENABLE
+            texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE; float speed=ALBEDO_MAP_ANIMATION_ENABLE;>;
+        #else
+            texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
+        #endif
     #endif
     sampler AlbedoMapSamp = sampler_state
     {
+#if ALBEDO_MAP_IN_SCREEN_MAP
+        texture = DummyScreenTex;
+#else
         texture = AlbedoMap;
+#endif
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -330,14 +340,20 @@ float ShininessToSmoothness(float spec)
 #endif
 
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE && EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_TEXTURE != 1
-    #if EMISSIVE_MAP_ANIMATION_ENABLE
-        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMISSIVE_MAP_FILE; float speed=EMISSIVE_MAP_ANIMATION_SPEED;>;
-    #else
-        texture EmissiveMap<string ResourceName = EMISSIVE_MAP_FILE;>; 
+    #if EMISSIVE_MAP_IN_SCREEN_MAP == 0
+        #if EMISSIVE_MAP_ANIMATION_ENABLE
+            texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMISSIVE_MAP_FILE; float speed=EMISSIVE_MAP_ANIMATION_SPEED;>;
+        #else
+            texture EmissiveMap<string ResourceName = EMISSIVE_MAP_FILE;>; 
+        #endif
     #endif
     sampler EmissiveMapSamp = sampler_state
     {
+#if EMISSIVE_MAP_IN_SCREEN_MAP
+        texture = DummyScreenTex;
+#else
         texture = EmissiveMap;
+#endif
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif

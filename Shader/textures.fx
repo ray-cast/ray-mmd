@@ -31,6 +31,8 @@ texture LightingMap: OFFSCREENRENDERTARGET <
         "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"
         "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
         "TubeLight*.* =./Lighting/shader/tube_lighting.fx;"
+        "LED*.pmx =./Lighting/shader/LED.fx;"
+        "LED.x=./Lighting/shader/DummyScreen.fx;"
         "* = hide;";
 >;
 
@@ -77,6 +79,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
         "self = hide;"
         "ray_controller.pmx=hide;"
         "skybox*.* = ./materials/material_skybox.fx;"
+        "LED*.pmx =./materials/material_led.fx;"
         "*.pmd = ./materials/material.fx;"
         "*.pmx = ./materials/material.fx;"
         "*.x = hide;"

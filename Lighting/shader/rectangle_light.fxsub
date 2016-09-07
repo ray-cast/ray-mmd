@@ -27,14 +27,20 @@ static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
 static float LightIntensity = (1 - mIntensityM) * RECTANGLELIGHT_MAX_INTENSITY;
 
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
-    #if VIDEO_MAP_ANIMATION_ENABLE
+    #if VIDEO_MAP_IN_SCREEN_MAP
+        shared texture2D DummyScreenTex : RenderColorTarget;
+    #elif VIDEO_MAP_ANIMATION_ENABLE
         texture VideoMap : ANIMATEDTEXTURE <string ResourceName = VIDEO_MAP_FILE; float speed=VIDEO_MAP_ANIMATION_SPEED;>;
     #else
         texture VideoMap<string ResourceName = VIDEO_MAP_FILE;>;
     #endif
     sampler VideoMapSamp = sampler_state
     {
+#if VIDEO_MAP_IN_SCREEN_MAP
+        texture = DummyScreenTex;
+#else
         texture = VideoMap;
+#endif
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = CLAMP; ADDRESSV = CLAMP;
     };
 #elif VIDEO_MAP_ENABLE
@@ -132,7 +138,7 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
         diffuse *= material.albedo;
         
     #if VIDEO_MAP_ENABLE
-        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 10, 10).rgb);
+        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 5, 10).rgb);
     #endif
             
     #if VIDEO_MAP_ENABLE
