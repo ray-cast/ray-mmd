@@ -32,7 +32,6 @@ texture LightingMap: OFFSCREENRENDERTARGET <
         "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
         "TubeLight*.* =./Lighting/shader/tube_lighting.fx;"
         "LED*.pmx =./Lighting/shader/LED.fx;"
-        "LED.x=./Lighting/shader/DummyScreen.fx;"
         "* = hide;";
 >;
 
