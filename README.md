@@ -19,11 +19,12 @@ Ray-MMD
 
 #### 教程 :
 ##### 1.0 文件夹介绍 :
-* EnvLighting : 环境光(IBL)相关特效
+* Lighting : 光源/环境光(IBL)相关特效
 * Main : 添加物体基本的光照
 * Materials : 用于指定物体材质 (如皮肤，金属，天空盒....)
 * Shadow : 用于渲染物体阴影的特效
 * Skybox : 基本的天空盒特效和纹理
+* Tools : 制作天空盒需要用到的文件
 * ray.conf : 配置文件(可自行修改)
 * ray.x : 渲染主文件
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
@@ -39,13 +40,15 @@ Ray-MMD
 [![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
 
 ##### 3.0 材质介绍 :
-* 基于物理的模型大体分为 
+* 材质贴图大体分为 
 * albedo 物体的反照率，可以认为是物体的颜色/贴图
+* alpha 控制物体的透明度
 * normal 垂直物体表面的主要法线，光照需要用到
 * sub normal 控制物体表面细微的法线，如毛孔，布料纹路
 * smoothness : 物体表面的光滑度，例如指定金属时，越光滑反射的环境也就越清晰 
 * metalness : 物体的金属程度
 * SSS : 指定物体内部的散射色
+* melanin : 增加物体的黑色素 (例如加深皮肤、袜子的颜色)
 * emmisive : 控制部分表面的自发光
 
 ###### 3.1 启用材质
@@ -144,7 +147,7 @@ Ray-MMD
 * 同时可以用 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED 控制播放速度(最小倍率为1)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
-　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (以放入了Tools目录中)
+　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (已放入了Tools目录中)
 ```
     https://github.com/dariomanesku/cmftStudio
 ```

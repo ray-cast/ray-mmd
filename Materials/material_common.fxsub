@@ -32,7 +32,7 @@ float4  TextureMulValue   : MULTIPLYINGTEXTURE;
 float4  SphereAddValue    : ADDINGSPHERETEXTURE;
 float4  SphereMulValue    : MULTIPLYINGSPHERETEXTURE;
 
-#if EMMISIVE_APPLY_MORPH_COLOR
+#if EMISSIVE_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
@@ -329,11 +329,11 @@ float ShininessToSmoothness(float spec)
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && EMMISIVE_ENABLE && EMMISIVE_MAP_ENABLE && EMMISIVE_MAP_IN_TEXTURE != 1
-    #if EMMISIVE_MAP_ANIMATION_ENABLE
-        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMMISIVE_MAP_FILE; float speed=EMMISIVE_MAP_ANIMATION_SPEED;>;
+#if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE && EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_TEXTURE != 1
+    #if EMISSIVE_MAP_ANIMATION_ENABLE
+        texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMISSIVE_MAP_FILE; float speed=EMISSIVE_MAP_ANIMATION_SPEED;>;
     #else
-        texture EmissiveMap<string ResourceName = EMMISIVE_MAP_FILE;>; 
+        texture EmissiveMap<string ResourceName = EMISSIVE_MAP_FILE;>; 
     #endif
     sampler EmissiveMapSamp = sampler_state
     {
@@ -444,39 +444,29 @@ float3 GetAlbedo(float2 uv, bool use_texture)
     return 0.0;
 #endif
 #if USE_CUSTOM_MATERIAL
-    #if ALBEDO_MAP_UV_FLIP
-        uv.y = 1 - uv.y;
-    #endif
-    #if  ALBEDO_MAP_ENABLE
+    #if ALBEDO_MAP_ENABLE
+        #if ALBEDO_MAP_UV_FLIP
+            uv.y = 1 - uv.y;
+        #endif
         #if ALBEDO_MAP_IN_TEXTURE
+            float3 albedoColor = MaterialDiffuse.rgb;
             if (use_texture)
             {
-                float3 diffuse = srgb2linear(tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb);
-                
-                #if ALBEDO_MAP_APPLY_COLOR
-                    diffuse *= albedo.rgb;
-                #elif ALBEDO_APPLY_MORPH_COLOR
-                    diffuse *= float3(MorphRed, MorphGreen, MorphBlue);
-                #else
-                    diffuse *= srgb2linear(MaterialDiffuse.rgb);
-                #endif
-                
-                return diffuse;
-            }
-            else
-            {
-                return srgb2linear(MaterialDiffuse.rgb);
+                albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
             }
         #else
-            float3 diffuse = srgb2linear(tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb);
-            
-            #if ALBEDO_MAP_APPLY_COLOR
-                diffuse *= albedo.rgb;
-            #elif ALBEDO_APPLY_MORPH_COLOR
-                diffuse *= float3(MorphRed, MorphGreen, MorphBlue);
-            #endif           
-            return diffuse;
+            float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
         #endif
+        
+        #if ALBEDO_MAP_APPLY_COLOR
+            albedoColor *= albedo.rgb;
+        #endif
+        
+        #if ALBEDO_APPLY_MORPH_COLOR
+            albedoColor *= float3(MorphRed, MorphGreen, MorphBlue);
+        #endif
+        
+        return srgb2linear(albedoColor);
     #elif ALBEDO_APPLY_MORPH_COLOR
         return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue));
     #else
@@ -498,32 +488,36 @@ float3 GetAlbedo(float2 uv, bool use_texture)
 #endif
 }
 
-float3 GetEmissiveColor(float2 uv)
+float3 GetEmissiveColor(float2 uv, bool use_texture)
 {
-#if EMMISIVE_ENABLE && USE_CUSTOM_MATERIAL
-    #if EMMISIVE_MAP_UV_FLIP
-        uv.y = 1 - uv.y;
-    #endif
-    #if EMMISIVE_MAP_IN_TEXTURE
-        #if EMMISIVE_APPLY_COLOR
-            return srgb2linear(emmisive.rgb * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
-        #elif EMMISIVE_APPLY_MORPH_COLOR
-            return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue) * tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
+#if EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+    #if EMISSIVE_MAP_ENABLE || EMISSIVE_USE_ALBEDO       
+        #if EMISSIVE_USE_ALBEDO
+            float3 emissiveColor = GetAlbedo(uv, use_texture);
         #else
-            return srgb2linear(tex2D(DiffuseMapSamp, uv * emmisiveMapLoopNum).rgb);
+            #if EMISSIVE_MAP_UV_FLIP
+                uv.y = 1 - uv.y;
+            #endif
+            #if EMISSIVE_MAP_IN_TEXTURE
+                float3 emissiveColor = srgb2linear(tex2D(DiffuseMapSamp, uv * emissiveMapLoopNum).rgb);
+            #else
+                float3 emissiveColor = srgb2linear(tex2D(EmissiveMapSamp, uv * emissiveMapLoopNum).rgb);
+            #endif
         #endif
-    #elif EMMISIVE_MAP_ENABLE
-        #if EMMISIVE_APPLY_COLOR
-            return srgb2linear(emmisive.rgb * tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
-        #elif EMMISIVE_APPLY_MORPH_COLOR
-            return srgb2linear(float3(MorphRed, MorphGreen, MorphBlue) * tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
-        #else
-            return srgb2linear(tex2D(EmissiveMapSamp, uv * emmisiveMapLoopNum).rgb);
+        
+        #if EMISSIVE_APPLY_COLOR
+            emissiveColor *= emissive.rgb;
         #endif
-    #elif EMMISIVE_APPLY_MORPH_COLOR
+        
+        #if EMISSIVE_APPLY_MORPH_COLOR
+            emissiveColor *= float3(MorphRed, MorphGreen, MorphBlue);
+        #endif
+        
+        return emissiveColor;
+    #elif EMISSIVE_APPLY_MORPH_COLOR
         return float3(MorphRed, MorphGreen, MorphBlue);
     #else
-        return emmisive.rgb;
+        return emissive.rgb;
     #endif
 #else
     return 0.0f;
@@ -768,11 +762,11 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
-    material.emissive = GetEmissiveColor(IN.Texcoord);
+    material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-#elif EMMISIVE_ENABLE
+#elif EMISSIVE_ENABLE
     material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
 #else
     material.lightModel = LIGHTINGMODEL_NORMAL;
@@ -807,11 +801,11 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
-        material.emissive = GetEmissiveColor(IN.Texcoord);
+        material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
         
     #if SSS_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #elif EMMISIVE_ENABLE
+    #elif EMISSIVE_ENABLE
         material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
     #else
         material.lightModel = LIGHTINGMODEL_NORMAL;

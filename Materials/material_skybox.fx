@@ -80,10 +80,19 @@ const float transmittanceMapLoopNum = 1.0;
 const float melanin = 0.0;
 const float melaninMapLoopNum = 1.0;
 
-#define EMMISIVE_ENABLE 0
-#define EMMISIVE_MAP_FILE "emmisive.png"
+// 发光贴图
+#define EMISSIVE_ENABLE 0
+#define EMISSIVE_MAP_ENABLE 0
+#define EMISSIVE_MAP_IN_TEXTURE 0
+#define EMISSIVE_MAP_IN_ALBEDO 0 // 使用albedo指定的纹理
+#define EMISSIVE_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
+#define EMISSIVE_MAP_ANIMATION_SPEED 1  // 最小为1倍速
+#define EMISSIVE_MAP_UV_FLIP 0
+#define EMISSIVE_APPLY_COLOR 0
+#define EMISSIVE_APPLY_MORPH_COLOR 0
+#define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emmisive = 0.0;
-const float emmisiveMapLoopNum = 1.0;
+const float3 emissive = 1.0;
+const float emissiveMapLoopNum = 1.0;
 
 #include "material_common.fxsub"
