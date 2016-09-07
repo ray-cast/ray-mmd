@@ -782,7 +782,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-#elif EMISSIVE_ENABLE
+#elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
 #else
     material.lightModel = LIGHTINGMODEL_NORMAL;
@@ -821,7 +821,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         
     #if SSS_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #elif EMISSIVE_ENABLE
+    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
     #else
         material.lightModel = LIGHTINGMODEL_NORMAL;

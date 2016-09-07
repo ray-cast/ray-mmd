@@ -109,7 +109,7 @@ const float melaninMapLoopNum = 0.0;
 #define EMISSIVE_APPLY_MORPH_COLOR 1
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = 0.7;
+const float3 emissive = 0.45;
 const float emissiveMapLoopNum = 1.0;
 
 #include "material_common.fxsub"
