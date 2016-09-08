@@ -93,6 +93,11 @@ void ScreenSpaceQuadVS(
     oTexcoord.xy += ViewportOffset;
 }
 
+float4 ScreenSpaceQuadPS(in float4 Texcoord : TEXCOORD0, uniform sampler source) : COLOR
+{
+    return tex2D(source, Texcoord.xy);
+}
+
 float Script : STANDARDSGLOBAL <
 	string ScriptOutput = "color";
 	string ScriptClass  = "scene";
@@ -138,8 +143,7 @@ technique DeferredLighting<
 #endif
 
 #if SSSS_QUALITY > 0
-    "RenderDepthStencilTarget=DepthBuffer;"
-    "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSStencilTestPS;"
+    "RenderDepthStencilTarget=DepthBuffer; Pass=SSSSStencilTest;"
     "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSBlurX;"
     "RenderColorTarget0=OpaqueMap;      Pass=SSSSBlurY;"
 #endif
@@ -164,13 +168,25 @@ technique DeferredLighting<
     "RenderColorTarget0=OpaqueMapTemp;"
     "Pass=FimicToneMapping;"
 
-    "RenderColorTarget0=;"
+    "RenderColorTarget0=OpaqueMap;"
     "RenderDepthStencilTarget=;"
     "Pass=AntiAliasing;"
-#else
+    
     "RenderColorTarget0=;"
     "RenderDepthStencilTarget=;"
+    "Pass=SwapBuffers2;"
+#else
+    "RenderColorTarget0=OpaqueMapTemp;"
+    "RenderDepthStencilTarget=;"
     "Pass=FimicToneMapping;"
+    
+    "RenderColorTarget0=OpaqueMap;"
+    "RenderDepthStencilTarget=;"
+    "Pass=SwapBuffers1;"
+    
+    "RenderColorTarget0=;"
+    "RenderDepthStencilTarget=;"
+    "Pass=SwapBuffers2;"
 #endif
 ;>
 {
@@ -257,11 +273,12 @@ technique DeferredLighting<
 #   endif
 #endif
 #if SSSS_QUALITY > 0
-    pass SSSSStencilTestPS < string Script= "Draw=Buffer;"; > {
+    pass SSSSStencilTest < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
+        ColorWriteEnable = 0;
         StencilEnable = true;
         StencilFunc = ALWAYS;
         StencilRef = 1;
@@ -421,4 +438,20 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 FXAA3(OpaqueSampTemp, ViewportOffset2);
     }
 #endif
+    pass SwapBuffers1 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ScreenSpaceQuadPS(OpaqueSampTemp);
+    }
+    pass SwapBuffers2 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false;
+        AlphaTestEnable = false;
+        ZEnable = false;
+        ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ScreenSpaceQuadPS(OpaqueSamp);
+    }
 }

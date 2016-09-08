@@ -50,7 +50,7 @@ float4 GuassBlurPS(
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
-
+    
     float depthM = SSSSlinearizeDepth(coord);
     
     float3 V = normalize(viewdir);

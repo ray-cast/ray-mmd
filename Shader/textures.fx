@@ -195,7 +195,7 @@ sampler Gbuffer8Map = sampler_state {
 };
 
 #if SHADOW_QUALITY > 0
-shared texture2D ShadowmapMap : RENDERCOLORTARGET <
+texture2D ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
@@ -225,7 +225,7 @@ shared texture2D SSAOMap : RENDERCOLORTARGET <
     string Format = "R16F";
 #endif
 >;
-shared texture2D SSAOMapTemp : RENDERCOLORTARGET <
+texture2D SSAOMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
 #if SSGI_SAMPLER_COUNT > 0

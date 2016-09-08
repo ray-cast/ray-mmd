@@ -65,7 +65,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO;
     
-    float3 result = tex2D(OpaqueSamp, coord).rgb * (showTotal > 0.0 ? 0.0 : 1.0);
+    float3 result = srgb2linear(tex2D(OpaqueSamp, coord).rgb) * !any(showTotal);
     result += material.albedo * showAlbedo;
     result += (material.normal * 0.5 + 0.5) * showNormal;
     result += material.specular * showSpecular;
