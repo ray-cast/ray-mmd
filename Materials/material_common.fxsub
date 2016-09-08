@@ -820,7 +820,13 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
 GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
 {
 #if PARALLAX_MAP_ENABLE
+    #if PARALLAX_MAP_UV_FLIP
+        IN.Texcoord.y = 1 - IN.Texcoord.y;
+    #endif
     IN.Texcoord = ParallaxOcclusionMap(ParallaxMapSamp, IN.Texcoord * parallaxMapLoopNum, normalize(IN.Viewdir), 15, parallaxMapScale);
+    #if PARALLAX_MAP_UV_FLIP
+        IN.Texcoord.y = 1 - IN.Texcoord.y;
+    #endif
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);

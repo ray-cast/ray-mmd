@@ -116,7 +116,7 @@ const float emissiveMapLoopNum = 1.0;
 // 视差贴图
 #define PARALLAX_MAP_ENABLE 0
 #define PARALLAX_MAP_UV_FLIP 0
-#define PARALLAX_MAP_FILE "coal_h.jpg"
+#define PARALLAX_MAP_FILE "height.png"
 
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
