@@ -42,8 +42,8 @@ void BloomBlurVS(
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : SV_Target
 {
-    float4 color = 0.0f;
     float weight = 0.0;
+    float4 color = 0.0f;
     
     for (int i = 0; i < n; ++i)
     {
@@ -198,18 +198,18 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom2;
     bloom += bloom1;
     
-    color += bloomIntensity * bloom;
+    color += bloom * bloomIntensity;
 #endif
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
-    color = ApplyDithering(color, coord);
     color = AppleFilmGrain(color, coord);
     
     float lum = luminance(color);
     
     color = saturate(color);
     color = linear2srgb(color);
+    color = ApplyDithering(color, coord);
 
     return float4(color, lum);
 }
