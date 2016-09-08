@@ -113,4 +113,12 @@ const float melaninMapLoopNum = 0.0;
 const float3 emissive = 1.0;
 const float emissiveMapLoopNum = 1.0;
 
+// 视差贴图
+#define PARALLAX_MAP_ENABLE 0
+#define PARALLAX_MAP_UV_FLIP 0
+#define PARALLAX_MAP_FILE "coal_h.jpg"
+
+const float parallaxMapScale = 0.01;
+const float parallaxMapLoopNum = 1.0;
+
 #include "material_common.fxsub"

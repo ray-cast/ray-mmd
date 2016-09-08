@@ -188,6 +188,53 @@ float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
     return float3x3(normalize(T), normalize(B), N);
 }
 
+float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSteps, float parallaxScale)
+{
+   float step = 1.0 / numSteps;
+   float2 delta = parallaxScale * V.xy / (-V.z * numSteps);
+
+   float curLayerHeight = 0;
+   float curHeight = tex2D(heightMap, coord).r;
+   float2 curTexcoord = coord;
+
+   for (int i = 0; i < numSteps; i++)
+   {
+        if (curHeight <= curLayerHeight)
+            break;
+            
+        curLayerHeight += step; 
+        curTexcoord -= delta;
+        curHeight = tex2D(heightMap, curTexcoord).r;
+   }
+
+    float2 deltaTexcoord = delta *= 0.5;
+    float deltaHeight = step *= 0.5;
+
+    curTexcoord += deltaTexcoord;
+    curLayerHeight -= deltaHeight;
+
+    for (int i = 0; i < 5; i++)
+    {
+        deltaTexcoord *= 0.5;
+        deltaHeight *= 0.5;
+
+        curHeight = tex2D(heightMap, curTexcoord).r;
+
+        if (curHeight > curLayerHeight)
+        {
+            curTexcoord -= deltaTexcoord;
+            curLayerHeight += deltaHeight;
+        }
+        else
+        {
+            curTexcoord += deltaTexcoord;
+            curLayerHeight -= deltaHeight;
+        }
+    }
+
+   return curTexcoord;
+}
+
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
@@ -326,7 +373,7 @@ float ShininessToSmoothness(float spec)
     sampler TransmittanceMapSamp = sampler_state
     {
         texture = TransmittanceMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -354,6 +401,15 @@ float ShininessToSmoothness(float spec)
 #else
         texture = EmissiveMap;
 #endif
+        MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
+    };
+#endif
+
+#if USE_CUSTOM_MATERIAL && PARALLAX_MAP_ENABLE
+    texture2D ParallaxMap<string ResourceName = PARALLAX_MAP_FILE;>; 
+    sampler ParallaxMapSamp = sampler_state
+    {
+        texture = ParallaxMap;
         MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -587,7 +643,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             #endif
             
             tangentNormal.rg += tangentSubNormal.rg;
-            tangentNormal.rgb = normalize(tangentNormal.rgb);
+            tangentNormal = normalize(tangentNormal);
         #endif
         
         float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);
@@ -763,8 +819,12 @@ VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 
 
 GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
 {
+#if PARALLAX_MAP_ENABLE
+    IN.Texcoord = ParallaxOcclusionMap(ParallaxMapSamp, IN.Texcoord * parallaxMapLoopNum, normalize(IN.Viewdir), 15, parallaxMapScale);
+#endif
+
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    clip(alpha - AlphaThreshold);
+    clip(alpha - AlphaThreshold);    
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
