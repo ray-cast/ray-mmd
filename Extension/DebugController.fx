@@ -3,6 +3,7 @@
 #include "../shader/gbuffer.fx"
 #include "../shader/gbuffer_sampler.fx"
 
+#if !defined(MIKUMIKUMOVING)
 float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo"; >;
 float showNormal : CONTROLOBJECT < string name="(self)"; string item = "Normal"; >;
 float showSpecular : CONTROLOBJECT < string name="(self)"; string item = "Specular"; >;
@@ -19,6 +20,22 @@ float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = 
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
 float showSSAO : CONTROLOBJECT < string name="(self)"; string item = "SSAO"; >;
+#else
+float showAlbedo <string UIName = "showAlbedo"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showNormal <string UIName = "showNormal"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSpecular <string UIName = "showSpecular"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSmoothness <string UIName = "showSmoothness"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showTransmittance <string UIName = "showTransmittance"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showEmissive <string UIName = "showEmissive"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showDepth <string UIName = "showDepth"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showAlpha <string UIName = "showAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showAlbedoAlpha <string UIName = "showAlbedoAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showNormalAlpha <string UIName = "showNormalAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSpecularAlpha <string UIName = "showSpecularAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSmoothnessAlpha <string UIName = "showSmoothnessAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showDepthAlpha <string UIName = "showDepthAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSSAO <string UIName = "showSSAO"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+#endif
 
 shared texture2D OpaqueMap : RENDERCOLORTARGET;
 sampler OpaqueSamp = sampler_state {
