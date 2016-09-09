@@ -97,8 +97,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result = linear2srgb(result);
     
     result += alphaDiffuse * showAlpha;
-    result += tex2D(Gbuffer4Map, coord).r / 200 * showDepth;
-    result += tex2D(Gbuffer8Map, coord).r / 200 * showDepthAlpha;
+    result += pow(tex2D(Gbuffer4Map, coord).r / 200, 0.5) * showDepth;
+    result += pow(tex2D(Gbuffer8Map, coord).r / 200, 0.5) * showDepthAlpha;
     result += tex2D(SSAOMapSamp, coord).r * showSSAO;
     
     return float4(result, 1);
