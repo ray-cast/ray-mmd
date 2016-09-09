@@ -172,7 +172,7 @@ technique DeferredLighting<
 #if SSSS_QUALITY > 0
 #if !defined(MIKUMIKUMOVING)
     "RenderDepthStencilTarget=DepthBuffer;"
-    "Clear=DepthStencil;"
+    "Clear=Depth;"
     "Pass=SSSSStencilTest;"
 #endif
     "RenderColorTarget0=OpaqueMapTemp;  Pass=SSSSBlurX;"
@@ -309,7 +309,7 @@ technique DeferredLighting<
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
-        ColorWriteEnable = 0;
+        ColorWriteEnable = false;
         StencilEnable = true;
         StencilFunc = ALWAYS;
         StencilRef = 1;
