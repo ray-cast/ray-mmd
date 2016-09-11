@@ -57,11 +57,10 @@ float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform int cascadeIndex, uniform boo
     float2 clipUV = (IN.PPos.xy - SHADOW_MAP_OFFSET) * IN.Tex2;
     clip(clipUV.x);
     clip(clipUV.y);
-
     clip(!opadd - 0.001f);
 
     float alpha = MaterialDiffuse.a;
-    alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01); // ??
+    alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
     if ( useTexture ) alpha *= tex2D( ObjTexSampler, IN.Tex.xy ).a;
     clip(alpha - CasterAlphaThreshold);
 

@@ -10,10 +10,8 @@ const float LightZMin = 1;
 const float LightDistance = 1000;
 
 const float CascadeScale = 0.5;
-const float CasterAlphaThreshold = 0.2;
-
-#define CasterAlphaThreshold    0.2
-#define RecieverAlphaThreshold  0.01
+const float CasterAlphaThreshold = 0.8;
+const float RecieverAlphaThreshold = 0.01;
 
 #define BIAS_SCALE      0.005
 

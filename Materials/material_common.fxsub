@@ -806,6 +806,28 @@ float GetMelanin(float2 coord)
 #endif
 }
 
+float KajiyaKayAnisotropic(float3 N, float3 V, float3 L, float smoothness, float3 specular1, float3 specular2, float secondaryHighlightWidth)
+{   
+    float3 c1 = cross(N, float3(0.0, 0.0, 1.0));
+    float3 c2 = cross(N, float3(0.0, 1.0, 0.0));
+
+    float3 T = length(c1) > length(c2) ? c1 : c2;
+    T = normalize(T);
+    
+    float anisotropicExp = exp2(10.0 * smoothness + 1.0);
+    float anisotropicExp2 = exp2(10.0 * max(smoothness / secondaryHighlightWidth, 0.4) + 1.0);
+    
+    // KajiyaKay
+    float3 H = normalize(L + V);
+    float TdotH = dot(T, H);
+    float specular = sqrt(max(1.0 - TdotH * TdotH, 0.01));
+    
+    float3 specularHigh = specular1 * pow(specular, anisotropicExp);
+    specularHigh += specular2 + pow(specular, anisotropicExp2);
+    
+    return specularHigh * max(0, dot(N, L));
+}
+
 VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 Texcoord: TEXCOORD0)
 {
     VS_OUTPUT Out;
@@ -830,7 +852,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    clip(alpha - AlphaThreshold);    
+    clip(alpha - AlphaThreshold);  
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));

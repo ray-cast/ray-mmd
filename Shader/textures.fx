@@ -272,33 +272,33 @@ sampler OpaqueSampTemp = sampler_state {
 texture2D BloomMapX1Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 texture2D BloomMapX1 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 #endif
 texture2D BloomMapX2Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 texture2D BloomMapX2 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 texture2D BloomMapX3Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 texture2D BloomMapX3 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-    string Format = "A8R8G8B8";
+    string Format = "X8R8G8B8";
 >;
 texture2D BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};

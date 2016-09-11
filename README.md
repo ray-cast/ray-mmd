@@ -145,6 +145,10 @@ Ray-MMD
 [![link text](Screenshot/LED_4.png)](Screenshot/LED_4.png)
 * 如果图片是GIF/APNG格式的纹理可以设置 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE为 1
 * 同时可以用 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED 控制播放速度(最小倍率为1)
+* LED同时还支持视频/屏幕纹理的播放
+* 只需要将Lighting目录中的DummyScreen.x载入，然后选择菜单->背景->(全画面/AVI背景)
+* 然后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
+[![link text](Screenshot/LED_5.png)](Screenshot/LED_5.png)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (已放入了Tools目录中)
