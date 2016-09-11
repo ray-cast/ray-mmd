@@ -6,7 +6,7 @@ texture2D ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
     bool AntiAlias = false;
-    string Format = "A8R8G8B8";
+    string Format = "A16B16G16R16F";
 >;
 sampler ScnSamp = sampler_state {
     texture = <ScnMap>;
