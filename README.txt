@@ -6,6 +6,17 @@ Ray-MMD
     https://github.com/ray-cast/ray-mmd
 
 更新内容 :
+##### 2016-9-11 ver 1.0.4
+* 添加TubeLight
+* 添加播放GIF/APNG图片以及RectangleLight的双面光照
+* 添加视差贴图
+* 添加获取来至AVI/屏幕的纹理用于材质
+* 添加ALBEDO的参数代替自发光的参数，但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
+* 添加Debug的扩展
+* 添加MikuMikuMoving的兼容
+* 优化SSAO的模糊
+* 优化Bloom以及自发光
+
 ##### 2016-9-4 ver 1.0.3
 * 改进光照模式，以及渲染速度
 * 添加了alpha的支持

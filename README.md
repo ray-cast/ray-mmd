@@ -8,14 +8,16 @@ Ray-MMD
 [![link text](Screenshot/lights_small.jpg)](Screenshot/lights.png)
 
 #### 更新内容 :
-##### 2016-9-4 ver 1.0.3
-* 改进光照模式，以及渲染速度
-* 添加了alpha的支持
-* 添加了纹理作为光源的矩形区域光
-* 添加了视频作为光源的矩形区域光(LED)
-* 添加了skydome的地面阴影
-* 调整ToneMapping在最大时改用线性曝光
-* 略微提高了天空球的清晰度(如果需要更清晰可以把skybox.pmx里的贴图纹理改成HDR文件)
+##### 2016-9-11 ver 1.0.4
+* 添加TubeLight
+* 添加播放GIF/APNG图片以及RectangleLight的双面光照
+* 添加视差贴图
+* 添加获取来至AVI/屏幕的纹理用于材质
+* 添加ALBEDO的参数代替自发光的参数，但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
+* 添加Debug的扩展
+* 添加MikuMikuMoving的兼容
+* 优化SSAO的模糊
+* 优化Bloom以及自发光
 
 #### 教程 :
 ##### 1.0 文件夹介绍 :
@@ -224,6 +226,15 @@ Ray-MMD
 * ToeNum      饱和度 (当ToneMapping的模式是Uncharted2时才有效)
 
 #### 更新历史 :
+##### 2016-9-4 ver 1.0.3
+* 改进光照模式，以及渲染速度
+* 添加了alpha的支持
+* 添加了纹理作为光源的矩形区域光
+* 添加了视频作为光源的矩形区域光(LED)
+* 添加了skydome的地面阴影
+* 调整ToneMapping在最大时改用线性曝光
+* 略微提高了天空球的清晰度(如果需要更清晰可以把skybox.pmx里的贴图纹理改成HDR文件)
+
 ##### 2016-8-30 ver 1.0.3 beta
 * 改进默认材质对Diff&Spec的兼容
 * 添加了新的HDR和工具，以及更新HDR制作教程(现在可以支持HDR的天空了)
