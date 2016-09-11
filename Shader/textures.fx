@@ -195,7 +195,7 @@ sampler Gbuffer8Map = sampler_state {
 };
 
 #if SHADOW_QUALITY > 0
-texture2D ShadowmapMap : RENDERCOLORTARGET <
+shared texture2D ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
