@@ -205,11 +205,9 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = AppleFilmGrain(color, coord);
     
-    float lum = luminance(color);
-    
     color = saturate(color);
     color = linear2srgb(color);
     color = ApplyDithering(color, coord);
 
-    return float4(color, lum);
+    return float4(color, luminance(color));
 }
