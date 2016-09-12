@@ -54,19 +54,15 @@ float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item 
 float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
 float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DispersionRadius"; >;
 float mFilmGrain : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FilmGrain"; >;
+float mFilmLine : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FilmLine"; >;
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
 float mBloomRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomRadius"; >;
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
-float mShoStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ShoStrength"; >;
-float mLinStrength : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinStrength"; >;
-float mLinWhite : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "LinWhite"; >;
-float mToeNum : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToeNum"; >;
 float mToneMapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToneMapping"; >;
-
-float mColBalanceR :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Red-"; >;
-float mColBalanceG :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Green-"; >;
-float mColBalanceB :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Blue-"; >;
-float mColBalance  :  CONTROLOBJECT < string name="ColorBalance.pmx"; string item = "Weight"; >;
+float mColBalanceR :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceR-"; >;
+float mColBalanceG :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
+float mColBalanceB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
+float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 #else
 float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;

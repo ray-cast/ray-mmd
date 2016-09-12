@@ -66,11 +66,11 @@ float3 ColorBalance(float3 color, float4 balance)
 
 float3 Uncharted2Tonemap(float3 x)
 {
-    const float A = lerp(0.22, 1, mShoStrength); // Shoulder Strength
-    const float B = lerp(0.30, 1, mLinStrength); // Linear Strength
+    const float A = 0.22; // Shoulder Strength
+    const float B = 0.30; // Linear Strength
     const float C = 0.10; // Linear Angle
     const float D = 0.20; // Toe Strength
-    const float E = 0.01 *  (mToeNum * 10); // Toe Numerator
+    const float E = 0.01; // Toe Numerator
     const float F = 0.30; // Toe Denominator E/F = Toe Angle
     return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
@@ -156,8 +156,13 @@ float3 AppleFilmGrain(float3 color, float2 coord)
     exposureFactor = sqrt(exposureFactor);
     float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
     
-    // Overlay blending
     return Overlay(color, lerp(0.5, noise, t));
+}
+
+float3 AppleFilmLine(float3 color, float2 coord, int2 screenPosition)
+{
+    bool pattern = fmod(screenPosition.y, 2.0) > 0 ? 1 : 0;
+    return lerp(color, 0, mFilmLine * pattern);
 }
 
 float BloomFactor(const in float factor) 
@@ -166,12 +171,11 @@ float BloomFactor(const in float factor)
     return lerp(factor, mirrorFactor, mBloomRadius);
 }
     
-float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
+float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position, uniform sampler2D source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
 #if HDR_ENABLE
-
     color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
     color = FilmicTonemap(color, (1 + mExposure * 10));
     
@@ -204,6 +208,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = AppleFilmGrain(color, coord);
+    color = AppleFilmLine(color, coord, screenPosition.xy);
     
     color = saturate(color);
     color = linear2srgb(color);
