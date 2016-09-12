@@ -2,7 +2,7 @@ Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
 #### Screenshot :
-[![link text](Screenshot/LuoTianYi_small.png)](Screenshot/LuoTianYi.png)
+[![link text](Screenshot/hou_small.jpg)](Screenshot/hou.png)
 [![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
 [![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
 [![link text](Screenshot/lights_small.jpg)](Screenshot/lights.png)
