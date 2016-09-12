@@ -2,10 +2,10 @@ Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
 #### Screenshot :
-[![link text](Screenshot/hou_small.jpg)](Screenshot/hou.png)
-[![link text](Screenshot/pistol_small.png)](Screenshot/pistol.png)
-[![link text](Screenshot/sphere_small.jpg)](Screenshot/sphere.jpg)
-[![link text](Screenshot/lights_small.jpg)](Screenshot/lights.png)
+[![link text](https://github.com/ray-cast/images/blob/master/hou_small.jpg)](https://github.com/ray-cast/images/blob/master/hou.png)
+[![link text](https://github.com/ray-cast/images/blob/master/pistol_small.png)](https://github.com/ray-cast/images/blob/master/pistol.png)
+[![link text](https://github.com/ray-cast/images/blob/master/sphere_small.jpg)](https://github.com/ray-cast/images/blob/master/sphere.jpg)
+[![link text](https://github.com/ray-cast/images/blob/master/lights_small.jpg)](https://github.com/ray-cast/images/blob/master/lights.png)
 
 #### 更新内容 :
 ##### 2016-9-11 ver 1.0.4
@@ -35,11 +35,11 @@ Ray-MMD
 ##### 2.0 载入模型 :
 * 将ray.x载入到MMD中
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
-[![link text](Screenshot/2.2.png)](Screenshot/2.2.png)
+[![link text](https://github.com/ray-cast/images/blob/master/2.2.png)](https://github.com/ray-cast/images/blob/master/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
 * 分配完后效果图如下:  
-[![link text](Screenshot/2.5_small.png)](Screenshot/2.5.png)
+[![link text](https://github.com/ray-cast/images/blob/master/2.5_small.png)](https://github.com/ray-cast/images/blob/master/2.5.png)
 
 ##### 3.0 材质介绍 :
 * 材质贴图大体分为 
@@ -121,36 +121,36 @@ Ray-MMD
 ##### 4.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
-[![link text](Screenshot/floor.png)](Screenshot/floor.png)
+[![link text](https://github.com/ray-cast/images/blob/master/floor.png)](https://github.com/ray-cast/images/blob/master/floor.png)
 * 在Lighting目录中拖拽一个PointLight.pmx至窗口中  
-[![link text](Screenshot/point_light.png)](Screenshot/point_light.png)
+[![link text](https://github.com/ray-cast/images/blob/master/point_light.png)](https://github.com/ray-cast/images/blob/master/point_light.png)
 * 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有，挂载上去)
 * 然后修改表情中的RGB+和Radius+调到最大，效果如图  
-[![link text](Screenshot/point_light2.png)](Screenshot/point_light2.png)
+[![link text](https://github.com/ray-cast/images/blob/master/point_light2.png)](https://github.com/ray-cast/images/blob/master/point_light2.png)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
 * 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理(点击可以看大图，Github中点开后把链接中的Blob改为Raw)  
-[![link text](Screenshot/point_light3_small.png)](Screenshot/point_light3.png)
+[![link text](https://github.com/ray-cast/images/blob/master/point_light3_small.png)](https://github.com/ray-cast/images/blob/master/point_light3.png)
 * 接着说下如何使用纹理的方形区域光
 * 首先在Lighting目录中拖拽一个RectangleLight.pmx至窗口  
-[![link text](Screenshot/LED_0.png)](Screenshot/LED_0.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_0.png)](https://github.com/ray-cast/images/blob/master/LED_0.png)
 * 检查MME面板中，LightingMap板块是否有挂在rectangle_lighting.fx (如果没有，挂载上去)
 * 然后修改表情中的RGB+和Width/Height，以及将Range+调到最大，效果如图  
-[![link text](Screenshot/LED_1.png)](Screenshot/LED_1.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_1.png)](https://github.com/ray-cast/images/blob/master/LED_1.png)
 * 修改rectangle_lighting.fx中的视频贴图，修改后保存 (可复制一份,复制的同时要挂载新的fx)
-[![link text](Screenshot/LED_2.png)](Screenshot/LED_2.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_2.png)](https://github.com/ray-cast/images/blob/master/LED_2.png)
 * 复制一份material.fx改为material_led.fx
 * 将USE_CUSTOM_MATERIAL改为 1，const float3 albedo = 1.0; 改为 0.0;
 * 将发光贴图进行如下设置，修改后保存  
-[![link text](Screenshot/LED_3.png)](Screenshot/LED_3.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_3.png)](https://github.com/ray-cast/images/blob/master/LED_3.png)
 * 最后在MME里MaterialMap将material_led.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
-[![link text](Screenshot/LED_4.png)](Screenshot/LED_4.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_4.png)](https://github.com/ray-cast/images/blob/master/LED_4.png)
 * 如果图片是GIF/APNG格式的纹理可以设置 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE为 1
 * 同时可以用 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED 控制播放速度(最小倍率为1)
 * LED同时还支持视频/屏幕纹理的播放
 * 只需要将Lighting目录中的DummyScreen.x载入，然后选择菜单->背景->(全画面/AVI背景)
 * 然后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
-[![link text](Screenshot/LED_5.png)](Screenshot/LED_5.png)
+[![link text](https://github.com/ray-cast/images/blob/master/LED_5.png)](https://github.com/ray-cast/images/blob/master/LED_5.png)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (已放入了Tools目录中)
@@ -161,17 +161,17 @@ Ray-MMD
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
 * 如果是HDR文件，点ToneMapping，然后Apply即可  
-[![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.1_small.png)](https://github.com/ray-cast/images/blob/master/4.1.png)
 * 点击Radiance中的Filter skybox with cmft，选中Wrap模式并Process  
-[![link text](Screenshot/4.2_small.png)](Screenshot/4.2.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.2_small.png)](https://github.com/ray-cast/images/blob/master/4.2.png)
 * 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
-[![link text](Screenshot/4.3_small.png)](Screenshot/4.3.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.3_small.png)](https://github.com/ray-cast/images/blob/master/4.3.png)
 * 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
-[![link text](Screenshot/4.4_small.png)](Screenshot/4.4.png)
-[![link text](Screenshot/4.5_small.png)](Screenshot/4.5.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.4_small.png)](https://github.com/ray-cast/images/blob/master/4.4.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.5_small.png)](https://github.com/ray-cast/images/blob/master/4.5.png)
 * 将导出的Irradiance和Radiance放入Skybox/textures/目录中
 * 如图PMXEditor打开skybox.pmx，这里Texture里放渲染天空的纹理，Tone放Irradiance中的纹理SphereMap放Radiance中的纹理  
-[![link text](Screenshot/4.6.png)](Screenshot/4.6.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.6.png)](https://github.com/ray-cast/images/blob/master/4.6.png)
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
 
 ##### 6.0 制作基于物理的环境光贴图(IBL) 新:
@@ -183,18 +183,18 @@ Ray-MMD
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
 * 这里因为处理的是HDR文件了，不要再ToneMapping了  
-[![link text](Screenshot/4.1_small.png)](Screenshot/4.1.png)
+[![link text](https://github.com/ray-cast/images/blob/master/4.1_small.png)](https://github.com/ray-cast/images/blob/master/4.1.png)
 * 点击Radiance中的Filter skybox with cmft，选中Wrap模式，以及Gamma中全改为None并Process  
-[![link text](Screenshot/6.1.png)](Screenshot/6.1.png)
+[![link text](https://github.com/ray-cast/images/blob/master/6.1.png)](https://github.com/ray-cast/images/blob/master/6.1.png)
 * 点击Irradiance中的Fiter skybox with cmft，Gamma中全改为None，Process即可  
-[![link text](Screenshot/6.2.png)](Screenshot/6.2.png)
+[![link text](https://github.com/ray-cast/images/blob/master/6.2.png)](https://github.com/ray-cast/images/blob/master/6.2.png)
 * 处理完后效果图如下  
-[![link text](Screenshot/6.3_small.png)](Screenshot/6.3.png)
+[![link text](https://github.com/ray-cast/images/blob/master/6.3_small.png)](https://github.com/ray-cast/images/blob/master/6.3.png)
 * 接着将它们以RGBA16F或者RGBA32F的格式保存，并放入RGBMencode的同级目录下  
-[![link text](Screenshot/6.4.png)](Screenshot/6.4.png)
+[![link text](https://github.com/ray-cast/images/blob/master/6.4.png)](https://github.com/ray-cast/images/blob/master/6.4.png)
 * 分次拖拽它们到RGBMencode 依次输出对应的文件
 * 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
-[![link text](Screenshot/6.5.png)](Screenshot/6.5.png)
+[![link text](https://github.com/ray-cast/images/blob/master/6.5.png)](https://github.com/ray-cast/images/blob/master/6.5.png)
 * 这里提供一个天空盒的地址
 
 ```
