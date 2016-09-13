@@ -13,15 +13,30 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
-    
+
     float4 color = tex2D(source, coord);
     
-    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
-    
+    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
+
     if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
     {
         bloom += float4(material.emissive, 0);
     }
+
+#if ALHPA_ENABLE > 0
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    
+    float alphaDiffuse = 0;
+    MaterialParam materialAlpha;
+    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+    
+    if (materialAlpha.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        bloom += float4(materialAlpha.emissive, 0);
+    }
+#endif
 
     return bloom;
 }

@@ -282,6 +282,14 @@ GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, f
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
+    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
+    
+    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
     gbuffer.buffer4 = linearDepth;
     
     return gbuffer;
@@ -907,9 +915,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
         
-    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+    #if EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
     #else
         material.lightModel = LIGHTINGMODEL_NORMAL;

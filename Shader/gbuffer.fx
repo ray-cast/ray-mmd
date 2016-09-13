@@ -126,7 +126,9 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
 
     material.normal = DecodeNormal(buffer2.xyz);
     material.index = buffer2.w * TWO_BITS_EXTRACTION_FACTOR;
-
+    material.transmittance = 0;
+    material.emissive = 0;
+    
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
         material.specular = buffer3.xxx;
@@ -140,7 +142,6 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     else
     {
         material.specular = ycbcr2rgb(buffer3.xyz);
-        material.transmittance = 0;
     }
 }
 
@@ -156,6 +157,14 @@ GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, f
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
+    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
+    
+    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
     gbuffer.buffer4 = linearDepth;
     
     return gbuffer;
@@ -170,11 +179,19 @@ void DecodeGbufferWithAlpha(float4 buffer1, float4 buffer2, float4 buffer3, out 
 
     material.normal = DecodeNormal(buffer2.xyz);
     material.index = 0;
-
-    material.specular = ycbcr2rgb(buffer3.xyz);
     material.transmittance = 0;
     material.emissive = 0;
     
+    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.specular = buffer3.xxx;
+        material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+    }
+    else
+    {
+        material.specular = ycbcr2rgb(buffer3.xyz);
+    }
+        
     alphaDiffuse = buffer2.w;
 }
 
