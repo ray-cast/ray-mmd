@@ -63,6 +63,12 @@ float mColBalanceR :  CONTROLOBJECT < string name="ray_controller.pmx"; string i
 float mColBalanceG :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
 float mColBalanceB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
+
+float mFog :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Fog"; >;
+float mFogDensityP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogDensity+"; >;
+float mFogR :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogR-"; >;
+float mFogG :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogG-"; >;
+float mFogB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogB-"; >;
 #else
 float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;

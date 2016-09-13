@@ -34,6 +34,21 @@ float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
     return lighting;
 }
 
+float3 applyFog(float3 rgb, float distance, float3 position, float3 V)
+{
+    float fog = 1.0 - exp(-distance * V.y / 1000);
+    float fogAmount = (1 + mFogDensityP * 10) * exp(-position.y / 1000) * fog / V.y;
+    float sunAmount = max(dot(-V, LightDirection), 0.0);
+    float3 fogColor = lerp((1 - float3(mFogR, mFogG, mFogB)), LightSpecular, sunAmount);
+    return lerp(rgb, fogColor, saturate(fogAmount) * mFog);
+}
+
+float3 GetPosition2(float2 uv)
+{
+    float depth = tex2D(Gbuffer4Map, uv).r;
+    return ReconstructPos(uv, matProjectInverse, depth);
+}
+
 float4 DeferredLightingPS(
     in float2 coord: TEXCOORD0,
     in float3 viewdir: TEXCOORD1,
@@ -46,6 +61,7 @@ float4 DeferredLightingPS(
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
+    float3 P = GetPosition2(coord);
     float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
@@ -122,6 +138,7 @@ float4 DeferredLightingPS(
 
     lighting += envLighting.rgb;
 #endif
+    lighting = applyFog(lighting, P.z, CameraPosition, -V);
 
     return float4(lighting, 0.0);
 }
