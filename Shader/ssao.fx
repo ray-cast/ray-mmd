@@ -55,7 +55,7 @@ float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
         }
     }
 
-    return 1 - sampleAmbient / sampleWeight;
+    return saturate(1 - sampleAmbient / sampleWeight);
 }
 
 float SSAOBlurWeight(float2 coord, float r, float center_d)
