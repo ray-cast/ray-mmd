@@ -18,12 +18,7 @@ sampler ShadowmapSamp = sampler_state {
 };
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
-
-#if SKYBOX_HDR_ENABLE
-    float mScale : CONTROLOBJECT < string name="skybox_hdr.pmx"; string item = "Scale+"; >;
-#else
-    float mScale : CONTROLOBJECT < string name="skybox.pmx"; string item = "Scale+"; >;
-#endif
+float mScale : CONTROLOBJECT < string name="(self)"; string item = "Scale+"; >;
 
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
