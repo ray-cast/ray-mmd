@@ -112,4 +112,7 @@ const float melaninMapLoopNum = 0.0;
 const float3 emissive = 1;
 const float emissiveMapLoopNum = 1.0;
 
+// 纹理的最大各项异性采样 (0 ~ 16)
+#define TEXTURE_ANISOTROPY 16
+
 #include "material_common.fxsub"

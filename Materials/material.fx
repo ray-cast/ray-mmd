@@ -121,4 +121,7 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
+// 纹理的最大各项异性 (0 ~ 16)
+#define TEXTURE_ANISOTROPY 16
+
 #include "material_common.fxsub"
