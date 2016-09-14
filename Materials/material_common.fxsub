@@ -53,6 +53,9 @@ uniform bool opadd;
 
 #define ALHPA_LAYER_ENABLE 1
 
+// 纹理的最大各项异性 (0 ~ 16)
+#define TEXTURE_ANISOTROPY 16
+
 #if ALHPA_LAYER_ENABLE > 0
 #   define AlphaThreshold 0.999
 #else
@@ -325,7 +328,9 @@ float ShininessToSmoothness(float spec)
 #else
         texture = AlbedoMap;
 #endif
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY;
+        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -335,7 +340,9 @@ float ShininessToSmoothness(float spec)
         sampler AlphaMapSamp = sampler_state
         {
             texture = AlphaMap;
-            MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+            MAXANISOTROPY = TEXTURE_ANISOTROPY;
+            MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+            ADDRESSU = WRAP; ADDRESSV = WRAP;
         };
     #endif
 #endif
@@ -345,7 +352,9 @@ float ShininessToSmoothness(float spec)
     sampler NormalMapSamp = sampler_state
     {
         texture = NormalMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY;
+        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -354,7 +363,9 @@ float ShininessToSmoothness(float spec)
     sampler NormalSubMapSamp = sampler_state
     {
         texture = NormalSubMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY;
+        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -363,7 +374,8 @@ float ShininessToSmoothness(float spec)
     sampler SmoothnessMapSamp = sampler_state
     {
         texture = SmoothnessMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -372,7 +384,8 @@ float ShininessToSmoothness(float spec)
     sampler MetalnessMapSamp = sampler_state
     {
         texture = MetalnessMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -381,7 +394,8 @@ float ShininessToSmoothness(float spec)
     sampler TransmittanceMapSamp = sampler_state
     {
         texture = TransmittanceMap;
-        MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -390,7 +404,8 @@ float ShininessToSmoothness(float spec)
     sampler MelaninMapSamp = sampler_state
     {
         texture = MelaninMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -409,7 +424,8 @@ float ShininessToSmoothness(float spec)
 #else
         texture = EmissiveMap;
 #endif
-        MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -418,7 +434,9 @@ float ShininessToSmoothness(float spec)
     sampler ParallaxMapSamp = sampler_state
     {
         texture = ParallaxMap;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY;
+        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -426,25 +444,25 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
     texture = <DiffuseMap>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
+    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+    ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 texture SphereMap : MATERIALSPHEREMAP;
 sampler SphereMapSamp = sampler_state {
     texture = <SphereMap>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
+    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+    ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 texture ToneMap : MATERIALTOONTEXTURE;
 sampler ToneMapSamp = sampler_state {
     texture = <ToneMap>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    MAXANISOTROPY = TEXTURE_ANISOTROPY;
+    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
+    ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 struct VS_OUTPUT
