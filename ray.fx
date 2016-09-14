@@ -280,7 +280,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 DeferredLightingPS();
     }
-#if SSAO_SAMPLER_COUNT > 0
+#if SSGI_SAMPLER_COUNT > 0
     pass SSGI < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;

@@ -20,7 +20,7 @@ float3 GetNormal(float2 uv)
 float2 tapLocation(int index, float noise)
 {
     float alpha = 2.0 * PI * 7 / SSAO_SAMPLER_COUNT;
-    float angle = index * alpha + noise;
+    float angle = (index + noise) * alpha;
     float radius = (mSSAORadiusM - mSSAORadiusP + 1) * 16;
     float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) / SSAO_SAMPLER_COUNT;
     return float2(cos(angle), sin(angle)) * (index * radiusStep + ViewportOffset2);
@@ -31,7 +31,7 @@ float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
     float3 viewPosition = GetPosition(coord);
     float3 viewNormal = GetNormal(coord);
 
-    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize)) * (PI * 2.0);
+    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
     
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;
