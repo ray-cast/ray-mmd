@@ -86,7 +86,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
 #endif
 
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
-    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    specular = prefilteredSpeculr.rgb * EnvironmentSpecularCrytek(worldNormal, worldView, material.smoothness, material.specular);
     
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
     specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);

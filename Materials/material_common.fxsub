@@ -538,6 +538,10 @@ float3 GetAlbedo(float2 uv, bool use_texture)
             float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
         #endif
         
+        #if ALBEDO_MAP_APPLY_DIFFUSE
+            albedoColor *= MaterialDiffuse.rgb;
+        #endif
+        
         #if ALBEDO_MAP_APPLY_COLOR
             albedoColor *= albedo.rgb;
         #endif

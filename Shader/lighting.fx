@@ -164,6 +164,11 @@ float3 EnvironmentReflect(float3 normal, float3 view)
     return reflect(-view, normal);
 }
 
+float3 EnvironmentSpecularCrytek(float3 N, float3 V, float gloss, float3 specular)
+{
+    return lerp(specular, 1.0, pow(1 - saturate(dot(N, V)), 5) / (40 - 39 * gloss));
+}
+
 float3 EnvironmentSpecularBlackOpsII(float3 N, float3 V, float gloss, float3 specular)
 {
     float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25) * gloss;
