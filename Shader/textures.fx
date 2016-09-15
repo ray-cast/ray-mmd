@@ -216,7 +216,7 @@ sampler ShadowmapSampTemp = sampler_state {
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0
-shared texture2D SSAOMap : RENDERCOLORTARGET <
+texture2D SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
 #if SSGI_SAMPLER_COUNT > 0

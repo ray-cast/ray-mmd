@@ -53,9 +53,28 @@ uniform bool opadd;
 
 #define ALHPA_LAYER_ENABLE 1
 
-// 纹理的最大各项异性 (0 ~ 16)
-#ifndef TEXTURE_ANISOTROPY
-#   define TEXTURE_ANISOTROPY 0
+#ifndef TEXTURE_ANISOTROPY_LEVEL
+#   define TEXTURE_ANISOTROPY_LEVEL 0
+#endif
+
+#if TEXTURE_USE_LINEAR
+#   define TEXTURE_FILTER LINEAR
+#elif TEXTURE_USE_NEAREST
+#   define TEXTURE_FILTER POINT
+#elif TEXTURE_USE_ANISOTROPY
+#   define TEXTURE_FILTER ANISOTROPIC
+#else
+#   define TEXTURE_FILTER POINT
+#endif
+
+#if TEXTURE_USE_MIP_LINEAR
+#   define TEXTURE_MIP_FILTER LINEAR
+#elif TEXTURE_USE_MIP_NEAREST
+#   define TEXTURE_MIP_FILTER POINT
+#elif TEXTURE_USE_MIP_NONE
+#   define TEXTURE_MIP_FILTER NONE
+#else
+#   define TEXTURE_MIP_FILTER POINT
 #endif
 
 #if ALHPA_LAYER_ENABLE > 0
@@ -330,12 +349,8 @@ float ShininessToSmoothness(float spec)
 #else
         texture = AlbedoMap;
 #endif
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -346,12 +361,8 @@ float ShininessToSmoothness(float spec)
         sampler AlphaMapSamp = sampler_state
         {
             texture = AlphaMap;
-#if TEXTURE_ANISOTROPY > 0
-            MAXANISOTROPY = TEXTURE_ANISOTROPY;
-            MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-            MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+            MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+            MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
             ADDRESSU = WRAP; ADDRESSV = WRAP;
         };
     #endif
@@ -362,12 +373,8 @@ float ShininessToSmoothness(float spec)
     sampler NormalMapSamp = sampler_state
     {
         texture = NormalMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -377,12 +384,8 @@ float ShininessToSmoothness(float spec)
     sampler NormalSubMapSamp = sampler_state
     {
         texture = NormalSubMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -392,12 +395,8 @@ float ShininessToSmoothness(float spec)
     sampler SmoothnessMapSamp = sampler_state
     {
         texture = SmoothnessMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -407,12 +406,8 @@ float ShininessToSmoothness(float spec)
     sampler MetalnessMapSamp = sampler_state
     {
         texture = MetalnessMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -422,12 +417,8 @@ float ShininessToSmoothness(float spec)
     sampler TransmittanceMapSamp = sampler_state
     {
         texture = TransmittanceMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -437,12 +428,8 @@ float ShininessToSmoothness(float spec)
     sampler MelaninMapSamp = sampler_state
     {
         texture = MelaninMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -462,7 +449,8 @@ float ShininessToSmoothness(float spec)
 #else
         texture = EmissiveMap;
 #endif
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -472,12 +460,8 @@ float ShininessToSmoothness(float spec)
     sampler ParallaxMapSamp = sampler_state
     {
         texture = ParallaxMap;
-#if TEXTURE_ANISOTROPY > 0
-        MAXANISOTROPY = TEXTURE_ANISOTROPY;
-        MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
@@ -486,36 +470,24 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
     texture = <DiffuseMap>;
-#if TEXTURE_ANISOTROPY > 0
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
-    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+    MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+    MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
     ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 texture SphereMap : MATERIALSPHEREMAP;
 sampler SphereMapSamp = sampler_state {
     texture = <SphereMap>;
-#if TEXTURE_ANISOTROPY > 0
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
-    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+    MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+    MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
     ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 texture ToneMap : MATERIALTOONTEXTURE;
 sampler ToneMapSamp = sampler_state {
     texture = <ToneMap>;
-#if TEXTURE_ANISOTROPY > 0
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
-    MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = LINEAR;
-#else
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-#endif
+    MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+    MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
     ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
@@ -890,7 +862,7 @@ float GetMelanin(float2 coord)
 #endif
 }
 
-float KajiyaKayAnisotropic(float3 N, float3 V, float3 L, float smoothness, float3 specular1, float3 specular2, float secondaryHighlightWidth)
+float3 KajiyaKayAnisotropic(float3 N, float3 V, float3 L, float smoothness, float3 specular1, float3 specular2, float secondaryHighlightWidth)
 {   
     float3 c1 = cross(N, float3(0.0, 0.0, 1.0));
     float3 c2 = cross(N, float3(0.0, 1.0, 0.0));

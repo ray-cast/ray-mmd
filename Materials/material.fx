@@ -121,7 +121,13 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-// 纹理的最大各项异性 (0 ~ 16)
-#define TEXTURE_ANISOTROPY 16
+// 纹理过滤方式
+#define TEXTURE_USE_LINEAR 0
+#define TEXTURE_USE_NEAREST 0
+#define TEXTURE_USE_ANISOTROPY 1
+#define TEXTURE_USE_MIP_NONE 0
+#define TEXTURE_USE_MIP_LINEAR 0
+#define TEXTURE_USE_MIP_NEAREST 1
+#define TEXTURE_ANISOTROPY_LEVEL  16 // 启用各向异性采样时最大的采样等级 (0 ~ 16)
 
 #include "material_common.fxsub"
