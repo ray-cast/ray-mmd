@@ -1,5 +1,3 @@
-#if AA_QUALITY > 0
-
 #if AA_QUALITY == 1
 #   define FXAA_QUALITY__PRESET 12
 #elif AA_QUALITY == 2
@@ -1025,4 +1023,3 @@ float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)      // FxaaFloat fxaaConsole360ConstDir,
             );
 }
-#endif

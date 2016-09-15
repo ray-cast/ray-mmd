@@ -49,7 +49,7 @@ float3 GetPosition2(float2 uv)
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
-float4 DeferredLightingPS(
+float4 DeferredShadingPS(
     in float2 coord: TEXCOORD0,
     in float3 viewdir: TEXCOORD1,
     in float4 screenPosition : SV_Position) : COLOR

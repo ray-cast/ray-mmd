@@ -104,12 +104,25 @@ float mColBalance <string UIName = "ColBalance"; string UIWidget = "Slider"; boo
 #include "shader/gbuffer.fx"
 #include "shader/lighting.fx"
 #include "shadow/shadowmap.fxsub"
-#include "shader/shading.fx"
-#include "shader/ssao.fx"
-#include "shader/ssss.fx"
-#include "shader/ssr.fx"
 #include "shader/fimic.fx"
-#include "shader/fxaa.fx"
+
+#if SSAO_SAMPLER_COUNT > 0
+#   include "shader/ssao.fx"
+#endif
+
+#if SSSS_QUALITY > 0
+#   include "shader/ssss.fx"
+#endif
+
+#if SSR_SAMPLER_COUNT > 0
+#   include "shader/ssr.fx"
+#endif
+
+#if AA_QUALITY > 0
+#   include "shader/fxaa.fx"
+#endif
+
+#include "shader/shading.fx"
 
 void ScreenSpaceQuadVS(
     in float4 Position : POSITION,
@@ -164,7 +177,25 @@ technique DeferredLighting<
 
     "RenderColorTarget0=OpaqueMap;"
     "RenderDepthStencilTarget=;"
-    "Pass=DeferredLighting;"
+    "Pass=DeferredShading;"
+    
+#if SSR_SAMPLER_COUNT > 0
+    "RenderColorTarget=SSRDownsampleX1Map;"
+    "Clear=Color;"
+    "Pass=ScreenSpaceReflect;"
+    
+    "RenderColorTarget0=SSRDownsampleX1MapTemp;  Pass=SSRGaussionBlurX1;"
+    "RenderColorTarget0=SSRDownsampleX1Map;      Pass=SSRGaussionBlurY1;"
+    "RenderColorTarget0=SSRDownsampleX2MapTemp;  Pass=SSRGaussionBlurX2;"
+    "RenderColorTarget0=SSRDownsampleX2Map;      Pass=SSRGaussionBlurY2;"
+    "RenderColorTarget0=SSRDownsampleX3MapTemp;  Pass=SSRGaussionBlurX3;"
+    "RenderColorTarget0=SSRDownsampleX3Map;      Pass=SSRGaussionBlurY3;"
+    "RenderColorTarget0=SSRDownsampleX4MapTemp;  Pass=SSRGaussionBlurX4;"
+    "RenderColorTarget0=SSRDownsampleX4Map;      Pass=SSRGaussionBlurY4;"
+    
+    "RenderColorTarget=OpaqueMap;"
+    "Pass=SSRComposition;"
+#endif
     
 #if SSGI_SAMPLER_COUNT > 0
     "RenderColorTarget0=SSAOMap;  Pass=SSGI;"
@@ -272,13 +303,13 @@ technique DeferredLighting<
     }
 #   endif
 #endif
-    pass DeferredLighting < string Script= "Draw=Buffer;"; > {
+    pass DeferredShading < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         ZEnable = false;
         ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 DeferredLightingPS();
+        PixelShader  = compile ps_3_0 DeferredShadingPS();
     }
 #if SSGI_SAMPLER_COUNT > 0
     pass SSGI < string Script= "Draw=Buffer;"; > {
@@ -355,13 +386,66 @@ technique DeferredLighting<
     }
 #endif
 #if SSR_SAMPLER_COUNT > 0
-    pass SSR < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false;
-        AlphaTestEnable = false;
-        ZEnable = false;
-        ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 LocalReflectionPS();
+    pass ScreenSpaceReflect < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
+        PixelShader  = compile ps_3_0 ScreenSpaceReflectPS();
+    }
+    pass SSRGaussionBlurX1 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1Samp, float2(ViewportOffset.x, 0.0), 3);
+    }
+    pass SSRGaussionBlurY1 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1SampTemp, float2(0.0, ViewportOffset.y), 3);
+    }
+    pass SSRGaussionBlurX2 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(2);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1Samp, float2(ViewportOffset.x, 0.0), 3);
+    }
+    pass SSRGaussionBlurY2 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(2);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX2SampTemp, float2(0.0, ViewportOffset.y * 2), 3);
+    }
+    pass SSRGaussionBlurX3 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(3);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX2Samp, float2(ViewportOffset.x * 2, 0.0), 3);
+    }
+    pass SSRGaussionBlurY3 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(3);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX3SampTemp, float2(0.0, ViewportOffset.y * 3), 3);
+    }
+    pass SSRGaussionBlurX4 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(4);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX3Samp, float2(ViewportOffset.x * 3, 0.0), 3);
+    }
+    pass SSRGaussionBlurY4 < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(4);
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX4SampTemp, float2(0.0, ViewportOffset.y * 4), 3);
+    }
+    pass SSRComposition < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = TRUE; AlphaTestEnable = false;
+        SrcBlend = ONE; DestBlend = ONE;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
+        PixelShader  = compile ps_3_0 SSRCompositionPS();
     }
 #endif
 #if HDR_BLOOM_QUALITY > 0

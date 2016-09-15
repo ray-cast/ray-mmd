@@ -17,9 +17,11 @@ float showAlbedoAlpha : CONTROLOBJECT < string name="(self)"; string item = "Alb
 float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "NormalAlpha"; >;
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
+float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "EmissiveAlpha"; >;
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
 float showSSAO : CONTROLOBJECT < string name="(self)"; string item = "SSAO"; >;
+float showSSR : CONTROLOBJECT < string name="(self)"; string item = "SSR"; >;
 #else
 float showAlbedo <string UIName = "showAlbedo"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showNormal <string UIName = "showNormal"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
@@ -33,8 +35,10 @@ float showAlbedoAlpha <string UIName = "showAlbedoAlpha"; string UIWidget = "Sli
 float showNormalAlpha <string UIName = "showNormalAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showSpecularAlpha <string UIName = "showSpecularAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showSmoothnessAlpha <string UIName = "showSmoothnessAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showEmissiveAlpha <string UIName = "showEmissiveAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showDepthAlpha <string UIName = "showDepthAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showSSAO <string UIName = "showSSAO"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showSSR <string UIName = "showSSR"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 #endif
 
 shared texture2D OpaqueMap : RENDERCOLORTARGET;
@@ -79,8 +83,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
     
     float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
-    showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha;
-    showTotal += showDepth + showDepthAlpha + showSSAO;
+    showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showEmissiveAlpha;
+    showTotal += showDepth + showDepthAlpha + showSSAO + showSSR;
     
     float3 result = srgb2linear(tex2D(OpaqueSamp, coord).rgb) * !any(showTotal);
     result += material.albedo * showAlbedo;
@@ -94,6 +98,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += (materialAlpha.normal * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
+    result += materialAlpha.emissive * showEmissiveAlpha;
+        
     result = linear2srgb(result);
     
     result += alphaDiffuse * showAlpha;
