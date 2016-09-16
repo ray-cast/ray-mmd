@@ -64,14 +64,12 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
 
     float mipLayer = EnvironmentMip(material.smoothness, IBL_MIPMAP_LEVEL);
 
-    float3 R = EnvironmentReflect(worldNormal, worldView);
+    float3 N = mul(rotate, worldNormal);
+    float3 R = mul(rotate, EnvironmentReflect(worldNormal, worldView));
 
-    worldNormal = mul(rotate, worldNormal);
-    R = mul(rotate, R);
-
-    float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(worldNormal));
+    float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(N));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
-    float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, -computeSphereCoord(worldNormal));
+    float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, computeSphereCoord(-N));
 
 #if IBL_ENABLE_GAMMA_CORRECTION
     prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
