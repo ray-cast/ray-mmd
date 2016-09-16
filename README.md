@@ -138,17 +138,20 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/LED_1.png)](https://github.com/ray-cast/images/raw/master/LED_1.png)
 * 修改rectangle_lighting.fx中的视频贴图，修改后保存 (可复制一份,复制的同时要挂载新的fx)
 [![link text](https://github.com/ray-cast/images/raw/master/LED_2.png)](https://github.com/ray-cast/images/raw/master/LED_2.png)
-* 复制一份material.fx改为material_led.fx
+* 复制一份material.fx改为material_xxxxx.fx
 * 将USE_CUSTOM_MATERIAL改为 1，const float3 albedo = 1.0; 改为 0.0;
 * 将发光贴图进行如下设置，修改后保存  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_3.png)](https://github.com/ray-cast/images/raw/master/LED_3.png)
-* 最后在MME里MaterialMap将material_led.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
+* 最后在MME里MaterialMap将material_xxxxx.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_4.png)](https://github.com/ray-cast/images/raw/master/LED_4.png)
-* 如果图片是GIF/APNG格式的纹理可以设置 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE为 1
-* 同时可以用 (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED 控制播放速度(最小倍率为1)
-* LED同时还支持视频/屏幕纹理的播放
-* 只需要将Lighting目录中的DummyScreen.x载入，然后选择菜单->背景->(全画面/AVI背景)
-* 然后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
+* 如果图片是GIF/APNG格式的纹理可以设置
+* (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE 启用GIG/APNG动画
+* (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED  控制播放速度 (最小倍率为1)
+* LED并且支持视频/屏幕纹理的播放
+* 将Lighting目录中的DummyScreen.x 载入
+* 在菜单->背景->加载AVI文件 ((可选) AVI文件可以使用MMBG插件载入非avi格式视频)
+* 然后选择菜单->背景->(全画面/AVI背景)
+* 最后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_5.png)](https://github.com/ray-cast/images/raw/master/LED_5.png)
 
 ##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
@@ -202,7 +205,6 @@ Ray-MMD
 
 ##### 7.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
-* IndirectLight+/-间接光照中整体光强 (暂时只能控制SSAO产生的GI)
 * SSAO+- 环境光遮蔽强度  
 * SSAO Radius+- 环境光遮蔽的范围
 * EnvLight+-环境光的漫反射光强
@@ -219,10 +221,7 @@ Ray-MMD
 * DispersionRadius 相机色散的区域大小
 * FilmGrain 相机因曝光不足参数的噪点
 * ToneMapping 色调映射的鲜艳度 (为0时ACES, 为1时线性曝光，可在ray.conf修改其它模式，例:Uncharted2)
-* ShoStrength 亮度 (当ToneMapping的模式是Uncharted2时才有效)
-* LinStrength 灰度 (当ToneMapping的模式是Uncharted2时才有效)
-* LinWhite    消光 (当ToneMapping的模式是Uncharted2时才有效)
-* ToeNum      饱和度 (当ToneMapping的模式是Uncharted2时才有效)
+* BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
 ##### 2016-9-4 ver 1.0.3
