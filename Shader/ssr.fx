@@ -1,109 +1,49 @@
-shared texture SSRDownsampleX1Map: RENDERCOLORTARGET <
+#if SSR_QUALITY == 1
+#   define SSR_SAMPLER_COUNT 32
+#elif SSR_QUALITY == 2
+#   define SSR_SAMPLER_COUNT 64
+#elif SSR_QUALITY >= 3
+#   define SSR_SAMPLER_COUNT 128
+#else
+#   define SSR_SAMPLER_COUNT 32
+#endif
+
+shared texture SSRayTracingMap: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
+    string Format = "A16B16G16R16F";
 >;
-shared texture SSRDownsampleX1MapTemp: RENDERCOLORTARGET <
+texture SSRLightMap: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
+    string Format = "A2R10G10B10";
+    int Miplevels = 0;
+    bool AntiAlias = false;
 >;
-shared texture SSRDownsampleX2Map: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.5, 0.5};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRDownsampleX2MapTemp: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.5, 0.5};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRDownsampleX3Map: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRDownsampleX3MapTemp: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRDownsampleX4Map: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.125, 0.125};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRDownsampleX4MapTemp: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.125, 0.125};
-    float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
->;
-shared texture SSRCompositionMap: RENDERCOLORTARGET <
+texture SSRLightMapTemp: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0};
-    string Format = "A8R8G8B8";
+    string Format = "A2R10G10B10";
 >;
-sampler SSRDownsampleX1Samp = sampler_state {
-    texture = <SSRDownsampleX1Map>;
+sampler SSRayTracingSamp = sampler_state {
+    texture = <SSRayTracingMap>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
-sampler SSRDownsampleX2Samp = sampler_state {
-    texture = <SSRDownsampleX2Map>;
+sampler SSRLightSamp = sampler_state {
+    texture = <SSRLightMap>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
+    MipFilter = LINEAR;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
-sampler SSRDownsampleX3Samp = sampler_state {
-    texture = <SSRDownsampleX3Map>;
+sampler SSRLightSampTemp = sampler_state {
+    texture = <SSRLightMapTemp>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRDownsampleX4Samp = sampler_state {
-    texture = <SSRDownsampleX4Map>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRDownsampleX1SampTemp = sampler_state {
-    texture = <SSRDownsampleX1MapTemp>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRDownsampleX2SampTemp = sampler_state {
-    texture = <SSRDownsampleX2MapTemp>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRDownsampleX3SampTemp = sampler_state {
-    texture = <SSRDownsampleX3MapTemp>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRDownsampleX4SampTemp = sampler_state {
-    texture = <SSRDownsampleX4MapTemp>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    AddressU  = CLAMP;
-    AddressV  = CLAMP;
-};
-sampler SSRCompositionSamp = sampler_state {
-    texture = <SSRCompositionMap>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    MipFilter = NONE;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
@@ -113,7 +53,8 @@ float cb_maxDistance = 1000.0;
 float cb_nearPlaneZ = 0.1;
 float cb_stride = 0.0;
 float cb_strideZCutoff = 0.002;
-float cb_maxSteps = 64;
+float cb_fadeEnd = 1.0;
+float cb_fadeStart = 0.0;
 
 bool intersectsDepthBuffer(float z, float minZ, float maxZ)
 {
@@ -129,7 +70,31 @@ void swap(inout float a, inout float b)
      b = t;
 }
 
-bool TraceScreenSpaceRay2(float3 viewPosition, float3 viewDirection, float jitter, inout float2 hitPixel)
+float specularPowerToConeAngle(float specularPower)
+{
+    const float xi = 0.244f;
+    float exponent = 1.0f / (specularPower + 1.0f);
+    return acos(pow(xi, exponent));
+}
+ 
+float isoscelesTriangleOpposite(float adjacentLength, float coneTheta)
+{
+    return 2.0f * tan(coneTheta) * adjacentLength;
+}
+ 
+float isoscelesTriangleInRadius(float a, float h)
+{
+    float a2 = a * a;
+    float fh2 = 4.0f * h * h;
+    return (a * (sqrt(a2 + fh2) - a)) / (4.0f * h);
+}
+ 
+float isoscelesTriangleNextAdjacent(float adjacentLength, float incircleRadius)
+{
+    return adjacentLength - (incircleRadius * 2.0f);
+}
+
+bool TraceScreenSpaceRay(float3 viewPosition, float3 viewDirection, float jitter, inout float2 hitPixel)
 {
     float maxReflectLength = 1.5 * viewPosition.z * 0.5;
     float rayLength = ((viewPosition.z + viewDirection.z * maxReflectLength) < cb_nearPlaneZ) ? (cb_nearPlaneZ - viewPosition.z) / viewDirection.z : maxReflectLength;
@@ -220,43 +185,47 @@ float4 ScreenSpaceReflectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEX
         
     clip(-material.normal.z);
     
-    float3 V = normalize(viewdir);
+    float3 V = normalize(-viewdir);
     
     float linearDepth = tex2D(Gbuffer4Map, coord).r;
     
-    float3 viewPosition = viewdir * linearDepth;
+    float3 viewPosition = V * linearDepth / V.z;
     float3 viewReflect = normalize(reflect(V, material.normal));
     
     float2 hitPixel = 0;
-    if (TraceScreenSpaceRay2(viewPosition, viewReflect, 0.0, hitPixel))
+    if (!TraceScreenSpaceRay(viewPosition, viewReflect, 0.0, hitPixel))
     {
-        float4 color = 0;
-        color.rgb = tex2D(OpaqueSamp, hitPixel.xy).rgb;
-        color.a = dot(viewReflect, V);
-        return color;
+        clip(-1);
     }
 
-    return 0;
+    float4 color = 0;
+    color.rg = hitPixel.xy;
+    color.b = tex2D(Gbuffer4Map, hitPixel).r;
+    color.a = dot(viewReflect, V);
+    return color;
 }
 
-float4 SSRGaussionBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : COLOR
+float4 SSRGaussionBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR
 {
-    float weight = 0.0;
-    float4 color = 0.0f;
+    static const float2 offsets[7] = {{-3, -3}, {-2, -2}, {-1, -1}, {0, 0}, {1, 1}, {2, 2}, {3, 3}};
+    static const float weights[7] = {0.001f, 0.028f, 0.233f, 0.474f, 0.233f, 0.028f, 0.001f};
+ 
+    float4 color = 0.0;
     
-    for (int i = 0; i < n; ++i)
+    [unroll]
+    for(uint i = 0u; i < 7u; ++i)
     {
-        float w = 0.39894 * exp(-0.5 * i * i / (n * n)) / n;
-        color += tex2D(source, coord + offset * i) * w;
-        color += tex2D(source, coord - offset * i) * w;
-        weight += 2.0 * w;
+        color += tex2D(source, coord + offset * offsets[i]) * weights[i];
     }
-
-    return color / weight;
+    
+    return color;
 }
 
-float4 SSRCompositionPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
+float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
+    float4 rayTracing = tex2D(SSRayTracingSamp, coord);
+    clip(rayTracing.w - 1e-5);
+
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
@@ -264,27 +233,68 @@ float4 SSRCompositionPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
-    float gloss = material.smoothness;
-    gloss *= gloss;
-
-    float weight = frac(min(gloss, 0.9999) * 3);
-
-    float4 refl0 = tex2D(SSRDownsampleX1Samp, coord);
-    float4 refl1 = tex2D(SSRDownsampleX2Samp, coord);
-    float4 refl2 = tex2D(SSRDownsampleX3Samp, coord);
-    float4 refl3 = tex2D(SSRDownsampleX4Samp, coord);
-
-    float4 color = 0;
+    float linearDepth = tex2D(Gbuffer4Map, coord).r;
     
-    if (gloss > 2.0 / 3.0)
-        color = lerp(refl1, refl0, weight * weight);
-    else if (gloss > 1.0 / 3.0)
-        color = lerp(refl2, refl1, weight);
-    else
-        color = lerp(refl3, refl2, weight);
+    float3 V = normalize(viewdir);
+    float3 viewPosition = V * linearDepth / V.z;
+    
+    float roughness = SmoothnessToRoughness(material.smoothness);
+    float specularPower = RoughnessToShininess(roughness);
+    float coneTheta = specularPowerToConeAngle(specularPower) * 0.5f;
+    
+    float2 deltaTexcoord = rayTracing.xy - coord;
+    
+    float  adjacentLength = length(deltaTexcoord);
+    float2 adjacentUnit = deltaTexcoord / adjacentLength;
+    
+    float4 totalColor = 0.0;
+    
+    float remainingAlpha = 1.0f;
+    float maxMipLevel = 6;
+    
+    float gloss = min(material.smoothness, 0.999);
+    float glossMult = gloss;
+    
+    for (int i = 0; i < 14; ++i)
+    {
+        float oppositeLength = isoscelesTriangleOpposite(adjacentLength, coneTheta);
+        float incircleSize = isoscelesTriangleInRadius(oppositeLength, adjacentLength);
+
+        float2 samplePos = coord + adjacentUnit * (adjacentLength - incircleSize);
+        float mipChannel = clamp(log2(incircleSize * ViewportSize.x), 0.0f, maxMipLevel);
+
+        float4 newColor = float4(tex2Dlod(SSRLightSamp, float4(samplePos, 0, mipChannel)).rgb, 1) * glossMult;
+
+        remainingAlpha -= newColor.a;
+        if (remainingAlpha < 0.0f)
+        {
+            newColor.rgb *= (1.0f - abs(remainingAlpha));
+        }
         
-    float3 V = normalize(-viewdir);
-        
-    color.rgb *= EnvironmentSpecularUnreal4(material.normal, V, material.smoothness, material.specular);
-    return color;
+        totalColor += newColor;
+
+        if (totalColor.a >= 1.0f)
+        {
+            break;
+        }
+
+        adjacentLength = isoscelesTriangleNextAdjacent(adjacentLength, incircleSize);
+        glossMult *= gloss;
+    }
+    
+    float3 fresnel = EnvironmentSpecularUnreal4(material.normal, V, material.smoothness, material.specular);
+
+    float2 boundary = abs(rayTracing.xy - float2(0.5f, 0.5f)) * 2.0f;
+    const float fadeDiffRcp = 1.0f / (cb_fadeEnd - cb_fadeStart);
+    float fadeOnBorder = 1.0f - saturate((boundary.x - cb_fadeStart) * fadeDiffRcp);
+    fadeOnBorder *= 1.0f - saturate((boundary.y - cb_fadeStart) * fadeDiffRcp);
+    fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
+    
+    float3 rayHitPositionVS = mul(float4(CoordToPos(rayTracing.xy), rayTracing.z, 1.0), matProjectInverse).xyz;
+    float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / cb_maxDistance);
+    float fadeOnPerpendicular = saturate(lerp(0.0f, 1.0f, saturate(rayTracing.w * 4.0f)));
+    float fadeOnRoughness = saturate(lerp(0.0f, 1.0f, gloss * 4.0f));
+    float totalFade = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular * fadeOnRoughness * (1.0f - saturate(remainingAlpha));
+
+    return float4(totalColor.rgb * fresnel, totalFade);
 }

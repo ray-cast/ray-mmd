@@ -1,3 +1,4 @@
+#include "../ray.conf"
 #include "../shader/common.fx"
 #include "../shader/math.fx"
 #include "../shader/gbuffer.fx"
@@ -48,12 +49,23 @@ sampler OpaqueSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
+#if SSAO_SAMPLER_COUNT > 0
 shared texture2D SSAOMap : RENDERCOLORTARGET;
 sampler SSAOMapSamp = sampler_state {
     texture = <SSAOMap>;
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
+#endif
+
+#if SSR_QUALITY > 0
+shared texture SSRayTracingMap: RENDERCOLORTARGET;
+sampler SSRayTracingSamp = sampler_state {
+    texture = <SSRayTracingMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#endif
 
 void DebugControllerVS(
     in float4 Position : POSITION,
@@ -105,7 +117,13 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += alphaDiffuse * showAlpha;
     result += pow(tex2D(Gbuffer4Map, coord).r / 200, 0.5) * showDepth;
     result += pow(tex2D(Gbuffer8Map, coord).r / 200, 0.5) * showDepthAlpha;
-    result += tex2D(SSAOMapSamp, coord).r * showSSAO;
+    #if SSAO_SAMPLER_COUNT > 0
+        result += tex2D(SSAOMapSamp, coord).r * showSSAO;
+    #endif
+    
+    #if SSR_QUALITY > 0
+        result += tex2D(SSRayTracingSamp, coord).rgb * showSSR;
+    #endif
     
     return float4(result, 1);
 }

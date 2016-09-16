@@ -64,38 +64,39 @@ float mColBalanceG :  CONTROLOBJECT < string name="ray_controller.pmx"; string i
 float mColBalanceB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
-float mFog :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Fog"; >;
-float mFogDensityP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogDensity+"; >;
-float mFogR :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogR-"; >;
-float mFogG :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogG-"; >;
-float mFogB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FogB-"; >;
+float mSSRStepLength :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "StepLength"; >;
+float mSSRThickness :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Thickness"; >;
+float mSSRJitter :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Jitter"; >;
+float mSSRStride :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Stride"; >;
+float mSSRFadeStart :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeStart"; >;
+float mSSRFadeEnd :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeEnd"; >;
 #else
-float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mIndirectLightP <string UIName = "IndirectLight+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mIndirectLightM <string UIName = "IndirectLight-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mEnvShadowP <string UIName = "EnvShadow+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAOP <string UIName = "SSAO+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAOM <string UIName = "SSAO-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAORadiusP <string UIName = "SSAORadius+"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAORadiusM <string UIName = "SSAORadius-"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mExposure <string UIName = "Exposur"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mVignette <string UIName = "Vignett"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDispersion <string UIName = "Dispersion"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDispersionRadius <string UIName = "DispersionRadius"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mFilmGrain <string UIName = "FilmGrain"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomThreshold <string UIName = "BloomThreshold"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomRadius <string UIName = "BloomRadiud"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomIntensity <string UIName = "BloomIntensity"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mShoStrength <string UIName = "ShoStrength"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mLinStrength <string UIName = "LinStrength"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mLinWhite <string UIName = "LinWhith"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mToeNum <string UIName = "ToeNum"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mToneMapping <string UIName = "ToneMappinp"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceR <string UIName = "ColBalanceR"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceG <string UIName = "ColBalanceG"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceB <string UIName = "ColBalanceB"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalance <string UIName = "ColBalance"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mIndirectLightP <string UIName = "IndirectLight+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mIndirectLightM <string UIName = "IndirectLight-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mEnvShadowP <string UIName = "EnvShadow+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mSSAOP <string UIName = "SSAO+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mSSAOM <string UIName = "SSAO-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mSSAORadiusP <string UIName = "SSAORadius+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mSSAORadiusM <string UIName = "SSAORadius-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mExposure <string UIName = "Exposur"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mVignette <string UIName = "Vignett"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mDispersion <string UIName = "Dispersion"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mDispersionRadius <string UIName = "DispersionRadius"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mFilmGrain <string UIName = "FilmGrain"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mBloomThreshold <string UIName = "BloomThreshold"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mBloomRadius <string UIName = "BloomRadiud"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mBloomIntensity <string UIName = "BloomIntensity"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mShoStrength <string UIName = "ShoStrength"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mLinStrength <string UIName = "LinStrength"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mLinWhite <string UIName = "LinWhith"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mToeNum <string UIName = "ToeNum"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mToneMapping <string UIName = "ToneMappinp"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mColBalanceR <string UIName = "ColBalanceR"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mColBalanceG <string UIName = "ColBalanceG"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mColBalanceB <string UIName = "ColBalanceB"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mColBalance <string UIName = "ColBalance"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 #endif
 
 #include "shader/math.fx"
@@ -114,7 +115,7 @@ float mColBalance <string UIName = "ColBalance"; string UIWidget = "Slider"; boo
 #   include "shader/ssss.fx"
 #endif
 
-#if SSR_SAMPLER_COUNT > 0
+#if SSR_QUALITY > 0
 #   include "shader/ssr.fx"
 #endif
 
@@ -179,22 +180,16 @@ technique DeferredLighting<
     "RenderDepthStencilTarget=;"
     "Pass=DeferredShading;"
     
-#if SSR_SAMPLER_COUNT > 0
-    "RenderColorTarget=SSRDownsampleX1Map;"
+#if SSR_QUALITY > 0
+    "RenderColorTarget=SSRayTracingMap;"
     "Clear=Color;"
     "Pass=ScreenSpaceReflect;"
     
-    "RenderColorTarget0=SSRDownsampleX1MapTemp;  Pass=SSRGaussionBlurX1;"
-    "RenderColorTarget0=SSRDownsampleX1Map;      Pass=SSRGaussionBlurY1;"
-    "RenderColorTarget0=SSRDownsampleX2MapTemp;  Pass=SSRGaussionBlurX2;"
-    "RenderColorTarget0=SSRDownsampleX2Map;      Pass=SSRGaussionBlurY2;"
-    "RenderColorTarget0=SSRDownsampleX3MapTemp;  Pass=SSRGaussionBlurX3;"
-    "RenderColorTarget0=SSRDownsampleX3Map;      Pass=SSRGaussionBlurY3;"
-    "RenderColorTarget0=SSRDownsampleX4MapTemp;  Pass=SSRGaussionBlurX4;"
-    "RenderColorTarget0=SSRDownsampleX4Map;      Pass=SSRGaussionBlurY4;"
+    "RenderColorTarget0=SSRLightMapTemp;  Pass=SSRGaussionBlurX1;"
+    "RenderColorTarget0=SSRLightMap;      Pass=SSRGaussionBlurY1;"
     
     "RenderColorTarget=OpaqueMap;"
-    "Pass=SSRComposition;"
+    "Pass=SSRConeTracing;"
 #endif
     
 #if SSGI_SAMPLER_COUNT > 0
@@ -385,67 +380,31 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 GuassBlurPS(OpaqueSampTemp, float2(0.0f, ViewportOffset2.y));
     }
 #endif
-#if SSR_SAMPLER_COUNT > 0
+#if SSR_QUALITY > 0
     pass ScreenSpaceReflect < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ScreenSpaceReflectPS();
     }
     pass SSRGaussionBlurX1 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1Samp, float2(ViewportOffset.x, 0.0), 3);
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(OpaqueSamp, float2(ViewportOffset.x, 0.0));
     }
     pass SSRGaussionBlurY1 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1SampTemp, float2(0.0, ViewportOffset.y), 3);
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightSampTemp, float2(0.0, ViewportOffset.y));
     }
-    pass SSRGaussionBlurX2 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
+    pass SSRConeTracing < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = true; AlphaTestEnable = false;
+        SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
         ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(2);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX1Samp, float2(ViewportOffset.x, 0.0), 3);
-    }
-    pass SSRGaussionBlurY2 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(2);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX2SampTemp, float2(0.0, ViewportOffset.y * 2), 3);
-    }
-    pass SSRGaussionBlurX3 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(3);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX2Samp, float2(ViewportOffset.x * 2, 0.0), 3);
-    }
-    pass SSRGaussionBlurY3 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(3);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX3SampTemp, float2(0.0, ViewportOffset.y * 3), 3);
-    }
-    pass SSRGaussionBlurX4 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(4);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX3Samp, float2(ViewportOffset.x * 3, 0.0), 3);
-    }
-    pass SSRGaussionBlurY4 < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(4);
-        PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRDownsampleX4SampTemp, float2(0.0, ViewportOffset.y * 4), 3);
-    }
-    pass SSRComposition < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = TRUE; AlphaTestEnable = false;
-        SrcBlend = ONE; DestBlend = ONE;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 ScreenSpaceReflectVS(1);
-        PixelShader  = compile ps_3_0 SSRCompositionPS();
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSRConeTracingPS();
     }
 #endif
 #if HDR_BLOOM_QUALITY > 0
