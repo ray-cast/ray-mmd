@@ -149,7 +149,7 @@ Ray-MMD
 * (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED  控制播放速度 (最小倍率为1)
 * LED并且支持视频/屏幕纹理的播放
 * 将Lighting目录中的DummyScreen.x 载入
-* 在菜单->背景->加载AVI文件 ((可选) AVI文件可以使用MMBG插件载入非avi格式视频)
+* 在菜单->背景->加载AVI文件 (注 此为可选项，此外AVI文件可以使用MMBG插件载入非avi格式视频)
 * 然后选择菜单->背景->(全画面/AVI背景)
 * 最后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_5.png)](https://github.com/ray-cast/images/raw/master/LED_5.png)
