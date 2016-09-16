@@ -144,10 +144,10 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/LED_3.png)](https://github.com/ray-cast/images/raw/master/LED_3.png)
 * 最后在MME里MaterialMap将material_xxxxx.fx以及Main中main.fx赋予给RectangleLight.pmx效果如图  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_4.png)](https://github.com/ray-cast/images/raw/master/LED_4.png)
-* 如果图片是GIF/APNG格式的纹理可以设置：
+* 如果图片是GIF/APNG格式的纹理可以设置
 * (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_ENABLE 启用GIF/APNG动画
 * (VIDEO / ALBEDO / EMMISIVE) _MAP_ANIMATION_SPEED  控制播放速度 (最小倍率为1)
-* LED并且支持视频/屏幕纹理的播放：
+* LED并且支持视频/屏幕纹理的播放
 * 将Lighting目录中的DummyScreen.x 载入
 * 在菜单->背景->加载AVI文件 ((可选) AVI文件可以使用MMBG插件载入非avi格式视频)
 * 然后选择菜单->背景->(全画面/AVI背景)
