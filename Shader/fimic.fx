@@ -191,7 +191,8 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
 #if HDR_ENABLE
-    color = ColorBalance(color, float4(1 - float3(mColBalanceR, mColBalanceG, mColBalanceB), mColBalance));
+    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    color = ColorBalance(color, float4(balance, mColBalance));
     color = FilmicTonemap(color, (1 + mExposure * 10));
     
 #if HDR_BLOOM_QUALITY > 0
