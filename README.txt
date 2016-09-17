@@ -6,6 +6,21 @@ Ray-MMD
     https://github.com/ray-cast/ray-mmd
 
 更新内容 :
+##### 2016-9-18 ver 1.0.5
+* 添加SSR (屏幕空间的局部反射，需要修改ray.conf的SSR_QUALITY)
+* 添加纹理采样的过滤方式 (默认16x各向异性, 远景看不见闪烁了)
+* 添加alpha物体的自发光
+* 添加ALBEDO_MAP_APPLY_DIFFUSE 将PMX中的扩散色，以乘的方式用在纹理上
+* 添加FilmLine (扫面线)
+* 添加BokehBlur (将远景模糊成很多小圆(散焦)，暂时没用，以后会发展成景深)
+* 改进TubeLighting的漫反射 (以前是错误的计算)
+* 改进SSAO的采样，以及减少了SSAO采样的范围，增加SSAO表情控制的强度
+* 删除了Screenshot目录
+* 删除了ColorBalance，以放置ray_controller表情右下角
+* 修复了不正确的亮度计算导致的锯齿
+* 修复了skydome的阴影bug
+* 修复了旋转天空盒导致fresnel计算错误产生不正确的光照
+
 ##### 2016-9-11 ver 1.0.4
 * 添加TubeLight
 * 添加播放GIF/APNG图片以及RectangleLight的双面光照
