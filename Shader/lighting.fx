@@ -314,16 +314,15 @@ float3 RectangleLightBRDFWithUV(float3 N, float3 V, float3 L, float3 Lt, float3 
 }
 
 float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{      
+{
+    // float3 Ld = P1 - P0;
+    // float t = dot(P - P0, Ld) / dot(Ld, Ld);
+    // float3 d = (P0 + Ld * saturate(t)) - P;
+    
     float3 Ld = L1 - L0;
-    float3 R = reflect(V, N);
-    
-    float RoL0 = dot(R, L0);
-    float RoLd = dot(R, Ld);
-    float L0oLd = dot(L0, Ld);
-    float T = (RoL0 * RoLd - L0oLd) / (dot(Ld, Ld) - RoLd * RoLd);
-    
-    return L0 + Ld * saturate(T);
+    float t = dot(-L0, Ld) / dot(Ld, Ld);
+    float3 d = (L0 + Ld * saturate(t));
+    return d - normalize(d) * radius;
 }
 
 float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
@@ -345,10 +344,12 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 specular)
 {
     float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
-    float3 L2 = normalize(Lw);
+    
+    float len = length(Lw);
+    float3 L2 = Lw / len;
     
     float roughness = max(SmoothnessToRoughness(smoothness), 0.001);
-    float normalizeFactor = SphereNormalization(length(Lw), length(float2(LightWidth, LightRadius)), roughness);    
+    float normalizeFactor = SphereNormalization(len, length(float2(LightWidth, LightRadius)), roughness);    
     return SpecularBRDF(N, L2, V, roughness, specular, normalizeFactor);
 }
 

@@ -20,7 +20,7 @@ float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "
 
 static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
 static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
-static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RANGE);
+static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RANGE - mRadiusM);
 static float LightIntensity = (1 - mIntensityM) * TUBELIGHT_MAX_INTENSITY;
 static float3 LightLeft = mLeft - (mLeft - mPosition) * LightWidth;
 static float3 LightRight = mRight + (mLeft - mPosition) * LightWidth;
@@ -77,8 +77,8 @@ float4 TubeLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
         
         lighting.rgb *= material.albedo;
         lighting.rgb *= GetPhysicalLightAttenuation(L, LightRange, 1 - mBlubP);
-        lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
-        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+        lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular) * vis;
+        lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     }
 
     return lighting;
