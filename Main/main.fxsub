@@ -54,9 +54,10 @@ float4 DrawObjectPS(
     float3 normal   : TEXCOORD1,
     float3 viewdir  : TEXCOORD2,
     float4 texcoord2 : TEXCOORD3) : SV_Target
-{   
+{
     if (ExistRay)
     {
+        clip(MaterialDiffuse.a - 0.9);
         return 0;
     }
     else

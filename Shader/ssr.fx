@@ -48,19 +48,17 @@ sampler SSRLightSampTemp = sampler_state {
     AddressV  = CLAMP;
 };
 
-float cb_zThickness = 1.0;
-float cb_maxDistance = 1000.0;
-float cb_nearPlaneZ = 0.1;
-float cb_stride = 0.0;
-float cb_strideZCutoff = 0.002;
-float cb_fadeEnd = 1.0;
-float cb_fadeStart = 0.0;
+static float thickness = (1.0 + mSSRThickness);
+static float strideZCutoff = 1 / ((1 + mSSRStrideZCutoff * 1000));
+static float fadeEnd = 1.0 - mSSRFadeEnd;
+static float fadeStart = mSSRFadeStart;
+static float fadeDiffRcp = 1.0f / (fadeEnd - fadeStart);
 
 bool intersectsDepthBuffer(float z, float minZ, float maxZ)
 {
-     float depthScale = min(1.0f, z * cb_strideZCutoff);
-     z += cb_zThickness + lerp(0.0f, 2.0f, depthScale);
-     return (maxZ >= z) && (minZ - cb_zThickness <= z);
+     float depthScale = min(1.0f, z * strideZCutoff);
+     z += thickness + lerp(0.0f, 2.0f, depthScale);
+     return (maxZ >= z) && (minZ - thickness <= z);
 }
  
 void swap(inout float a, inout float b)
@@ -94,13 +92,10 @@ float isoscelesTriangleNextAdjacent(float adjacentLength, float incircleRadius)
     return adjacentLength - (incircleRadius * 2.0f);
 }
 
-bool TraceScreenSpaceRay(float3 viewPosition, float3 viewDirection, float jitter, inout float2 hitPixel)
-{
-    float maxReflectLength = 1.5 * viewPosition.z * 0.5;
-    float rayLength = ((viewPosition.z + viewDirection.z * maxReflectLength) < cb_nearPlaneZ) ? (cb_nearPlaneZ - viewPosition.z) / viewDirection.z : maxReflectLength;
-    
+bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float stride, float jitter, out float2 hitPixel)
+{   
     float3 startPosition = viewPosition;
-    float3 endPosition = viewPosition + viewDirection * rayLength;
+    float3 endPosition = viewPosition + viewReflect * maxDistance;
 
     float4 startScreenPos = mul(float4(startPosition, 1), matProject);
     float4 endScreenPos = mul(float4(endPosition, 1), matProject);
@@ -117,6 +112,12 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewDirection, float jitter
     float4 deltaScreenPos = endScreenPos - startScreenPos;
     float4 deltaTexcoord = endTexcoord - startTexcoord;
 
+    deltaScreenPos *= stride;
+    deltaTexcoord *= stride;
+
+    startScreenPos += deltaScreenPos * jitter;
+    startTexcoord += deltaTexcoord * jitter;
+
     float rayZMin = viewPosition.z;
     float rayZMax = viewPosition.z;
     float rayZMaxEstimate = viewPosition.z;
@@ -124,26 +125,39 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewDirection, float jitter
     
     const int numSamples = SSR_SAMPLER_COUNT;
     const float stepSize = 1.0 / numSamples;
+    const float intervalSize = maxDistance / (numSamples * 1.6) * thickness;
     
-    float bestLen = stepSize;
+    float len = stepSize;
+    float bestLen = 0;
     
-    [unroll(numSamples)]
-    for (;; bestLen += stepSize)
+    for (int i = 0; i < numSamples; i++, len += stepSize)
     {
-        float4 projPos = startScreenPos + deltaScreenPos * bestLen;
+        float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
         rayZMin = rayZMaxEstimate;
         rayZMaxEstimate = rayZMax = projPos.z;
+
+#if SSR_QUALITY >= 2        
+        float linearDepth = tex2D(Gbuffer4Map, projPos.xy).r;
+        float linearDepth2 = tex2D(Gbuffer8Map, projPos.xy).r;
+        rayZDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+#else
         rayZDepth = tex2D(Gbuffer4Map, projPos.xy).r;
+#endif
         
-        if (rayZMin > rayZMax)
+        /*if (rayZMin > rayZMax)
         {
             swap(rayZMin, rayZMax);
         }
-
         if (intersectsDepthBuffer(rayZDepth, rayZMin, rayZMax))
         {
+            break;
+        }*/
+        
+        if (abs(rayZDepth - projPos.z) < intervalSize)
+        {
+            bestLen = len;
             break;
         }
     }
@@ -158,7 +172,8 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewDirection, float jitter
         bestLen = 0;
     }
     
-    return intersectsDepthBuffer(rayZDepth, rayZMin, rayZMax) * (bestLen > 0 ? 1 : 0);
+    // return intersectsDepthBuffer(rayZDepth, rayZMin, rayZMax) * (bestLen > 0 ? 1 : 0);
+    return bestLen > 0 ? 1 : 0;
 }
 
 void ScreenSpaceReflectVS(
@@ -182,18 +197,30 @@ float4 ScreenSpaceReflectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEX
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
-        
+
     clip(-material.normal.z);
     
     float3 V = normalize(-viewdir);
     
+#if SSR_QUALITY >= 2        
     float linearDepth = tex2D(Gbuffer4Map, coord).r;
+    float linearDepth2 = tex2D(Gbuffer8Map, coord).r;    
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+#else
+    float linearDepth = tex2D(Gbuffer4Map, coord).r;
+#endif
     
     float3 viewPosition = V * linearDepth / V.z;
     float3 viewReflect = normalize(reflect(V, material.normal));
     
+    float maxDistance = viewPosition.z * (1.5 + mSSRRangeP - mSSRRangeM);
+    
+    float strideScale = 1.0f - min(1.0f, viewPosition.z * strideZCutoff);
+    float stride = 1.0f + strideScale * mSSRStride;
+    float jitter = GetJitterOffset((int2)coord * ViewportSize) * 0.02 * mSSRJitter;
+    
     float2 hitPixel = 0;
-    if (!TraceScreenSpaceRay(viewPosition, viewReflect, 0.0, hitPixel))
+    if (!TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, stride, jitter, hitPixel))
     {
         clip(-1);
     }
@@ -282,16 +309,17 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
         glossMult *= gloss;
     }
     
+    float maxDistance = viewPosition.z * (1.5 + mSSRRangeP - mSSRRangeM);
+    
     float3 fresnel = EnvironmentSpecularUnreal4(material.normal, V, material.smoothness, material.specular);
 
     float2 boundary = abs(rayTracing.xy - float2(0.5f, 0.5f)) * 2.0f;
-    const float fadeDiffRcp = 1.0f / (cb_fadeEnd - cb_fadeStart);
-    float fadeOnBorder = 1.0f - saturate((boundary.x - cb_fadeStart) * fadeDiffRcp);
-    fadeOnBorder *= 1.0f - saturate((boundary.y - cb_fadeStart) * fadeDiffRcp);
+    float fadeOnBorder = 1.0f - saturate((boundary.x - fadeStart) * fadeDiffRcp);
+    fadeOnBorder *= 1.0f - saturate((boundary.y - fadeStart) * fadeDiffRcp);
     fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
     
     float3 rayHitPositionVS = mul(float4(CoordToPos(rayTracing.xy), rayTracing.z, 1.0), matProjectInverse).xyz;
-    float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / cb_maxDistance);
+    float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / maxDistance);
     float fadeOnPerpendicular = saturate(lerp(0.0f, 1.0f, saturate(rayTracing.w * 4.0f)));
     float fadeOnRoughness = saturate(lerp(0.0f, 1.0f, gloss * 4.0f));
     float totalFade = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular * fadeOnRoughness * (1.0f - saturate(remainingAlpha));

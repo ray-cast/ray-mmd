@@ -908,7 +908,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    clip(alpha - AlphaThreshold);  
+    clip(alpha - AlphaThreshold);
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));

@@ -100,14 +100,14 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     
     float3 result = srgb2linear(tex2D(OpaqueSamp, coord).rgb) * !any(showTotal);
     result += material.albedo * showAlbedo;
-    result += (material.normal * 0.5 + 0.5) * showNormal;
+    result += (mul(material.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormal;
     result += material.specular * showSpecular;
     result += material.smoothness * showSmoothness;
     result += material.transmittance * showTransmittance;
     result += material.emissive * showEmissive;
     
     result += materialAlpha.albedo * showAlbedoAlpha;
-    result += (materialAlpha.normal * 0.5 + 0.5) * showNormalAlpha;
+    result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
     result += materialAlpha.emissive * showEmissiveAlpha;

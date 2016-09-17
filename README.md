@@ -2,6 +2,7 @@ Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
 #### Screenshot :
+[![link text](https://github.com/ray-cast/images/raw/master/ssr_small.jpg)](https://github.com/ray-cast/images/raw/master/ssr.png)
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.png)
 [![link text](https://github.com/ray-cast/images/raw/master/pistol_small.png)](https://github.com/ray-cast/images/raw/master/pistol.png)
 [![link text](https://github.com/ray-cast/images/raw/master/sphere_small.jpg)](https://github.com/ray-cast/images/raw/master/sphere.jpg)

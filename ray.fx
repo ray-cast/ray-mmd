@@ -64,10 +64,12 @@ float mColBalanceG :  CONTROLOBJECT < string name="ray_controller.pmx"; string i
 float mColBalanceB :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
-float mSSRStepLength :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "StepLength"; >;
+float mSSRRangeP :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range+"; >;
+float mSSRRangeM :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range-"; >;
 float mSSRThickness :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Thickness"; >;
 float mSSRJitter :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Jitter"; >;
 float mSSRStride :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Stride"; >;
+float mSSRStrideZCutoff :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "StrideZCutoff"; >;
 float mSSRFadeStart :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeStart"; >;
 float mSSRFadeEnd :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeEnd"; >;
 #else
@@ -152,7 +154,7 @@ float Script : STANDARDSGLOBAL <
 technique DeferredLighting<
 	string Script =
     "RenderColorTarget0=;"
-    "RenderDepthStencilTarget=;"
+    "RenderDepthStencilTarget=DepthBuffer;"
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
     "ClearSetStencil=0;"
@@ -401,7 +403,7 @@ technique DeferredLighting<
     }
     pass SSRConeTracing < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = true; AlphaTestEnable = false;
-        SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
+        SrcBlend = SRCALPHA; DestBlend = ONE;
         ZEnable = False; ZWriteEnable = False;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSRConeTracingPS();

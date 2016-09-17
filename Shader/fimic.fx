@@ -141,7 +141,7 @@ float3 ApplyDithering(float3 color, float2 uv)
 
 float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
 {
-    float L = length(CoordToPos(coord));
+    float L = length(coord * 2 - 1);
     return color * smoothstep(outer, inner, L);
 }
 

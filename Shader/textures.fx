@@ -1,4 +1,4 @@
-shared texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
+texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
     string Format = "D24S8";
 >;
 
