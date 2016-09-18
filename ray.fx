@@ -153,7 +153,7 @@ float Script : STANDARDSGLOBAL <
 	string ScriptClass  = "scene";
 	string ScriptOrder  = "postprocess";
 > = 0.8;
-
+#define MIKUMIKUMOVING
 technique DeferredLighting<
 	string Script =
     "RenderColorTarget0=;"
@@ -187,8 +187,10 @@ technique DeferredLighting<
     
 #if SSR_QUALITY > 0
     "RenderColorTarget=SSRayTracingMap;"
+    "RenderDepthStencilTarget=DepthBuffer;"
+    "Clear=Depth;"
     "Clear=Color;"
-    "Pass=ScreenSpaceReflect;"
+    "Pass=SSRayTracing;"
     
     "RenderColorTarget0=SSRLightMapTemp;  Pass=SSRGaussionBlurX1;"
     "RenderColorTarget0=SSRLightMap;      Pass=SSRGaussionBlurY1;"
@@ -346,6 +348,7 @@ technique DeferredLighting<
         ZEnable = false;
         ZWriteEnable = false;
         ColorWriteEnable = false;
+#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = ALWAYS;
         StencilRef = 1;
@@ -353,6 +356,7 @@ technique DeferredLighting<
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilWriteMask = 1;
+#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSSStencilTestPS();
     }
@@ -386,11 +390,20 @@ technique DeferredLighting<
     }
 #endif
 #if SSR_QUALITY > 0
-    pass ScreenSpaceReflect < string Script= "Draw=Buffer;"; > {
+    pass SSRayTracing < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
+#if !defined(MIKUMIKUMOVING)
+        StencilEnable = true;
+        StencilFunc = ALWAYS;
+        StencilRef = 1;
+        StencilPass = REPLACE;
+        StencilFail = KEEP;
+        StencilZFail = KEEP;
+        StencilWriteMask = 1;
+#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ScreenSpaceReflectPS();
+        PixelShader  = compile ps_3_0 SSRayTracingPS();
     }
     pass SSRGaussionBlurX1 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -408,6 +421,12 @@ technique DeferredLighting<
         AlphaBlendEnable = true; AlphaTestEnable = false;
         SrcBlend = SRCALPHA; DestBlend = ONE;
         ZEnable = False; ZWriteEnable = False;
+#if !defined(MIKUMIKUMOVING)
+        StencilEnable = true;
+        StencilFunc = EQUAL;
+        StencilRef = 1;
+        StencilWriteMask = 0;
+#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSRConeTracingPS();
     }

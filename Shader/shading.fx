@@ -46,7 +46,6 @@ float4 DeferredShadingPS(
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
-    float3 P = mul(-viewdir * tex2D(Gbuffer4Map, coord).r, matViewInverse).xyz;
     float3 V = normalize(mul(viewdir, (float3x3)matViewInverse));
     float3 L = normalize(-LightDirection);
 
@@ -124,5 +123,13 @@ float4 DeferredShadingPS(
     lighting += envLighting.rgb;
 #endif
 
-    return float4(lighting, 0.0);
+#if SSR_QUALITY > 0
+    float linearDepth = tex2D(Gbuffer4Map, coord).r;
+    float linearDepth2 = tex2D(Gbuffer8Map, coord).r;
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+
+    return float4(lighting, linearDepth);
+#else
+    return float4(lighting, 0.0f);
+#endif
 }

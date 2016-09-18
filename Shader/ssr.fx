@@ -137,14 +137,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         
         rayZMin = rayZMaxEstimate;
         rayZMaxEstimate = rayZMax = projPos.z;
-
-#if SSR_QUALITY >= 2        
-        float linearDepth = tex2D(Gbuffer4Map, projPos.xy).r;
-        float linearDepth2 = tex2D(Gbuffer8Map, projPos.xy).r;
-        rayZDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-#else
-        rayZDepth = tex2D(Gbuffer4Map, projPos.xy).r;
-#endif
+        rayZDepth = tex2D(OpaqueSamp, projPos.xy).a;
         
         /*if (rayZMin > rayZMax)
         {
@@ -176,20 +169,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
     return bestLen > 0 ? 1 : 0;
 }
 
-void ScreenSpaceReflectVS(
-    in float4 Position : POSITION,
-    in float4 Texcoord : TEXCOORD0,
-    out float4 oTexcoord  : TEXCOORD0,
-    out float3 oViewdir : TEXCOORD1,
-    out float4 oPosition  : POSITION,
-    uniform int n)
-{
-    oTexcoord = Texcoord.xyxy + ViewportOffset.xyxy * n;
-    oViewdir = mul(Position, matProjectInverse).xyz;
-    oPosition = Position;
-}
-
-float4 ScreenSpaceReflectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
+float4 SSRayTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
@@ -200,16 +180,9 @@ float4 ScreenSpaceReflectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEX
 
     clip(-material.normal.z);
     
-    float3 V = normalize(-viewdir);
-    
-#if SSR_QUALITY >= 2        
-    float linearDepth = tex2D(Gbuffer4Map, coord).r;
-    float linearDepth2 = tex2D(Gbuffer8Map, coord).r;    
-    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-#else
-    float linearDepth = tex2D(Gbuffer4Map, coord).r;
-#endif
-    
+    float linearDepth = tex2D(OpaqueSamp, coord).a;
+
+    float3 V = normalize(-viewdir);    
     float3 viewPosition = V * linearDepth / V.z;
     float3 viewReflect = normalize(reflect(V, material.normal));
     
@@ -218,6 +191,12 @@ float4 ScreenSpaceReflectPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEX
     float strideScale = 1.0f - min(1.0f, viewPosition.z * strideZCutoff);
     float stride = 1.0f + strideScale * mSSRStride;
     float jitter = GetJitterOffset((int2)coord * ViewportSize) * 0.02 * mSSRJitter;
+    
+    float atten = dot(viewReflect, V);
+    if (atten <= 0)
+    {
+        clip(-1);
+    }
     
     float2 hitPixel = 0;
     if (!TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, stride, jitter, hitPixel))
@@ -251,7 +230,9 @@ float4 SSRGaussionBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, 
 float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
     float4 rayTracing = tex2D(SSRayTracingSamp, coord);
+#if defined(MIKUMIKUMOVING)
     clip(rayTracing.w - 1e-5);
+#endif
 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
@@ -279,7 +260,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     float remainingAlpha = 1.0f;
     float maxMipLevel = 6;
     
-    float gloss = min(material.smoothness, 0.999);
+    float gloss = material.smoothness;
     float glossMult = gloss;
     
     for (int i = 0; i < 14; ++i)
