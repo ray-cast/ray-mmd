@@ -103,11 +103,11 @@ float3 FilmicTonemap(float3 color, float exposure)
 {
     #if TONEMAP_OPERATOR == TONEMAP_LINEAR
         return exposure * color;
-    #elif TONEMAP_OPERATOR == TONEMAP_ACESFilmRec709
+    #elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_709
         color = color * exposure;
         float3 curr = ACESFilmRec709(color);
         return lerp(curr, color, mToneMapping);
-    #elif TONEMAP_OPERATOR == TONEMAP_ACESFilmRec2020
+    #elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_2020
         color = color * exposure;
         float3 curr = ACESFilmRec2020(color);
         return lerp(curr, color, mToneMapping);
@@ -149,14 +149,14 @@ float3 Overlay(float3 a, float3 b)
     return pow(abs(b), 2.2) < 0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
 }
 
-float3 AppleFilmGrain(float3 color, float2 coord) 
+float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
 {
-    float noiseIntensity = mFilmGrain * 2;
+    float noiseIntensity = mFilmGrain;
     coord.x *= (ViewportSize.y / ViewportSize.x);
     coord.x += time * 6;
     
     float noise = tex2D(NoiseMapSamp, coord).r;
-    float exposureFactor = (2 + mExposure * 10) / 2.0;
+    float exposureFactor = exposure / 2.0;
     exposureFactor = sqrt(exposureFactor);
     float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
     
@@ -174,11 +174,37 @@ float BloomFactor(const in float factor)
     float mirrorFactor = 1.2 - factor;
     return lerp(factor, mirrorFactor, mBloomRadius);
 }
-    
+
+float ComputeEV100(float aperture, float shutterTime, float ISO)
+{
+    return log2(aperture / shutterTime * 100 / ISO);
+}
+
+float ComputeExposureFromEV100(float EV100)
+{
+    float maxLuminance = 1.2f * pow (2.0f, EV100);
+    return 1.0f / maxLuminance;
+}
+
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position, uniform sampler2D source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
+    float exposure = 1 + mExposure * 10;
+#if ISO100_ENABLE
+    #if !defined(MIKUMIKUMOVING)
+        if (ExistISO)
+        {
+    #endif
+            float aperture = 1.0 + mAperture * 30;
+            float shutterTime = (1.2 + mShutterTimeP * 10 - mShutterTimeM);
+            float EV100 = ComputeEV100(aperture, shutterTime, 100 * (1 + mISO * 10));
+            exposure = ComputeExposureFromEV100(EV100);
+    #if !defined(MIKUMIKUMOVING)
+        }
+    #endif
+#endif
+
 #if HDR_ENABLE   
 #if HDR_BLOOM_QUALITY > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
@@ -208,11 +234,11 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
-    color = FilmicTonemap(color, (1 + mExposure * 10));
+    color = FilmicTonemap(color, exposure);
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
-    color = AppleFilmGrain(color, coord);
+    color = AppleFilmGrain(color, coord, exposure);
     color = AppleFilmLine(color, coord, screenPosition.xy);
     
     color = saturate(color);

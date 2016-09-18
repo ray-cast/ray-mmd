@@ -67,6 +67,12 @@ float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
+bool ExistISO : CONTROLOBJECT<string name = "ISO.pmx";>;
+float mISO : CONTROLOBJECT < string name="ISO.pmx"; string item = "ISO"; >;
+float mAperture : CONTROLOBJECT < string name="ISO.pmx"; string item = "Aperture"; >;
+float mShutterTimeP : CONTROLOBJECT < string name="ISO.pmx"; string item = "ShutterTime+"; >;
+float mShutterTimeM : CONTROLOBJECT < string name="ISO.pmx"; string item = "ShutterTime-"; >;
+
 float mSSRRangeP :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range+"; >;
 float mSSRRangeM :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range-"; >;
 float mSSRThickness :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Thickness"; >;
@@ -86,7 +92,7 @@ float mSSAOP <string UIName = "SSAO+"; string UIWidget = "Slider"; bool UIVisibl
 float mSSAOM <string UIName = "SSAO-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mSSAORadiusP <string UIName = "SSAORadius+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mSSAORadiusM <string UIName = "SSAORadius-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mExposure <string UIName = "Exposur"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mExposure <string UIName = "Exposure"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mVignette <string UIName = "Vignett"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mDispersion <string UIName = "Dispersion"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mDispersionRadius <string UIName = "DispersionRadius"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
@@ -107,6 +113,11 @@ float mColBalanceRM <string UIName = "ColBalanceR-"; string UIWidget = "Slider";
 float mColBalanceGM <string UIName = "ColBalanceG-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mColBalanceBM <string UIName = "ColBalanceB-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mColBalance <string UIName = "BalanceGray"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+
+float mISO <string UIName = "ISO"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mAperture <string UIName = "Aperture"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mShutterTimeP <string UIName = "ShutterTime+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+float mShutterTimeM <string UIName = "ShutterTime-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 
 float mSSRRangeP  <string UIName = "Range+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mSSRRangeM  <string UIName = "Range-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;

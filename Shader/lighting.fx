@@ -33,9 +33,19 @@ float fresnelSchlick(float f0, float f9, float LdotH)
     return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
 }
 
-float3 fresnelSchlick(float3 f0, float f9, float LdotH)
+float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
 {
     return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+}
+
+float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
+{
+    return saturate(pow(nv + ao, smoothness) - 1 + ao);
+}
+
+float3 ComputeSpecularMicroOcclusion(float3 f0)
+{
+    return saturate(dot(f0, 0.33333h) * 50);
 }
 
 float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
@@ -114,7 +124,8 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3
     float k = min(1.0f, gloss + 0.545f);
     float G = 1.0 / (k * lh * lh + 1 - k);
 
-    float3 F = fresnelSchlick(f0, 1.0, lh);
+    float3 f90 = ComputeSpecularMicroOcclusion(f0);
+    float3 F = fresnelSchlick(f0, f90, lh);
 
     return D * F * G;
 }
@@ -124,19 +135,20 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float Norm
     float m2 = m * m;
     float3 H = normalize(V + L);
 
-    float NdotH = saturate(dot(N, H));
-    float NdotL = saturate(dot(N, L));
-    float NdotV = abs(dot(N, V)) + 1e-5h;
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L));
+    float lh = saturate(dot(L, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
 
-    float spec = (NdotH * m2 - NdotH) * NdotH + 1;
+    float spec = (nh * m2 - nh) * nh + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
 
-    float Gv = NdotL * sqrt((-NdotV * m2 + NdotV) * NdotV + m2);
-    float Gl = NdotV * sqrt((-NdotL * m2 + NdotL) * NdotL + m2);
+    float Gv = nl * sqrt((-nv * m2 + nv) * nv + m2);
+    float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5h / (Gv + Gl);
 
-    float f90 = saturate(dot(f0, 0.33333h) / 0.02h);
-    float3 fresnel = fresnelSchlick(f0, f90, saturate(dot(L, H)));
+    float3 f90 = ComputeSpecularMicroOcclusion(f0);
+    float3 fresnel = fresnelSchlick(f0, f90, lh);
 
     return fresnel * spec;
 }
@@ -161,7 +173,7 @@ void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxC
 
 float EnvironmentMip(float gloss, int miplevel)
 {
-    return lerp(miplevel, 0, gloss);
+    return sqrt(gloss) * miplevel;
 }
 
 float3 EnvironmentReflect(float3 normal, float3 view)

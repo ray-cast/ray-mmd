@@ -1,8 +1,3 @@
-float DeriveSpecularOcclusion(float nv, float ao, float smoothness)
-{
-    return saturate(pow(nv + ao, smoothness) - 1 + ao);
-}
-
 float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
 {
     float3 lighting = 0;
