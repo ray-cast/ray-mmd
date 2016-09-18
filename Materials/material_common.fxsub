@@ -38,12 +38,6 @@ float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #endif
 
-float2 ViewportSize : VIEWPORTPIXELSIZE;
-
-static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
-static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
-static float2 ViewportAspect  = float2(1, ViewportSize.x / ViewportSize.y);
-
 uniform bool use_texture;
 uniform bool use_subtexture;
 uniform bool use_spheremap;
@@ -105,231 +99,6 @@ shared texture Gbuffer6RT: RENDERCOLORTARGET;
 shared texture Gbuffer7RT: RENDERCOLORTARGET;
 shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
-struct MaterialParam
-{
-    float3 normal;
-    float3 albedo;
-    float3 specular;
-    float3 transmittance;
-    float3 emissive;
-    float smoothness;
-    float index;
-    int lightModel;
-};
-
-struct GbufferParam
-{
-    float4 buffer1 : COLOR0;
-    float4 buffer2 : COLOR1;
-    float4 buffer3 : COLOR2;
-    float4 buffer4 : COLOR3;
-};
-
-float3 EncodeNormal(float3 normal)
-{
-    float p = sqrt(-normal.z * 8 + 8);
-    float2 enc = normal.xy / p + 0.5f;
-    float2 enc255 = enc * 255;
-    float2 residual = floor(frac(enc255) * 16);
-    return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
-}
-
-float3 DecodeNormal(float3 enc)
-{
-    float nz = floor(enc.z * 255) / 16;
-    enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
-    float2 fenc = enc.xy * 4 - 2;
-    float f = dot(fenc, fenc);
-    float g = sqrt(1 - f / 4);
-    float3 normal;
-    normal.xy = fenc * g;
-    normal.z = f / 2 - 1;
-    return normalize(normal);
-}
-
-float luminance(float3 rgb)
-{
-    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-    return dot(rgb, lumfact);
-}
-
-float3 srgb2linear(float3 rgb)
-{
-    const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
-}
-
-float3 linear2srgb(float3 srgb)
-{
-    const float ALPHA = 0.055f;
-    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(srgb, 1.0f / 2.4f) - ALPHA;
-}
-
-float4 srgb2linear(float4 c)
-{
-    return float4(srgb2linear(c.rgb), c.a);
-}
-
-float4 linear2srgb(float4 c)
-{
-    return float4(linear2srgb(c.rgb), c.a);
-}
-
-float3 rgb2ycbcr(float3 rgb)
-{
-    float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
-    float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
-    float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
-    return float3(Y, Cb, Cr);
-}
-
-float3 ycbcr2rgb(float3 YCbCr)
-{
-    float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
-    float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
-    float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
-    return float3(R, G, B);
-}
-
-float2 CoordToPos(float2 coord)
-{
-    coord.y = 1 - coord.y;
-    return coord * 2 - 1;
-}
-
-float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
-{
-    float3 dp1 = ddx(viewdir);
-    float3 dp2 = ddy(viewdir);
-    float2 duv1 = ddx(coord);
-    float2 duv2 = ddy(coord);
-
-    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
-    float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
-    float3 T = mul(float2(duv1.x, duv2.x), I);
-    float3 B = mul(float2(duv1.y, duv2.y), I);
-
-    return float3x3(normalize(T), normalize(B), N);
-}
-
-float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSteps, float parallaxScale)
-{
-   float step = 1.0 / numSteps;
-   float2 delta = parallaxScale * V.xy / (-V.z * numSteps);
-
-   float curLayerHeight = 0;
-   float curHeight = tex2D(heightMap, coord).r;
-   float2 curTexcoord = coord;
-
-   for (int i = 0; i < numSteps; i++)
-   {
-        if (curHeight <= curLayerHeight)
-            break;
-            
-        curLayerHeight += step; 
-        curTexcoord -= delta;
-        curHeight = tex2D(heightMap, curTexcoord).r;
-   }
-
-    float2 deltaTexcoord = delta *= 0.5;
-    float deltaHeight = step *= 0.5;
-
-    curTexcoord += deltaTexcoord;
-    curLayerHeight -= deltaHeight;
-
-    for (int i = 0; i < 5; i++)
-    {
-        deltaTexcoord *= 0.5;
-        deltaHeight *= 0.5;
-
-        curHeight = tex2D(heightMap, curTexcoord).r;
-
-        if (curHeight > curLayerHeight)
-        {
-            curTexcoord -= deltaTexcoord;
-            curLayerHeight += deltaHeight;
-        }
-        else
-        {
-            curTexcoord += deltaTexcoord;
-            curLayerHeight -= deltaHeight;
-        }
-    }
-
-   return curTexcoord;
-}
-
-GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
-{
-    GbufferParam gbuffer;
-    gbuffer.buffer1.xyz = material.albedo;
-    gbuffer.buffer1.w = material.smoothness;
-
-    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
-    gbuffer.buffer2.w = 0;
-
-    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
-    gbuffer.buffer3.w = 0;
-
-    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-    {
-        float scatteringAmount = frac(material.index);
-        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.index / TWO_BITS_EXTRACTION_FACTOR : 0;
-        
-        material.transmittance = rgb2ycbcr(material.transmittance);
-        gbuffer.buffer3.yz = material.transmittance.gb;
-        gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
-    }
-    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        material.emissive = rgb2ycbcr(material.emissive);
-        gbuffer.buffer3.yz = material.emissive.gb;
-        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
-    }
-
-    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    
-    gbuffer.buffer4 = linearDepth;
-    
-    return gbuffer;
-}
-
-GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, float alphaDiffuse)
-{
-    GbufferParam gbuffer;
-    gbuffer.buffer1.xyz = material.albedo;
-    gbuffer.buffer1.w = material.smoothness;
-
-    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
-    gbuffer.buffer2.w = alphaDiffuse;
-
-    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
-    gbuffer.buffer3.w = 0;
-
-    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        material.emissive = rgb2ycbcr(material.emissive);
-        gbuffer.buffer3.yz = material.emissive.gb;
-        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
-    }
-    
-    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = linearDepth;
-    
-    return gbuffer;
-}
-
-float RoughnessToSmoothness(float roughness)
-{
-    return 1.0f - sqrt(roughness);
-}
-
-float ShininessToSmoothness(float spec)
-{
-    // http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html
-    return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
-}
-
 #if (ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_SCREEN_MAP) || (EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_SCREEN_MAP)
     shared texture2D DummyScreenTex : RenderColorTarget;
 #endif
@@ -355,17 +124,15 @@ float ShininessToSmoothness(float spec)
     };
 #endif
 
-#if ALHPA_LAYER_ENABLE > 0
-    #if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
-        texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
-        sampler AlphaMapSamp = sampler_state
-        {
-            texture = AlphaMap;
-            MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-            MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-            ADDRESSU = WRAP; ADDRESSV = WRAP;
-        };
-    #endif
+#if USE_CUSTOM_MATERIAL && ALHPA_LAYER_ENABLE > 0 && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
+    texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
+    sampler AlphaMapSamp = sampler_state
+    {
+        texture = AlphaMap;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
+    };
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
@@ -499,6 +266,205 @@ struct VS_OUTPUT
     float  Distance : TEXCOORD2;
     float3 Viewdir  : TEXCOORD3; 
 };
+
+struct MaterialParam
+{
+    float3 normal;
+    float3 albedo;
+    float3 specular;
+    float3 transmittance;
+    float3 emissive;
+    float smoothness;
+    float index;
+    int lightModel;
+};
+
+struct GbufferParam
+{
+    float4 buffer1 : COLOR0;
+    float4 buffer2 : COLOR1;
+    float4 buffer3 : COLOR2;
+    float4 buffer4 : COLOR3;
+};
+
+float3 EncodeNormal(float3 normal)
+{
+    float p = sqrt(-normal.z * 8 + 8);
+    float2 enc = normal.xy / p + 0.5f;
+    float2 enc255 = enc * 255;
+    float2 residual = floor(frac(enc255) * 16);
+    return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
+}
+
+float3 DecodeNormal(float3 enc)
+{
+    float nz = floor(enc.z * 255) / 16;
+    enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
+    float2 fenc = enc.xy * 4 - 2;
+    float f = dot(fenc, fenc);
+    float g = sqrt(1 - f / 4);
+    float3 normal;
+    normal.xy = fenc * g;
+    normal.z = f / 2 - 1;
+    return normalize(normal);
+}
+
+float luminance(float3 rgb)
+{
+    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+    return dot(rgb, lumfact);
+}
+
+float3 srgb2linear(float3 rgb)
+{
+    const float ALPHA = 0.055f;
+    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+}
+
+float4 srgb2linear(float4 c)
+{
+    return float4(srgb2linear(c.rgb), c.a);
+}
+
+float3 rgb2ycbcr(float3 rgb)
+{
+    float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+    float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
+    float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
+    return float3(Y, Cb, Cr);
+}
+
+float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+{
+    float3 dp1 = ddx(viewdir);
+    float3 dp2 = ddy(viewdir);
+    float2 duv1 = ddx(coord);
+    float2 duv2 = ddy(coord);
+
+    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+    float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+    float3 T = mul(float2(duv1.x, duv2.x), I);
+    float3 B = mul(float2(duv1.y, duv2.y), I);
+
+    return float3x3(normalize(T), normalize(B), N);
+}
+
+float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSteps, float parallaxScale)
+{
+    float step = 1.0 / numSteps;
+    float2 delta = parallaxScale * V.xy / (-V.z * numSteps);
+
+    float curLayerHeight = 0;
+    float curHeight = tex2D(heightMap, coord).r;
+    float2 curTexcoord = coord;
+
+    for (int i = 0; i < numSteps; i++)
+    {
+        if (curHeight <= curLayerHeight)
+            break;
+            
+        curLayerHeight += step; 
+        curTexcoord -= delta;
+        curHeight = tex2D(heightMap, curTexcoord).r;
+    }
+
+    float2 deltaTexcoord = delta *= 0.5;
+    float deltaHeight = step *= 0.5;
+
+    curTexcoord += deltaTexcoord;
+    curLayerHeight -= deltaHeight;
+
+    for (int i = 0; i < 5; i++)
+    {
+        deltaTexcoord *= 0.5;
+        deltaHeight *= 0.5;
+
+        curHeight = tex2D(heightMap, curTexcoord).r;
+
+        if (curHeight > curLayerHeight)
+        {
+            curTexcoord -= deltaTexcoord;
+            curLayerHeight += deltaHeight;
+        }
+        else
+        {
+            curTexcoord += deltaTexcoord;
+            curLayerHeight -= deltaHeight;
+        }
+    }
+
+    return curTexcoord;
+}
+
+GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1.xyz = material.albedo;
+    gbuffer.buffer1.w = material.smoothness;
+
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = 0;
+
+    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+    gbuffer.buffer3.w = 0;
+
+    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+    {
+        float scatteringAmount = frac(material.index);
+        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.index / TWO_BITS_EXTRACTION_FACTOR : 0;
+        
+        material.transmittance = rgb2ycbcr(material.transmittance);
+        gbuffer.buffer3.yz = material.transmittance.gb;
+        gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
+    }
+    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
+
+    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
+    
+    gbuffer.buffer4 = linearDepth;
+    
+    return gbuffer;
+}
+
+GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, float alphaDiffuse)
+{
+    GbufferParam gbuffer;
+    gbuffer.buffer1.xyz = material.albedo;
+    gbuffer.buffer1.w = material.smoothness;
+
+    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    gbuffer.buffer2.w = alphaDiffuse;
+
+    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+    gbuffer.buffer3.w = 0;
+
+    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    {
+        material.emissive = rgb2ycbcr(material.emissive);
+        gbuffer.buffer3.yz = material.emissive.gb;
+        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+    }
+    
+    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
+    gbuffer.buffer4 = linearDepth;
+    
+    return gbuffer;
+}
+
+float RoughnessToSmoothness(float roughness)
+{
+    return 1.0f - sqrt(roughness);
+}
+
+float ShininessToSmoothness(float spec)
+{
+    return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
+}
 
 float3 ColorSynthesis(float3 diffuse, float m)
 {
@@ -803,11 +769,6 @@ float3 GetMetalness(float2 coord)
 #else
     return max(0, MaterialSpecular / (MaterialDiffuse.rgb + MaterialSpecular));
 #endif
-}
-
-float3 SkinTransmittance(float translucency)
-{
-    return exp((1 - saturate(translucency)) * float3(-8, -40, -64));
 }
 
 float3 GetTransmittance(float2 coord)

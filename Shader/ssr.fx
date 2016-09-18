@@ -290,7 +290,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
         glossMult *= gloss;
     }
     
-    float maxDistance = viewPosition.z * (1.5 + mSSRRangeP - mSSRRangeM);
+    float maxDistance = viewPosition.z * (1.5 + mSSRFadeDistance);
     
     float3 fresnel = EnvironmentSpecularUnreal4(material.normal, V, material.smoothness, material.specular);
 
