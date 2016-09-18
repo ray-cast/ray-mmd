@@ -79,18 +79,7 @@ float3 ColorBalance(float3 color, float4 balance)
     return color;
 }
 
-float3 Uncharted2Tonemap(float3 x)
-{
-    const float A = 0.22; // Shoulder Strength
-    const float B = 0.30; // Linear Strength
-    const float C = 0.10; // Linear Angle
-    const float D = 0.20; // Toe Strength
-    const float E = 0.01; // Toe Numerator
-    const float F = 0.30; // Toe Denominator E/F = Toe Angle
-    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
-
-float3 ACESFilm2Tonemap(float3 x)
+float3 ACESFilmRec709(float3 x)
 {
     const float A = 2.51f;
     const float B = 0.03f;
@@ -100,27 +89,27 @@ float3 ACESFilm2Tonemap(float3 x)
     return (x * (A * x + B)) / (x * (C * x + D) + E);   
 }
 
+float3 ACESFilmRec2020( float3 x )
+{
+    float a = 15.8f;
+    float b = 2.12f;
+    float c = 1.2f;
+    float d = 5.92f;
+    float e = 1.9f;
+    return ( x * ( a * x + b ) ) / ( x * ( c * x + d ) + e );
+}
+
 float3 FilmicTonemap(float3 color, float exposure)
 {
     #if TONEMAP_OPERATOR == TONEMAP_LINEAR
         return exposure * color;
-    #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
-        const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
+    #elif TONEMAP_OPERATOR == TONEMAP_ACESFilmRec709
         color = color * exposure;
-        color = 2 * Uncharted2Tonemap(color);
-        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
-        color *= whiteScale;
+        float3 curr = ACESFilmRec709(color);
         return lerp(curr, color, mToneMapping);
-    #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
-        const float W = lerp(11.2, 1, mLinWhite); // Linear White Point Value
+    #elif TONEMAP_OPERATOR == TONEMAP_ACESFilmRec2020
         color = color * exposure;
-        float3 curr = Uncharted2Tonemap(2 * color);
-        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
-        curr *= whiteScale;
-        return lerp(curr, color, mToneMapping);
-    #elif TONEMAP_OPERATOR == TONEMAP_ACESFILM
-        color = color * exposure;
-        float3 curr = ACESFilm2Tonemap(color);
+        float3 curr = ACESFilmRec2020(color);
         return lerp(curr, color, mToneMapping);
     #else
         return color;
@@ -190,11 +179,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
-#if HDR_ENABLE
-    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
-    color = ColorBalance(color, float4(balance, mColBalance));
-    color = FilmicTonemap(color, (1 + mExposure * 10));
-    
+#if HDR_ENABLE   
 #if HDR_BLOOM_QUALITY > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
     float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};
@@ -220,6 +205,10 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
     
     color += bloom * bloomIntensity;
 #endif
+
+    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    color = ColorBalance(color, float4(balance, mColBalance));
+    color = FilmicTonemap(color, (1 + mExposure * 10));
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
