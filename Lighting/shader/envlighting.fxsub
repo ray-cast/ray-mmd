@@ -18,34 +18,20 @@ texture IBLDiffuseTexture: MATERIALTOONTEXTURE;
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
     
-#if TEXTURE_ANISOTROPY > 0
-    MINFILTER = ANISOTROPIC;
-    MAGFILTER = ANISOTROPIC;
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
-#else
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
-#endif
-
     MIPFILTER = NONE;
     
-    ADDRESSU  = CLAMP;  
+    ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
 
 texture IBLSpecularTexture : MATERIALSPHEREMAP;
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
-    
-#if TEXTURE_ANISOTROPY > 0
-    MINFILTER = ANISOTROPIC;
-    MAGFILTER = ANISOTROPIC;
-    MAXANISOTROPY = TEXTURE_ANISOTROPY;
-#else
+
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
-#endif
-
     MIPFILTER = LINEAR;
     
     ADDRESSU  = CLAMP;

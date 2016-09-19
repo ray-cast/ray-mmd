@@ -51,8 +51,8 @@ sampler SSRLightSampTemp = sampler_state {
 static float thickness = (1.0 + mSSRThickness);
 static float strideZCutoff = 1 / ((1 + mSSRStrideZCutoff * 1000));
 static float fadeEnd = 1.0 - mSSRFadeEnd;
-static float fadeStart = mSSRFadeStart;
-static float fadeDiffRcp = 1.0f / (fadeEnd - fadeStart);
+static float fadeStart = 0.3 + mSSRFadeStart;
+static float fadeDiffRcp = 1.0f / max(0.01, fadeEnd - fadeStart);
 
 bool intersectsDepthBuffer(float z, float minZ, float maxZ)
 {
@@ -117,11 +117,6 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
     startScreenPos += deltaScreenPos * jitter;
     startTexcoord += deltaTexcoord * jitter;
-
-    float rayZMin = viewPosition.z;
-    float rayZMax = viewPosition.z;
-    float rayZMaxEstimate = viewPosition.z;
-    float rayZDepth = rayZMax;
     
     const int numSamples = SSR_SAMPLER_COUNT;
     const float stepSize = 1.0 / numSamples;
@@ -135,20 +130,9 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
-        rayZMin = rayZMaxEstimate;
-        rayZMaxEstimate = rayZMax = projPos.z;
-        rayZDepth = tex2D(OpaqueSamp, projPos.xy).a;
+        float depth = tex2D(OpaqueSamp, projPos.xy).a;
         
-        /*if (rayZMin > rayZMax)
-        {
-            swap(rayZMin, rayZMax);
-        }
-        if (intersectsDepthBuffer(rayZDepth, rayZMin, rayZMax))
-        {
-            break;
-        }*/
-        
-        if (abs(rayZDepth - projPos.z) < intervalSize)
+        if (abs(depth - projPos.z) < intervalSize)
         {
             bestLen = len;
             break;
@@ -165,7 +149,6 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         bestLen = 0;
     }
     
-    // return intersectsDepthBuffer(rayZDepth, rayZMin, rayZMax) * (bestLen > 0 ? 1 : 0);
     return bestLen > 0 ? 1 : 0;
 }
 
@@ -290,7 +273,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
         glossMult *= gloss;
     }
     
-    float maxDistance = viewPosition.z * (1.5 + mSSRFadeDistance);
+    float maxDistance = 500 + 500 * mSSRFadeDistance;
     
     float3 fresnel = EnvironmentSpecularUnreal4(material.normal, V, material.smoothness, material.specular);
 

@@ -179,7 +179,7 @@ float Script : STANDARDSGLOBAL <
 	string ScriptClass  = "scene";
 	string ScriptOrder  = "postprocess";
 > = 0.8;
-#define MIKUMIKUMOVING
+
 technique DeferredLighting<
 	string Script =
     "RenderColorTarget0=;"
