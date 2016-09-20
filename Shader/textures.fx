@@ -214,38 +214,6 @@ sampler ShadowmapSampTemp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
-
-#if SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0
-shared texture2D SSAOMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
-#if SSGI_SAMPLER_COUNT > 0
-    string Format = "A8R8G8B8";
-#else
-    string Format = "R16F";
-#endif
->;
-texture2D SSAOMapTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
-#if SSGI_SAMPLER_COUNT > 0
-    string Format = "A8R8G8B8";
-#else
-    string Format = "R16F";
-#endif
->;
-sampler SSAOMapSamp = sampler_state {
-    texture = <SSAOMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-sampler SSAOMapSampTemp = sampler_state {
-    texture = <SSAOMapTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-#endif
-
 shared texture2D OpaqueMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
@@ -268,37 +236,59 @@ sampler OpaqueSampTemp = sampler_state {
 };
 
 #if HDR_BLOOM_QUALITY > 0
-#if HDR_BLOOM_QUALITY > 2
 texture2D BloomMapX1Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX1 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
->;
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
 #endif
+>;
 texture2D BloomMapX2Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX2 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX3Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX3 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-    string Format = "X8R8G8B8";
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
+    string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
@@ -320,7 +310,6 @@ texture2D BloomMapX5 : RENDERCOLORTARGET <
     int MipLevels = 1;
     string Format = "A2R10G10B10";
 >;
-#if HDR_BLOOM_QUALITY > 2
 sampler2D BloomSampX1Temp = sampler_state {
     texture = <BloomMapX1Temp>;
     MinFilter = Linear;
@@ -337,7 +326,6 @@ sampler2D BloomSampX1 = sampler_state {
     AddressU  = Clamp;
     AddressV = Clamp;
 };
-#endif
 sampler2D BloomSampX2Temp = sampler_state {
     texture = <BloomMapX2Temp>;
     MinFilter = Linear;

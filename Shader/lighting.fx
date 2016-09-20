@@ -13,7 +13,6 @@ float RoughnessToSmoothness(float roughness)
 
 float ShininessToSmoothness(float spec)
 {
-    // http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html
     return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
 }
 
@@ -130,6 +129,33 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3
     return D * F * G;
 }
 
+float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float anisotropic, float3 f0, float NormalizationFactor)
+{
+    float m2 = m * m;
+    float3 H = normalize(V + L);
+    
+    float nh = dot(N, H);
+    float nl = saturate(dot(N, L));
+    float lh = saturate(dot(L, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+
+    float aspect = sqrt(1 - anisotropic * 0.9);
+    float ax = max(0.001, m2 / aspect);
+    float ay = max(0.001, m2 * aspect);
+    float hx = dot(H, ax);
+    float hy = dot(H, ay);
+    float spec = 1 / (ax * ay * pow2(pow2(hx / ax) + pow2(hy / ay) + nh * nh) * NormalizationFactor);
+    
+    float Gv = nl * sqrt((-nv * m2 + nv) * nv + m2);
+    float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
+    spec *= 0.5 / (Gv + Gl);
+
+    float3 f90 = ComputeSpecularMicroOcclusion(f0);
+    float3 fresnel = fresnelSchlick(f0, f90, lh);
+
+    return fresnel * spec;
+}
+
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
 {
     float m2 = m * m;
@@ -156,7 +182,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float Norm
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
 {
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, L, V, roughness, f0, 1.0f) * saturate(dot(N, L));
+    return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
 }
 
 void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxCenter, in float3 envBoxMin, in float3 envBoxMax)

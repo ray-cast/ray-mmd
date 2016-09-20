@@ -173,6 +173,11 @@ float luminance(float3 rgb)
     return dot(rgb, lumfact);
 }
 
+float pow2(float x)
+{
+    return x * x;
+}
+
 const static float3x3 InverseLogLuv = float3x3(
     6.0013,    -2.700,    -1.7995,
     -1.332,    3.1029,    -5.7720,
@@ -187,6 +192,21 @@ float3 DecodeLogLuv(in float4 vLogLuv)
     Xp_Y_XYZp.x = vLogLuv.x * Xp_Y_XYZp.z;
     float3 vRGB = mul(Xp_Y_XYZp, InverseLogLuv);
     return max(vRGB, 0);
+}
+
+float4 EncodeRGBM(float3 color)
+{
+    color.r *= 1.0 / 6.0;
+    color.g *= 1.0 / 6.0;
+    color.b *= 1.0 / 6.0;
+
+    float4 encode;
+    encode.a = min(1.0f, max(0.0f, (max(max(color.r, color.g), max(color.b, 1e-6f)))));
+    encode.a = ceil(encode.a * 255.0) / 255.0;
+    encode.r = color.r / encode.a;
+    encode.g = color.g / encode.a;
+    encode.b = color.b / encode.a;
+    return encode;
 }
 
 float3 DecodeRGBM(in float4 rgbm)

@@ -205,29 +205,23 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
     #endif
 #endif
 
-#if HDR_ENABLE   
+#if HDR_ENABLE
 #if HDR_BLOOM_QUALITY > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
     float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};
     
-#if HDR_BLOOM_QUALITY > 2
     float3 bloom0 = tex2D(BloomSampX1, coord).rgb;
-#endif
-
     float3 bloom1 = BloomFactor(bloomFactors[1]) * tex2D(BloomSampX2, coord).rgb;
     float3 bloom2 = BloomFactor(bloomFactors[2]) * tex2D(BloomSampX3, coord).rgb;
     float3 bloom3 = BloomFactor(bloomFactors[3]) * tex2D(BloomSampX4, coord).rgb;
     float3 bloom4 = BloomFactor(bloomFactors[4]) * tex2D(BloomSampX5, coord).rgb;
     
     float3 bloom = 0.0f;
-#if HDR_BLOOM_QUALITY > 2
     bloom += bloom0;
-#endif 
-
-    bloom += bloom4;
-    bloom += bloom3;
-    bloom += bloom2;
     bloom += bloom1;
+    bloom += bloom2;
+    bloom += bloom3;
+    bloom += bloom4;
     
     color += bloom * bloomIntensity;
 #endif

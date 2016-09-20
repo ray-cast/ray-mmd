@@ -1,4 +1,31 @@
-#if SSAO_SAMPLER_COUNT > 0
+shared texture2D SSAOMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+#if SSGI_SAMPLER_COUNT > 0
+    string Format = "A8R8G8B8";
+#else
+    string Format = "R16F";
+#endif
+>;
+texture2D SSAOMapTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+#if SSGI_SAMPLER_COUNT > 0
+    string Format = "A8R8G8B8";
+#else
+    string Format = "R16F";
+#endif
+>;
+sampler SSAOMapSamp = sampler_state {
+    texture = <SSAOMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler SSAOMapSampTemp = sampler_state {
+    texture = <SSAOMapTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 
 float linearizeDepth(float2 texcoord)
 {
@@ -178,5 +205,3 @@ float4 SSGIBlur(in float2 coord : TEXCOORD0, uniform sampler smp, uniform float2
 
     return float4(total_c.rgb / total_w, 1);
 }
-
-#endif
