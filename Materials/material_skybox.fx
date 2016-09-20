@@ -15,10 +15,7 @@ const float albedoMapLoopNum = 1.0;
 #define ALPHA_ENABLE 1
 #define ALPHA_MAP_ENABLE 0
 #define ALPHA_MAP_IN_TEXTURE 0
-#define ALPHA_MAP_SWIZZLE_R  0
-#define ALPHA_MAP_SWIZZLE_G  0
-#define ALPHA_MAP_SWIZZLE_B  0
-#define ALPHA_MAP_SWIZZLE_A  0
+#define ALPHA_MAP_SWIZZLE  0
 #define ALPHA_MAP_FILE "alpha.png"
 
 const float alpha = 1;
@@ -36,10 +33,7 @@ const float normalMapScale = 1.0;
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TONEMAP 1
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
-#define SMOOTHNESS_MAP_SWIZZLE_R  0
-#define SMOOTHNESS_MAP_SWIZZLE_G  0
-#define SMOOTHNESS_MAP_SWIZZLE_B  0
-#define SMOOTHNESS_MAP_SWIZZLE_A  0
+#define SMOOTHNESS_MAP_SWIZZLE  0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.0;
@@ -48,10 +42,7 @@ const float smoothnessMapLoopNum = 1.0;
 // 金属程度
 #define METALNESS_MAP_ENABLE 0
 #define METALNESS_MAP_IN_TONEMAP 0
-#define METALNESS_MAP_SWIZZLE_R  0
-#define METALNESS_MAP_SWIZZLE_G  1
-#define METALNESS_MAP_SWIZZLE_B  0
-#define METALNESS_MAP_SWIZZLE_A  0
+#define METALNESS_MAP_SWIZZLE  0
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;
@@ -71,10 +62,7 @@ const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_SWIZZLE_R  0
-#define MELANIN_MAP_SWIZZLE_G  0
-#define MELANIN_MAP_SWIZZLE_B  0
-#define MELANIN_MAP_SWIZZLE_A  0
+#define MELANIN_MAP_SWIZZLE  0
 #define MELANIN_MAP_FILE "melanin.png"
 
 const float melanin = 0.0;
@@ -82,9 +70,9 @@ const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0
+#define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
-#define EMISSIVE_MAP_IN_ALBEDO 0 // 使用albedo指定的纹理
 #define EMISSIVE_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define EMISSIVE_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define EMISSIVE_MAP_UV_FLIP 0

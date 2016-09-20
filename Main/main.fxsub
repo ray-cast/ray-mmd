@@ -55,15 +55,14 @@ float4 DrawObjectPS(
     float3 viewdir  : TEXCOORD2,
     float4 texcoord2 : TEXCOORD3) : SV_Target
 {
+    float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
     if (ExistRay)
     {
-        clip(MaterialDiffuse.a - 0.9);
+        clip(albedo.a * MaterialDiffuse.a - 0.9);
         return 0;
     }
     else
-    {        
-        float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
-        
+    {           
         float3 L = normalize(-LightDirection);
         float3 V = normalize(viewdir);
         float3 N = normalize(normal);

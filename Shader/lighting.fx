@@ -109,7 +109,7 @@ float3 TranslucencyBRDF(float3 N, float3 L, float3 V, float smoothness, float3 t
     return diffuse + transmittanceColor * transmittance;
 }
 
-float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3 f0)
+float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, float3 specular)
 {
     float3 H = normalize(L + V);
 
@@ -117,21 +117,21 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float gloss, float3
     float nl = saturate(dot(N, L));
     float lh = saturate(dot(L, H));
 
-    float alpha = exp2(10 * gloss + 1); // 2 - 2048
+    float alpha = exp2(10 * smoothness + 1); // 2 - 2048
     float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2);
 
-    float k = min(1.0f, gloss + 0.545f);
+    float k = min(1.0f, smoothness + 0.545f);
     float G = 1.0 / (k * lh * lh + 1 - k);
 
+    float3 f0 = max(0.04, specular);
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 F = fresnelSchlick(f0, f90, lh);
 
     return D * F * G;
 }
 
-float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float anisotropic, float3 f0, float NormalizationFactor)
+float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float anisotropic, float3 specular, float NormalizationFactor)
 {
-    float m2 = m * m;
     float3 H = normalize(V + L);
     
     float nh = dot(N, H);
@@ -139,26 +139,30 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float anisotropic, fl
     float lh = saturate(dot(L, H));
     float nv = abs(dot(N, V)) + 1e-5h;
 
+    float3 T = cross(N, float3(0, 0, 1));
+    float3 B = cross(T, N);
+
+    float m2 = roughness * roughness;
     float aspect = sqrt(1 - anisotropic * 0.9);
     float ax = max(0.001, m2 / aspect);
     float ay = max(0.001, m2 * aspect);
-    float hx = dot(H, ax);
-    float hy = dot(H, ay);
+    float hx = dot(H, T);
+    float hy = dot(H, B);
     float spec = 1 / (ax * ay * pow2(pow2(hx / ax) + pow2(hy / ay) + nh * nh) * NormalizationFactor);
     
     float Gv = nl * sqrt((-nv * m2 + nv) * nv + m2);
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5 / (Gv + Gl);
 
+    float3 f0 = max(0.04, specular);
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, lh);
 
     return fresnel * spec;
 }
 
-float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float NormalizationFactor)
+float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
 {
-    float m2 = m * m;
     float3 H = normalize(V + L);
 
     float nh = saturate(dot(N, H));
@@ -166,6 +170,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float Norm
     float lh = saturate(dot(L, H));
     float nv = abs(dot(N, V)) + 1e-5h;
 
+    float m2 = roughness * roughness;
     float spec = (nh * m2 - nh) * nh + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
 
@@ -173,6 +178,7 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float Norm
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5h / (Gv + Gl);
 
+    float3 f0 = max(0.04, specular);
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, lh);
 
@@ -182,7 +188,20 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float m, float3 f0, float Norm
 float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
 {
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, L, V, roughness, f0, 1.0f);
+    return SpecularBRDF_GGX(N, L, V, roughness, f0, 1.0f);
+}
+
+float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float anisotropic, float3 f0)
+{
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
+    return SpecularBRDF_GGX(N, L, V, roughness, anisotropic, f0, 1.0f);
+}
+
+float3 KajiyaKayAnisotropic(float3 T, float3 H, float3 f0, float anisotropic)
+{   
+    float th = dot(T, H);
+    float specular = sqrt(max(1.0 - th * th, 0.01));
+    return f0 * pow(specular, anisotropic);
 }
 
 void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxCenter, in float3 envBoxMin, in float3 envBoxMax)
@@ -199,7 +218,7 @@ void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxC
 
 float EnvironmentMip(float gloss, int miplevel)
 {
-    return sqrt(gloss) * miplevel;
+    return lerp(miplevel, 0, sqrt(gloss));
 }
 
 float3 EnvironmentReflect(float3 normal, float3 view)
@@ -288,7 +307,7 @@ float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float glo
     float len = max(length(L),  1e-6);
     float3 L2 = SphereLightDirection(N, V, L, radius);
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness));
+    return SpecularBRDF_GGX(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness));
 }
 
 float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
@@ -338,7 +357,7 @@ float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, fl
     float len = max(length(Lw), 1e-6);
     float3 L2 = Lw / len;
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness));
+    return SpecularBRDF_GGX(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness));
 }
 
 float3 RectangleLightBRDFWithUV(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float gloss, float3 f0, out float2 coord)
@@ -348,15 +367,11 @@ float3 RectangleLightBRDFWithUV(float3 N, float3 V, float3 L, float3 Lt, float3 
     float len = max(length(Lw), 1e-6);
     float3 L2 = Lw / len;
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness));
+    return SpecularBRDF_GGX(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness));
 }
 
 float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{
-    // float3 Ld = P1 - P0;
-    // float t = dot(P - P0, Ld) / dot(Ld, Ld);
-    // float3 d = (P0 + Ld * saturate(t)) - P;
-    
+{   
     float3 Ld = L1 - L0;
     float t = dot(-L0, Ld) / dot(Ld, Ld);
     float3 d = (L0 + Ld * saturate(t));
@@ -379,7 +394,7 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
     return closestPoint + centerToRay * saturate(radius / length(centerToRay));
 }
 
-float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 specular)
+float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 f0)
 {
     float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
     
@@ -388,7 +403,7 @@ float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float L
     
     float roughness = max(SmoothnessToRoughness(smoothness), 0.001);
     float normalizeFactor = SphereNormalization(len, length(float2(LightWidth, LightRadius)), roughness);    
-    return SpecularBRDF(N, L2, V, roughness, specular, normalizeFactor);
+    return SpecularBRDF_GGX(N, L2, V, roughness, f0, normalizeFactor);
 }
 
 float TubeLightAttenuation(float3 N, float3 L0, float3 L1, float3 P)
