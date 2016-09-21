@@ -130,13 +130,20 @@ float mSSRFadeEnd  <string UIName = "FadeEnd"; string UIWidget = "Slider"; bool 
 float mSSRFadeDistance  <string UIName = "FadeDistance"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 #endif
 
+float3  LightDiffuse    : DIFFUSE   < string Object = "Light"; >;
+float3  LightSpecular   : SPECULAR  < string Object = "Light"; >;
+float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+
 #include "shader/math.fx"
 #include "shader/common.fx"
 #include "shader/textures.fx"
 #include "shader/gbuffer.fx"
 #include "shader/lighting.fx"
-#include "shadow/shadowmap.fxsub"
 #include "shader/fimic.fx"
+
+#if SHADOW_QUALITY > 0
+#   include "shader/shadowmap.fx"
+#endif
 
 #if SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0
 #   include "shader/ssao.fx"

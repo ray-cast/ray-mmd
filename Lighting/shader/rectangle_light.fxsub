@@ -19,8 +19,6 @@ float3 mDirection : CONTROLOBJECT < string name=RECTANGLELIGHT_CONTROLLER; strin
 float3 mRightTop : CONTROLOBJECT < string name=RECTANGLELIGHT_CONTROLLER; string item = "RightTop"; >;
 float3 mRightBottom : CONTROLOBJECT < string name=RECTANGLELIGHT_CONTROLLER; string item = "RightBottom"; >;
 
-float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
-
 static float LightRange = (1 + mRangeP * RECTANGLELIGHT_MAX_RADIUS);
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
@@ -150,7 +148,7 @@ float4 RectangleLightingPS(in float4 texcoord : TEXCOORD0) : SV_Target
 
         lighting.rgb = diffuse + specular;
         lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
-        lighting.rgb *= GetPhysicalLightAttenuation(Lw, LightRange, 1 - mBlubP);
+        lighting.rgb *= GetPhysicalLightAttenuation(Lw, LightRange);
     #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
         lighting.rgb *= RectangleAttenuation(Lw, LightDirection, PI / 2, LightRange);
     #endif

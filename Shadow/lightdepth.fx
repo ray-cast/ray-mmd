@@ -1,9 +1,18 @@
-#include "shadowcommon.fxsub"
+#include "../ray.conf"
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+#include "../shader/shadowcommon.fx"
 
-texture ObjectTexture: MATERIALTEXTURE;
-sampler ObjTexSampler = sampler_state
+float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
+static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightView);
+static float4x4 matLightWorldViewProject = mul(mul(matWorld, matLightView), matLightProject);
+static float4x4 lightParam = CreateLightProjParameters(matLightProjectionToCameraView);
+
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseSamp = sampler_state
 {
-    texture = <ObjectTexture>;
+    texture = <DiffuseMap>;
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
@@ -18,7 +27,7 @@ struct DrawObject_OUTPUT {
     float4 PPos     : TEXCOORD2;
 };
 
-DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float3 Normal : NORMAL, float2 Tex : TEXCOORD0, uniform int cascadeIndex)
+DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float2 Tex : TEXCOORD0, uniform int cascadeIndex)
 {
     DrawObject_OUTPUT Out;
     Out.Pos = mul(Pos, matLightWorldViewProject);
@@ -42,8 +51,6 @@ DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float3 Normal : NORMAL, f
 
     Out.Pos.xy = Out.Pos.xy * lightParam[cascadeIndex].xy + lightParam[cascadeIndex].zw;
     Out.Pos.xy = Out.Pos.xy * 0.5 + (Out.Tex2 * 0.5f);
-
-    // depth clamping
     Out.Pos.z = max(Out.Pos.z, LightZMin / LightZMax);
 
     Out.PPos = Out.Pos;
@@ -61,11 +68,10 @@ float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform int cascadeIndex, uniform boo
 
     float alpha = MaterialDiffuse.a;
     alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
-    if ( useTexture ) alpha *= tex2D( ObjTexSampler, IN.Tex.xy ).a;
+    if ( useTexture ) alpha *= tex2D( DiffuseSamp, IN.Tex.xy ).a;
     clip(alpha - CasterAlphaThreshold);
 
-    float z = IN.PPos.z;
-    return z;
+    return IN.PPos.z;
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

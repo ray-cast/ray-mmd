@@ -1,9 +1,10 @@
 #include "../../ray.conf"
-#include "../../shader/math.fx"
 #include "../../shader/common.fx"
+#include "../../shader/math.fx"
 #include "../../shader/gbuffer.fx"
 #include "../../shader/gbuffer_sampler.fx"
 #include "../../shader/lighting.fx"
+#include "../../shader/shadowcommon.fx"
 
 float mR : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "R+"; >;
 float mG : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "G+"; >;
@@ -14,75 +15,142 @@ float mIntensityM : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string ite
 float3 mPosition : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Direction"; >;
 
-float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
-
 static float LightRange = 1 + mRangeP * SPOTLIGHT_MAX_RADIUS;
-static float LightSpotAngle = 1 - mAngleM;
 static float LightIntensity = (1 - mIntensityM) * SPOTLIGHT_MAX_INTENSITY;
+static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+static float3 LightDirection = normalize(mDirection - mPosition);
+static float3 LightPosition = mPosition;
+static float3 viewLightPosition = mul(float4(mPosition, 1), matView).xyz;
+static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+
+#if SHADOW_QUALITY == 0
+#   define SHADOWMAP_SIZE 512
+#elif SHADOW_QUALITY == 1
+#   define SHADOWMAP_SIZE 1024
+#elif SHADOW_QUALITY == 2
+#   define SHADOWMAP_SIZE 2048
+#else
+#   define SHADOWMAP_SIZE 512
+#endif
+
+#if SHADOWMAP_ENABLE
+texture ShadowMap: OFFSCREENRENDERTARGET <
+    string Description = "Shadow Rendering";
+    int Width = SHADOWMAP_SIZE;
+    int Height = SHADOWMAP_SIZE;
+    string Format = "R32F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect = 
+        "self = hide;"
+        "skybox*.pmx = hide;"
+        "*.pmx = shadowmap.fx;"
+        "*.pmd = shadowmap.fx;"
+        "* = hide";
+>;
+sampler ShadowMapSamp = sampler_state {
+    texture = <ShadowMap>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = LINEAR;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+
+static float2 ShadowmapOffset  = float2(0.5 / SHADOWMAP_SIZE, 0.5 / SHADOWMAP_SIZE);
+static float2 ShadowmapOffset2 = float2(1.0 / SHADOWMAP_SIZE, 1.0 / SHADOWMAP_SIZE);
+
+float ShadowMapFilter(float3 viewPosition, int samples) 
+{
+    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
+    float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, LightPosition));
+    float4 proj = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, shadowPosition);
+    
+    proj.xy = PosToCoord(proj.xy / proj.w);
+    proj.xy += ShadowmapOffset;
+    proj.z = exp(-proj.z);
+
+#if SHADOWMAP_SOFT_SHADOW
+    float shadow = 0.0;
+    float offset = (samples - 1.0) / 2.0;
+
+    for (float x = -offset; x <= offset; x += 1.0) 
+    {
+        for (float y = -offset; y <= offset; y += 1.0) 
+        {
+            float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
+            shadow += tex2D(ShadowMapSamp, pos).r * proj.z;
+        }
+    }
+    
+    shadow /= samples * samples;
+    return saturate(shadow);
+#else
+    float shadow = tex2D(ShadowMapSamp, proj.xy).r * proj.z;
+    return saturate(shadow);
+#endif    
+}
+#endif
 
 void SpotLightingVS(
     in float4 Position : POSITION,
-    in float3 Normal   : NORMAL,
-    in float2 Texcoord : TEXCOORD0,
-    out float4 oTexcoord  : TEXCOORD0,
-    out float4 oTexcoord2 : TEXCOORD1,
-    out float4 oPosition  : SV_Position)
+    out float4 oTexcoord0 : TEXCOORD0,
+    out float4 oTexcoord1 : TEXCOORD1,
+    out float4 oPosition  : POSITION)
 {
     if (length(Position.xyz - mPosition) > 0.1)
     {
         Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1 + LightSpotAngle), LightSpotAngle);
     }
     
-    Position.xyz = mPosition + (Position.xyz - mPosition) * LightRange;
+    Position.xyz = mPosition + (Position.xyz - mPosition) * LightRange / 2;
     
-    oTexcoord = Texcoord.xyxy;
-    oTexcoord2 = oPosition = mul(Position, matViewProject);
+    oTexcoord0 = oPosition = mul(Position, matViewProject);
+    oTexcoord1 = -mul(Position, matView);
 }
 
-float3 GetPosition(float2 uv)
+float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : SV_Target
 {
-    float depth = tex2D(Gbuffer4Map, uv).r;
-    return ReconstructPos(uv, matProjectInverse, depth);
-}
+    float2 coord = texcoord.xy / texcoord.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
 
-float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float4 texcoord2 : TEXCOORD1) : SV_Target
-{
-    float2 texCoord = texcoord2.xy / texcoord2.w;
-    texCoord = PosToCoord(texCoord);
-    texCoord += ViewportOffset;
-
-    float4 MRT0 = tex2D(Gbuffer1Map, texCoord);
-    float4 MRT1 = tex2D(Gbuffer2Map, texCoord);
-    float4 MRT2 = tex2D(Gbuffer3Map, texCoord);
+    float4 MRT0 = tex2D(Gbuffer1Map, coord);
+    float4 MRT1 = tex2D(Gbuffer2Map, coord);
+    float4 MRT2 = tex2D(Gbuffer3Map, coord);
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
-
-    float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
-    float3 LightDirection = normalize(mul(mDirection - mPosition, (float3x3)matView));
     
-    float3 P = GetPosition(texCoord);
-    float3 V = normalize(-P);
-    float3 L = normalize(LightPosition - P);    
-
+    float3 V = normalize(viewdir);
+    float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
+    float3 L = viewLightPosition - P;
+    float3 L2 = normalize(L);
+    
+    float vis = saturate(dot(material.normal, L2));
+    vis *= GetSpotLightAttenuation(L, viewLightDirection, cos(LightSpotAngle), 2, LightRange);
+    if (vis <= 0)
+    {
+        clip(-1);
+    }
+    
     float4 lighting = 0.0f;
     
-    float vis = saturate(dot(material.normal, L));
-    if (vis > 0)
-    {
-        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-            lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
-        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-            lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
-        
-        lighting.rgb *= material.albedo;
-        lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
-        lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
-        lighting.rgb *= GetSpotAttenuation(P, LightPosition, LightDirection, LightSpotAngle, LightRange);
-        lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);   
-    }
-
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+    
+    lighting.rgb *= material.albedo;
+    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    
+#if SHADOWMAP_ENABLE
+    return lighting * ShadowMapFilter(P, 8);
+#else
     return lighting;
+#endif
 }
 
 #define OBJECT_TEC(name, mmdpass) \
@@ -97,7 +165,6 @@ float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float4 texcoord2 : TEXCOORD1)
             PixelShader  = compile ps_3_0 SpotLightingPS(); \
         } \
     }
-
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

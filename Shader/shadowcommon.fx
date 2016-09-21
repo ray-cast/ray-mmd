@@ -1,7 +1,3 @@
-#include "../ray.conf"
-#include "../shader/common.fx"
-#include "../shader/math.fx"
-
 const float CascadeZMax = 2000;
 const float CascadeZMin = 5;
 
@@ -13,10 +9,10 @@ const float CascadeScale = 0.5;
 const float CasterAlphaThreshold = 0.8;
 const float RecieverAlphaThreshold = 0.01;
 
-#define BIAS_SCALE      0.005
+const float LightPlaneNear = 0.1;
+const float LightPlaneFar = 500.0;
 
-#define ENABLE_DOUBLE_SIDE_SHADOW   0
-#define ENABLE_HARD_SHADOW          0
+#define BIAS_SCALE 0.005
 
 #if SHADOW_QUALITY < 2
 #define SHADOW_MAP_SIZE 2048
@@ -29,15 +25,47 @@ const float RecieverAlphaThreshold = 0.01;
 #define WARP_RANGE  8
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
+float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
+{
+   float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
+   float3 up;
+
+   if (any(right))
+   {
+       right = normalize(right);
+       up = cross(forward, right);
+   }
+   else
+   {
+       right = float3(1.0f, 0.0f, 0.0f);
+       up = float3(0.0f, 0.0f, -sign(forward.y));
+   }
+
+   float3x3 rotation = { right.x, up.x, forward.x,
+                         right.y, up.y, forward.y,
+                         right.z, up.z, forward.z };
+
+   return float4x4( rotation[0],  0,
+                    rotation[1],  0,
+                    rotation[2],  0,
+                   -mul(LightPosition, rotation), 1);
+};
+
+float4 CalcLightProjPos(float fov, float znear, float zfar, float4 P)
+{
+    float h = 1.0 / tan(fov);
+    float zp = zfar * (P.z - znear) / (zfar - znear);
+    return float4(h * P.x, h * P.y, zp, P.z);
+}
+
 float4x4 CreateLightViewMatrix(float3 foward)
 {
-    const float3 up1 = float3(0,0,1);
-    const float3 up2 = float3(1,0,0);
+    const float3 up1 = float3(0, 0, 1);
+    const float3 up2 = float3(1, 0, 0);
 #if 0
     float3 right = cross(up1, foward);
     right = normalize(!any(right) ? cross(up2, foward) : right);
 #else
-    // カメラ方向に合わせる
     float3 camDir = CameraDirection;
     float3 right = cross(camDir, foward);
     right = !any(right) ? cross(up1, foward) : right;
@@ -46,15 +74,13 @@ float4x4 CreateLightViewMatrix(float3 foward)
 #endif
 
     float3x3 mat;
-    mat[2].xyz = foward;
     mat[0].xyz = right;
+    mat[2].xyz = foward;
     mat[1].xyz = normalize(cross(foward, right));
 
     float3x3 matRot = transpose((float3x3)mat);
 
-    float3 pos = floor(CameraPosition) // 平行移動でのうねりを軽減
-        // + CameraDirection * (CascadeZMax * 0.025)
-        - foward * LightDistance;
+    float3 pos = floor(CameraPosition) - foward * LightDistance;
 
     return float4x4(
         matRot[0], 0,
@@ -69,10 +95,6 @@ static float4x4 matLightProject = {
     0,  0,  1.0 / LightZMax,    0,
     0,  0,  0,  1
 };
-
-static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
-static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightView);
-static float4x4 matLightWorldViewProject = mul(mul(matWorld, matLightView), matLightProject);
 
 float CalculateSplitPosition(float i)
 {
@@ -90,7 +112,7 @@ float4 CreateFrustumFromProjection()
     return float4(r.x / r.z, l.x / l.z, t.y / t.z, b.y / b.z);
 }
 
-float4 CreateLightProjParameter(float4 frustumInfo, float near, float far)
+float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 frustumInfo, float near, float far)
 {
     float4 znear = float4(near.xxx, 1);
     float4 zfar = float4(far.xxx, 1);
@@ -104,7 +126,7 @@ float4 CreateLightProjParameter(float4 frustumInfo, float near, float far)
     float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
 
     float4 orthographicBB = float4( 9999, 9999, -9999,-9999);
-        // = (Min.x, Min.y, Max.x, Max.y)
+
     float2 vpos;
     #define CalcMinMax(inV) \
         vpos = mul(inV, matLightProjectionToCameraView).xy; \
@@ -125,7 +147,7 @@ float4 CreateLightProjParameter(float4 frustumInfo, float near, float far)
     return float4(2.0, 2.0, endPos.xy) * invBB.xyxy;
 }
 
-float4x4 CreateLightProjParameters()
+float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 {
     float4 frustumInfo = CreateFrustumFromProjection();
 
@@ -136,10 +158,8 @@ float4x4 CreateLightProjParameters()
     float z4 = CascadeZMax;
 
     return float4x4(
-        CreateLightProjParameter(frustumInfo, z0, z1),
-        CreateLightProjParameter(frustumInfo, z1, z2),
-        CreateLightProjParameter(frustumInfo, z2, z3),
-        CreateLightProjParameter(frustumInfo, z3, z4));
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z0, z1),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
 }
-
-static float4x4 lightParam = CreateLightProjParameters();

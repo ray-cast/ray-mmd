@@ -76,7 +76,7 @@ float4 TubeLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
             lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
         
         lighting.rgb *= material.albedo;
-        lighting.rgb *= GetPhysicalLightAttenuation(L, LightRange, 1 - mBlubP);
+        lighting.rgb *= GetPhysicalLightAttenuation(L, LightRange);
         lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular) * vis;
         lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     }

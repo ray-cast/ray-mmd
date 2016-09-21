@@ -12,8 +12,6 @@ float mRadiusP : CONTROLOBJECT < string name=POINTLIGHT_CONTROLLER; string item 
 float mIntensityM : CONTROLOBJECT < string name=POINTLIGHT_CONTROLLER; string item = "Intensity-"; >;
 float3 mPosition : CONTROLOBJECT < string name=POINTLIGHT_CONTROLLER; string item = "Position"; >;
 
-float mBlubP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Blub"; >;
-
 static float LightRange = (1 + mRadiusP * POINTLIGHT_MAX_RADIUS);
 static float LightIntensity = (1 - mIntensityM) * POINTLIGHT_MAX_INTENSITY;
 static float3 LightPosition = mul(float4(mPosition, 1), matView).xyz;
@@ -50,22 +48,23 @@ float4 PointLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
 
     float3 P = GetPosition(coord);
     float3 V = normalize(-P);
-    float3 L = normalize(LightPosition - P);
+    float3 L = LightPosition - P;
+    float3 L2 = normalize(L);
 
     float4 lighting = 0.0f;
     
-    float vis = saturate(dot(material.normal, L));
+    float vis = saturate(dot(material.normal, L2));
     if (vis > 0)
     {
         if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-            lighting.rgb = DiffuseBRDF(material.normal, L, V, material.smoothness);
+            lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
         else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-            lighting.rgb = TranslucencyBRDF(material.normal, L, material.transmittance);
+            lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
         
         lighting.rgb *= material.albedo;
-        lighting.rgb += SpecularBRDF(material.normal, L, V, material.smoothness, material.specular);
+        lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
         lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
-        lighting *= GetPhysicalLightAttenuation(LightPosition, P, LightRange, 1 - mBlubP);
+        lighting *= GetPointLightAttenuation(L, LightRange);
     }
     
     return lighting;

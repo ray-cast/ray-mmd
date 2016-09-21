@@ -159,7 +159,6 @@ float4 SSGI(in float2 coord : TEXCOORD0) : COLOR
                 
                 sampleIndirect.rgb += material.emissive.rgb * tex2D(Gbuffer1Map, coord).rgb * bloomIntensity;
                 sampleIndirect.rgb += tex2D(ScnSamp, sampleOffset).rgb * occlustion / SSAO_SAMPLER_COUNT;
-                sampleIndirect *= attenuationTerm(samplePosition, viewPosition, float3(1, 0.5, 0.0));
                 
                 sampleWeight += 1.0;
             }

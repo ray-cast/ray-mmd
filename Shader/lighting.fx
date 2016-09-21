@@ -250,41 +250,40 @@ float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float gloss, float3 specul
     return specular * AB.x + AB.y;
 }
 
-float attenuationTerm(float3 lightPosition, float3 P, float3 atten)
+float GetPhysicalSmoothDistanceAtt(float squaredDistance, float invSqrAttRadius)
 {
-    float3 v = lightPosition - P;
-    float d2 = dot(v, v);
-    float d = sqrt(d2);
-    return 1.0 / (dot(atten, float3(1, d, d2)));
+    float factor = squaredDistance * invSqrAttRadius;
+    float smoothFactor = saturate(1.0f - factor * factor);
+    return smoothFactor * smoothFactor;
 }
 
-float GetPhysicalLightAttenuation(float3 lightPosition, float3 P, float radius, float attenuationBulbSize)
+float GetPhysicalLightAttenuation(float3 L, float radius)
 {
-    float invRadius = 1 / radius;    
-    float d = distance(lightPosition, P);
-    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2));
-    float denom = 1 + max(d - attenuationBulbSize, 0) / attenuationBulbSize;
-    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);    
+    float invRadius = 1 / (radius * radius);
+    float sqrDist = dot(L, L);
+    float attenuation = 1.0 / (max(sqrDist, 1e-6));
+    return attenuation *= GetPhysicalSmoothDistanceAtt(sqrDist, invRadius);
+}
+
+float GetPointLightAttenuation(float3 L, float radius)
+{
+    float attenuation = GetPhysicalLightAttenuation(L, radius);
     return attenuation;
 }
 
-float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, float scale, float radius)
 {
-    float invRadius = 1 / radius;    
-    float d = length(L);
-    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2));
-    float denom = 1 + max(d - attenuationBulbSize, 0) / attenuationBulbSize;
-    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);    
-    return attenuation;
-}
-
-float GetSpotAttenuation(float3 P, float3 lightPosition, float3 lightDirection, float angle, float radius)
-{
-    float3 v = normalize(P - lightPosition);
-    float spotAngle = saturate(dot(v, lightDirection));   
-    float spotFalloff = cos(angle) / (spotAngle + 1e-6);
-    float spotAttenuation = 1.0h - pow(saturate(spotFalloff), radius);
-    return spotAttenuation;
+    float3 L2 = normalize(L);
+    
+    float spotAngle = dot(L2, -lightDirection);
+    
+    float lightAngleScale = 1.0f / max(0.001f, angle);
+    float lightAngleOffset = angle * scale;
+    
+    float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset); 
+    attenuation *= attenuation;
+    
+    return attenuation * GetPhysicalLightAttenuation(L, radius);
 }
 
 float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)

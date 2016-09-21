@@ -5,6 +5,9 @@
 #include "../shader/gbuffer_sampler.fx"
 #include "../shader/lighting.fx"
 
+float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+float3  LightSpecular   : SPECULAR  < string Object = "Light"; >;
+
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
 texture ObjectTexture: MATERIALTEXTURE;

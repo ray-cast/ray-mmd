@@ -1,14 +1,24 @@
-#include "shadowcommon.fxsub"
+#include "../ray.conf"
+#include "../shader/math.fx"
+#include "../shader/common.fx"
+#include "../shader/shadowcommon.fx"
 
-texture ObjectTexture: MATERIALTEXTURE;
-sampler ObjTexSampler = sampler_state {
-	texture = <ObjectTexture>;
+#define TEX2D(samp, uv)		tex2D(samp, uv)
+#define CalcLight(casterDepth, receiverDepth, rate)	(1.0 - saturate(max(receiverDepth - casterDepth, 0) * rate))
+float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
+static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightView);
+static float4x4 matLightWorldViewProject = mul(mul(matWorld, matLightView), matLightProject);
+static float4x4 lightParam = CreateLightProjParameters(matLightProjectionToCameraView);
+
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
 	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = LINEAR;
 	ADDRESSU  = WRAP;	ADDRESSV  = WRAP;
 };
 
 shared texture LightMap : OFFSCREENRENDERTARGET;
-
 sampler LightSamp = sampler_state {
 	texture = <LightMap>;
 	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = LINEAR;
@@ -28,20 +38,17 @@ inline float4 CalcCascadePPos(float2 uv, float2 offset, float index)
 	return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
 }
 
-#define TEX2D(samp, uv)		tex2D(samp, uv)
-#define CalcLight(casterDepth, receiverDepth, rate)	(1.0 - saturate(max(receiverDepth - casterDepth, 0) * rate))
-
 struct DrawObjectNoShadow_OUTPUT {
-	float4 Pos	  : POSITION;
-	float3 Tex	  : TEXCOORD0;
+	float4 Pos : POSITION;
+	float3 Tex : TEXCOORD0;
 };
 
 DrawObjectNoShadow_OUTPUT DrawObjectNoShadow_VS(float4 Pos : POSITION, float3 Normal : NORMAL, float2 Tex : TEXCOORD0, uniform bool useTexture)
 {
 	DrawObjectNoShadow_OUTPUT Out = (DrawObjectNoShadow_OUTPUT)0;
-	Out.Pos = mul( Pos, matWorldViewProject );
+	Out.Pos = mul(Pos, matWorldViewProject);
 	Out.Tex.xy = Tex.xy;
-	Out.Tex.z = mul(Pos, matWorldView).z;
+	Out.Tex.z = Out.Pos.w;
 	return Out;
 }
 
@@ -50,7 +57,7 @@ float4 DrawObjectNoShadow_PS(DrawObjectNoShadow_OUTPUT IN, uniform bool useTextu
 	clip( !opadd - 0.001f );
 	float alpha = MaterialDiffuse.a;
 	alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
-	if ( useTexture ) alpha *= tex2D( ObjTexSampler, IN.Tex.xy ).a;
+	if ( useTexture ) alpha *= tex2D( DiffuseMapSamp, IN.Tex.xy ).a;
 	clip(alpha - RecieverAlphaThreshold);
 	float distanceFromCamera = IN.Tex.z;
 	return float4(1, 0.0, distanceFromCamera, alpha);
@@ -96,7 +103,7 @@ DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float3 Normal : NORMAL, f
 float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 {
 	float alpha = MaterialDiffuse.a;
-	if ( useTexture ) alpha *= tex2D( ObjTexSampler, IN.Tex.xy ).a;
+	if ( useTexture ) alpha *= tex2D( DiffuseMapSamp, IN.Tex.xy ).a;
 	clip(alpha - RecieverAlphaThreshold);
 
 	float distanceFromCamera = IN.Tex.z;
@@ -184,7 +191,6 @@ OBJECT_NO_SHADOW_TEC(MainTec3, "object", true)
 
 OBJECT_TEC(MainTecBS2, "object_ss", false)
 OBJECT_TEC(MainTecBS3, "object_ss", true)
-
 
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}

@@ -14,7 +14,7 @@ sampler ScnSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-texture LightingMap: OFFSCREENRENDERTARGET <
+shared texture LightingMap: OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
     float4 ClearColor = { 0, 0, 0, 0 };

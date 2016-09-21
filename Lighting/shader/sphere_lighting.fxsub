@@ -69,7 +69,7 @@ float4 SphereLightingPS(in float4 texcoord : TEXCOORD0) : COLOR0
         lighting.rgb *= material.albedo;
         lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightRange, material.smoothness, material.specular);
         lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
-        lighting *= GetPhysicalLightAttenuation(L - L2 * LightRange, LightRange2, 1 - mBlubP);   
+        lighting *= GetPhysicalLightAttenuation(L - L2 * LightRange, LightRange2);   
     }
 
     return lighting;

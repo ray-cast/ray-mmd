@@ -111,20 +111,21 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
     result += materialAlpha.emissive * showEmissiveAlpha;
-        
+
     result = linear2srgb(result);
-    
+
     result += alphaDiffuse * showAlpha;
     result += pow(tex2D(Gbuffer4Map, coord).r / 200, 0.5) * showDepth;
     result += pow(tex2D(Gbuffer8Map, coord).r / 200, 0.5) * showDepthAlpha;
+
     #if SSAO_SAMPLER_COUNT > 0
         result += tex2D(SSAOMapSamp, coord).r * showSSAO;
     #endif
-    
+
     #if SSR_QUALITY > 0
         result += tex2D(SSRayTracingSamp, coord).rgb * showSSR;
     #endif
-    
+
     return float4(result, 1);
 }
 

@@ -1,5 +1,3 @@
-#if SHADOW_QUALITY > 0
-
 #if SHADOW_QUALITY == 1
 #   define SHADOW_MAP_SIZE 1024
 #elif SHADOW_QUALITY == 2
@@ -94,12 +92,9 @@ void ShadowMappingVS(
     oTexcoord = Texcoord + ViewportOffset.xyxy;
 }
 
-float4 ShadowMappingPS( float4 Tex : TEXCOORD0, uniform sampler2D smp, uniform float2 direction) : COLOR
+float4 ShadowMappingPS(float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR
 {
-    float2 texCoord = Tex.xy;
-    float2 offset = direction;
-
-    float3 center = tex2D(smp, texCoord).xyz;
+    float3 center = tex2D(source, coord).xyz;
     float centerDepth = center.z;
     float depthRate = 100.0 / centerDepth;
 
@@ -109,8 +104,8 @@ float4 ShadowMappingPS( float4 Tex : TEXCOORD0, uniform sampler2D smp, uniform f
     for(int i = 1; i < NUM_SHADOW_BLUR; i++)
     {
         float3 shadowDepthP, shadowDepthN;
-        shadowDepthP = tex2D(smp, texCoord + offset * i).xyz;
-        shadowDepthN = tex2D(smp, texCoord - offset * i).xyz;
+        shadowDepthP = tex2D(source, coord + offset * i).xyz;
+        shadowDepthN = tex2D(source, coord - offset * i).xyz;
         float wp = CalcShadowBlurWeight(shadowDepthP.z, centerDepth, depthRate);
         float wn = CalcShadowBlurWeight(shadowDepthN.z, centerDepth, depthRate);
         float w = BlurWeight[i * SHADOW_WEIGHT];
@@ -119,5 +114,3 @@ float4 ShadowMappingPS( float4 Tex : TEXCOORD0, uniform sampler2D smp, uniform f
 
     return float4(sum.xy / sum.z, centerDepth, 1);
 }
-
-#endif
