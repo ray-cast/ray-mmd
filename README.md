@@ -50,18 +50,18 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
 ##### 3.0 材质介绍 :
-    * Albedo的反照率(物体的贴图色)
-    　　* 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
-        * 默认albedoMap是启用贴图的,且贴图来至PMX模型的纹理  
-        [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
-        * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
-        * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文)  
-        [![link text](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)
-        * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1(点播放才会动)
-        * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
-        [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
-        * ALBEDO_MAP_APPLY_COLOR可以将自定义颜色乘到贴图上，对应ALBEDO_MAP_APPLY_DIFFUSE是PMX文件里的扩散色  
-        [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
+* Albedo的反照率(物体的贴图色)  
+　　* 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
+    * 默认albedoMap是启用贴图的,且贴图来至PMX模型的纹理  
+    [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
+    * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
+    * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文)  
+    [![link text](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)
+    * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1(点播放才会动)
+    * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
+    [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
+    * ALBEDO_MAP_APPLY_COLOR可以将自定义颜色乘到贴图上，对应ALBEDO_MAP_APPLY_DIFFUSE是PMX文件里的扩散色  
+    [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
 ###### 3.2 纹理
 * 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
     
