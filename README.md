@@ -50,8 +50,8 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
 ##### 3.0 材质介绍 :
-* Albedo的反照率(物体的贴图色)  
-　　* 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
+* Albedo的反照率(物体的贴图色)
+    * 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
     * 默认albedoMap是启用贴图的,且贴图来至PMX模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
     * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
