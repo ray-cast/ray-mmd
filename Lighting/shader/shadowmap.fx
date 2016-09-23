@@ -44,7 +44,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, 
     if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
     clip(alpha - CasterAlphaThreshold);
 
-    return exp(position.z);
+    return exp(position.z * 0.5);
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

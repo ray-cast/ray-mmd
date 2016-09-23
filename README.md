@@ -205,10 +205,11 @@ Ray-MMD
 * 分次拖拽它们到RGBMencode 依次输出对应的文件
 * 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
 [![link text](https://github.com/ray-cast/images/raw/master/6.5.png)](https://github.com/ray-cast/images/raw/master/6.5.png)
-* 这里提供一个天空盒的地址
+* 这里提供一些天空盒的地址
 
 ```
     http://www.hdrlabs.com/sibl/archive.html
+    https://aokcub.net/cg/incskies/
 ```
 
 ##### 7.0 全局设置 (ray_controller.pmx):
@@ -290,3 +291,4 @@ Ray-MMD
 * [Convert Blinn-Phong to Beckmann distribution](http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html)
 * [Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel](https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/)
 * [Physically Based Area Lights](http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf)
+* [Horizon Occlusion for Normal Mapped Reflections](http://marmosetco.tumblr.com/post/81245981087)

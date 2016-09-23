@@ -45,10 +45,10 @@ float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
                          right.y, up.y, forward.y,
                          right.z, up.z, forward.z };
 
-   return float4x4( rotation[0],  0,
-                    rotation[1],  0,
-                    rotation[2],  0,
-                   -mul(LightPosition, rotation), 1);
+   return float4x4(rotation[0], 0,
+                   rotation[1], 0,
+                   rotation[2], 0,
+                   mul(-LightPosition, rotation), 1);
 };
 
 float4 CalcLightProjPos(float fov, float znear, float zfar, float4 P)
@@ -58,35 +58,28 @@ float4 CalcLightProjPos(float fov, float znear, float zfar, float4 P)
     return float4(h * P.x, h * P.y, zp, P.z);
 }
 
-float4x4 CreateLightViewMatrix(float3 foward)
+float4x4 CreateLightViewMatrix(float3 forward)
 {
     const float3 up1 = float3(0, 0, 1);
     const float3 up2 = float3(1, 0, 0);
-#if 0
-    float3 right = cross(up1, foward);
-    right = normalize(!any(right) ? cross(up2, foward) : right);
-#else
-    float3 camDir = CameraDirection;
-    float3 right = cross(camDir, foward);
-    right = !any(right) ? cross(up1, foward) : right;
-    right = !any(right) ? cross(up2, foward) : right;
+
+    float3 right = cross(CameraDirection, forward);
+    right = !any(right) ? cross(up1, forward) : right;
+    right = !any(right) ? cross(up2, forward) : right;
     right = normalize(right);
-#endif
 
-    float3x3 mat;
-    mat[0].xyz = right;
-    mat[2].xyz = foward;
-    mat[1].xyz = normalize(cross(foward, right));
+    float3 up = cross(forward, right);
+    
+    float3x3 rotation = { right.x, up.x, forward.x,
+                          right.y, up.y, forward.y,
+                          right.z, up.z, forward.z };
 
-    float3x3 matRot = transpose((float3x3)mat);
+    float3 pos = floor(CameraPosition) - forward * LightDistance;
 
-    float3 pos = floor(CameraPosition) - foward * LightDistance;
-
-    return float4x4(
-        matRot[0], 0,
-        matRot[1], 0,
-        matRot[2], 0,
-        mul(-pos, matRot), 1);
+    return float4x4(rotation[0], 0,
+                    rotation[1], 0,
+                    rotation[2], 0,
+                    mul(-pos, rotation), 1);
 }
 
 static float4x4 matLightProject = {
@@ -125,7 +118,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
     float4 rbn = float4(rtn.x, lbn.yzw), rbf = float4(rtf.x, lbf.yzw);
     float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
 
-    float4 orthographicBB = float4( 9999, 9999, -9999,-9999);
+    float4 orthographicBB = float4(9999, 9999, -9999,-9999);
 
     float2 vpos;
     #define CalcMinMax(inV) \
@@ -162,4 +155,39 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
+}
+
+float ChebyshevUpperBound(float depth, float2 moments)
+{
+    float p = (depth <= moments.x);
+    
+    float variance = moments.y - (moments.x * moments.x);
+    variance = max(0.0002f, variance);
+    
+    float d = depth - moments.x;
+    float p_max = variance / (variance + d * d);
+    
+    return max(p, p_max);
+}
+
+float2 ComputeMoments(float depth)
+{   
+    float dx = ddx(depth);
+    float dy = ddy(depth);
+
+    float2 moments;
+    moments.x = depth;   
+    moments.x = depth * depth + 0.25 *(dx * dx + dy * dy);
+
+    return moments;
+}
+
+float linstep(float min, float max, float v)
+{
+    return saturate((v - min) / (max - min));
+}
+
+float ReduceLightBlending(float p_max, float amount)
+{
+    return linstep(amount, 1, p_max);
 }

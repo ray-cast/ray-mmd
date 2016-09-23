@@ -3,104 +3,79 @@
 #include "../shader/common.fx"
 #include "../shader/shadowcommon.fx"
 
-float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+float3 LightDirection : DIRECTION < string Object = "Light"; >;
 static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
 static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightView);
-static float4x4 matLightWorldViewProject = mul(mul(matWorld, matLightView), matLightProject);
+static float4x4 matLightWorldViewProject = mul(matLightView, matLightProject);
 static float4x4 lightParam = CreateLightProjParameters(matLightProjectionToCameraView);
 
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseSamp = sampler_state
 {
     texture = <DiffuseMap>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MIPFILTER = LINEAR;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+    ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
 
-struct DrawObject_OUTPUT {
-    float4 Pos      : POSITION;
-    float2 Tex      : TEXCOORD0;
-    float2 Tex2     : TEXCOORD1;
-    float4 PPos     : TEXCOORD2;
-};
-
-DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float2 Tex : TEXCOORD0, uniform int cascadeIndex)
+void CascadeShadowMapVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord0 : TEXCOORD0,
+    out float4 oTexcoord1 : TEXCOORD1,
+    out float4 oPosition : POSITION,
+    uniform int3 offset)
 {
-    DrawObject_OUTPUT Out;
-    Out.Pos = mul(Pos, matLightWorldViewProject);
-
-    if (cascadeIndex == 0)
-    {
-        Out.Tex2 = float2(-1, 1);
-    }
-    else if (cascadeIndex == 1)
-    {
-        Out.Tex2 = float2( 1, 1);
-    }
-    else if (cascadeIndex == 2)
-    {
-        Out.Tex2 = float2(-1,-1);
-    }
-    else
-    {
-        Out.Tex2 = float2( 1,-1);
-    }
-
-    Out.Pos.xy = Out.Pos.xy * lightParam[cascadeIndex].xy + lightParam[cascadeIndex].zw;
-    Out.Pos.xy = Out.Pos.xy * 0.5 + (Out.Tex2 * 0.5f);
-    Out.Pos.z = max(Out.Pos.z, LightZMin / LightZMax);
-
-    Out.PPos = Out.Pos;
-    Out.Tex = Tex;
-
-    return Out;
+    oPosition = mul(Position, matLightWorldViewProject);
+    oPosition.xy = oPosition.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
+    oPosition.xy = oPosition.xy * 0.5 + (offset.xy * 0.5f);
+    oPosition.z = max(oPosition.z, LightZMin / LightZMax);
+    
+    oTexcoord1 = oPosition;
+    oTexcoord0 = float4(Texcoord, offset.xy);
 }
 
-float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform int cascadeIndex, uniform bool useTexture) : COLOR
+float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 coord1 : TEXCOORD1, uniform bool useTexture) : COLOR
 {
-    float2 clipUV = (IN.PPos.xy - SHADOW_MAP_OFFSET) * IN.Tex2;
+    float2 clipUV = (coord1.xy - SHADOW_MAP_OFFSET) * coord0.zw;
     clip(clipUV.x);
     clip(clipUV.y);
     clip(!opadd - 0.001f);
 
     float alpha = MaterialDiffuse.a;
     alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
-    if ( useTexture ) alpha *= tex2D( DiffuseSamp, IN.Tex.xy ).a;
+    if ( useTexture ) alpha *= tex2D(DiffuseSamp, coord0.xy).a;
     clip(alpha - CasterAlphaThreshold);
 
-    return IN.PPos.z;
+    return coord1.z;
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
+#define PSSM_TEC(name, mmdpass, tex) \
     technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
     > { \
-        pass DrawObject0 { \
-            AlphaBlendEnable = FALSE;   AlphaTestEnable = TRUE; \
-            VertexShader = compile vs_3_0 DrawObject_VS(0); \
-            PixelShader  = compile ps_3_0 DrawObject_PS(0, tex); \
+        pass CascadeShadowMap0 { \
+            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1, 1, 0)); \
+            PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
-        pass DrawObject1 { \
-            AlphaBlendEnable = FALSE;   AlphaTestEnable = TRUE; \
-            VertexShader = compile vs_3_0 DrawObject_VS(1); \
-            PixelShader  = compile ps_3_0 DrawObject_PS(1, tex); \
+        pass CascadeShadowMap1 { \
+            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1, 1, 1)); \
+            PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
-        pass DrawObject2 { \
-            AlphaBlendEnable = FALSE;   AlphaTestEnable = TRUE; \
-            VertexShader = compile vs_3_0 DrawObject_VS(2); \
-            PixelShader  = compile ps_3_0 DrawObject_PS(2, tex); \
+        pass CascadeShadowMap2 { \
+            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1,-1, 2)); \
+            PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
-        pass DrawObject3 { \
-            AlphaBlendEnable = FALSE;   AlphaTestEnable = TRUE; \
-            VertexShader = compile vs_3_0 DrawObject_VS(3); \
-            PixelShader  = compile ps_3_0 DrawObject_PS(3, tex); \
+        pass CascadeShadowMap3 { \
+            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1,-1, 3)); \
+            PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
     }
 
-OBJECT_TEC(DepthTecBS2, "object_ss", false)
-OBJECT_TEC(DepthTecBS3, "object_ss", true)
+PSSM_TEC(DepthTecBS2, "object_ss", false)
+PSSM_TEC(DepthTecBS3, "object_ss", true)
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}

@@ -1,10 +1,10 @@
-// 最大半径
-#define POINTLIGHT_MAX_RADIUS 50
+// 最大范围
+#define LIGHTSOURCE_MAX_RANGE 50
+
+// 最小强度
+#define LIGHTSOURCE_MIN_INTENSITY 100
 
 // 最大强度
-#define POINTLIGHT_MAX_INTENSITY 100
+#define LIGHTSOURCE_MAX_INTENSITY 1000
 
-// 绑定的PMX文件
-#define POINTLIGHT_CONTROLLER "(self)"
-
-#include "point_lighting.fxsub"
+#include "light_source.fxsub"

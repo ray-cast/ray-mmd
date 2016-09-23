@@ -1,4 +1,4 @@
-#define USE_CUSTOM_MATERIAL 0
+#define USE_CUSTOM_MATERIAL 1
 
 // 反照率贴图
 #define ALBEDO_MAP_ENABLE 0

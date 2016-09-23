@@ -1,39 +1,64 @@
 #include "../../ray.conf"
-#include "../../shader/common.fx"
 #include "../../shader/math.fx"
+#include "../../shader/common.fx"
 #include "../../shader/gbuffer.fx"
 #include "../../shader/gbuffer_sampler.fx"
 #include "../../shader/lighting.fx"
 #include "../../shader/shadowcommon.fx"
 
-float mR : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "R+"; >;
-float mG : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "G+"; >;
-float mB : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "B+"; >;
-float mRangeP : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Range+"; >;
-float mAngleM : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Angle-"; >;
-float mIntensityM : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Intensity-"; >;
-float3 mPosition : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name=SPOTLIGHT_CONTROLLER; string item = "Direction"; >;
+float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
+float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
+float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
+float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
+float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 
-static float LightRange = 1 + mRangeP * SPOTLIGHT_MAX_RADIUS;
-static float LightIntensity = (1 - mIntensityM) * SPOTLIGHT_MAX_INTENSITY;
-static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
-static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 LightPosition = mPosition;
+static float3 LightDirection = normalize(mDirection - mPosition);
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float3 viewLightPosition = mul(float4(mPosition, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-#if SHADOW_QUALITY == 0
+#if SPOTLIGHT_ENABLE
+float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
+
+static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+#elif SPHERELIGHT_ENABLE
+float mSizeP : CONTROLOBJECT < string name="(self)"; string item = "Size+"; >;
+
+static float LightSize = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
+static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE)) * SPHERELIGHT_MAX_SIZE;
+#elif TUBELIGHT_ENABLE
+float mWidthP : CONTROLOBJECT < string name="(self)"; string item = "Width+"; >;
+float mRadiusM : CONTROLOBJECT < string name="(self)"; string item = "Radius-"; >;
+float mRadiusP : CONTROLOBJECT < string name="(self)"; string item = "Radius+"; >;
+
+float3 mLeft : CONTROLOBJECT < string name="(self)"; string item = "Left"; >;
+float3 mRight : CONTROLOBJECT < string name="(self)"; string item = "Right"; >;
+
+static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
+static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
+static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float3 LightLeft = mLeft - (mLeft - mPosition) * LightWidth;
+static float3 LightRight = mRight + (mLeft - mPosition) * LightWidth;
+#else
+static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+#endif
+
+#if SHADOWMAP_ENABLE && SPOTLIGHT_ENABLE
+#if SHADOWMAP_QUALITY == 0
 #   define SHADOWMAP_SIZE 512
-#elif SHADOW_QUALITY == 1
+#elif SHADOWMAP_QUALITY == 1
 #   define SHADOWMAP_SIZE 1024
-#elif SHADOW_QUALITY == 2
+#elif SHADOWMAP_QUALITY >= 2
 #   define SHADOWMAP_SIZE 2048
 #else
 #   define SHADOWMAP_SIZE 512
 #endif
 
-#if SHADOWMAP_ENABLE
 texture ShadowMap: OFFSCREENRENDERTARGET <
     string Description = "Shadow Rendering";
     int Width = SHADOWMAP_SIZE;
@@ -69,7 +94,7 @@ float ShadowMapFilter(float3 viewPosition, int samples)
     
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
-    proj.z = exp(-proj.z);
+    proj.z = exp(-proj.z * 0.5);
 
 #if SHADOWMAP_SOFT_SHADOW
     float shadow = 0.0;
@@ -93,25 +118,31 @@ float ShadowMapFilter(float3 viewPosition, int samples)
 }
 #endif
 
-void SpotLightingVS(
+void LightSourceVS(
     in float4 Position : POSITION,
+    in float3 Normal : NORMAL,
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
 {
-    if (length(Position.xyz - mPosition) > 0.1)
+#if SPOTLIGHT_ENABLE    
+    if (length(Position.xyz - LightPosition) > 0.1)
     {
-        Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1 + LightSpotAngle), LightSpotAngle);
+        Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightSpotAngle), LightSpotAngle);
     }
-    
-    Position.xyz = mPosition + (Position.xyz - mPosition) * LightRange / 2;
+    Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange / 2;
+#elif TUBELIGHT_ENABLE
+    Position.xyz = LightPosition + (Position.xyz - LightPosition) * 10000;
+#else
+    Position.xyz = LightPosition + Normal * LightRange;
+#endif
     
     oTexcoord0 = oPosition = mul(Position, matViewProject);
     oTexcoord1 = -mul(Position, matView);
 }
 
-float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : SV_Target
-{
+float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+{   
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
@@ -125,11 +156,21 @@ float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) :
     
     float3 V = normalize(viewdir);
     float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
+#if TUBELIGHT_ENABLE
+    float3 L0 = mul(float4(LightLeft, 1), matView).xyz - P;
+    float3 L1 = mul(float4(LightRight, 1), matView).xyz - P;
+    float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
+#else
     float3 L = viewLightPosition - P;
+#endif
     float3 L2 = normalize(L);
     
     float vis = saturate(dot(material.normal, L2));
+    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    
+#if SPOTLIGHT_ENABLE
     vis *= GetSpotLightAttenuation(L, viewLightDirection, cos(LightSpotAngle), 2, LightRange);
+#endif
     if (vis <= 0)
     {
         clip(-1);
@@ -142,15 +183,21 @@ float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) :
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
         lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
     
-    lighting.rgb *= material.albedo;
-    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
-    
-#if SHADOWMAP_ENABLE
-    return lighting * ShadowMapFilter(P, 8);
+    lighting.rgb = material.albedo;
+#if SPHERELIGHT_ENABLE
+    lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+#elif TUBELIGHT_ENABLE
+    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
 #else
-    return lighting;
+    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
 #endif
+
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+#if SHADOWMAP_ENABLE && SPOTLIGHT_ENABLE
+    lighting *= ShadowMapFilter(P, 8);
+#endif
+
+    return lighting;
 }
 
 #define OBJECT_TEC(name, mmdpass) \
@@ -161,8 +208,8 @@ float4 SpotLightingPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) :
             AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
             SrcBlend = ONE; DestBlend = ONE;\
             CullMode = CW;\
-            VertexShader = compile vs_3_0 SpotLightingVS(); \
-            PixelShader  = compile ps_3_0 SpotLightingPS(); \
+            VertexShader = compile vs_3_0 LightSourceVS(); \
+            PixelShader  = compile ps_3_0 LightSourcePS(); \
         } \
     }
 

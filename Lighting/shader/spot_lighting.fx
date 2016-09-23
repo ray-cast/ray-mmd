@@ -1,14 +1,18 @@
-// 最大半径
-#define SPOTLIGHT_MAX_RADIUS 100
+// 最大范围
+#define LIGHTSOURCE_MAX_RANGE 50
+
+// 最小强度
+#define LIGHTSOURCE_MIN_INTENSITY 100
 
 // 最大强度
-#define SPOTLIGHT_MAX_INTENSITY 2000
+#define LIGHTSOURCE_MAX_INTENSITY 1000
 
-// 绑定的PMX文件
-#define SPOTLIGHT_CONTROLLER "(self)"
+// 聚光灯
+#define SPOTLIGHT_ENABLE 1
 
 // 阴影
 #define SHADOWMAP_ENABLE 0
+#define SHADOWMAP_QUALITY 0
 #define SHADOWMAP_SOFT_SHADOW 1
 
-#include "spot_lighting.fxsub"
+#include "light_source.fxsub"

@@ -98,17 +98,6 @@ float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
     return diffuse + transmittanceColor * transmittance;
 }
 
-float3 TranslucencyBRDF(float3 N, float3 L, float3 V, float smoothness, float3 transmittanceColor)
-{
-    float w = lerp(0, 0.5, luminance(transmittanceColor));
-    float wn = 1.0 / ((1 + w) * (1 + w));
-    float nl = dot(N, L);
-    float transmittance = saturate((-nl + w) * wn);
-    float brdf = DiffuseBRDF(N, L, V, smoothness);
-    float diffuse = saturate((brdf + w) * wn);
-    return diffuse + transmittanceColor * transmittance;
-}
-
 float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, float3 specular)
 {
     float3 H = normalize(L + V);
@@ -216,9 +205,30 @@ void CubemapBoxParallaxCorrection(inout float3 R, in float3 P, in float3 envBoxC
     R = normalize(posonbox - envBoxCenter);
 }
 
-float EnvironmentMip(float gloss, int miplevel)
+float HorizonOcclusion(float3 N, float3 R)
 {
-    return lerp(miplevel, 0, sqrt(gloss));
+    float factor = clamp(1.0 + 1.3 * dot(R, N), 0.1, 1.0);
+    return factor * factor;
+}
+
+float3 GetDiffuseDominantDir(float3 N, float3 V, float roughness) 
+{
+    float a = 1.02341f * roughness - 1.51174f;
+    float b = -0.511705f * roughness + 0.755868f;
+    float factor = saturate((dot(N, V) * a + b) * roughness);
+    return lerp(N, V, factor);
+}
+
+float3 GetSpecularDominantDir(float3 N, float3 R, float roughness)
+{
+    float smoothness = 1.0 - roughness;
+    float factor = smoothness * (sqrt(smoothness) + roughness);
+    return lerp(N, R, factor);    
+}
+
+float EnvironmentMip(float roughness, int miplevel)
+{
+    return sqrt(roughness) * miplevel;
 }
 
 float3 EnvironmentReflect(float3 normal, float3 view)
@@ -226,25 +236,20 @@ float3 EnvironmentReflect(float3 normal, float3 view)
     return reflect(-view, normal);
 }
 
-float3 EnvironmentSpecularCrytek(float3 N, float3 V, float gloss, float3 specular)
+float3 EnvironmentSpecularBlackOpsII(float3 N, float3 V, float smoothness, float3 specular)
 {
-    return lerp(specular, 1.0, pow(1 - saturate(dot(N, V)), 5) / (40 - 39 * gloss));
-}
-
-float3 EnvironmentSpecularBlackOpsII(float3 N, float3 V, float gloss, float3 specular)
-{
-    float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25) * gloss;
+    float4 t = float4(1 / 0.96, 0.475, (0.0275 - 0.25 * 0.04) / 0.96, 0.25) * smoothness;
     t += float4(0, 0, (0.015 - 0.75 * 0.04) / 0.96, 0.75);
     float a0 = t.x * min(t.y, exp2(-9.28 * dot(N, V))) + t.z;
     float a1 = t.w;
     return saturate(lerp(a0, a1, specular));
 }
 
-float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float gloss, float3 specular)
+float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float roughness, float3 specular)
 {
     float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
     float4 c1 = float4(1, 0.0425, 1.04, -0.04);
-    float4 r = (1 - gloss) * c0 + c1;
+    float4 r = roughness * c0 + c1;
     float a004 = min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
     float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
     return specular * AB.x + AB.y;
@@ -283,7 +288,7 @@ float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, floa
     float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset); 
     attenuation *= attenuation;
     
-    return attenuation * GetPhysicalLightAttenuation(L, radius);
+    return attenuation;
 }
 
 float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
@@ -410,10 +415,10 @@ float TubeLightAttenuation(float3 N, float3 L0, float3 L1, float3 P)
     float length1 = length(L0);
     float length2 = length(L1);
     
-    float NoL0 = dot(L0, N) / (2.0 * length1);
-    float NoL1 = dot(L1, N) / (2.0 * length2);
+    float nl0 = dot(L0, N) / (2.0 * length1);
+    float nl1 = dot(L1, N) / (2.0 * length2);
     
-    return (2.0 * clamp(NoL0 + NoL1, 0.0, 1.0)) / (length1 * length2 + dot(L0, L1) + 2.0);
+    return (2.0 * clamp(nl0 + nl1, 0.0, 1.0)) / (length1 * length2 + dot(L0, L1) + 2.0);
 }
 
 #endif

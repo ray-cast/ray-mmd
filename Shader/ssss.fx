@@ -1,5 +1,3 @@
-#if SSSS_QUALITY > 0
-
 #define DEPTH_LENGTH (1.0 / (10000.0f + 1.0))
 
 float SSSSlinearizeDepth(float2 texcoord)
@@ -64,7 +62,7 @@ float4 GuassBlurPS(
 
     float profileIndex = floor(material.index);
     float sssAmount = frac(material.index);
-    float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount:1.0;
+    float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount : 1.0;
     float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
     
     float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
@@ -104,5 +102,3 @@ float4 GuassBlurPS(
 
     return float4(totalColor, colorM.a);
 }
-
-#endif

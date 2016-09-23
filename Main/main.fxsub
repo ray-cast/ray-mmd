@@ -10,10 +10,10 @@ float3  LightSpecular   : SPECULAR  < string Object = "Light"; >;
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
-texture ObjectTexture: MATERIALTEXTURE;
-sampler ObjTexSampler = sampler_state
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state
 {
-    texture = <ObjectTexture>;
+    texture = <DiffuseMap>;
     MINFILTER = ANISOTROPIC;
     MAGFILTER = ANISOTROPIC;
     MIPFILTER = LINEAR;
@@ -26,7 +26,7 @@ float4 GetTextureColor(float4 albedo, float2 uv)
 {
     if (use_texture)
     {
-        float4 TexColor = tex2D(ObjTexSampler, uv);
+        float4 TexColor = tex2D(DiffuseMapSamp, uv);
         TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
         TexColor.rgb = TexColor.rgb;
         albedo *= TexColor;

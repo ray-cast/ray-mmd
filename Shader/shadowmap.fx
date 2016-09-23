@@ -18,7 +18,7 @@ texture ShadowMap : OFFSCREENRENDERTARGET <
     string Description = "Shadow Rendering for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
-    float4 ClearColor = { 1, 0, 0, 0 };
+    float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     int MipLevels = 1;
     string DefaultEffect =
@@ -47,7 +47,7 @@ shared texture LightMap : OFFSCREENRENDERTARGET <
     int Width = SHADOW_MAP_SIZE;
     int Height = SHADOW_MAP_SIZE;
     string Format = "R32F";
-    float4 ClearColor = { 1, 1, 0, 0 };
+    float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     int MipLevels = 1;
     string DefaultEffect =

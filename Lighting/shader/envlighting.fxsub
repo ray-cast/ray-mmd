@@ -45,13 +45,23 @@ float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string 
 
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
-    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldView = V;
+    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+    float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
+    
+    float roughness = SmoothnessToRoughness(material.smoothness);
+    float mipLayer = EnvironmentMip(roughness, IBL_MIPMAP_LEVEL);
 
-    float mipLayer = EnvironmentMip(material.smoothness, IBL_MIPMAP_LEVEL);
-
+#if 1
+    float3 R = mul(rotate, worldReflect);
     float3 N = mul(rotate, worldNormal);
-    float3 R = mul(rotate, EnvironmentReflect(worldNormal, worldView));
+#else
+    float3 R = GetSpecularDominantDir(worldNormal, worldReflect, roughness);
+    float3 N = GetDiffuseDominantDir(worldNormal, worldView, roughness);
+
+    R = mul(rotate, R);
+    N = mul(rotate, N);
+#endif
 
     float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(N));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
@@ -69,8 +79,10 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
 #endif
 
+    prefilteredSpeculr *= HorizonOcclusion(worldNormal, worldReflect);
+
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
-    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, roughness, material.specular);
     
     diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
     specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);

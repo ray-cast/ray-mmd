@@ -293,22 +293,38 @@ texture2D BloomMapX3 : RENDERCOLORTARGET <
 texture2D BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int MipLevels = 1;
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
     string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX4 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int MipLevels = 1;
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
     string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX5Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int MipLevels = 1;
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
     string Format = "A2R10G10B10";
+#endif
 >;
 texture2D BloomMapX5 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int MipLevels = 1;
+#if HDR_BLOOM_QUALITY > 2
+    string Format = "A16B16G16R16F";
+#else
     string Format = "A2R10G10B10";
+#endif
 >;
 sampler2D BloomSampX1Temp = sampler_state {
     texture = <BloomMapX1Temp>;

@@ -45,12 +45,10 @@ void BloomBlurVS(
     in float4 Position : POSITION,
     in float4 Texcoord : TEXCOORD,
     out float4 oTexcoord : TEXCOORD0,
-    out float3 oViewdir : TEXCOORD1,
     out float4 oPosition : SV_Position,
     uniform int n)
 {
     oPosition = Position;
-    oViewdir = mul(Position, matProjectInverse).xyz;
     oTexcoord = Texcoord;
     oTexcoord.xy += ViewportOffset  * n;
 }
