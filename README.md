@@ -50,79 +50,31 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
 ##### 3.0 材质介绍 :
-* Albedo的反照率(物体的贴图色)
+　　因为考虑跨地区，文本统一使用了UTF8的编码，直接使用系统自带的修改保存
+会因此出错，需要下载一些专业的文本编辑器(notepad++, sublime text3)这类编辑器修改
+
+* AlbedoMap(物体的贴图色)
     * 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
-    * 默认albedoMap是启用贴图的,且贴图来至PMX模型的纹理  
+    * 默认albedo是启用贴图的,且贴图来至PMX模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
     * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
     * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文)  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)
-    * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1(点播放才会动)
+    * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1 (播放时图片才会动)
     * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
-    * ALBEDO_MAP_APPLY_COLOR可以将自定义颜色乘到贴图上，对应ALBEDO_MAP_APPLY_DIFFUSE是PMX文件里的扩散色  
+    * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上，ALBEDO_MAP_APPLY_DIFFUSE这则是对应PMX文件里的扩散色  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
-###### 3.2 纹理
-* 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
+* NormalMap(法线贴图)
+    * 添加物体的法线贴图和添加albedo一样同理
+    * 将NORMAL_MAP_ENABLE设置1，以及指定NORMAL_MAP_FILE的文件路径  
+    [![link text](https://github.com/ray-cast/images/raw/master/normal_0.png)](https://github.com/ray-cast/images/raw/master/normal_0.png)  
+    [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
+    * 法线的强度可以normalMapSubScale数值，修改成5以后的效果
+    [![link text](https://github.com/ray-cast/images/raw/master/normal_2.png)](https://github.com/ray-cast/images/raw/master/normal_2.png)
+    * 修改贴图的密度，可以使用albedo/normal/MapSubLoopNum等，修改成2的效果
+    [![link text](https://github.com/ray-cast/images/raw/master/normal_3.png)](https://github.com/ray-cast/images/raw/master/normal_3.png)
     
-    ```cpp
-    #define ALBEDO_MAP_ENABLE 1
-    #define NORMAL_MAP_ENABLE 1
-    #define NORMAL_MAP_SUB_ENABLE 1
-    #define SMOOTHNESS_MAP_ENABLE 1
-    #define METALNESS_MAP_ENABLE 1
-    #define SSS_MAP_ENABLE 1
-    #define MELANIN_MAP_ENABLE 1
-    #define EMMISIVE_MAP_ENABLE 1
-    ```
-
-* 如果材质在pmx文件中，可以启用以下
-    
-    ```cpp
-    #define ALBEDO_MAP_IN_TEXTURE 1 // 物体的基本贴图在Tex里
-    #define NORMAL_MAP_IN_SPHEREMAP 1 // 物体的法线贴图在Sph map里
-    #define SMOOTHNESS_MAP_IN_TONEMAP 1 // 物体的光滑度贴图在Toon map里
-    #define METALNESS_MAP_IN_TONEMAP 1 // 物体的金属贴图在Toon map里
-    ```
-
-* 如果没有指定在pmx中，可以将文件路径写到下面这些定义里
-
-    ```cpp
-    #define ALBEDO_MAP_FILE "c:/xxxx/yyyy.png"
-    #define NORMAL_MAP_FILE ...
-    #define NORMAL_MAP_SUB_FILE ...
-    #define SMOOTHNESS_MAP_FILE ...
-    #define METALNESS_MAP_FILE ...
-    #define SSS_MAP_FILE ...
-    #define MELANIN_MAP_FILE ...
-    #define EMMISIVE_MAP_FILE ...
-    ```
-
-* 指定图片通道存放了哪些数据需要用到Swizzle
-
-    ```cpp
-    #define XXXXXXX_MAP_SWIZZLE_R // 表示某种材质R里存放了它的数据
-    #define XXXXXXX_MAP_SWIZZLE_G // 表示某种材质G里存放了它的数据
-    #define XXXXXXX_MAP_SWIZZLE_B // 表示某种材质B里存放了它的数据
-    #define XXXXXXX_MAP_SWIZZLE_A // 表示某种材质A里存放了它的数据
-    // 这里只对 smoothness，metalness，melanin 有效，也必须要指定
-    ```
-
-* 贴图迭代次数，和法线高度
-
-    ```cpp
-    const float xxxxxMapLoopNum = 1.0; // 应用在一个平面时大小是 1x1
-    const float xxxxxMapLoopNum = 2.0; // 应用在一个平面时大小是 2x2
-
-    const float normalMapScale = 1.0; // 用来指定法线贴图的强度，数值越大越明显
-    const float normalMapSubScale = 1.0; // 用来指定子法线贴图的强度，数值越大越明显
-    ```
-
-* 有些时候UV的图片似乎上下颠倒了，可以将如下设置成 1
-    
-    ```cpp
-    #define XXXXX_MAP_UV_FLIP 1
-    ```
 ##### 4.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
