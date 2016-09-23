@@ -87,7 +87,16 @@ Ray-MMD
     * 在物理中不同材质的反射系数是不一样的，可以使用如下颜色指定Albedo，然后metalness指定为1
     [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)
     [![link text](https://github.com/ray-cast/images/raw/master/dielectric.png)](https://github.com/ray-cast/images/raw/master/dielectric.png)
-    
+* SSS(次表面散射)
+    [![link text](https://github.com/ray-cast/images/raw/master/SSS.png)](https://github.com/ray-cast/images/raw/master/SSS.png)
+    * SSS用于渲染皮肤，玉器使用的
+    * 使用需要将SSS_ENABLE开启，贴图方式和以上同理
+    * transmittance用于制定内部的散射色，皮肤可以使用例如float3 transmittance = float3(0.1, 0.0, 0.0);
+    * transmittanceStrength用于指定SSS的强度，0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤
+* Melanin(黑色素)
+    * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白，取值范围0 ~ 1
+    * SSS中的截图就调节了Melain的系数, 所以会看起来像鸡蛋
+
 ##### 4.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
