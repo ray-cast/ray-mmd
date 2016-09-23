@@ -8,7 +8,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/IBL1_small.png)](https://github.com/ray-cast/images/raw/master/IBL1.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/IBL2_small.png)](https://github.com/ray-cast/images/raw/master/IBL2.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/bloom_small.jpg)](https://github.com/ray-cast/images/raw/master/bloom.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.png)
+[![link text](https://github.com/ray-cast/images/raw/master/hou_small.png)](https://github.com/ray-cast/images/raw/master/hou.png)
 [![link text](https://github.com/ray-cast/images/raw/master/sphere_small.jpg)](https://github.com/ray-cast/images/raw/master/sphere.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
