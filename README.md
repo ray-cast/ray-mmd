@@ -50,21 +50,18 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
 ##### 3.0 材质介绍 :
-* 材质贴图大体分为 
-* albedo 物体的反照率，可以认为是物体的颜色/贴图
-* alpha 控制物体的透明度
-* normal 垂直物体表面的主要法线，光照需要用到
-* sub normal 控制物体表面细微的法线，如毛孔，布料纹路
-* smoothness : 物体表面的光滑度，例如指定金属时，越光滑反射的环境也就越清晰 
-* metalness : 物体的金属程度
-* SSS : 指定物体内部的散射色
-* melanin : 增加物体的黑色素 (例如加深皮肤、袜子的颜色)
-* emmisive : 控制部分表面的自发光
-
-###### 3.1 启用材质
-* 默认fx文件里是不启用自定义材质，需要将 USE_CUSTOM_MATERIAL 设置成 1
-* 次表面散射和自发光的也是不开启的，需要将 SSS_ENABLE 和 EMMISIVE_ENABLE 设置成1
-        
+    * Albedo的反照率(物体的贴图色)
+    　　* 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
+        * 默认albedoMap是启用贴图的,且贴图来至PMX模型的纹理  
+        [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
+        * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
+        * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文)  
+        [![link text](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)
+        * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1(点播放才会动)
+        * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
+        [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
+        * ALBEDO_MAP_APPLY_COLOR可以将自定义颜色乘到贴图上，对应ALBEDO_MAP_APPLY_DIFFUSE是PMX文件里的扩散色  
+        [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
 ###### 3.2 纹理
 * 同样的描述物体纹理也是不启用的，如果需要某项将如下这些设置成 1
     

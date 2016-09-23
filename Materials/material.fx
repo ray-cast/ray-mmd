@@ -1,8 +1,8 @@
 #define USE_CUSTOM_MATERIAL 0
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 0
-#define ALBEDO_MAP_IN_TEXTURE 0
+#define ALBEDO_MAP_ENABLE 1
+#define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define ALBEDO_MAP_UV_FLIP 0
@@ -50,7 +50,7 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.0;
+const float smoothness = 0.5;
 const float metalnessBaseSpecular = 0.04;
 const float smoothnessMapLoopNum = 1.0;
 
