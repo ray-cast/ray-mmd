@@ -11,7 +11,7 @@ float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item 
 
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mPosition;
+static float3 LightPosition = mPosition + LightDirection;
 
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 

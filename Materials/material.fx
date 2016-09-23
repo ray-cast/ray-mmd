@@ -51,6 +51,7 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.0;
+const float metalnessBaseSpecular = 0.04;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度

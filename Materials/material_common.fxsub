@@ -862,11 +862,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
-#if SKYBOX_ENABLE
-    material.specular = 0.0;
-#else
-    material.specular = lerp(0.04, albedoColor, MaterialMetalness);
-#endif
+    material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
@@ -905,11 +901,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
         material.smoothness = GetSmoothness(IN.Texcoord);
         material.albedo = albedoColor * (1.0 - MaterialMetalness);
-#if SKYBOX_ENABLE
-        material.specular = 0.0;
-#else
-        material.specular = lerp(0.04, albedoColor, MaterialMetalness);
-#endif
+        material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);

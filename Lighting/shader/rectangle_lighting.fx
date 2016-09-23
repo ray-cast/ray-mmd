@@ -1,13 +1,19 @@
 // 最大半径
-#define RECTANGLELIGHT_MAX_RADIUS 50
+#define LIGHTSOURCE_MAX_RANGE 50
 
 // 最大强度
-#define RECTANGLELIGHT_MAX_INTENSITY 100
+#define LIGHTSOURCE_MIN_INTENSITY 100
 
-// 最大的区域宽度(对应表情里的最大宽度)
+// 最大强度
+#define LIGHTSOURCE_MAX_INTENSITY 1000
+
+// 启用矩形区域光
+#define RECTANGLIELIGHT_ENABLE 1
+
+// 最大的区域宽度(对应表情里的最大宽度, 不要修改)
 #define RECTANGLELIGHT_MAX_WIDTH 50
 
-// 最大的区域高低(对应表情里的最大高度)
+// 最大的区域高低(对应表情里的最大高度, 不要修改)
 #define RECTANGLELIGHT_MAX_HEIGHT 50
 
 // 双面光照
@@ -23,7 +29,4 @@
 
 const float vedioMapLoopNum = 1.0;
 
-// 绑定的PMX文件
-#define RECTANGLELIGHT_CONTROLLER "(self)"
-
-#include "rectangle_light.fxsub"
+#include "light_source.fxsub"

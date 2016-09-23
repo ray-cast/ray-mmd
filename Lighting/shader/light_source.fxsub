@@ -18,8 +18,6 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-static float3 viewLightPosition = mul(float4(mPosition, 1), matView).xyz;
-static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
 #if SPOTLIGHT_ENABLE
 float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
@@ -44,8 +42,43 @@ static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
 static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float3 LightLeft = mLeft - (mLeft - mPosition) * LightWidth;
 static float3 LightRight = mRight + (mLeft - mPosition) * LightWidth;
+#elif RECTANGLIELIGHT_ENABLE
+float mWidthP : CONTROLOBJECT < string name="(self)"; string item = "Width+"; >;
+float mHeightP : CONTROLOBJECT < string name="(self)"; string item = "Height+"; >;
+float3 mRightTop : CONTROLOBJECT < string name="(self)"; string item = "RightTop"; >;
+float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "RightBottom"; >;
+
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
+static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
 #else
 static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+#endif
+
+#if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
+    #if VIDEO_MAP_IN_SCREEN_MAP
+        shared texture2D DummyScreenTex : RenderColorTarget;
+    #elif VIDEO_MAP_ANIMATION_ENABLE
+        texture VideoMap : ANIMATEDTEXTURE <string ResourceName = VIDEO_MAP_FILE; float speed=VIDEO_MAP_ANIMATION_SPEED;>;
+    #else
+        texture VideoMap<string ResourceName = VIDEO_MAP_FILE;>;
+    #endif
+    sampler VideoMapSamp = sampler_state
+    {
+#if VIDEO_MAP_IN_SCREEN_MAP
+        texture = DummyScreenTex;
+#else
+        texture = VideoMap;
+#endif
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+    };
+#elif VIDEO_MAP_ENABLE
+    texture VideoMap: MATERIALTEXTURE;
+    sampler VideoMapSamp = sampler_state
+    {
+        texture = <VideoMap>;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+    };
 #endif
 
 #if SHADOWMAP_ENABLE && SPOTLIGHT_ENABLE
@@ -118,9 +151,35 @@ float ShadowMapFilter(float3 viewPosition, int samples)
 }
 #endif
 
+float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, float sigma)
+{
+    float totalWeight = 0.0;
+    float4 totalColor = 0.0;
+  
+    for (int i = -radius; i < radius; ++i)
+    {
+        float gaussianX = exp(-(i * i) / (2.0 * sigma * sigma));
+        float offsetX = i * offset.x;
+     
+        for(int j = -radius; j < radius; ++j)
+        {
+            float gaussianY = exp(-(j * j) / (2.0 * sigma * sigma));
+
+            float offsetY = j * offset.y;
+            float4 color = tex2D(source, coord + float2(offsetX, offsetY));
+
+            totalWeight += gaussianX * gaussianY;
+            totalColor += color * gaussianX * gaussianY;
+        }
+    }
+
+    return (totalColor / totalWeight);
+}
+
 void LightSourceVS(
     in float4 Position : POSITION,
     in float3 Normal : NORMAL,
+    in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
@@ -137,15 +196,25 @@ void LightSourceVS(
     Position.xyz = LightPosition + Normal * LightRange;
 #endif
     
+#if RECTANGLIELIGHT_ENABLE
+    oPosition = float4(CoordToPos(Texcoord), 0, 1);
+    oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
+    oTexcoord1 = -mul(oPosition, matProjectInverse);
+#else
     oTexcoord0 = oPosition = mul(Position, matViewProject);
     oTexcoord1 = -mul(Position, matView);
+#endif
 }
 
 float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
-{   
+{
+#if RECTANGLIELIGHT_ENABLE
+    float2 coord = texcoord;
+#else
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
-    coord += ViewportOffset;
+    coord += ViewportOffset;   
+#endif
 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
@@ -156,21 +225,17 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     float3 V = normalize(viewdir);
     float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
-#if TUBELIGHT_ENABLE
-    float3 L0 = mul(float4(LightLeft, 1), matView).xyz - P;
-    float3 L1 = mul(float4(LightRight, 1), matView).xyz - P;
-    float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
-#else
+
+#if SPOTLIGHT_ENABLE
+    float3 viewLightPosition = mul(float4(LightPosition + LightDirection, 1), matView).xyz;
+    float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+    
     float3 L = viewLightPosition - P;
-#endif
     float3 L2 = normalize(L);
     
     float vis = saturate(dot(material.normal, L2));
     vis *= GetPhysicalLightAttenuation(L, LightRange);
-    
-#if SPOTLIGHT_ENABLE
     vis *= GetSpotLightAttenuation(L, viewLightDirection, cos(LightSpotAngle), 2, LightRange);
-#endif
     if (vis <= 0)
     {
         clip(-1);
@@ -184,34 +249,166 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
         lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
     
     lighting.rgb *= material.albedo;
-#if SPHERELIGHT_ENABLE
-    lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
-#elif TUBELIGHT_ENABLE
-    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
-#else
     lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-#endif
-
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    
 #if SHADOWMAP_ENABLE && SPOTLIGHT_ENABLE
     lighting *= ShadowMapFilter(P, 8);
 #endif
-
     return lighting;
+    
+#elif SPHERELIGHT_ENABLE
+    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+    
+    float3 L = viewLightPosition - P;
+    float3 L2 = normalize(L);
+    
+    float vis = saturate(dot(material.normal, L2));
+    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    if (vis <= 0)
+    {
+        clip(-1);
+    }
+    
+    float4 lighting = 0.0f;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+    
+    lighting.rgb *= material.albedo;
+    lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    return lighting;
+    
+#elif TUBELIGHT_ENABLE
+    float3 L0 = mul(float4(LightLeft, 1), matView).xyz - P;
+    float3 L1 = mul(float4(LightRight, 1), matView).xyz - P;
+    float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
+    float3 L2 = normalize(L);
+    
+    float vis = saturate(dot(material.normal, L2));
+    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    if (vis <= 0)
+    {
+        clip(-1);
+    }
+    
+    float4 lighting = 0.0f;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+    
+    lighting.rgb *= material.albedo;
+    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    return lighting;
+    
+#elif RECTANGLIELIGHT_ENABLE
+    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+    float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+    
+    float3 LightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
+    float3 LightUp = normalize(cross(viewLightDirection, LightRight));
+    float2 LightRect = float2(LightWidth, LightHeight);
+    
+    float2 coord1, coord2;
+    float3 L = viewLightPosition - P;
+    float3 Lw = RectangleDirection(L, LightRight, LightUp, viewLightDirection, LightRect, coord1);
+    float3 L2 = normalize(Lw);
+    
+    float vis = saturate(dot(material.normal, L2));
+    vis *= GetPhysicalLightAttenuation(Lw, LightRange);
+    #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
+        vis *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
+    #endif
+    if (vis <= 0)
+    {
+        clip(-1);
+    }
+    
+    float4 lighting = 0.0f;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+    
+    lighting.rgb *= material.albedo;
+    
+    #if VIDEO_MAP_ENABLE
+        lighting.rgb *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 5, 10).rgb);
+    #endif
+    
+    #if VIDEO_MAP_ENABLE
+        float3 specular = 0;
+        specular = RectangleLightBRDFWithUV(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
+        specular *= srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
+        lighting.rgb += specular;
+    #else
+        lighting.rgb += RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular);
+    #endif
+    
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    return lighting;
+    
+#else
+    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+    
+    float3 L = viewLightPosition - P;
+    float3 L2 = normalize(L);
+    
+    float vis = saturate(dot(material.normal, L2));
+    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    if (vis <= 0)
+    {
+        clip(-1);
+    }
+    
+    float4 lighting = 0.0f;
+    
+    if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
+        lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness);
+    else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+        lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
+    
+    lighting.rgb *= material.albedo;    
+    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    
+    return lighting;
+#endif
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-    > { \
-        pass DrawObject { \
-            ZEnable = false; ZWriteEnable = false;\
-            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-            SrcBlend = ONE; DestBlend = ONE;\
-            CullMode = CW;\
-            VertexShader = compile vs_3_0 LightSourceVS(); \
-            PixelShader  = compile ps_3_0 LightSourcePS(); \
-        } \
-    }
+#if RECTANGLIELIGHT_ENABLE
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        > { \
+            pass DrawObject { \
+                ZEnable = false; ZWriteEnable = false;\
+                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+                SrcBlend = ONE; DestBlend = ONE;\
+                VertexShader = compile vs_3_0 LightSourceVS(); \
+                PixelShader  = compile ps_3_0 LightSourcePS(); \
+            } \
+        }
+#else
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        > { \
+            pass DrawObject { \
+                ZEnable = false; ZWriteEnable = false;\
+                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+                SrcBlend = ONE; DestBlend = ONE;\
+                CullMode = CW;\
+                VertexShader = compile vs_3_0 LightSourceVS(); \
+                PixelShader  = compile ps_3_0 LightSourcePS(); \
+            } \
+        }
+#endif
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
