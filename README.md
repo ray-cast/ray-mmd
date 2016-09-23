@@ -50,8 +50,8 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
 ##### 3.0 材质介绍 :
-　　因为考虑跨地区，文本统一使用了UTF8的编码，直接使用系统自带的修改保存
-会因此出错，需要下载一些专业的文本编辑器(notepad++, sublime text3)这类编辑器修改
+　　因为考虑跨地区，文本统一使用了UTF8的编码，因此使用系统自带的修改保存
+因此出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器修改
 
 * AlbedoMap(物体的贴图色)
     * 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
@@ -63,17 +63,30 @@ Ray-MMD
     * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1 (播放时图片才会动)
     * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
-    * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上，ALBEDO_MAP_APPLY_DIFFUSE这则是对应PMX文件里的扩散色  
+    * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上，ALBEDO_MAP_APPLY_DIFFUSE 则是PMX文件里的扩散色  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
 * NormalMap(法线贴图)
     * 添加物体的法线贴图和添加albedo一样同理
     * 将NORMAL_MAP_ENABLE设置1，以及指定NORMAL_MAP_FILE的文件路径  
-    [![link text](https://github.com/ray-cast/images/raw/master/normal_0.png)](https://github.com/ray-cast/images/raw/master/normal_0.png)  
+    [![link text](https://github.com/ray-cast/images/raw/master/normal_0.jpg)](https://github.com/ray-cast/images/raw/master/normal_0.jpg)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
     * 法线的强度可以normalMapSubScale数值，修改成5以后的效果
     [![link text](https://github.com/ray-cast/images/raw/master/normal_2.png)](https://github.com/ray-cast/images/raw/master/normal_2.png)
     * 修改贴图的密度，可以使用albedo/normal/MapSubLoopNum等，修改成2的效果
     [![link text](https://github.com/ray-cast/images/raw/master/normal_3.png)](https://github.com/ray-cast/images/raw/master/normal_3.png)
+* SubNormalMap(多层法线材质)
+    * 子法线是在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔
+    * 使用方法和法线贴图一致，同样可以调节迭代次数，以及强弱
+* Smoothness(光滑度)
+    * 用于描述物体在微观表面的光滑程度，取值范围0 ~ 1，0最粗糙，1最光滑 (贴图方式和以上同理)  
+    [![link text](https://github.com/ray-cast/images/raw/master/smoothness.jpg)](https://github.com/ray-cast/images/raw/master/smoothness.jpg)
+    * 如果需要使用粗糙度而不是光滑度，可以SMOOTHNESS_MAP_IS_ROUGHNESS设置1
+* Metalness(金属程度)
+    * metalness是一个在绝缘体，半导体，和导体的插值，取值范围在0 ~ 1，0为绝缘体，1表示导体 (贴图方式和以上同理)  
+    [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
+    * metalnessBaseSpecular用于指定物体最小的反射系数，添加这个值可以增加金属性(最好不要修改)
+    * 在物理中不同材质的反射系数是不一样的，可以使用如下颜色，然后metalness指定为1
+    [![link text](https://github.com/ray-cast/images/raw/master/metalness_1.png)](https://github.com/ray-cast/images/raw/master/metalness_1.png)
     
 ##### 4.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影

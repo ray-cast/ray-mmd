@@ -51,7 +51,6 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
-const float metalnessBaseSpecular = 0.04;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -63,6 +62,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
+const float metalnessBaseSpecular = 0.04;
 
 // 次表面散射
 #define SSS_ENABLE 0
