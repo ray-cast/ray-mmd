@@ -203,7 +203,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
     #endif
 #endif
 
-#if HDR_ENABLE
+#if HDR_ENABLE   
 #if HDR_BLOOM_QUALITY > 0
     float bloomIntensity = lerp(1, 10, mBloomIntensity);
     float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};

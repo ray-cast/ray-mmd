@@ -59,8 +59,8 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     float3 R = GetSpecularDominantDir(worldNormal, worldReflect, roughness);
     float3 N = GetDiffuseDominantDir(worldNormal, worldView, roughness);
 
-    R = mul(rotate, R);
-    N = mul(rotate, N);
+    R = mul(rotate, normalize(R));
+    N = mul(rotate, normalize(N));
 #endif
 
     float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(N));
@@ -90,7 +90,6 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
 
 void EnvLightingVS(
     in float4 Position : POSITION,
-    in float3 Normal   : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
     out float3 oViewdir   : TEXCOORD1,

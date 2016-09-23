@@ -389,6 +389,35 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
     return curTexcoord;
 }
 
+float SmoothnessToRoughness(float smoothness)
+{
+    return (1.0f - smoothness) * (1.0f - smoothness);
+}
+
+float RoughnessToSmoothness(float roughness)
+{
+    return 1.0f - sqrt(roughness);
+}
+
+float ShininessToSmoothness(float spec)
+{
+    return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
+}
+
+float AdjustRoughness(float roughness, float3 normal)
+{
+    float len = length(normal);
+    if (len < 1.0)
+    {
+        float len2 = len * len;
+        float kappa = (3 * len - len * len2) / (1 - len2);
+        float variance = 1.0 / (2.0 * kappa);
+        return sqrt(roughness * roughness + variance);
+    }
+    
+    return roughness;
+}
+
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
@@ -447,16 +476,6 @@ GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, f
     gbuffer.buffer4 = linearDepth;
     
     return gbuffer;
-}
-
-float RoughnessToSmoothness(float roughness)
-{
-    return 1.0f - sqrt(roughness);
-}
-
-float ShininessToSmoothness(float spec)
-{
-    return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
 }
 
 float3 ColorSynthesis(float3 diffuse, float m)
@@ -841,7 +860,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
-    material.specular = albedoColor * MaterialMetalness;
+    material.specular = lerp(0.04, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
@@ -880,7 +899,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
         material.smoothness = GetSmoothness(IN.Texcoord);
         material.albedo = albedoColor * (1.0 - MaterialMetalness);
-        material.specular = albedoColor * MaterialMetalness;
+        material.specular = lerp(0.04, albedoColor, MaterialMetalness);
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);

@@ -112,7 +112,7 @@ float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, f
     float k = min(1.0f, smoothness + 0.545f);
     float G = 1.0 / (k * lh * lh + 1 - k);
 
-    float3 f0 = max(0.04, specular);
+    float3 f0 = specular;
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 F = fresnelSchlick(f0, f90, lh);
 
@@ -143,7 +143,7 @@ float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float ani
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5 / (Gv + Gl);
 
-    float3 f0 = max(0.04, specular);
+    float3 f0 = specular;
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, lh);
 
@@ -167,7 +167,7 @@ float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 sp
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5h / (Gv + Gl);
 
-    float3 f0 = max(0.04, specular);
+    float3 f0 = specular;
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, lh);
 
