@@ -81,6 +81,7 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #define SUBSURFACESCATTERING_MARBLE 0
 #define SUBSURFACESCATTERING_SKIN   1
 
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
 
@@ -319,12 +320,13 @@ float4 srgb2linear(float4 c)
     return float4(srgb2linear(c.rgb), c.a);
 }
 
-float3 rgb2ycbcr(float3 rgb)
+float3 rgb2ycbcr(float3 col)
 {
-    float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
-    float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
-    float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
-    return float3(Y, Cb, Cr);
+    float3 encode;
+    encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+    encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb);
+    encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb);
+    return half3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
 float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
@@ -860,7 +862,11 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
     material.smoothness = GetSmoothness(IN.Texcoord);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
+#if SKYBOX_ENABLE
+    material.specular = 0.0;
+#else
     material.specular = lerp(0.04, albedoColor, MaterialMetalness);
+#endif
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
@@ -899,7 +905,11 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
         material.smoothness = GetSmoothness(IN.Texcoord);
         material.albedo = albedoColor * (1.0 - MaterialMetalness);
+#if SKYBOX_ENABLE
+        material.specular = 0.0;
+#else
         material.specular = lerp(0.04, albedoColor, MaterialMetalness);
+#endif
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);

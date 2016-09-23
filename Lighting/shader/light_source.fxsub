@@ -183,7 +183,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
         lighting.rgb = TranslucencyBRDF(material.normal, L2, material.transmittance);
     
-    lighting.rgb = material.albedo;
+    lighting.rgb *= material.albedo;
 #if SPHERELIGHT_ENABLE
     lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
 #elif TUBELIGHT_ENABLE

@@ -29,6 +29,8 @@
 #   define EPSILON 1e-5
 #endif
 
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+
 float3 srgb2linear(float3 rgb)
 {
     const float ALPHA = 0.055f;
@@ -51,19 +53,21 @@ float4 linear2srgb(float4 c)
     return float4(linear2srgb(c.rgb), c.a);
 }
 
-float3 rgb2ycbcr(float3 rgb)
+float3 rgb2ycbcr(float3 col)
 {
-    float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
-    float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
-    float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
-    return float3(Y, Cb, Cr);
+    float3 encode;
+    encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+    encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb);
+    encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb);
+    return float3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
 float3 ycbcr2rgb(float3 YCbCr)
 {
-    float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
-    float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
-    float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
+    YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+    float R = YCbCr.x + 1.402 * YCbCr.z;
+    float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz );
+    float B = YCbCr.x + 1.772 * YCbCr.y;
     return float3(R, G, B);
 }
 
