@@ -26,14 +26,14 @@ Ray-MMD
 ##### 1.0 简介 :
 　　IBL指的是基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
 的光源，因此不同的天空球光照效果也是不一样的,也自然会产生出不同的色调(如下图)  
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL1_small.png">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL1.jpg" width = "33%" height = "16.5%" align=center/>
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL1.jpg">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL1_small.png" width = "33%" height = "16.5%" align=center/>
 </a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_small.png">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL2.jpg" width = "33%" height = "16.5%" align=center/>
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2.jpg">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL2_small.png" width = "33%" height = "16.5%" align=center/>
 </a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL3_small.png">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL.png" width = "33%" height = "16.5%" align=center/>
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL.png">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL3_small.png" width = "33%" height = "16.5%" align=center/>
 </a>    
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
 这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
