@@ -35,8 +35,8 @@ Ray-MMD
 </a>   
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
 这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
-颜色最大只有255的并不是HDR，所以IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，
-以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰(以下是没有使用HDR效果):  
+颜色最大只有255的并不是HDR.  
+　　因此IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰(以下是没有使用HDR效果):  
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_nohdr.jpg">
     <img src="https://github.com/ray-cast/images/raw/master/IBL2_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
 </a>
