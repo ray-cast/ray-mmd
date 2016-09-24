@@ -13,7 +13,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
 #### 更新内容 :
-##### 2016-9-18 ver 1.0.6 beta
+##### 2016-9-24 ver 1.0.6 beta
 * 添加了聚光灯的阴影
 * 添加了更详细的材质介绍
 * 改进了光源，添加了Intensity+
@@ -267,10 +267,11 @@ Ray-MMD
 ##### Digging Deeper
 * [Moving to the Next Generation - The Rendering Technology of Ryse](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)
 * [ACES Filmic Tone Mapping Curve](https://knarkowicz.wordpress.com/2016/08/31/hdr-display-first-steps/)
-* [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)
 * [Compact Normal Storage for small G-Buffers](http://aras-p.info/texts/CompactNormalStorage.html)
 * [Convert Blinn-Phong to Beckmann distribution](http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html)
 * [Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel](https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/)
 * [Physically Based Area Lights](http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf)
-* [Horizon Occlusion for Normal Mapped Reflections](http://marmosetco.tumblr.com/post/81245981087)
 * [Physics and Math of Shading](http://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf)
+* [Compact YCoCg Frame Buffer for small IBL-Buffer](http://jcgt.org/published/0001/01/02/)
+* [Horizon Occlusion for IBL](http://marmosetco.tumblr.com/post/81245981087)
+* [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)

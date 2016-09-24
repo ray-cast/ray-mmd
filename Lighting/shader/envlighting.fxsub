@@ -84,8 +84,8 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
     specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, roughness, material.specular);
     
-    diffuse *= (lerp(1, 5, mEnvLightP) - mEnvLightM);
-    specular *= (lerp(1, 5, mEnvSpecLightP) - mEnvSpecLightM);
+    diffuse *= (1 + mEnvLightP * 5 - mEnvLightM);
+    specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }
 
 void EnvLightingVS(
@@ -158,12 +158,11 @@ float4 EnvLightingPS(
     technique name < string MMDPass = mmdpass;\
     > { \
         pass DrawObject { \
-            AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
+            AlphaBlendEnable = false; AlphaTestEnable = false;\
             VertexShader = compile vs_3_0 EnvLightingVS(); \
             PixelShader  = compile ps_3_0 EnvLightingPS(); \
         } \
     }
-
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

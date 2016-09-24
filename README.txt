@@ -6,7 +6,7 @@ Ray-MMD
     https://github.com/ray-cast/ray-mmd
 
 更新内容 :
-##### 2016-9-18 ver 1.0.6 beta
+##### 2016-9-24 ver 1.0.6 beta
 * 添加了聚光灯的阴影
 * 添加了更详细的材质介绍
 * 改进了光源，添加了Intensity+
