@@ -1,7 +1,7 @@
 Ray-MMD
 ========
 ### 基于物理的MikuMikuDance渲染库 ###
-　　R渲是一个基于物理的渲染库，采用了UE4的IBL曲面拟合以及CE5光照模型(BRDF GGX),
+　　Ray渲是一个基于物理的渲染库，采用了UE4的IBL曲面拟合以及CE5光照模型(BRDF GGX),
 以更贴合物理的方式渲染MMD，该渲染需求MMD版本为926（低于926版本无法正确计算IBL),
 以及MME版本037，并且关闭MMD自带的抗锯齿。
 #### Screenshot :
@@ -23,7 +23,19 @@ Ray-MMD
 * 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
 
 #### 教程 :
-##### 1.0 文件夹介绍 :
+##### 1.0 简介 :
+　　IBL指的是基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
+的光源，因此不同的天空球光照效果也是不一样的,也自然会产生出不同的色调
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL1_small.png">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL1.jpg" width = "28%" height = "14%" align=center/>
+</a>
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_small.png">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL2.jpg" width = "28%" height = "14%" align=center/>
+</a>
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL3_small.png">
+    <img src="https://github.com/ray-cast/images/raw/master/IBL.png" width = "28%" height = "14%" align=center/>
+</a>
+##### 2.0 文件夹介绍 :
 * Lighting : 光源/环境光(IBL)相关特效
 * Main : 添加物体基本的光照
 * Materials : 用于指定物体材质 (如皮肤，金属，天空盒....)
@@ -34,7 +46,7 @@ Ray-MMD
 * ray.x : 渲染主文件
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 
-##### 2.0 载入模型 :
+##### 3.0 载入模型 :
 * 将ray.x载入到MMD中
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
@@ -43,7 +55,7 @@ Ray-MMD
 * 分配完后效果图如下:  
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
 
-##### 3.0 材质介绍 :
+##### 4.0 材质介绍 :
 　　因为考虑跨地区，文本统一使用了UTF8的编码，所以使用系统自带的修改保存会导致出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器来修改
 
 * AlbedoMap(物体的贴图色)
@@ -78,7 +90,7 @@ Ray-MMD
     [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
     * metalness是一个在绝缘体，半导体，和导体的插值，取值范围在0 ~ 1，0为绝缘体，1表示导体(金属) (贴图方式和以上同理)  
     * metalnessBaseSpecular用于指定物体最小的反射系数，添加这个值可以增加金属性(最好不要修改)
-    * 在物理中不同材质的反射系数是不一样的，可以使用如下颜色指定Albedo，然后metalness指定为1
+    * 不同金属材质的反射系数，可以使用如下颜色指定Albedo (RGB中的颜色除以255)，然后metalness指定为1
     [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)
     [![link text](https://github.com/ray-cast/images/raw/master/dielectric.png)](https://github.com/ray-cast/images/raw/master/dielectric.png)
 * SSS(次表面散射)
@@ -91,7 +103,7 @@ Ray-MMD
     * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白，取值范围0 ~ 1
     * SSS中的截图就调节了Melain的系数, 所以会看起来像鸡蛋
 
-##### 4.0 多光源
+##### 5.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
 [![link text](https://github.com/ray-cast/images/raw/master/floor.png)](https://github.com/ray-cast/images/raw/master/floor.png)
@@ -128,7 +140,7 @@ Ray-MMD
 * 最后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_5.png)](https://github.com/ray-cast/images/raw/master/LED_5.png)
 
-##### 5.0 制作基于物理的环境光贴图(IBL)  旧:
+##### 6.0 制作基于物理的环境光贴图(IBL)  旧:
 　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (已放入了Tools目录中)
 ```
     https://github.com/dariomanesku/cmftStudio
@@ -150,7 +162,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/4.6.png)](https://github.com/ray-cast/images/raw/master/4.6.png)
 * 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
 
-##### 6.0 制作基于物理的环境光贴图(IBL) 新:
+##### 7.0 制作基于物理的环境光贴图(IBL) 新:
 　　以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用  
 　　因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中  
 　　因此作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染  
@@ -178,7 +190,7 @@ Ray-MMD
     https://aokcub.net/cg/incskies/
 ```
 
-##### 7.0 全局设置 (ray_controller.pmx):
+##### 8.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
 * SSAO+- 环境光遮蔽强度  
 * SSAO Radius+- 环境光遮蔽的范围
