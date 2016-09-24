@@ -35,9 +35,10 @@ Ray-MMD
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL3_small.png">
     <img src="https://github.com/ray-cast/images/raw/master/IBL.png" width = "28%" height = "14%" align=center/>
 </a>    
-    再说说HDR，假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
-这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，所以jpg,png,tga这类颜色最大只有255的并不是HDR，
-所以IBL的图片最好使用(dds,ktx,tga,hdr)文件，以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰
+　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
+这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
+颜色最大只有255的并不是HDR，所以IBL的图片最好使用(dds,ktx,tga,hdr)支持颜色大于255的文件，
+以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰
 
 ##### 2.0 文件夹介绍 :
 * Lighting : 光源/环境光(IBL)相关特效
