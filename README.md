@@ -5,8 +5,6 @@ Ray-MMD
 以更贴合物理的方式渲染MMD，该渲染需求MMD版本为926（低于926版本无法正确计算IBL),
 以及MME版本037，并且关闭MMD自带的抗锯齿。
 #### Screenshot :
-[![link text](https://github.com/ray-cast/images/raw/master/IBL1_small.png)](https://github.com/ray-cast/images/raw/master/IBL1.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/IBL2_small.png)](https://github.com/ray-cast/images/raw/master/IBL2.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/bloom_small.jpg)](https://github.com/ray-cast/images/raw/master/bloom.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.png)](https://github.com/ray-cast/images/raw/master/hou.png)
 [![link text](https://github.com/ray-cast/images/raw/master/sphere_small.jpg)](https://github.com/ray-cast/images/raw/master/sphere.jpg)
