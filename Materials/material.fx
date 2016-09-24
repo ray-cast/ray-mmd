@@ -15,8 +15,8 @@ const float3 albedo = 1.0;
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
-#define ALPHA_MAP_ENABLE 0
-#define ALPHA_MAP_IN_TEXTURE 0
+#define ALPHA_MAP_ENABLE 1
+#define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3 // (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
