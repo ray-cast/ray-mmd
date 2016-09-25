@@ -30,7 +30,7 @@ Ray-MMD
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2.jpg">
     <img src="https://github.com/ray-cast/images/raw/master/IBL2_small.png" width = "33%" height = "16.5%" align=center/>
 </a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL3.png">
+<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL.png">
     <img src="https://github.com/ray-cast/images/raw/master/IBL3_small.png" width = "33%" height = "16.5%" align=center/>
 </a>   
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
