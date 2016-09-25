@@ -297,5 +297,6 @@ Ray-MMD
 * [Physically Based Area Lights](http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf)
 * [Physics and Math of Shading](http://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf)
 * [Compact YCoCg Frame Buffer for small IBL-Buffer](http://jcgt.org/published/0001/01/02/)
+* [RGBM color encoding](http://graphicrants.blogspot.com/2009/04/rgbm-color-encoding.html)
 * [Horizon Occlusion for IBL](http://marmosetco.tumblr.com/post/81245981087)
 * [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)

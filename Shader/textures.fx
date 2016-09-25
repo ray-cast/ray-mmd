@@ -26,6 +26,7 @@ shared texture LightingMap: OFFSCREENRENDERTARGET <
         "ray_controller.pmx=hide;"
         "skybox_hdr.*=hide;"
         "skybox.*=hide;"
+        "AmbientLight*.* =./Lighting/shader/ambient_lighting.fx;"
         "SpotLight*.* =./Lighting/shader/spot_lighting.fx;"
         "PointLight*.* =./Lighting/shader/point_lighting.fx;"
         "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"

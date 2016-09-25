@@ -17,7 +17,10 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
+
+#ifndef AMBIENT_ENABLE
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+#endif
 
 #if SPOTLIGHT_ENABLE
 float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
@@ -51,6 +54,7 @@ float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "Right
 static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
+#elif AMBIENT_ENABLE
 #else
 static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
 #endif
@@ -192,11 +196,12 @@ void LightSourceVS(
     Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange / 2;
 #elif TUBELIGHT_ENABLE
     Position.xyz = LightPosition + (Position.xyz - LightPosition) * 10000;
+#elif AMBIENT_ENABLE
 #else
     Position.xyz = LightPosition + Normal * LightRange;
 #endif
     
-#if RECTANGLIELIGHT_ENABLE
+#if RECTANGLIELIGHT_ENABLE || AMBIENT_ENABLE
     oPosition = float4(CoordToPos(Texcoord), 0, 1);
     oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
     oTexcoord1 = -mul(oPosition, matProjectInverse);
@@ -208,7 +213,7 @@ void LightSourceVS(
 
 float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
 {
-#if RECTANGLIELIGHT_ENABLE
+#if RECTANGLIELIGHT_ENABLE || AMBIENT_ENABLE
     float2 coord = texcoord;
 #else
     float2 coord = texcoord.xy / texcoord.w;
@@ -226,7 +231,24 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float3 V = normalize(viewdir);
     float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
 
-#if SPOTLIGHT_ENABLE
+#if AMBIENT_ENABLE
+    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+    float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
+    
+    float3 L = normalize(viewLightDirection);
+    
+    float vis = saturate(dot(material.normal, L) * 0.5 + 0.5);
+    if (vis < 0)
+    {
+        clip(-1);
+    }
+    
+    float4 lighting = 0;
+    lighting.rgb = float3(mR, mG, mB) * vis;
+    lighting.rgb *= material.albedo;
+    return lighting;
+    
+#elif SPOTLIGHT_ENABLE
     float3 viewLightPosition = mul(float4(LightPosition + LightDirection, 1), matView).xyz;
     float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
     
@@ -383,7 +405,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
 #endif
 }
 
-#if RECTANGLIELIGHT_ENABLE
+#if RECTANGLIELIGHT_ENABLE || AMBIENT_ENABLE
     #define OBJECT_TEC(name, mmdpass) \
         technique name < string MMDPass = mmdpass;\
         > { \
