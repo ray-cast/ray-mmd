@@ -20,6 +20,9 @@ Ray-MMD
 * 删除了老式的ToneMapping，增加了Rec2020的输出
 * 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
 
+#### 国内镜像 :
+    https://coding.net/u/raycast/p/ray-mmd
+
 #### 教程 :
 ##### 1.0 简介 :
 　　IBL指的是基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
