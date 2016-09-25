@@ -10,6 +10,8 @@
 #define InvPIE 0.318309886142f
 
 float4x4 matViewProject : VIEWPROJECTION;
+float2 ViewportSize : VIEWPORTPIXELSIZE;
+static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
 
 float3 srgb2linear(float3 rgb)
 {
