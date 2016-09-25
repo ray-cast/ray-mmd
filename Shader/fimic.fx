@@ -50,7 +50,7 @@ void BloomBlurVS(
 {
     oPosition = Position;
     oTexcoord = Texcoord;
-    oTexcoord.xy += ViewportOffset  * n;
+    oTexcoord.xy += ViewportOffset * n;
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : SV_Target
