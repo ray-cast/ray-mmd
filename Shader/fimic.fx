@@ -14,7 +14,17 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
 
-    float4 color = tex2D(source, coord);
+    float2 offsets[] = {
+        float2( 0.0,  0.0),
+        float2(-1.0,  0.0),
+        float2( 1.0,  0.0),
+        float2( 0.0, -1.0),
+        float2( 0.0,  1.0),
+    };
+
+    float4 color = 1e100;
+    for (int i = 0; i < 5; i++)
+        color = min(tex2D(source, coord + offsets[i] * offset), color);
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
 
@@ -216,12 +226,12 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
     
     float3 bloom = 0.0f;
     bloom += bloom0;
-    //bloom += bloom1;
+    bloom += bloom1;
     bloom += bloom2;
     bloom += bloom3;
     bloom += bloom4;
     
-    float bloomIntensity = lerp(1, 10, mBloomIntensity);
+    float bloomIntensity = lerp(1, 20, mBloomIntensity);
     color += bloom * bloomIntensity;
 #endif
 
