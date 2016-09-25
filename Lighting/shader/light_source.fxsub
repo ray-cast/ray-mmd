@@ -17,10 +17,7 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-
-#ifndef AMBIENT_ENABLE
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-#endif
 
 #if SPOTLIGHT_ENABLE
 float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
@@ -244,7 +241,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     }
     
     float4 lighting = 0;
-    lighting.rgb = float3(mR, mG, mB) * vis;
+    lighting.rgb = float3(mR, mG, mB) * vis * LightIntensity;
     lighting.rgb *= material.albedo;
     return lighting;
     
