@@ -62,7 +62,7 @@ Ray-MMD
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 
 ##### 3.0 载入模型 :
-* 将ray.x载入到MMD中
+* 将ray.x载入到MMD中, 关闭MMD自带的抗锯齿
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx

@@ -258,153 +258,91 @@ texture2D BloomMapX1 : RENDERCOLORTARGET <
 texture2D BloomMapX2Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX2 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX3Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX3 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX4 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX5Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 texture2D BloomMapX5 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int MipLevels = 1;
-#if HDR_BLOOM_QUALITY > 2
-    string Format = "A16B16G16R16F";
-#else
-    string Format = "A2R10G10B10";
-#endif
+    string Format="A2R10G10B10";
 >;
 sampler2D BloomSampX1Temp = sampler_state {
     texture = <BloomMapX1Temp>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX1 = sampler_state {
     texture = <BloomMapX1>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX2Temp = sampler_state {
     texture = <BloomMapX2Temp>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX2 = sampler_state {
     texture = <BloomMapX2>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX3Temp = sampler_state {
     texture = <BloomMapX3Temp>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX3 = sampler_state {
     texture = <BloomMapX3>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX4Temp = sampler_state {
     texture = <BloomMapX4Temp>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX4 = sampler_state {
     texture = <BloomMapX4>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX5Temp = sampler_state {
     texture = <BloomMapX5Temp>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 sampler2D BloomSampX5 = sampler_state {
     texture = <BloomMapX5>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    MipFilter = Point;
-    AddressU  = Clamp;
-    AddressV = Clamp;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
 };
 #endif
