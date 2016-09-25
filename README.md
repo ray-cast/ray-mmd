@@ -157,7 +157,7 @@ Ray-MMD
 ```
     https://github.com/dariomanesku/cmftStudio
 ```
-* 启动cmftstudio
+* 启动cmftstudio(HDR建议看下面的教程，这篇适用与JPG,PNG之类非HDR的图片)
 * 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
 * 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
 * 如果是HDR文件，点ToneMapping，然后Apply即可(tga文件不需要此操作)  
@@ -196,11 +196,8 @@ Ray-MMD
 * 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
 [![link text](https://github.com/ray-cast/images/raw/master/6.5.png)](https://github.com/ray-cast/images/raw/master/6.5.png)
 * 这里提供一些天空盒的地址
-
-```
-    http://www.hdrlabs.com/sibl/archive.html
-    https://aokcub.net/cg/incskies/
-```
+    * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
+    * [++skies](https://aokcub.net/cg/incskies/)
 
 ##### 8.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
