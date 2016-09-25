@@ -1,9 +1,18 @@
-float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
+float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
 {
     float3 lighting = 0;
     
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     
+    float3 R = reflect(-V, N);
+    float3 D = L;
+    float r = sin(0.000066);
+    float d = cos(0.000066);
+    float dr = dot(D, R);
+    float3 S = normalize(R - dr * D);
+    float3 L2 = dr < d ? normalize(d * D + S * r) : R;
+    float illuminance = saturate(dot(N, D));
+
     float vis = saturate(dot(N, L));
     if (vis > 0)
     {
@@ -14,18 +23,13 @@ float3 ShadingMaterial(float3 V, float3 L, MaterialParam material)
 
         lighting *= material.albedo;
         lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
-        lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM);
-    }
-    
-    return lighting;
-}
-
-float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
-{
-    float3 lighting = ShadingMaterial(V, L, material);
+        lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM) * illuminance;
+        
 #if SHADOW_QUALITY > 0
     lighting *= tex2D(ShadowmapSamp, coord).r;
 #endif
+    }
+    
     return lighting;
 }
 
@@ -64,7 +68,7 @@ float4 DeferredShadingPS(
     MaterialParam materialAlpha;
     DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
     
-    float3 lighting2 = ShadingMaterial(V, L, materialAlpha);
+    float3 lighting2 = ShadingMaterial(V, L, coord, materialAlpha);
     
     float3 diffuse;
     float3 diffuse2;
