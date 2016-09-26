@@ -75,7 +75,7 @@ Ray-MMD
 　　因为考虑跨地区，文本统一使用了UTF8的编码，所以使用系统自带的修改保存会导致出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器来修改
 
 * Albedo(反照率，物体的贴图色)
-    * Albedo是描述光线与材质的反射率，与贴图(DiffuseMap)区别在Albedo没有类似头发的高光，它属于光滑度/金属产生的效果
+    * Albedo是描述光线与材质的反照率，与贴图(DiffuseMap)区别在Albedo没有类似头发的高光，它属于光滑度/金属产生的效果
     * 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
     * 默认albedo是启用贴图的,且贴图来至PMX模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
