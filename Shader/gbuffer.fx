@@ -113,6 +113,15 @@ float3 DecodeGBufferNormal(float4 buffer2)
     return DecodeNormal(buffer2.rgb);
 }
 
+float3 DecodeGBufferEmissive(float4 buffer3)
+{
+    int lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
+    if (lightModel == LIGHTINGMODEL_EMISSIVE)
+        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+    else
+        return 0;
+}
+
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
 {
     float3 v = mul(float4(CoordToPos(Tex), 0, 1), matProjectInverse).xyz;

@@ -42,10 +42,15 @@ float showSSAO <string UIName = "showSSAO"; string UIWidget = "Slider"; bool UIV
 float showSSR <string UIName = "showSSR"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 #endif
 
-shared texture2D OpaqueMap : RENDERCOLORTARGET;
-sampler OpaqueSamp = sampler_state {
-    texture = <OpaqueMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+texture2D ScnMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0,1.0};
+    int MipLevels = 1;
+    bool AntiAlias = false;
+    string Format = "X8R8G8B8";
+>;
+sampler ScnSamp = sampler_state {
+    texture = <ScnMap>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
@@ -98,7 +103,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showEmissiveAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO + showSSR;
     
-    float3 result = srgb2linear(tex2D(OpaqueSamp, coord).rgb) * !any(showTotal);
+    float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
     result += material.albedo * showAlbedo;
     result += (mul(material.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormal;
     result += material.specular * showSpecular;
@@ -137,7 +142,10 @@ float Script : STANDARDSGLOBAL <
 
 technique DebugController <
     string Script = 
-    "ScriptExternal=Color;"    
+    "RenderColorTarget0=ScnMap;"
+    "RenderDepthStencilTarget=;"
+    "ScriptExternal=Color;"
+    
     "RenderColorTarget=;"
     "RenderDepthStencilTarget=;"
     "Pass=DebugController;"

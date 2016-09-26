@@ -5,48 +5,20 @@ sampler NoiseMapSamp = sampler_state
     MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target0
+float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float4 offset0, uniform float4 offset1) : SV_Target0
 { 
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-
-    MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
-
-    float2 offsets[] = {
-        float2( 0.0,  0.0),
-        float2(-1.0,  0.0),
-        float2( 1.0,  0.0),
-        float2( 0.0, -1.0),
-        float2( 0.0,  1.0),
-    };
-
-    float4 color = 1e100;
-    for (int i = 0; i < 5; i++)
-        color = min(tex2D(source, coord + offsets[i] * offset), color);
+    float4 color = tex2D(source, coord);
+    color = min(tex2D(source, coord + offset0.xy), color);
+    color = min(tex2D(source, coord + offset0.zw), color);
+    color = min(tex2D(source, coord + offset1.xy), color);
+    color = min(tex2D(source, coord + offset1.zw), color);
     
-    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
+    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 
-    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        bloom += float4(material.emissive, 0);
-    }
-
-#if ALHPA_ENABLE > 0
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    
-    float alphaDiffuse = 0;
-    MaterialParam materialAlpha;
-    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
-    
-    if (materialAlpha.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        bloom += float4(materialAlpha.emissive, 0);
-    }
-#endif
+    bloom.rgb += DecodeGBufferEmissive(MRT3);
+    bloom.rgb += DecodeGBufferEmissive(MRT7);
     
     return bloom;
 }
@@ -63,8 +35,8 @@ void BloomBlurVS(
     oTexcoord.xy += ViewportOffset * n;
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : SV_Target
-{
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
+{    
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
     
@@ -110,19 +82,19 @@ float3 ACESFilmRec2020( float3 x )
 
 float3 FilmicTonemap(float3 color, float exposure)
 {
-    #if TONEMAP_OPERATOR == TONEMAP_LINEAR
-        return exposure * color;
-    #elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_709
-        color = color * exposure;
-        float3 curr = ACESFilmRec709(color);
-        return lerp(curr, color, mToneMapping);
-    #elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_2020
-        color = color * exposure;
-        float3 curr = ACESFilmRec2020(color);
-        return lerp(curr, color, mToneMapping);
-    #else
-        return color;
-    #endif
+#if TONEMAP_OPERATOR == TONEMAP_LINEAR
+    return exposure * color;
+#elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_709
+    color = color * exposure;
+    float3 curr = ACESFilmRec709(color);
+    return lerp(curr, color, mToneMapping);
+#elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_2020
+    color = color * exposure;
+    float3 curr = ACESFilmRec2020(color);
+    return lerp(curr, color, mToneMapping);
+#else
+    return color;
+#endif
 }
 
 float3 noise3(float2 seed)

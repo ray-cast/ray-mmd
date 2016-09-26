@@ -38,8 +38,6 @@ float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #endif
 
-#define ALHPA_LAYER_ENABLE 1
-
 #ifndef TEXTURE_ANISOTROPY_LEVEL
 #   define TEXTURE_ANISOTROPY_LEVEL 0
 #endif
@@ -64,11 +62,7 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #   define TEXTURE_MIP_FILTER POINT
 #endif
 
-#if ALHPA_LAYER_ENABLE > 0
-#   define AlphaThreshold 0.999
-#else
-#   define AlphaThreshold 0.5
-#endif
+#define AlphaThreshold 0.999
 
 #define PI 3.141592654f
 
@@ -488,65 +482,27 @@ float3 ColorSynthesis(float3 diffuse, float m)
 
 float GetAlpha(float2 coord, bool use_texture)
 {
-#if SKYBOX_ENABLE
-    return 1;
-#endif
-#if USE_CUSTOM_MATERIAL && ALHPA_LAYER_ENABLE > 0
-    #if ALPHA_MAP_ENABLE
-        #if ALPHA_MAP_UV_FLIP
+#if USE_CUSTOM_MATERIAL
+    #if ALBEDO_MAP_ENABLE
+        #if ALBEDO_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
     
-        #if ALPHA_MAP_IN_TEXTURE
-            if (use_texture)
-            {
-                #if ALPHA_MAP_SWIZZLE == 0
-                    return tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a;
-                #elif ALPHA_MAP_SWIZZLE == 1
-                    return tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a;
-                #elif ALPHA_MAP_SWIZZLE == 2
-                    return tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a;
-                #elif ALPHA_MAP_SWIZZLE == 3
-                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
-                #else
-                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
-                #endif            
-            }
-            else
-            {
-                return MaterialDiffuse.a;
-            }
+        #if ALBEDO_MAP_IN_TEXTURE
+            return use_texture ? tex2D(DiffuseMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a : MaterialDiffuse.a;
         #else
-            #if ALPHA_MAP_SWIZZLE == 0
-                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).r;
-            #elif ALPHA_MAP_SWIZZLE == 1
-                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).g;
-            #elif ALPHA_MAP_SWIZZLE == 2
-                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).b;
-            #elif ALPHA_MAP_SWIZZLE == 3
-                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
-            #else
-                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
-            #endif
+            return tex2D(AlphaMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a;
         #endif
     #else
-        return alpha;
+        return 1.0;
     #endif
 #else
-    if (use_texture)
-    {
-        return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
-    }
-    
-    return MaterialDiffuse.a;
+    return use_texture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
 #endif
 }
 
 float3 GetAlbedo(float2 uv, bool use_texture)
 {
-#if SKYBOX_ENABLE
-    return 0.0;
-#endif
 #if USE_CUSTOM_MATERIAL
     #if ALBEDO_MAP_ENABLE
         #if ALBEDO_MAP_UV_FLIP
@@ -916,7 +872,6 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
     }
 }
 
-#if ALHPA_LAYER_ENABLE > 0
 #define OBJECT_TEC(name, mmdpass, tex, sphere) \
     technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
     string Script = \
@@ -945,25 +900,6 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
             PixelShader  = compile ps_3_0 Material2PS(tex, sphere); \
         } \
     }
-#else
-#define OBJECT_TEC(name, mmdpass, tex, sphere) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
-    string Script = \
-        "RenderColorTarget0=;" \
-        "RenderColorTarget1=Gbuffer2RT;" \
-        "RenderColorTarget2=Gbuffer3RT;" \
-        "RenderColorTarget3=Gbuffer4RT;" \
-        "RenderDepthStencilTarget=;" \
-        "Pass=DrawObject;" \
-    ; \
-    > { \
-        pass DrawObject { \
-            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
-            VertexShader = compile vs_3_0 MaterialVS(); \
-            PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
-        } \
-    }
-#endif
 
 OBJECT_TEC(MainTec0, "object", false, false)
 OBJECT_TEC(MainTec1, "object", true, false)

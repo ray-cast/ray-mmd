@@ -130,7 +130,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
-        float depth = tex2D(OpaqueSamp, projPos.xy).a;
+        float depth = tex2D(ShadingMapSamp, projPos.xy).a;
         
         if (abs(depth - projPos.z) < intervalSize)
         {
@@ -163,7 +163,7 @@ float4 SSRayTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1
 
     clip(-material.normal.z);
     
-    float linearDepth = tex2D(OpaqueSamp, coord).a;
+    float linearDepth = tex2D(ShadingMapSamp, coord).a;
 
     float3 V = normalize(-viewdir);    
     float3 viewPosition = V * linearDepth / V.z;

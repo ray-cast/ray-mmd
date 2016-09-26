@@ -215,27 +215,36 @@ sampler ShadowmapSampTemp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
-shared texture2D OpaqueMap : RENDERCOLORTARGET <
+texture2D ShadingMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F";
 >;
-texture2D OpaqueMapTemp : RENDERCOLORTARGET <
+texture2D ShadingMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F";
 >;
-sampler OpaqueSamp = sampler_state {
-    texture = <OpaqueMap>;
+sampler ShadingMapSamp = sampler_state {
+    texture = <ShadingMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-sampler OpaqueSampTemp = sampler_state {
-    texture = <OpaqueMapTemp>;
+sampler ShadingMapTempSamp = sampler_state {
+    texture = <ShadingMapTemp>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
+shared texture2D FinalMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    string Format = "A2R10G10B10";
+>;
+sampler FinalMapSamp = sampler_state {
+    texture = <FinalMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 #if HDR_BLOOM_QUALITY > 0
 texture2D BloomMapX1Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};

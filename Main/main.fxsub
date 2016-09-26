@@ -95,7 +95,6 @@ float4 DrawObjectPS(
     }
 }
 
-#if ALHPA_ENABLE > 0
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
     > { \
@@ -105,16 +104,6 @@ float4 DrawObjectPS(
             PixelShader  = compile ps_3_0 DrawObjectPS(); \
         } \
     }
-#else
-#define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-    > { \
-        pass DrawObject { \
-            VertexShader = compile vs_3_0 DrawObjectVS(); \
-            PixelShader  = compile ps_3_0 DrawObjectPS(); \
-        } \
-    }
-#endif
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

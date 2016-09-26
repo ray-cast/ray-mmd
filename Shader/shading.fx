@@ -33,10 +33,7 @@ float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
     return lighting;
 }
 
-float4 DeferredShadingPS(
-    in float2 coord: TEXCOORD0,
-    in float3 viewdir: TEXCOORD1,
-    in float4 screenPosition : SV_Position) : COLOR
+float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
@@ -59,7 +56,7 @@ float4 DeferredShadingPS(
     lighting *= ssao;
 #endif
 
-#if (IBL_QUALITY > 1) && (ALHPA_ENABLE > 0)
+#if IBL_QUALITY >= 2
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -87,28 +84,8 @@ float4 DeferredShadingPS(
     #endif
     
     lighting = lerp(lighting + diffuse, lighting2 + diffuse2, alphaDiffuse);
-    
-#elif (IBL_QUALITY > 1) && (SSAO_SAMPLER_COUNT > 0)
-    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
-    float3 diffuse, specular;
-    DecodeYcbcr(EnvLightingSampler, coord, screenPosition, ViewportOffset2, diffuse, specular);
-    
-    #if SHADOW_QUALITY > 0
-        float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
-        diffuse *= shadow;
-        specular *= shadow;
-    #endif
-
-    #if SSAO_SAMPLER_COUNT > 0
-        float diffOcclusion = ssao * ssao;
-        float specOcclusion= DeriveSpecularOcclusion(abs(dot(worldNormal, V) + 1e-5), diffOcclusion, material.smoothness);
-        diffuse *= diffOcclusion;
-        specular *= specOcclusion;
-    #endif
-    
-    lighting += (diffuse + specular);    
-#elif IBL_QUALITY > 0
+#elif IBL_QUALITY == 1
     float4 envLighting = tex2D(EnvLightingSampler, coord);
     
     #if SSAO_SAMPLER_COUNT > 0

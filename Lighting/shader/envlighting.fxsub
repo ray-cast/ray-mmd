@@ -123,7 +123,7 @@ float4 EnvLightingPS(
     float3 diffuse, specular;    
     ShadingMaterial(V, material, diffuse, specular);
     
-#if (IBL_QUALITY > 1) && (ALHPA_ENABLE > 0)
+#if IBL_QUALITY >= 2
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -140,11 +140,8 @@ float4 EnvLightingPS(
     diffuse2 += specular2;
 
     return EncodeYcbcr(screenPosition, diffuse, diffuse2);
-    
-#elif (IBL_QUALITY > 1) && (SSAO_SAMPLER_COUNT > 0)
-    return EncodeYcbcr(screenPosition, diffuse, specular);
         
-#elif IBL_QUALITY > 0
+#elif IBL_QUALITY >= 1
     lighting.rgb += diffuse;
     lighting.rgb += specular;
     return lighting;

@@ -3,14 +3,17 @@
 #include "../shader/gbuffer.fx"
 #include "../shader/gbuffer_sampler.fx"
 
-shared texture2D OpaqueMap : RENDERCOLORTARGET;
-sampler OpaqueSamp = sampler_state 
-{
-    texture = <OpaqueMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+texture2D ScnMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0,1.0};
+    int MipLevels = 1;
+    bool AntiAlias = false;
+    string Format = "X8R8G8B8";
+>;
+sampler ScnSamp = sampler_state {
+    texture = <ScnMap>;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
 texture2D LinearDepthMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
@@ -218,8 +221,9 @@ float Script : STANDARDSGLOBAL <
 
 technique DepthOfField <
     string Script = 
-    "ScriptExternal=Color;"
+    "RenderColorTarget0=ScnMap;"
     "RenderDepthStencilTarget=;"
+    "ScriptExternal=Color;"
     
     "RenderColorTarget=LinearDepthMap;"
     "Pass=DofComputeCoc;"
@@ -241,7 +245,7 @@ technique DepthOfField <
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
         VertexShader = compile vs_3_0 DofDownsampleBlurVS();
-        PixelShader  = compile ps_3_0 DofDownsampleBlurPS(OpaqueSamp, float2(ViewportOffset2.x, 0), 3);
+        PixelShader  = compile ps_3_0 DofDownsampleBlurPS(ScnSamp, float2(ViewportOffset2.x, 0), 3);
     }
     pass DofDownsampleBlurY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
