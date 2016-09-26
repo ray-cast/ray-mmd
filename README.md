@@ -20,7 +20,8 @@ Ray-MMD
 * 删除了老式的ToneMapping，增加了Rec2020的输出
 * 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
 
-#### 国内镜像 :
+#### 项目主页 :
+* [Github](https://github.com/ray-cast/ray-mmd)
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 教程 :
