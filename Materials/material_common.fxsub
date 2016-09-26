@@ -112,17 +112,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && ALHPA_LAYER_ENABLE > 0 && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
-    texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
-    sampler AlphaMapSamp = sampler_state
-    {
-        texture = AlphaMap;
-        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-        ADDRESSU = WRAP; ADDRESSV = WRAP;
-    };
-#endif
-
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
     texture2D NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
     sampler NormalMapSamp = sampler_state
@@ -282,19 +271,6 @@ float3 EncodeNormal(float3 normal)
     float2 enc255 = enc * 255;
     float2 residual = floor(frac(enc255) * 16);
     return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
-}
-
-float3 DecodeNormal(float3 enc)
-{
-    float nz = floor(enc.z * 255) / 16;
-    enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
-    float2 fenc = enc.xy * 4 - 2;
-    float f = dot(fenc, fenc);
-    float g = sqrt(1 - f / 4);
-    float3 normal;
-    normal.xy = fenc * g;
-    normal.z = f / 2 - 1;
-    return normalize(normal);
 }
 
 float luminance(float3 rgb)
@@ -491,7 +467,7 @@ float GetAlpha(float2 coord, bool use_texture)
         #if ALBEDO_MAP_IN_TEXTURE
             return use_texture ? tex2D(DiffuseMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a : MaterialDiffuse.a;
         #else
-            return tex2D(AlphaMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a;
+            return tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a;
         #endif
     #else
         return 1.0;

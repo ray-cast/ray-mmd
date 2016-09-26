@@ -61,7 +61,7 @@ float4 DrawObjectPS(
     float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
     if (ExistRay)
     {
-        clip(albedo.a * MaterialDiffuse.a - 0.9);
+        clip(albedo.a * MaterialDiffuse.a - 0.98);
         return 0;
     }
     else
