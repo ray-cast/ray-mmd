@@ -33,6 +33,7 @@ float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
     return lighting;
 }
 
+#if FOG_ENABLE
 float3 ApplySkyFog(float3 color, float distance, float3 V)
 {
     float fogAmount = 1.0 - exp2(-distance * (mFogSky / 1000));
@@ -50,6 +51,7 @@ float3 ApplyGroundFog(float3 color, float distance, float3 P)
     fogAmount = pow(fogAmount, max(1 - mFogRadius, 0.01));
     return lerp(color, fogColor, fogAmount);
 }
+#endif
 
 float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
