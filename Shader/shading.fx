@@ -33,6 +33,24 @@ float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
     return lighting;
 }
 
+float3 ApplySkyFog(float3 color, float distance, float3 V)
+{
+    float fogAmount = 1.0 - exp2(-distance * (mFogSky / 1000));
+    float sunAmount = saturate(dot(V, LightDirection));
+    float3 sunColor = lerp(float3(mFogR, mFogG, mFogB), float3(mFogSkyR, mFogSkyG, mFogSkyB), mFogSkyTwoColor);
+    float3 fogColor = lerp(float3(mFogR, mFogG, mFogB), sunColor, sunAmount);
+    return lerp(color, fogColor, fogAmount);
+}
+
+float3 ApplyGroundFog(float3 color, float distance, float3 P)
+{
+    float fog = 1.0 - exp(-distance * P.y * (mFogHeight / 5000));
+    float fogAmount = saturate(mFogDensity * exp(-CameraPosition.y * (mFogHeight / 5000)) * fog / P.y);
+    float3 fogColor = float3(mFogR, mFogG, mFogB);
+    fogAmount = pow(fogAmount, max(1 - mFogRadius, 0.01));
+    return lerp(color, fogColor, fogAmount);
+}
+
 float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -97,6 +115,15 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     #endif
 
     lighting += envLighting.rgb;
+#endif
+
+#if FOG_ENABLE
+    float distance = tex2D(Gbuffer4Map, coord).r;
+    
+    float3 P = mul(float4(-viewdir * distance, 1), matViewInverse).xyz;
+    
+    lighting = ApplyGroundFog(lighting, distance, P);
+    lighting = ApplySkyFog(lighting, distance, V);
 #endif
 
 #if SSR_QUALITY > 0

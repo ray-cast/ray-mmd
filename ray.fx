@@ -82,6 +82,21 @@ float mSSRStrideZCutoff :  CONTROLOBJECT < string name="SSRController.pmx"; stri
 float mSSRFadeStart :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeStart"; >;
 float mSSRFadeEnd :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeEnd"; >;
 float mSSRFadeDistance :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeDistance"; >;
+
+    #if FOG_ENABLE
+        float mFogR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "R+"; >;
+        float mFogG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "G+"; >;
+        float mFogB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "B+"; >;
+        float mFogDensity :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Density"; >;
+        float mFogHeight :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Height"; >;
+        float mFogRadius :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Radius"; >;
+        float mFogFadeoff :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Fadeoff"; >;
+        float mFogSky :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Sky"; >;
+        float mFogSkyTwoColor :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyTwoColor"; >;
+        float mFogSkyR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyR+"; >;
+        float mFogSkyG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyG+"; >;
+        float mFogSkyB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyB+"; >;
+    #endif
 #else
 float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
 float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
