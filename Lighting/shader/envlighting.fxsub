@@ -82,8 +82,12 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     prefilteredSpeculr *= HorizonOcclusion(worldNormal, worldReflect);
 
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
-    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, roughness, material.specular);
     
+    if (all(material.specular))
+        specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, roughness, material.specular);
+    else
+        specular = 0.0;
+
     diffuse *= (1 + mEnvLightP * 5 - mEnvLightM);
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }
