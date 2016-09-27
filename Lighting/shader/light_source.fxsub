@@ -269,7 +269,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     lighting.rgb *= material.albedo;
     lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis  * any(material.albedo + material.specular);
     
 #if SHADOWMAP_ENABLE && SPOTLIGHT_ENABLE
     lighting *= ShadowMapFilter(P, 8);
@@ -298,7 +298,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     lighting.rgb *= material.albedo;
     lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
     return lighting;
     
 #elif TUBELIGHT_ENABLE
@@ -323,7 +323,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     lighting.rgb *= material.albedo;
     lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
     return lighting;
     
 #elif RECTANGLIELIGHT_ENABLE
@@ -371,7 +371,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
         lighting.rgb += RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular);
     #endif
     
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
     return lighting;
     
 #else
@@ -396,7 +396,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     lighting.rgb *= material.albedo;    
     lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis;
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
     
     return lighting;
 #endif

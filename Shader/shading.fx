@@ -23,7 +23,7 @@ float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
 
         lighting *= material.albedo;
         lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
-        lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM) * illuminance;
+        lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM) * any(material.albedo + material.specular);
         
 #if SHADOW_QUALITY > 0
     lighting *= tex2D(ShadowmapSamp, coord).r;

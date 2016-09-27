@@ -106,7 +106,7 @@ Ray-MMD
 * Metalness(金属程度)
     [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
     * metalness是一个在绝缘体，半导体，和导体的插值，取值范围在0 ~ 1，0为绝缘体，1表示导体(金属) (贴图方式和以上同理)  
-    * metalnessBaseSpecular用于指定物体最小的反射系数，添加这个值可以增加金属性(最好不要修改)
+    * metalnessBaseSpecular指定物体最小的反射系数，添加这个值可以增加金属性，0.0时物体不反射IBL的specular
     * 不同金属材质的反射系数，可以使用如下颜色指定Albedo (RGB中的颜色除以255)，然后metalness指定为1
     [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)
     [![link text](https://github.com/ray-cast/images/raw/master/dielectric.png)](https://github.com/ray-cast/images/raw/master/dielectric.png)
