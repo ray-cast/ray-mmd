@@ -219,7 +219,6 @@ technique DeferredLighting<
 #endif
 
     "RenderColorTarget0=ScnMap;"
-    "RenderDepthStencilTarget=DepthBuffer;"
     "Clear=Color;"
     "Clear=Depth;"
     "ScriptExternal=Color;"

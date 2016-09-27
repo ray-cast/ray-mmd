@@ -1,7 +1,7 @@
 // 最大半径
 #define LIGHTSOURCE_MAX_RANGE 50
 
-// 最大强度
+// 最小强度
 #define LIGHTSOURCE_MIN_INTENSITY 100
 
 // 最大强度

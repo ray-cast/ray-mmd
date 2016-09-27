@@ -1,4 +1,7 @@
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
+    float2 ViewPortRatio = {1.0,1.0};
+    int MipLevels = 1;
+    bool AntiAlias = false;
     string Format = "D24S8";
 >;
 
@@ -14,7 +17,7 @@ sampler ScnSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-shared texture LightingMap: OFFSCREENRENDERTARGET <
+shared texture LightMap: OFFSCREENRENDERTARGET <
     string Description = "Multi light source map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
@@ -37,14 +40,14 @@ shared texture LightingMap: OFFSCREENRENDERTARGET <
         "* = hide;";
 >;
 
-sampler LightingSampler = sampler_state {
-    texture = <LightingMap>;
+sampler LightMapSamp = sampler_state {
+    texture = <LightMap>;
     MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
 #if IBL_QUALITY > 0
-texture EnvLightingMap: OFFSCREENRENDERTARGET <
+texture EnvLightMap: OFFSCREENRENDERTARGET <
     string Description = "Image-based-lighting map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
@@ -63,8 +66,8 @@ texture EnvLightingMap: OFFSCREENRENDERTARGET <
         "*= hide;";
 >;
 
-sampler EnvLightingSampler = sampler_state {
-    texture = <EnvLightingMap>;
+sampler EnvLightMapSamp = sampler_state {
+    texture = <EnvLightMap>;
     MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };

@@ -390,6 +390,12 @@ float AdjustRoughness(float roughness, float3 normal)
     return roughness;
 }
 
+void DoWetProcess(inout float3 diffuse, inout float smoothness, float level)
+{
+   diffuse *= lerp(1.0, 0.3, level);
+   smoothness = min(smoothness * lerp(1.0, 2.5, level), 1.0);
+}
+
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
@@ -855,23 +861,21 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         "RenderColorTarget1=Gbuffer2RT;" \
         "RenderColorTarget2=Gbuffer3RT;" \
         "RenderColorTarget3=Gbuffer4RT;" \
-        "RenderDepthStencilTarget=;" \
         "Pass=DrawObject;" \
         "RenderColorTarget0=Gbuffer5RT;" \
         "RenderColorTarget1=Gbuffer6RT;" \
         "RenderColorTarget2=Gbuffer7RT;" \
         "RenderColorTarget3=Gbuffer8RT;" \
-        "RenderDepthStencilTarget=;" \
         "Pass=DrawAlphaObject;"\
     ; \
     > { \
         pass DrawObject { \
-            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
             PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
         } \
         pass DrawAlphaObject { \
-            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+            AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
             PixelShader  = compile ps_3_0 Material2PS(tex, sphere); \
         } \

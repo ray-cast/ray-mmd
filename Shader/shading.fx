@@ -67,7 +67,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 
     float3 lighting = 0;
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
-    lighting += tex2D(LightingSampler, coord).rgb;
+    lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(V, L, coord, material);
     
 #if SSAO_SAMPLER_COUNT > 0
@@ -89,7 +89,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     
     float3 diffuse;
     float3 diffuse2;
-    DecodeYcbcr(EnvLightingSampler, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+    DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
     
     #if SHADOW_QUALITY > 0
         float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
