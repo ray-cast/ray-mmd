@@ -1,29 +1,29 @@
+#if SHADOW_QUALITY == 1
+#   define SHADOW_MAP_SIZE 1024
+#elif SHADOW_QUALITY == 2
+#   define SHADOW_MAP_SIZE 2048
+#elif SHADOW_QUALITY == 3
+#   define SHADOW_MAP_SIZE 4096
+#elif SHADOW_QUALITY == 4
+#   define SHADOW_MAP_SIZE 8192
+#endif
+
+#define BIAS_SCALE 0.005
+#define WARP_RANGE  8
+#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
+
 const float CascadeZMax = 2000;
 const float CascadeZMin = 5;
 
-const float LightZMax = 4000.0;
+const float LightZMax = 2000.0;
 const float LightZMin = 1;
-const float LightDistance = 1000;
+const float LightDistance = 500;
 
 const float CascadeScale = 0.5;
-const float CasterAlphaThreshold = 0.8;
 const float RecieverAlphaThreshold = 0.01;
 
 const float LightPlaneNear = 0.1;
 const float LightPlaneFar = 500.0;
-
-#define BIAS_SCALE 0.005
-
-#if SHADOW_QUALITY < 2
-#define SHADOW_MAP_SIZE 2048
-#elif SHADOW_QUALITY == 2
-#define SHADOW_MAP_SIZE 4096
-#else
-#define SHADOW_MAP_SIZE 8192
-#endif
-
-#define WARP_RANGE  8
-#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
 float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
 {
@@ -118,7 +118,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
     float4 rbn = float4(rtn.x, lbn.yzw), rbf = float4(rtf.x, lbf.yzw);
     float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
 
-    float4 orthographicBB = float4(9999, 9999, -9999,-9999);
+    float4 orthographicBB = float4(4999, 4999, -4999,-4999);
 
     float2 vpos;
     #define CalcMinMax(inV) \
@@ -177,7 +177,7 @@ float2 ComputeMoments(float depth)
 
     float2 moments;
     moments.x = depth;   
-    moments.x = depth * depth + 0.25 *(dx * dx + dy * dy);
+    moments.y = depth * depth + 0.25 *(dx * dx + dy * dy);
 
     return moments;
 }

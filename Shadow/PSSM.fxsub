@@ -9,6 +9,7 @@ static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightVie
 static float4x4 matLightWorldViewProject = mul(matLightView, matLightProject);
 static float4x4 lightParam = CreateLightProjParameters(matLightProjectionToCameraView);
 
+#if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseSamp = sampler_state
 {
@@ -16,6 +17,7 @@ sampler DiffuseSamp = sampler_state
     MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
     ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
+#endif
 
 void CascadeShadowMapVS(
     in float4 Position : POSITION,
@@ -41,11 +43,13 @@ float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 coord1 : TEXCOORD1, 
     clip(clipUV.y);
     clip(!opadd - 0.001f);
 
+#if CASTER_ALPHA_ENABLE
     float alpha = MaterialDiffuse.a;
-    alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
+#if CASTER_ALPHA_MAP_ENABLE
     if ( useTexture ) alpha *= tex2D(DiffuseSamp, coord0.xy).a;
+#endif
     clip(alpha - CasterAlphaThreshold);
-
+#endif
     return coord1.z;
 }
 
@@ -53,22 +57,22 @@ float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 coord1 : TEXCOORD1, 
     technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
     > { \
         pass CascadeShadowMap0 { \
-            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            AlphaBlendEnable = false; AlphaTestEnable = false; \
             VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1, 1, 0)); \
             PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
         pass CascadeShadowMap1 { \
-            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            AlphaBlendEnable = false; AlphaTestEnable = false; \
             VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1, 1, 1)); \
             PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
         pass CascadeShadowMap2 { \
-            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            AlphaBlendEnable = false; AlphaTestEnable = false; \
             VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1,-1, 2)); \
             PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \
         pass CascadeShadowMap3 { \
-            AlphaBlendEnable = false; AlphaTestEnable = true; \
+            AlphaBlendEnable = false; AlphaTestEnable = false; \
             VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1,-1, 3)); \
             PixelShader  = compile ps_3_0 CascadeShadowMapPS(tex); \
         } \

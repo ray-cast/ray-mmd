@@ -17,16 +17,11 @@ sampler DiffuseMapSamp = sampler_state {
 	ADDRESSU  = WRAP;	ADDRESSV  = WRAP;
 };
 
-shared texture LightMap : OFFSCREENRENDERTARGET;
-sampler LightSamp = sampler_state {
-	texture = <LightMap>;
-	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = LINEAR;
+shared texture PSSM : OFFSCREENRENDERTARGET;
+sampler PSSMsamp = sampler_state {
+	texture = <PSSM>;
+	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = POINT;
 	AddressU  = CLAMP;	AddressV = CLAMP;
-};
-
-struct DrawObjectNoShadow_OUTPUT {
-	float4 Pos : POSITION;
-	float3 Tex : TEXCOORD0;
 };
 
 struct DrawObject_OUTPUT
@@ -54,31 +49,31 @@ inline float4 CalcCascadePPos(float2 uv, float2 offset, float index)
 	return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
 }
 
-DrawObjectNoShadow_OUTPUT ShadowlessObjectVS(float4 Pos : POSITION, float3 Normal : NORMAL, float2 Tex : TEXCOORD0, uniform bool useTexture)
+void ShadowlessObjectVS(
+	in float4 Position : POSITION, 
+	in float2 Texcoord : TEXCOORD0,
+	out float3 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
 {
-	DrawObjectNoShadow_OUTPUT Out = (DrawObjectNoShadow_OUTPUT)0;
-	Out.Pos = mul(Pos, matWorldViewProject);
-	Out.Tex.xy = Tex.xy;
-	Out.Tex.z = Out.Pos.w;
-	return Out;
+	oPosition = mul(Position, matViewProject);
+	oTexcoord.xy = Texcoord.xy;
+	oTexcoord.z = oPosition.z;
 }
 
-float4 ShadowlessObjectPS(DrawObjectNoShadow_OUTPUT IN, uniform bool useTexture) : COLOR
+float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 {
-	clip( !opadd - 0.001f );
+	clip(!opadd - 0.001f);
 	float alpha = MaterialDiffuse.a;
-	alpha *= (abs(MaterialDiffuse.a - 0.98) >= 0.01);
-	if ( useTexture ) alpha *= tex2D( DiffuseMapSamp, IN.Tex.xy ).a;
+	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord).a;
 	clip(alpha - RecieverAlphaThreshold);
-	float distanceFromCamera = IN.Tex.z;
-	return float4(1, 0.0, distanceFromCamera, alpha);
+	return float4(1, 0.0, coord.z, alpha);
 }
 
 DrawObject_OUTPUT DrawObject_VS(float4 Pos : POSITION, float3 Normal : NORMAL, float2 Tex : TEXCOORD0, uniform bool useTexture)
 {
 	DrawObject_OUTPUT Out = (DrawObject_OUTPUT)0;
 
-	Out.PPos = Out.Pos = mul(Pos, matWorldViewProject);
+	Out.PPos = Out.Pos = mul(Pos, matViewProject);
 	Out.Normal = Normal;
 
 	float4 PPos = mul(Pos, matLightWorldViewProject);
@@ -121,8 +116,8 @@ float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
 	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
 
-	float casterDepth0 = tex2D(LightSamp, texCoord0.xy).x;
-	float casterDepth1 = tex2D(LightSamp, texCoord1.xy).x;
+	float casterDepth0 = tex2D(PSSMsamp, texCoord0.xy).x;
+	float casterDepth1 = tex2D(PSSMsamp, texCoord1.xy).x;
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = IN.Tex.w;
 
@@ -145,33 +140,33 @@ float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 
 	#if SHADOW_QUALITY >= 2
 	const float scale = 1.0 / (5 + 4 * 0.75);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2(-s,-s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s,-s)).x, receiverDepth, sdrate);
 	light_sub *= 0.75;
 	#else
 	const float scale = 1.0 / 5;
 	#endif
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2( s, 0)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2(-s, 0)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2( 0, s)).x, receiverDepth, sdrate);
-	light_sub += CalcLight(tex2D(LightSamp, texCoord0.xy + float2( 0,-s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, 0)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, 0)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0, s)).x, receiverDepth, sdrate);
+	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0,-s)).x, receiverDepth, sdrate);
 
 	float lightPCF = (light + light_sub) * scale;
 	light = lerp(light, lightPCF, texCoord0.w);
 	light = light * light;
 	light = min(light, (dotNL > 0.0));
 	
-	return float4(light, thick, distanceFromCamera, alpha);
+	return float4(light, distanceFromCamera, 0, 1);
 }
-
 
 #define OBJECT_NO_SHADOW_TEC(name, mmdpass, tex) \
 	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
 	> { \
 		pass DrawObject { \
-			VertexShader = compile vs_3_0 ShadowlessObjectVS(tex); \
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+			VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
 			PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
 		} \
 	}
@@ -180,6 +175,7 @@ float4 DrawObject_PS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
 	> { \
 		pass DrawObject { \
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
 			VertexShader = compile vs_3_0 DrawObject_VS(tex); \
 			PixelShader  = compile ps_3_0 DrawObject_PS(tex); \
 		} \

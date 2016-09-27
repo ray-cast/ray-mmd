@@ -15,6 +15,7 @@ sampler ScnSamp = sampler_state {
 };
 
 shared texture LightingMap: OFFSCREENRENDERTARGET <
+    string Description = "Multi light source map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
     float4 ClearColor = { 0, 0, 0, 0 };
@@ -44,6 +45,7 @@ sampler LightingSampler = sampler_state {
 
 #if IBL_QUALITY > 0
 texture EnvLightingMap: OFFSCREENRENDERTARGET <
+    string Description = "Image-based-lighting map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
 #if IBL_QUALITY > 1
@@ -69,6 +71,7 @@ sampler EnvLightingSampler = sampler_state {
 #endif
 
 shared texture MaterialMap: OFFSCREENRENDERTARGET <
+    string Description = "Material cache map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
@@ -194,27 +197,6 @@ sampler Gbuffer8Map = sampler_state {
     MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
-#if SHADOW_QUALITY > 0
-shared texture2D ShadowmapMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "G16R16F";
->;
-texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
->;
-sampler ShadowmapSamp = sampler_state {
-    texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-sampler ShadowmapSampTemp = sampler_state {
-    texture = <ShadowmapMapTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-#endif
 texture2D ShadingMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };

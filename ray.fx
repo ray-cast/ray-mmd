@@ -38,6 +38,7 @@
 
 const float4 BackColor  = float4(0,0,0,0);
 const float ClearDepth  = 1.0;
+const int ClearStencil  = 0;
 
 #if !defined(MIKUMIKUMOVING)
 float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
@@ -208,11 +209,13 @@ technique DeferredLighting<
     "RenderDepthStencilTarget=DepthBuffer;"
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
-    "ClearSetStencil=0;"
+    "ClearSetStencil=ClearStencil;"
     
-#if SHADOW_QUALITY > 0
+#if SHADOW_QUALITY && SHADOW_SOFT_ENABLE
     "RenderColorTarget0=ShadowmapMapTemp;  Pass=ShadowBlurPassX;"
     "RenderColorTarget0=ShadowmapMap;      Pass=ShadowBlurPassY;"
+#elif SHADOW_QUALITY
+    "RenderColorTarget0=ShadowmapMap;  Pass=ShadowMapNoBlur;"
 #endif
 
     "RenderColorTarget0=ScnMap;"
@@ -291,18 +294,25 @@ technique DeferredLighting<
 #endif
 ;>
 {
-#if SHADOW_QUALITY > 0
+#if SHADOW_QUALITY && SHADOW_SOFT_ENABLE
     pass ShadowBlurPassX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ShadowMappingVS();
-        PixelShader  = compile ps_3_0 ShadowMappingPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass ShadowBlurPassY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ShadowMappingVS();
-        PixelShader  = compile ps_3_0 ShadowMappingPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
+    }
+#elif   SHADOW_QUALITY
+    pass ShadowMapNoBlur < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
 #if SSAO_SAMPLER_COUNT > 0
@@ -312,7 +322,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAO();
     }
-#   if SSAO_BLUR_RADIUS > 0
+    #if SSAO_BLUR_RADIUS > 0
     pass SSAOBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -325,7 +335,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-#   endif
+    #endif
 #endif
     pass DeferredShading < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -340,7 +350,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSGI();
     }
-#   if SSGI_BLUR_RADIUS > 0
+    #if SSGI_BLUR_RADIUS > 0
     pass SSGIBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -349,14 +359,12 @@ technique DeferredLighting<
     }
     pass SSGIBlurY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = true; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        SrcBlend = ONE;
-        DestBlend = ONE;
+        SrcBlend = ONE; DestBlend = ONE;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSGIBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-#   endif
+    #endif
 #endif
 #if SSSS_QUALITY > 0
     pass SSSSStencilTest < string Script= "Draw=Buffer;"; > {
