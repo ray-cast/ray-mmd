@@ -212,22 +212,22 @@ texture2D ShadingMapTemp : RENDERCOLORTARGET <
 >;
 sampler ShadingMapSamp = sampler_state {
     texture = <ShadingMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler ShadingMapTempSamp = sampler_state {
     texture = <ShadingMapTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 shared texture2D FinalMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
-    string Format = "A2R10G10B10";
+    string Format = "A8R8G8B8";
 >;
 sampler FinalMapSamp = sampler_state {
     texture = <FinalMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if HDR_BLOOM_QUALITY > 0

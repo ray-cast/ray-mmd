@@ -134,7 +134,7 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 #if SKYDOME_ENABLE
     if (ExistRay)
     {
-        color *= lerp(1, tex2D(ShadowmapSamp, float2(screenPosition.xy) / ViewportSize + ViewportOffset).r, 0.9);
+        color *= lerp(1, tex2D(ShadowmapSamp, float2(screenPosition.xy) / ViewportSize + ViewportOffset).r, 0.5);
     }
 #endif
     
