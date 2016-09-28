@@ -3,6 +3,8 @@
 #include "../../shader/common.fx"
 #include "../../shader/shadowcommon.fx"
 
+static const float CasterAlphaThreshold = 0.8;
+
 float mRangeP : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
 float mAngleM : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Angle-"; >;
 float mIntensityM : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Intensity-"; >;
