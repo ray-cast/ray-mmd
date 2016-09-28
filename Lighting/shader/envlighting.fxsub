@@ -110,7 +110,8 @@ float4 EnvLightingPS(
     float3 viewdir  : TEXCOORD1,
     float4 texcoord2 : TEXCOORD2,
     float4 screenPosition : SV_Position) : SV_Target
-{
+{   
+#if IBL_QUALITY > 0
     float2 coord = texcoord2.xy / texcoord2.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
@@ -127,7 +128,6 @@ float4 EnvLightingPS(
     float3 diffuse, specular;    
     ShadingMaterial(V, material, diffuse, specular);
     
-#if IBL_QUALITY >= 2
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -144,12 +144,6 @@ float4 EnvLightingPS(
     diffuse2 += specular2;
 
     return EncodeYcbcr(screenPosition, diffuse, diffuse2);
-        
-#elif IBL_QUALITY >= 1
-    lighting.rgb += diffuse;
-    lighting.rgb += specular;
-    return lighting;
-    
 #else
     return 0.0f;
 #endif

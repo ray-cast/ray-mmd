@@ -1,8 +1,6 @@
-float3 ShadingMaterial(float3 V, float3 L, float2 coord, MaterialParam material)
+float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
 {
     float3 lighting = 0;
-    
-    float3 N = mul(material.normal, (float3x3)matViewInverse);
     
     float3 R = reflect(-V, N);
     float3 D = L;
@@ -63,20 +61,21 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
     float3 V = normalize(mul(viewdir, (float3x3)matViewInverse));
+    float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
     float3 lighting = 0;
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
     lighting += tex2D(LightMapSamp, coord).rgb;
-    lighting += ShadingMaterial(V, L, coord, material);
+    lighting += ShadingMaterial(N, V, L, coord, material);
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
     ssao = pow(ssao, 1 + mSSAOP * 10 - mSSAOM);
     lighting *= ssao;
 #endif
-
-#if IBL_QUALITY >= 2
+    
+#if IBL_QUALITY > 0
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -85,38 +84,36 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     MaterialParam materialAlpha;
     DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
     
-    float3 lighting2 = ShadingMaterial(V, L, coord, materialAlpha);
+    float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
+    float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
     
     float3 diffuse;
     float3 diffuse2;
-    DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
-    
-    #if SHADOW_QUALITY > 0
-        float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
-        diffuse *= shadow;
-        diffuse2 *= shadow;
-    #endif
+#if IBL_QUALITY == 1
+    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+#else
+    DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+#endif
 
-    #if SSAO_SAMPLER_COUNT > 0
-        float diffOcclusion = ssao * ssao;
+#if SSAO_SAMPLER_COUNT > 0
+    float diffOcclusion = ssao * ssao;
+    #if IBL_QUALITY == 1
         diffuse *= diffOcclusion;
         diffuse2 *= diffOcclusion;
+    #else
+        float specOcclusion = ComputeSpecularOcclusion(dot(N, V), diffOcclusion, material.smoothness);
+        diffuse *= (diffOcclusion + specOcclusion) * 0.5;
+        diffuse2 *= (diffOcclusion + specOcclusion) * 0.5;
     #endif
+#endif
+
+#if SHADOW_QUALITY > 0
+    float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
+    diffuse *= shadow;
+    diffuse2 *= shadow;
+#endif
     
     lighting = lerp(lighting + diffuse, lighting2 + diffuse2, alphaDiffuse);
-
-#elif IBL_QUALITY == 1
-    float4 envLighting = tex2D(EnvLightingSampler, coord);
-    
-    #if SSAO_SAMPLER_COUNT > 0
-        envLighting *= (ssao * ssao);
-    #endif
-    
-    #if SHADOW_QUALITY > 0
-        envLighting *= lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
-    #endif
-
-    lighting += envLighting.rgb;
 #endif
 
 #if FOG_ENABLE

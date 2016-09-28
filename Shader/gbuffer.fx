@@ -154,7 +154,7 @@ float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
     return result;   
 }
 
-void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
+void DecodeYcbcrWithEdgeFilter(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
 {
     float4 packed = tex2D(source, coord);
     
@@ -165,6 +165,27 @@ void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 off
     
     env2.rg = EdgeFilter(packed.rg, env2.rg, env3.rg, env4.rg, env5.rg);
     env2.ba = EdgeFilter(packed.ba, env2.ba, env3.ba, env4.ba, env5.ba);
+
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+    
+    color1 = (pattern) ? float3(packed.rg, env2.g) : float3(packed.r, env2.g, packed.g);
+    color2 = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+
+    color1 = ycbcr2rgb(color1);
+    color2 = ycbcr2rgb(color2);
+}
+
+void DecodeYcbcrBilinearFilter(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
+{
+    float4 packed = tex2D(source, coord);
+    
+    float4 env2 = tex2D(source, coord + float2(offset.x, 0.0));
+    float4 env3 = tex2D(source, coord - float2(offset.x, 0.0));
+    float4 env4 = tex2D(source, coord + float2(0.0, offset.y));
+    float4 env5 = tex2D(source, coord - float2(0.0, offset.y));
+    
+    env2.rg = (env2.rg + env3.rg + env4.rg + env5.rg) * 0.25;
+    env2.ba = (env2.ba + env3.ba + env4.ba + env5.ba) * 0.25;
 
     bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
     

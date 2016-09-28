@@ -51,11 +51,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
     string Description = "Image-based-lighting map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
-#if IBL_QUALITY > 1
     float4 ClearColor = { 0, 0.5, 0, 0.5 };
-#else
-    float4 ClearColor = { 0, 0, 0, 0 };
-#endif
     float ClearDepth = 1.0;
     int Miplevels = 1;
     bool AntiAlias = false;
