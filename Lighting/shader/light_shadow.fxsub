@@ -3,8 +3,6 @@
 #include "../../shader/common.fx"
 #include "../../shader/shadowcommon.fx"
 
-static const float CasterAlphaThreshold = 0.8;
-
 float mRangeP : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
 float mAngleM : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Angle-"; >;
 float mIntensityM : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Intensity-"; >;
@@ -13,7 +11,12 @@ float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item 
 
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mPosition + LightDirection;
+
+#if SPOTLIGHT_ENABLE
+static float3 LightPosition = mDirection;
+#else
+static float3 LightPosition = mPosition;
+#endif
 
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 

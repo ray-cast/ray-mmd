@@ -15,8 +15,8 @@ float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensi
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 
-static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
+static float3 LightPosition = mPosition;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
 #if SPOTLIGHT_ENABLE
@@ -104,15 +104,18 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
     string DefaultEffect = 
         "self = hide;"
         "skybox*.pmx = hide;"
-        "*.pmx = shadowmap.fx;"
-        "*.pmd = shadowmap.fx;"
+        "ray_controller.pmx=hide;"
+#if SPOTLIGHT_ENABLE
+        "*.pmx = spot_shadow.fx;"
+        "*.pmd = spot_shadow.fx;"
+#endif
         "* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
     texture = <ShadowMap>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
-    MipFilter = LINEAR;
+    MipFilter = NONE;
     AddressU = CLAMP;
     AddressV = CLAMP;
 };
@@ -123,7 +126,11 @@ static float2 ShadowmapOffset2 = float2(1.0 / SHADOWMAP_SIZE, 1.0 / SHADOWMAP_SI
 float ShadowMapFilter(float3 viewPosition, int samples) 
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
+#if SPOTLIGHT_ENABLE
+    float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, mDirection));
+#else
     float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, LightPosition));
+#endif
     float4 proj = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, shadowPosition);
     
     proj.xy = PosToCoord(proj.xy / proj.w);
@@ -134,19 +141,19 @@ float ShadowMapFilter(float3 viewPosition, int samples)
     float shadow = 0.0;
     float offset = (samples - 1.0) / 2.0;
 
-    for (float x = -offset; x <= offset; x += 1.0) 
+    for (float x = -offset; x <= offset; x++) 
     {
-        for (float y = -offset; y <= offset; y += 1.0) 
+        for (float y = -offset; y <= offset; y++)
         {
             float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-            shadow += tex2D(ShadowMapSamp, pos).r * proj.z;
+            shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
         }
     }
     
     shadow /= samples * samples;
     return saturate(shadow);
 #else
-    float shadow = tex2D(ShadowMapSamp, proj.xy).r * proj.z;
+    float shadow = saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);
     return saturate(shadow);
 #endif    
 }
@@ -246,7 +253,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     return lighting;
     
 #elif SPOTLIGHT_ENABLE
-    float3 viewLightPosition = mul(float4(LightPosition + LightDirection, 1), matView).xyz;
+    float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
     float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
     
     float3 L = viewLightPosition - P;
