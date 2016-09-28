@@ -82,12 +82,6 @@ float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
     return FL * FV * energyFactor;
 }
 
-float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
-{
-    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return BurleyBRDF(N, L, V, roughness);
-}
-
 float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
 {
     float w = lerp(0, 0.5, luminance(transmittanceColor));
@@ -96,6 +90,23 @@ float3 TranslucencyBRDF(float3 N, float3 L, float3 transmittanceColor)
     float transmittance = saturate((-nl + w) * wn);
     float diffuse = saturate((nl + w) * wn);
     return diffuse + transmittanceColor * transmittance;
+}
+
+float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
+{
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
+    return BurleyBRDF(N, L, V, roughness);
+}
+
+float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittanceColor)
+{
+    float nl = dot(N, L);
+    float w = lerp(0, 0.5, luminance(transmittanceColor));
+    float wn = 1.0 / ((1 + w) * (1 + w));    
+    float transmittanceFront = saturate((nl + w) * wn);
+    float transmittanceBack = saturate((-nl + w) * wn);    
+    float diffuse = DiffuseBRDF(N, L, V, gloss) - w * wn;    
+    return diffuse + transmittanceColor * (transmittanceFront + transmittanceBack);
 }
 
 float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, float3 specular)

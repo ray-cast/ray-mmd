@@ -1,30 +1,16 @@
 float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
 {
     float3 lighting = 0;
-    
-    float3 R = reflect(-V, N);
-    float3 D = L;
-    float r = sin(0.000066);
-    float d = cos(0.000066);
-    float dr = dot(D, R);
-    float3 S = normalize(R - dr * D);
-    float3 L2 = dr < d ? normalize(d * D + S * r) : R;
-    float illuminance = saturate(dot(N, D));
 
     float vis = saturate(dot(N, L));
     if (vis > 0)
     {
-        if (material.lightModel == LIGHTINGMODEL_NORMAL || material.lightModel == LIGHTINGMODEL_EMISSIVE)
-            lighting = DiffuseBRDF(N, L, V, material.smoothness);
-        else if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-            lighting = TranslucencyBRDF(N, L, material.transmittance);
-
-        lighting *= material.albedo;
+        lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, material.transmittance);
         lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular);
         lighting *= LightSpecular * vis * (1 + mDirectLightP * 10 - mDirectLightM) * any(material.albedo + material.specular);
         
 #if SHADOW_QUALITY > 0
-    lighting *= tex2D(ShadowmapSamp, coord).r;
+        lighting *= tex2D(ShadowmapSamp, coord).r;
 #endif
     }
     
@@ -69,7 +55,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
     
-#if SSAO_QUALITY && SSAO_SAMPLER_COUNT
+#if SSAO_MODE && SSAO_SAMPLER_COUNT
     float ssao = tex2D(SSAOMapSamp, coord).r;
     ssao = pow(ssao, 1 + mSSAOP * 10 - mSSAOM);
     lighting *= ssao;
@@ -95,7 +81,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
 #endif
 
-#if SSAO_QUALITY && SSAO_SAMPLER_COUNT
+#if SSAO_MODE && SSAO_SAMPLER_COUNT
     float diffOcclusion = ssao * ssao;
     #if IBL_QUALITY == 1
         diffuse *= diffOcclusion;
@@ -125,13 +111,9 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting = ApplySkyFog(lighting, distance, V);
 #endif
 
-#if SSR_QUALITY > 0
     float linearDepth = tex2D(Gbuffer4Map, coord).r;
     float linearDepth2 = tex2D(Gbuffer8Map, coord).r;
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
 
     return float4(lighting, linearDepth);
-#else
-    return float4(lighting, 0.0f);
-#endif
 }

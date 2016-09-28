@@ -1,14 +1,12 @@
-#if SSAO_QUALITY >= 2
+#if SSAO_MODE >= 2
 shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "R16F";
+    string Format = "R32F";
     float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "skybox_hdr.*=hide;"
-        "skybox.*=hide;"
         "*.pmd = ./shadow/SSAO.fx;"
         "*.pmx = ./shadow/SSAO.fx;"
         "*=hide;";
@@ -51,7 +49,7 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 texcoord)
 {
-#if SSAO_QUALITY >= 2
+#if SSAO_MODE >= 2
     return tex2D(SSAODepthMapSamp, texcoord).r;
 #else
     return tex2D(Gbuffer4Map, texcoord).r;

@@ -1,9 +1,4 @@
-#define DEPTH_LENGTH (1.0 / (10000.0f + 1.0))
-
-float SSSSlinearizeDepth(float2 texcoord)
-{
-    return tex2D(Gbuffer4Map, texcoord).r;
-}
+#define DEPTH_LENGTH (1.0 / (5000.0f + 1.0))
 
 float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
 {
@@ -14,7 +9,16 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    
+    float alphaDiffuse = 0;
+    MaterialParam materialAlpha;
+    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+    
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE &&
+        materialAlpha.lightModel  != LIGHTINGMODEL_TRANSMITTANCE)
     {
         clip(-1);
     }
@@ -30,16 +34,20 @@ float4 GuassBlurPS(
 {
     const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
 
-    const float3 profileVarArr[2] =
+    const float3 profileVarArr[4] =
     {
         float3( 3.3, 2.8, 1.4 ),  // marble
-        float3( 3.3, 1.4, 1.1 )   // skin
+        float3( 3.3, 1.4, 1.1 ),   // skin
+        float3( 1.0, 1.0, 1.0 ),
+        float3( 1.0, 1.0, 1.0 )
     };
 
-    const float4 profileSpikeRadArr[2] =
+    const float4 profileSpikeRadArr[4] =
     {
         float4( 0.35, 0.35, 0.35, 8.0 ), // marble
-        float4( 0.15, 0.2, 0.25, 1.0) // skin
+        float4( 0.15, 0.2, 0.25, 1.0), // skin
+        float4( 1.0, 1.0, 1.0, 1.0),
+        float4( 1.0, 1.0, 1.0, 1.0)
     };
 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -49,12 +57,10 @@ float4 GuassBlurPS(
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, material);
     
-    float depthM = SSSSlinearizeDepth(coord);
+    float4 colorM = tex2D(source, coord.xy);
     
     float3 V = normalize(viewdir);
-    float3 P = V * depthM / V.z;
-
-    float4 colorM = tex2D(source, coord.xy);
+    float3 P = V * colorM.a / V.z;
 
     float perspectiveScaleX = dot(normalize(material.normal.xz), normalize(-P.xz));
     float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
@@ -65,7 +71,7 @@ float4 GuassBlurPS(
     float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount : 1.0;
     float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
     
-    float2 finalStep = direction * perspectiveScale * radius / (depthM * DEPTH_LENGTH);
+    float2 finalStep = direction * perspectiveScale * radius / (colorM.a * DEPTH_LENGTH);
 
     float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
 
@@ -78,14 +84,11 @@ float4 GuassBlurPS(
         float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
         float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
 
-        float sampleDepth1 = SSSSlinearizeDepth(offset1).r;
-        float sampleDepth2 = SSSSlinearizeDepth(offset2).r;
+        float4 sampleColor1 = tex2D(source, offset1);
+        float4 sampleColor2 = tex2D(source, offset2);
 
-        float3 sampleColor1 = tex2D(source, offset1).rgb;
-        float3 sampleColor2 = tex2D(source, offset2).rgb;
-
-        float depthDiff1 = abs(sampleDepth1 - depthM) * 1000 * DEPTH_LENGTH;
-        float depthDiff2 = abs(sampleDepth2 - depthM) * 1000 * DEPTH_LENGTH;
+        float depthDiff1 = abs(sampleColor1.a - colorM.a) * 1000 * DEPTH_LENGTH;
+        float depthDiff2 = abs(sampleColor2.a - colorM.a) * 1000 * DEPTH_LENGTH;
 
         float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
         float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
@@ -93,8 +96,8 @@ float4 GuassBlurPS(
         totalWeight += weight1;
         totalWeight += weight2;
 
-        totalColor += weight1 * sampleColor1;
-        totalColor += weight2 * sampleColor2;
+        totalColor += weight1 * sampleColor1.rgb;
+        totalColor += weight2 * sampleColor2.rgb;
     }
 
     totalColor /= totalWeight;

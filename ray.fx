@@ -161,7 +161,7 @@ float3  LightDirection  : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fx"
 #endif
 
-#if SSAO_QUALITY > 0 && (SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0)
+#if SSAO_MODE > 0 && (SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0)
 #   include "shader/ssao.fx"
 #endif
 
@@ -223,7 +223,7 @@ technique DeferredLighting<
     "Clear=Depth;"
     "ScriptExternal=Color;"
 
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_MODE && SSAO_SAMPLER_COUNT
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
@@ -306,7 +306,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-#elif   SHADOW_QUALITY
+#elif SHADOW_QUALITY
     pass ShadowMapNoBlur < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -314,7 +314,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
-#if SSAO_QUALITY && SSAO_SAMPLER_COUNT > 0
+#if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
