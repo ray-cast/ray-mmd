@@ -7,7 +7,7 @@ Ray-MMD
 #### Screenshot :
 [![link text](https://github.com/ray-cast/images/raw/master/bloom_small.jpg)](https://github.com/ray-cast/images/raw/master/bloom.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.png)](https://github.com/ray-cast/images/raw/master/hou.png)
-[![link text](https://github.com/ray-cast/images/raw/master/sphere_small.jpg)](https://github.com/ray-cast/images/raw/master/sphere.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/skin_small.jpg)](https://github.com/ray-cast/images/raw/master/skin.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
 #### 更新内容 :
