@@ -1,3 +1,25 @@
+#if SSAO_QUALITY >= 2
+shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "R16F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    string DefaultEffect =
+        "self = hide;"
+        "ray_controller.pmx=hide;"
+        "skybox_hdr.*=hide;"
+        "skybox.*=hide;"
+        "*.pmd = ./shadow/SSAO.fx;"
+        "*.pmx = ./shadow/SSAO.fx;"
+        "*=hide;";
+>;
+sampler SSAODepthMapSamp = sampler_state {
+    texture = <SSAODepthMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#endif
+
 shared texture2D SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
@@ -29,12 +51,16 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 texcoord)
 {
+#if SSAO_QUALITY >= 2
+    return tex2D(SSAODepthMapSamp, texcoord).r;
+#else
     return tex2D(Gbuffer4Map, texcoord).r;
+#endif
 }
 
 float3 GetPosition(float2 uv)
 {
-    float depth = tex2D(Gbuffer4Map, uv).r;
+    float depth = linearizeDepth(uv);
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
@@ -74,7 +100,7 @@ float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
 
         if (sampleLength2 < SSAO_SPACE_RADIUS2)
         {
-            float bias = 0.0012;
+            float bias = 0.002;
             float occlustion  = saturate(sampleAngle - samplePosition.z * bias);
             
             sampleAmbient += occlustion;

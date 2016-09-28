@@ -161,7 +161,7 @@ float3  LightDirection  : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fx"
 #endif
 
-#if SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0
+#if SSAO_QUALITY > 0 && (SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0)
 #   include "shader/ssao.fx"
 #endif
 
@@ -314,7 +314,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY && SSAO_SAMPLER_COUNT > 0
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;

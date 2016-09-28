@@ -34,7 +34,6 @@ struct GbufferParam
 
 float3 EncodeNormal(float3 normal)
 {
-    // http://aras-p.info/texts/CompactNormalStorage.html
     float p = sqrt(-normal.z * 8 + 8);
     float2 enc = normal.xy / p + 0.5f;
     float2 enc255 = enc * 255;

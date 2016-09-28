@@ -69,7 +69,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
     
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY && SSAO_SAMPLER_COUNT
     float ssao = tex2D(SSAOMapSamp, coord).r;
     ssao = pow(ssao, 1 + mSSAOP * 10 - mSSAOM);
     lighting *= ssao;
@@ -95,7 +95,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
 #endif
 
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY && SSAO_SAMPLER_COUNT
     float diffOcclusion = ssao * ssao;
     #if IBL_QUALITY == 1
         diffuse *= diffOcclusion;
