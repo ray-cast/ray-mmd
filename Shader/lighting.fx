@@ -103,10 +103,9 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittan
     float nl = dot(N, L);
     float w = lerp(0, 0.5, luminance(transmittanceColor));
     float wn = 1.0 / ((1 + w) * (1 + w));    
-    float transmittanceFront = saturate((nl + w) * wn * 0.5);
-    float transmittanceBack = saturate((-nl + w) * wn);    
-    float diffuse = DiffuseBRDF(N, L, V, gloss) - w * wn;    
-    return diffuse + transmittanceColor * (transmittanceFront + transmittanceBack);
+    float transmittance = saturate((-nl + w) * wn);
+    float diffuse = DiffuseBRDF(N, L, V, gloss);
+    return diffuse + transmittanceColor * transmittance;
 }
 
 float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, float3 specular)
