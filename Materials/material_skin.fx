@@ -62,7 +62,7 @@ const float metalnessBaseSpecular = 0.0;
 #define SSS_MAP_FILE "transmittance.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.8); // (0 ~ 1)
+const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.8); // (0.5 ~ 0.9)
 const float transmittanceStrength = 1.99f;
 const float transmittanceMapLoopNum = 1.0;
 
