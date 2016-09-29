@@ -132,7 +132,7 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	float receiverDepth = IN.Tex.w;
 
 	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * BIAS_SCALE;
+	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * 0.005;
 	receiverDepth -= depthBias;
 
 	float s = 1 / SHADOW_MAP_SIZE;	
