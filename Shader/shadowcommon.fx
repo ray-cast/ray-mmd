@@ -9,7 +9,6 @@
 #endif
 
 #define WARP_RANGE  8
-#define BIAS_SCALE 0.005
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 #define SELFSHADOW_COS_MAX 0.00872653549837393496488821397358 //cos 89.5 degree
 
@@ -160,8 +159,59 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 
 float ShadowSlopeScaledBias(float depth)
 {
-  float dx = abs(ddx(depth));
-  float dy = abs(ddy(depth));
-  float depthSlope = max(dx, dy);
-  return depthSlope;
+    float dx = abs(ddx(depth));
+    float dy = abs(ddy(depth));
+    float depthSlope = max(dx, dy);
+    return depthSlope;
+}
+
+float2 ComputeMoments(float depth)
+{
+    float dx = ddx(depth);
+    float dy = ddy(depth);
+    
+    float2 moments;
+    moments.x = depth;
+    moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
+    
+    return moments;
+}
+
+float2 GetEVSMExponents()
+{
+    const float positiveExponent = 1.0;
+    const float negativeExponent = 0.5;
+    const float maxExponent = 5.54f;
+    float2 lightSpaceExponents = float2(positiveExponent, negativeExponent);
+    return min(lightSpaceExponents, maxExponent);
+}
+
+float2 WarpDepth(float depth, float2 exponents)
+{
+    depth = 2.0f * depth - 1.0f;
+    float pos =  exp( exponents.x * depth);
+    float neg = -exp(-exponents.y * depth);
+    return float2(pos, neg);
+}
+
+float Linstep(float a, float b, float v)
+{
+    return saturate((v - a) / (b - a));
+}
+
+float ReduceLightBleeding(float max, float amount)
+{
+    return Linstep(amount, 1.0f, max);
+}
+
+float ChebyshevUpperBound(float2 moments, float depth, float minVariance, float lightBleedingReduction)
+{
+    float variance = moments.y - (moments.x * moments.x);
+    variance = max(variance, minVariance);
+
+    float d = depth - moments.x;
+    float pMax = variance / (variance + (d * d));
+
+    pMax = ReduceLightBleeding(pMax, lightBleedingReduction);
+    return (depth <= moments.x ? 1.0f : pMax);
 }

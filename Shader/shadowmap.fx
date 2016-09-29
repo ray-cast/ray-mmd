@@ -35,7 +35,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
     string Description = "Cascade shadow map for ray";
     int Width = SHADOW_MAP_SIZE;
     int Height = SHADOW_MAP_SIZE;
-    string Format = "R32F";
+    string Format = "G32R32F";
     float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     int MipLevels = 1;
