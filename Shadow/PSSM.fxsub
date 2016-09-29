@@ -3,11 +3,11 @@
 #include "../shader/common.fx"
 #include "../shader/shadowcommon.fx"
 
-float3 LightDirection : DIRECTION < string Object = "Light"; >;
+float3 LightDirection : DIRECTION < string Object = "Light";>;
 static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
-static float4x4 matLightProjectionToCameraView = mul(matViewInverse, matLightView);
-static float4x4 matLightWorldViewProject = mul(matLightView, matLightProject);
-static float4x4 lightParam = CreateLightProjParameters(matLightProjectionToCameraView);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
+static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
@@ -27,7 +27,7 @@ void CascadeShadowMapVS(
     out float4 oPosition : POSITION,
     uniform int3 offset)
 {
-    oPosition = mul(Position, matLightWorldViewProject);
+    oPosition = mul(Position, matLightViewProject);
     oPosition.xy = oPosition.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
     oPosition.xy = oPosition.xy * 0.5 + (offset.xy * 0.5f);
     oPosition.z = max(oPosition.z, LightZMin / LightZMax);
@@ -36,9 +36,9 @@ void CascadeShadowMapVS(
     oTexcoord0 = float4(Texcoord, offset.xy);
 }
 
-float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 coord1 : TEXCOORD1, uniform bool useTexture) : COLOR
+float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
 {
-    float2 clipUV = (coord1.xy - SHADOW_MAP_OFFSET) * coord0.zw;
+    float2 clipUV = (position.xy - SHADOW_MAP_OFFSET) * coord0.zw;
     clip(clipUV.x);
     clip(clipUV.y);
     clip(!opadd - 0.001f);
@@ -50,7 +50,7 @@ float4 CascadeShadowMapPS(float4 coord0 : TEXCOORD0, float4 coord1 : TEXCOORD1, 
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return coord1.z;
+    return position.z;
 }
 
 #define PSSM_TEC(name, mmdpass, tex) \

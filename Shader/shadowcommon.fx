@@ -8,8 +8,8 @@
 #   define SHADOW_MAP_SIZE 8192
 #endif
 
-#define BIAS_SCALE 0.005
 #define WARP_RANGE  8
+#define BIAS_SCALE 0.005
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
 const float CascadeZMax = 2000;
@@ -155,39 +155,4 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
-}
-
-float ChebyshevUpperBound(float depth, float2 moments)
-{
-    float p = (depth <= moments.x);
-    
-    float variance = moments.y - (moments.x * moments.x);
-    variance = max(0.0002f, variance);
-    
-    float d = depth - moments.x;
-    float p_max = variance / (variance + d * d);
-    
-    return max(p, p_max);
-}
-
-float2 ComputeMoments(float depth)
-{   
-    float dx = ddx(depth);
-    float dy = ddy(depth);
-
-    float2 moments;
-    moments.x = depth;   
-    moments.y = depth * depth + 0.25 *(dx * dx + dy * dy);
-
-    return moments;
-}
-
-float linstep(float min, float max, float v)
-{
-    return saturate((v - min) / (max - min));
-}
-
-float ReduceLightBlending(float p_max, float amount)
-{
-    return linstep(amount, 1, p_max);
 }

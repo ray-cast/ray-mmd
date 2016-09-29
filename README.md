@@ -92,25 +92,25 @@ Ray-MMD
     * 将NORMAL_MAP_ENABLE设置1，以及指定NORMAL_MAP_FILE的文件路径  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_0.jpg)](https://github.com/ray-cast/images/raw/master/normal_0.jpg)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
-    * 法线的强度可以修改normalMapSubScale数值，修改成5以后的效果
+    * 法线的强度可以修改normalMapSubScale数值，修改成5以后的效果  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_2.png)](https://github.com/ray-cast/images/raw/master/normal_2.png)
     * 修改贴图的密度，可以使用albedo/normal/MapSubLoopNum等，修改成2的效果
     [![link text](https://github.com/ray-cast/images/raw/master/normal_3.png)](https://github.com/ray-cast/images/raw/master/normal_3.png)
 * SubNormalMap(多层法线材质)
     * 子法线是在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔
     * 使用方法和法线贴图一致，同样可以调节迭代次数，以及强弱
-* Smoothness(光滑度)
+* Smoothness(光滑度)  
     [![link text](https://github.com/ray-cast/images/raw/master/smoothness.jpg)](https://github.com/ray-cast/images/raw/master/smoothness.jpg)
     * 用于描述物体在微观表面的光滑程度，取值范围0 ~ 1，0最粗糙，1最光滑 (贴图方式和以上同理)  
     * 如果需要使用粗糙度而不是光滑度，指定SMOOTHNESS_MAP_IS_ROUGHNESS为1
-* Metalness(金属程度)
+* Metalness(金属程度)  
     [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
     * metalness是一个在绝缘体，半导体，和导体的插值，取值范围在0 ~ 1，0为绝缘体，1表示导体(金属) (贴图方式和以上同理)  
     * metalnessBaseSpecular指定物体最小的反射系数，添加这个值可以增加金属性，0.0时物体不反射IBL的specular
     * 不同金属材质的反射系数，可以使用如下颜色指定Albedo (RGB中的颜色除以255)，然后metalness指定为1
-    [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)
+    [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)  
     [![link text](https://github.com/ray-cast/images/raw/master/dielectric.png)](https://github.com/ray-cast/images/raw/master/dielectric.png)
-* SSS(次表面散射)
+* SSS(次表面散射)  
     [![link text](https://github.com/ray-cast/images/raw/master/SSS.png)](https://github.com/ray-cast/images/raw/master/SSS.png)
     * SSS用于渲染皮肤，玉器使用的
     * 使用需要将SSS_ENABLE开启，贴图方式和以上同理

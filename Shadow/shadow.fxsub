@@ -41,7 +41,7 @@ float4 CalcCascadePPos(float2 uv, float2 offset, float index)
 
 float CalcLight(float casterDepth, float receiverDepth, float rate)
 {
-	return 1.0 - saturate(max(receiverDepth - casterDepth, 0) * rate);
+	return 1.0 - saturate((receiverDepth - casterDepth) * rate);
 }
 
 void ShadowlessObjectVS(
@@ -141,16 +141,11 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	receiverDepth -= bias;
 
 	float sdrate = 30000.0 / 4.0 - 0.05;
-	float dist = receiverDepth - casterDepth.x;
-	float thick = max(dist * LightZMax, 0);
 
+	const float s = 0.5 / SHADOW_MAP_SIZE;
+	
+	float light = CalcLight(casterDepth, receiverDepth, sdrate);	
 	float light_sub = 0;
-	const float s = 1.0 / SHADOW_MAP_SIZE;
-	int2 iuv = (IN.PPos.xy / IN.PPos.w + 1) * 0.5 * ViewportSize;
-	float jitter = GetJitterOffset(iuv);
-	texCoord0.xy += (jitter * 2.0 - 1.0) * 0.5 * s;
-
-	float light = CalcLight(casterDepth.x, receiverDepth, sdrate);
 	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
 	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
 	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
