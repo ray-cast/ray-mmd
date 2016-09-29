@@ -20,6 +20,7 @@ Ray-MMD
 * 材质中materialnessBaseSpecular改为0将不反射IBL spec
 * 删除了IBL质量1
 * 删除了自定义Alpha贴图
+* 删除了LightDepth板块改为PSSM(打开工程时注意替换light_depth.fx为PSSM.fx)
 * 修复Spot近距离时产生的阴影锯齿
 * 修复了Bloom模糊产生的小方块，以及减少Bloom的闪烁
 
