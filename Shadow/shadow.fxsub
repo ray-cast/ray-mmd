@@ -135,7 +135,7 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * BIAS_SCALE;
 	receiverDepth -= depthBias;
 
-	float s = 0.5 / SHADOW_MAP_SIZE;	
+	float s = 1 / SHADOW_MAP_SIZE;	
 	float sdrate = 30000.0 / 4.0 - 0.05;
 	float light = CalcLight(casterDepth, receiverDepth, sdrate);
 
