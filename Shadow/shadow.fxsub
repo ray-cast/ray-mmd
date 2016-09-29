@@ -115,9 +115,6 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	clip(alpha - RecieverAlphaThreshold);
 #endif
 
-	float3 N = normalize(IN.Normal);
-	float dotNL = dot(N, -LightDirection);
-	
 	float4 lightPPos0 = CalcCascadePPos(IN.LightPPos01.xy, float2(0, 0), 0);
 	float4 lightPPos1 = CalcCascadePPos(IN.LightPPos01.zw, float2(1, 0), 1);
 	float4 lightPPos2 = CalcCascadePPos(IN.LightPPos23.xy, float2(0, 1), 2);
@@ -134,17 +131,14 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = IN.Tex.w;
 
-	float bias = IN.PPos.z * (1.0 / LightZMax);
-	float depthSlope = min(abs(ddx(receiverDepth)) + abs(ddy(receiverDepth)), 0.1);
-	float lightSlpoe = min(1.0 / (abs(dotNL) + 1.0e-4), 8.0) * (1.0 / LightZMax);
-	bias = (bias + depthSlope + lightSlpoe) * BIAS_SCALE;
-	receiverDepth -= bias;
+	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
+	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * BIAS_SCALE;
+	receiverDepth -= depthBias;
 
+	float s = 0.5 / SHADOW_MAP_SIZE;	
 	float sdrate = 30000.0 / 4.0 - 0.05;
+	float light = CalcLight(casterDepth, receiverDepth, sdrate);
 
-	const float s = 0.5 / SHADOW_MAP_SIZE;
-	
-	float light = CalcLight(casterDepth, receiverDepth, sdrate);	
 	float light_sub = 0;
 	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
 	light_sub += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
@@ -158,7 +152,6 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	float lightPCF = (light + light_sub) / 9;
 	light = lerp(light, lightPCF, texCoord0.w);
 	light = light * light;
-	light = min(light, dotNL > 0);
 	
 	return float4(light, IN.PPos.z, 0, 1);
 }

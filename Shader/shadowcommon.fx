@@ -11,6 +11,7 @@
 #define WARP_RANGE  8
 #define BIAS_SCALE 0.005
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
+#define SELFSHADOW_COS_MAX 0.00872653549837393496488821397358 //cos 89.5 degree
 
 const float CascadeZMax = 2000;
 const float CascadeZMin = 5;
@@ -155,4 +156,12 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
+}
+
+float ShadowSlopeScaledBias(float depth)
+{
+  float dx = abs(ddx(depth));
+  float dy = abs(ddy(depth));
+  float depthSlope = max(dx, dy);
+  return depthSlope;
 }

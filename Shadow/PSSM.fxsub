@@ -21,17 +21,19 @@ sampler DiffuseSamp = sampler_state
 
 void CascadeShadowMapVS(
     in float4 Position : POSITION,
+    in float3 Normal : NORMAL,
     in float2 Texcoord : TEXCOORD0,
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition : POSITION,
     uniform int3 offset)
 {
-    oPosition = mul(Position, matLightViewProject);
+    float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
+    
+    oPosition = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightViewProject);
     oPosition.xy = oPosition.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
     oPosition.xy = oPosition.xy * 0.5 + (offset.xy * 0.5f);
-    oPosition.z = max(oPosition.z, LightZMin / LightZMax);
-    
+   
     oTexcoord1 = oPosition;
     oTexcoord0 = float4(Texcoord, offset.xy);
 }
