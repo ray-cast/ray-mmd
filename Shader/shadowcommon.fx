@@ -8,16 +8,16 @@
 #   define SHADOW_MAP_SIZE 8192
 #endif
 
-#define WARP_RANGE  8
+#define WARP_RANGE 8
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 #define SELFSHADOW_COS_MAX 0.00872653549837393496488821397358 //cos 89.5 degree
 
 const float CascadeZMax = 2000;
 const float CascadeZMin = 5;
 
-const float LightZMax = 2000.0;
+const float LightZMax = 4000.0;
 const float LightZMin = 1;
-const float LightDistance = 500;
+const float LightDistance = 1000;
 
 const float CascadeScale = 0.5;
 const float RecieverAlphaThreshold = 0.01;

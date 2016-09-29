@@ -151,7 +151,6 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 
 	float lightPCF = (light + light_sub) / 9;
 	light = lerp(light, lightPCF, texCoord0.w);
-	light = light * light;
 	
 	return float4(light, IN.PPos.z, 0, 1);
 }
