@@ -11,14 +11,17 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
 #### 更新内容 :
-##### 2016-9-24 ver 1.0.6 beta
-* 添加了聚光灯的阴影
-* 添加了更详细的材质介绍
-* 改进了光源，添加了Intensity+
-* 改进了IBL使其更贴贴合UE4
-* Bloom从LDR到了HDR空间中计算
-* 删除了老式的ToneMapping，增加了Rec2020的输出
-* 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
+##### 2016-9-29 ver 1.0.6
+* 添加了AmbientLight环境光
+* 添加了简单的材质
+* 添加了SSAO模式2(改ray_conf)，可以在新的板块中指定某些不产生AO
+* 调整了主光源阴影
+* 独立了天空盒(可以打包单独存放任意目录)
+* 材质中materialnessBaseSpecular改为0将不反射IBL spec
+* 删除了IBL质量1
+* 删除了自定义Alpha贴图
+* 修复Spot近距离时产生的阴影锯齿
+* 修复了Bloom模糊产生的小方块，以及减少Bloom的闪烁
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -225,6 +228,15 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-9-24 ver 1.0.6 beta
+* 添加了聚光灯的阴影
+* 添加了更详细的材质介绍
+* 改进了光源，添加了Intensity+
+* 改进了IBL使其更贴贴合UE4
+* Bloom从LDR到了HDR空间中计算
+* 删除了老式的ToneMapping，增加了Rec2020的输出
+* 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
+
 ##### 2016-9-18 ver 1.0.5
 * 添加SSR (屏幕空间的局部反射，需要修改ray.conf的SSR_QUALITY)
 * 添加纹理采样的过滤方式 (默认16x各向异性, 远景看不见闪烁了)
