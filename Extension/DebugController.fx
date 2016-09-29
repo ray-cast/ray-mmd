@@ -23,6 +23,7 @@ float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "Dept
 
 float showSSAO : CONTROLOBJECT < string name="(self)"; string item = "SSAO"; >;
 float showSSR : CONTROLOBJECT < string name="(self)"; string item = "SSR"; >;
+float showPSSM : CONTROLOBJECT < string name="(self)"; string item = "PSSM"; >;
 #else
 float showAlbedo <string UIName = "showAlbedo"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showNormal <string UIName = "showNormal"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
@@ -40,6 +41,7 @@ float showEmissiveAlpha <string UIName = "showEmissiveAlpha"; string UIWidget = 
 float showDepthAlpha <string UIName = "showDepthAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showSSAO <string UIName = "showSSAO"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 float showSSR <string UIName = "showSSR"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
+float showPSSM <string UIName = "showPSSM"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
 #endif
 
 texture2D ScnMap : RENDERCOLORTARGET <
@@ -67,6 +69,15 @@ sampler SSAOMapSamp = sampler_state {
 shared texture SSRayTracingMap: RENDERCOLORTARGET;
 sampler SSRayTracingSamp = sampler_state {
     texture = <SSRayTracingMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#endif
+
+#if SHADOW_QUALITY > 0
+shared texture PSSM : OFFSCREENRENDERTARGET;
+sampler PSSMsamp = sampler_state {
+    texture = <PSSM>;
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
@@ -101,7 +112,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     
     float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
     showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showEmissiveAlpha;
-    showTotal += showDepth + showDepthAlpha + showSSAO + showSSR;
+    showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
     
     float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
     result += material.albedo * showAlbedo;
@@ -129,6 +140,10 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 
     #if SSR_QUALITY > 0
         result += tex2D(SSRayTracingSamp, coord).rgb * showSSR;
+    #endif
+
+    #if SHADOW_QUALITY > 0
+        result += tex2D(PSSMsamp, coord).r * 4 * showPSSM;
     #endif
 
     return float4(result, 1);

@@ -118,7 +118,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
     float4 rbn = float4(rtn.x, lbn.yzw), rbf = float4(rtf.x, lbf.yzw);
     float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
 
-    float4 orthographicBB = float4(4999, 4999, -4999,-4999);
+    float4 orthographicBB = float4(9999, 9999, -9999,-9999);
 
     float2 vpos;
     #define CalcMinMax(inV) \
