@@ -10,6 +10,9 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/skin_small.jpg)](https://github.com/ray-cast/images/raw/master/skin.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
+License :
+    http://www.linfo.org/mitlicense.html
+
 #### 更新内容 :
 ##### 2016-9-29 ver 1.0.6
 * 添加了AmbientLight环境光
