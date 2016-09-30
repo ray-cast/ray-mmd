@@ -20,6 +20,7 @@ Ray-MMD
 * 添加了AmbientLight环境光
 * 添加了简单的材质
 * 添加了SSAO模式2(改ray_conf)，可以在新的板块中指定某些不产生AO
+* 添加了RGBMencode处理HDR文件(输出更高清的dds,只能用做天空盒,暂时不能一次输出3张)
 * 调整了主光源阴影
 * 独立了天空盒(可以打包单独存放任意目录)
 * 材质中materialnessBaseSpecular改为0将不反射IBL spec
@@ -140,7 +141,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/point_light2.png)](https://github.com/ray-cast/images/raw/master/point_light2.png)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
-* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理(点击可以看大图，Github中点开后把链接中的Blob改为Raw)  
+* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理 
 [![link text](https://github.com/ray-cast/images/raw/master/point_light3_small.png)](https://github.com/ray-cast/images/raw/master/point_light3.png)
 * 接着说下如何使用纹理的方形区域光
 * 首先在Lighting目录中拖拽一个RectangleLight.pmx至窗口  
