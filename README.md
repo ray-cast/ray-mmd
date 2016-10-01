@@ -64,7 +64,7 @@ Ray-MMD
 ##### 3.0 载入模型 :
 * 将ray.x载入到MMD中, 关闭MMD自带的抗锯齿
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
-* 将天空盒渲染顺序调至第一位
+* 将天空盒渲染顺序调至第一位  
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
