@@ -5,20 +5,20 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT4, material);
     
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
     
-    float alphaDiffuse = 0;
     MaterialParam materialAlpha;
-    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE &&
-        materialAlpha.lightModel  != LIGHTINGMODEL_TRANSMITTANCE)
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && materialAlpha.lightModel  != LIGHTINGMODEL_TRANSMITTANCE)
     {
         clip(-1);
     }
@@ -53,9 +53,10 @@ float4 GuassBlurPS(
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT3 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
     float4 colorM = tex2D(source, coord.xy);
     

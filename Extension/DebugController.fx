@@ -98,17 +98,18 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT4, material);
     
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
     
-    float alphaDiffuse = 0;
     MaterialParam materialAlpha;
-    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
     showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showEmissiveAlpha;
@@ -126,11 +127,11 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
-    result += materialAlpha.emissive * showEmissiveAlpha;
+    result += materialAlpha.transmittance * showEmissiveAlpha;
 
     result = linear2srgb(result);
 
-    result += alphaDiffuse * showAlpha;
+    result += materialAlpha.alpha * showAlpha;
     result += pow(tex2D(Gbuffer4Map, coord).r / 200, 0.5) * showDepth;
     result += pow(tex2D(Gbuffer8Map, coord).r / 200, 0.5) * showDepthAlpha;
 

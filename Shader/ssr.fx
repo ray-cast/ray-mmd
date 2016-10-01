@@ -157,9 +157,10 @@ float4 SSRayTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT3 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
     clip(-material.normal.z);
     
@@ -220,9 +221,10 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
-
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
     float linearDepth = tex2D(Gbuffer4Map, coord).r;
     

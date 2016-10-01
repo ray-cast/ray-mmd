@@ -1,7 +1,7 @@
 #if SSAO_MODE >= 2
 shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "R32F";
+    string Format = "A16B16G16R16F";
     float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     string DefaultEffect =
@@ -13,7 +13,7 @@ shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
 >;
 sampler SSAODepthMapSamp = sampler_state {
     texture = <SSAODepthMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
@@ -50,9 +50,9 @@ sampler SSAOMapSampTemp = sampler_state {
 float linearizeDepth(float2 texcoord)
 {
 #if SSAO_MODE >= 2
-    return tex2D(SSAODepthMapSamp, texcoord).r;
+    return tex2D(SSAODepthMapSamp, texcoord).a;
 #else
-    return tex2D(Gbuffer4Map, texcoord).r;
+    return tex2D(ShadingMapSamp, texcoord).a;
 #endif
 }
 
@@ -64,8 +64,18 @@ float3 GetPosition(float2 uv)
 
 float3 GetNormal(float2 uv)
 {
-    float4 MRT1 = tex2D(Gbuffer2Map, uv);
-    return DecodeGBufferNormal(MRT1);
+#if SSAO_MODE >= 2
+    float4 MRT1 = tex2D(SSAODepthMapSamp, uv);
+    return MRT1.xyz;
+#else
+    float4 MRT2 = tex2D(Gbuffer2Map, uv);
+    float4 MRT6 = tex2D(Gbuffer6Map, uv);
+    
+    float linearDepth = tex2D(Gbuffer4Map, uv).r;
+    float linearDepth2 = tex2D(Gbuffer8Map, uv).r;
+    float4 MRT = linearDepth2 > 1.0 ? (linearDepth < linearDepth2 ? MRT2 : MRT6) : MRT2;
+    return DecodeGBufferNormal(MRT);
+#endif
 }
 
 float2 tapLocation(int index, float noise)
@@ -106,7 +116,10 @@ float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
         }
     }
 
-    return saturate(1 - sampleAmbient / sampleWeight);
+    float ao = saturate(1 - sampleAmbient / sampleWeight);
+    ao = ao * ao;
+    
+    return pow(ao,  1 + ao * (mSSAOP * 10 - mSSAOM));
 }
 
 float SSAOBlurWeight(float2 coord, float r, float center_d)
@@ -146,6 +159,11 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler smp, uniform float2
     return total_c / total_w;
 }
 
+float4 SSAOApplyPS(in float2 coord : TEXCOORD0) : COLOR
+{
+    return tex2D(SSAOMapSamp, coord).r;
+}
+
 float4 SSGI(in float2 coord : TEXCOORD0) : COLOR
 {
     float3 viewPosition = GetPosition(coord);
@@ -173,9 +191,10 @@ float4 SSGI(in float2 coord : TEXCOORD0) : COLOR
             float4 MRT0 = tex2D(Gbuffer1Map, sampleOffset);
             float4 MRT1 = tex2D(Gbuffer2Map, sampleOffset);
             float4 MRT2 = tex2D(Gbuffer3Map, sampleOffset);
+            float4 MRT4 = tex2D(Gbuffer4Map, sampleOffset);
 
             MaterialParam material;
-            DecodeGbuffer(MRT0, MRT1, MRT2, material);
+            DecodeGbuffer(MRT0, MRT1, MRT2,MRT4, material);
                 
             if (dot(material.normal, viewNormal) < 1e-3f)
             {

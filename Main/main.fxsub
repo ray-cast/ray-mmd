@@ -16,7 +16,7 @@ sampler DiffuseMapSamp = sampler_state
     texture = <DiffuseMap>;
     MINFILTER = ANISOTROPIC;
     MAGFILTER = ANISOTROPIC;
-    MIPFILTER = LINEAR;
+    MIPFILTER = POINT;
     MAXANISOTROPY = 16;
     ADDRESSU  = WRAP;
     ADDRESSV  = WRAP;
@@ -38,30 +38,24 @@ float4 GetTextureColor(float4 albedo, float2 uv)
 void DrawObjectVS(
     in float4 Position : POSITION,
     in float3 Normal   : NORMAL,
-    in float2 Texcoord : TEXCOORD0,
+    in float4 Texcoord : TEXCOORD0,
     out float4 oTexcoord  : TEXCOORD0,
     out float3 oNormal    : TEXCOORD1,
     out float3 oViewdir   : TEXCOORD2,
-    out float4 oTexcoord2 : TEXCOORD3,
     out float4 oPosition  : SV_Position)
 {
-    oTexcoord = Texcoord.xyxy;
-    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
-    oNormal = mul(Normal, (float3x3)matWorld);
-    oPosition = mul(Position, matWorldViewProject);
-    oTexcoord2 = oPosition;
+    oNormal = Normal;
+    oTexcoord = Texcoord;
+    oViewdir = CameraPosition - Position;
+    oPosition = mul(Position, matViewProject);
 }
 
-float4 DrawObjectPS(
-    float4 texcoord : TEXCOORD0,
-    float3 normal   : TEXCOORD1,
-    float3 viewdir  : TEXCOORD2,
-    float4 texcoord2 : TEXCOORD3) : SV_Target
+float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
 {
     float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
     if (ExistRay)
     {
-        clip(albedo.a * MaterialDiffuse.a - 0.98);
+        clip(albedo.a * MaterialDiffuse.a - 0.999);
         return 0;
     }
     else
@@ -72,24 +66,10 @@ float4 DrawObjectPS(
 
         float MaterialSmoothness = ShininessToSmoothness(MaterialPower);
 
-        float3 f0 = albedo.rgb * MaterialSpecular;
-        float3 specular = SpecularBRDF(N, L, V, MaterialSmoothness, f0);
-
-        float3 diffuse;
-
-    #if defined(ENABLE_SSS_SKIN)
-        float3 transmittance = SkinTransmittance(translucency);
-        diffuse = TranslucencyBRDF(N, L, V, MaterialSmoothness, transmittance);
-    #elif defined(ENABLE_SSS)
-        transmittance *= transmittance;
-        diffuse = TranslucencyBRDF(N, L, V, MaterialSmoothness, transmittance);
-    #else
-        diffuse = DiffuseBRDF(N, L, V, MaterialSmoothness);
-    #endif
-
         float4 lighting = albedo;
-        lighting.rgb *= diffuse * LightSpecular;
-        lighting.rgb += specular * LightSpecular;
+        lighting.rgb *= DiffuseBRDF(N, L, V, MaterialSmoothness);
+        lighting.rgb += SpecularBRDF(N, L, V, MaterialSmoothness, 0.04);
+        lighting.rgb *= dot(N, L) * LightSpecular;
 
         return linear2srgb(lighting);
     }

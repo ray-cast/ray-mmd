@@ -19,8 +19,10 @@ struct MaterialParam
     float3 specular;
     float3 transmittance;
     float3 emissive;
+    float emissiveIntensity;
     float smoothness;
     float index;
+    float alpha;
     int lightModel;
 };
 
@@ -54,7 +56,7 @@ float3 DecodeNormal(float3 enc)
     return normalize(normal);
 }
 
-void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialParam material)
+void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
     material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
 
@@ -65,6 +67,8 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     material.index = buffer2.w * TWO_BITS_EXTRACTION_FACTOR;
     material.transmittance = 0;
     material.emissive = 0;
+    material.emissiveIntensity = 0;
+    material.alpha = buffer4.w;
     
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
@@ -75,36 +79,12 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialP
     {
         material.specular = buffer3.xxx;
         material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+        material.emissiveIntensity = buffer4.y;
     }
     else
     {
         material.specular = ycbcr2rgb(buffer3.xyz);
     }
-}
-
-void DecodeGbufferWithAlpha(float4 buffer1, float4 buffer2, float4 buffer3, out MaterialParam material, out float alphaDiffuse)
-{
-    material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-
-    material.albedo = buffer1.xyz;
-    material.smoothness = buffer1.w;
-
-    material.normal = DecodeNormal(buffer2.xyz);
-    material.index = 0;
-    material.transmittance = 0;
-    material.emissive = 0;
-    
-    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        material.specular = buffer3.xxx;
-        material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-    }
-    else
-    {
-        material.specular = ycbcr2rgb(buffer3.xyz);
-    }
-        
-    alphaDiffuse = buffer2.w;
 }
 
 float3 DecodeGBufferNormal(float4 buffer2)
@@ -112,11 +92,11 @@ float3 DecodeGBufferNormal(float4 buffer2)
     return DecodeNormal(buffer2.rgb);
 }
 
-float3 DecodeGBufferEmissive(float4 buffer3)
+float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
     int lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
     if (lightModel == LIGHTINGMODEL_EMISSIVE)
-        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * (buffer4.y * 255);
     else
         return 0;
 }

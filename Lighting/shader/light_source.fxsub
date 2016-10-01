@@ -228,9 +228,10 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT3 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
     float3 V = normalize(viewdir);
     float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;

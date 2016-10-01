@@ -187,17 +187,18 @@ technique DeferredLighting<
     "Clear=Depth;"
     "ScriptExternal=Color;"
 
+    "RenderColorTarget0=ShadingMap;"
+    "RenderDepthStencilTarget=;"
+    "Pass=DeferredShading;"
+
 #if SSAO_MODE && SSAO_SAMPLER_COUNT
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
     "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"
 #endif
+    "RenderColorTarget0=ShadingMap;  Pass=SSAOApply;"
 #endif
-
-    "RenderColorTarget0=ShadingMap;"
-    "RenderDepthStencilTarget=;"
-    "Pass=DeferredShading;"
     
 #if SSR_QUALITY > 0
     "RenderColorTarget=SSRayTracingMap;"
@@ -299,6 +300,13 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
     #endif
+    pass SSAOApply < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = true; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        DestBlend = SRCCOLOR; SrcBlend = ZERO;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 SSAOApplyPS();
+    }
 #endif
     pass DeferredShading < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;

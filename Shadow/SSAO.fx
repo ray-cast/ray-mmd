@@ -3,23 +3,27 @@
 #include "../shader/common.fx"
 
 void DrawObjectVS(
-    in float4 Position : POSITION, 
-    in float2 Texcoord : TEXCOORD0,
+    in float4 Position : POSITION,
+    in float3 Normal : NORMAL, 
     out float4 oTexcoord : TEXCOORD0,
+    out float4 oNormal : TEXCOORD1,
     out float4 oPosition : POSITION)
 {
     oPosition = mul(Position, matViewProject);
-    oTexcoord = oPosition.w;
+    oTexcoord = float4(mul(Normal, (float3x3)matView), oPosition.z);
 }
 
-float4 DrawObjectPS(float4 coord : TEXCOORD0) : COLOR
+float4 DrawObjectPS(in float4 coord : TEXCOORD0) : COLOR
 {
-    return coord.x;
+    return coord;
 }
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass; \
-    >{ \
+    string Script = \
+        "RenderColorTarget0=;" \
+        "Pass=DrawObject;" \
+    ;>{ \
         pass DrawObject { \
             AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 DrawObjectVS(); \

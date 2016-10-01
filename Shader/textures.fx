@@ -104,7 +104,7 @@ shared texture Gbuffer3RT: RENDERCOLORTARGET <
 shared texture Gbuffer4RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
-    string Format = "R16F" ;
+    string Format = "A16B16G16R16F" ;
     bool AntiAlias = false;
     int MipLevels = 1;
 >;
@@ -132,7 +132,7 @@ shared texture Gbuffer7RT: RENDERCOLORTARGET <
 shared texture Gbuffer8RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
-    string Format = "R16F";
+    string Format = "A16B16G16R16F";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;

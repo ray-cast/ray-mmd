@@ -43,10 +43,19 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
     float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT3 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, material);
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+        
     float3 V = normalize(mul(viewdir, (float3x3)matViewInverse));
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
@@ -56,42 +65,15 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
     
-#if SSAO_MODE && SSAO_SAMPLER_COUNT
-    float ssao = tex2D(SSAOMapSamp, coord).r;
-    ssao = pow(ssao, 1 + mSSAOP * 10 - mSSAOM);
-    lighting *= ssao;
-#endif
-    
-#if IBL_QUALITY > 0
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    
-    float alphaDiffuse = 0;
-    MaterialParam materialAlpha;
-    DecodeGbufferWithAlpha(MRT5, MRT6, MRT7, materialAlpha, alphaDiffuse);
-    
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
-    
-    float3 diffuse;
-    float3 diffuse2;
+       
+#if IBL_QUALITY > 0   
+    float3 diffuse, diffuse2;
 #if IBL_QUALITY == 1
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
 #else
     DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
-#endif
-
-#if SSAO_MODE && SSAO_SAMPLER_COUNT
-    float diffOcclusion = ssao * ssao;
-    #if IBL_QUALITY == 1
-        diffuse *= diffOcclusion;
-        diffuse2 *= diffOcclusion;
-    #else
-        float specOcclusion = ComputeSpecularOcclusion(dot(N, V), diffOcclusion, material.smoothness);
-        diffuse *= (diffOcclusion + specOcclusion) * 0.5;
-        diffuse2 *= (diffOcclusion + specOcclusion) * 0.5;
-    #endif
 #endif
 
 #if SHADOW_QUALITY > 0
@@ -100,8 +82,11 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     diffuse2 *= shadow;
 #endif
     
-    lighting = lerp(lighting + diffuse, lighting2 + diffuse2, alphaDiffuse);
+    lighting += diffuse;
+    lighting2 += diffuse2;
 #endif
+
+    lighting = lerp(lighting, lighting2, materialAlpha.alpha);
 
 #if FOG_ENABLE
     float distance = tex2D(Gbuffer4Map, coord).r;

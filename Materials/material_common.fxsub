@@ -251,8 +251,10 @@ struct MaterialParam
     float3 specular;
     float3 transmittance;
     float3 emissive;
+    float emissiveIntensity;
     float smoothness;
     float index;
+    float alpha;
     int lightModel;
 };
 
@@ -425,33 +427,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    
-    gbuffer.buffer4 = linearDepth;
-    
-    return gbuffer;
-}
-
-GbufferParam EncodeGbufferWithAlpha(MaterialParam material, float linearDepth, float alphaDiffuse)
-{
-    GbufferParam gbuffer;
-    gbuffer.buffer1.xyz = material.albedo;
-    gbuffer.buffer1.w = material.smoothness;
-
-    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
-    gbuffer.buffer2.w = alphaDiffuse;
-
-    gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
-    gbuffer.buffer3.w = 0;
-
-    if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
-    {
-        material.emissive = rgb2ycbcr(material.emissive);
-        gbuffer.buffer3.yz = material.emissive.gb;
-        gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
-    }
-    
-    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = linearDepth;
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity / 255, linearDepth, material.alpha);
     
     return gbuffer;
 }
@@ -804,6 +780,8 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
+    material.emissiveIntensity = 1;
+    material.alpha = 1;
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
@@ -843,14 +821,18 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
+        material.emissiveIntensity = 1;
+        material.alpha = alpha;
         
-    #if EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
+        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
     #else
         material.lightModel = LIGHTINGMODEL_NORMAL;
     #endif
 
-        return EncodeGbufferWithAlpha(material, IN.Distance, alpha);
+        return EncodeGbuffer(material, IN.Distance);
     }
 }
 
