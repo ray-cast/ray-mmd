@@ -25,7 +25,7 @@ Ray-MMD
 
 #### 教程 :
 ##### 1.0 简介 :
-　　IBL指的是基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
+　　IBL(Image-based-lighting)基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
 的光源，因此不同的天空球光照效果也是不一样的,也自然会产生出不同的色调(如下图):  
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL1.jpg">
     <img src="https://github.com/ray-cast/images/raw/master/IBL1_small.png" width = "33%" height = "16.5%" align=center/>
@@ -38,7 +38,7 @@ Ray-MMD
 </a>   
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
 这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
-颜色最大只有255的并不是HDR.  
+颜色最大只有255的并不是HDR(High-dynamic-range).  
 　　因此IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰(以下是没有使用HDR效果):  
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_nohdr.jpg">
     <img src="https://github.com/ray-cast/images/raw/master/IBL2_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
@@ -217,11 +217,10 @@ Ray-MMD
 * BloomIntensity 泛光的整体强度
 * Vignette 窗口四周的暗角(虚角)
 * Exposure 曝光强度
-* Blub 相机中的B快门
 * Dispersion 相机色散的效果
 * DispersionRadius 相机色散的区域大小
 * FilmGrain 相机因曝光不足参数的噪点
-* ToneMapping 色调映射的鲜艳度 (为0时ACES, 为1时线性曝光，可在ray.conf修改其它模式，例:Uncharted2)
+* ToneMapping 色调映射的模式 (为0时ACES709, 为1时线性映射)
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
