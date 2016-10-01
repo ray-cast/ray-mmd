@@ -16,19 +16,8 @@ Ray-MMD
 ```
 
 #### 更新内容 :
-##### 2016-9-29 ver 1.0.6
-* 添加了AmbientLight环境光
-* 添加了简单的材质
-* 添加了SSAO模式2(改ray_conf)，可以在新的板块中指定某些不产生AO
-* 添加了RGBMencode处理HDR文件(输出更高清的dds,只能用做天空盒,暂时不能一次输出3张)
-* 调整了主光源阴影
-* 独立了天空盒(可以打包单独存放任意目录)
-* 材质中materialnessBaseSpecular改为0将不反射IBL spec
-* 删除了IBL质量1
-* 删除了自定义Alpha贴图
-* 删除了LightDepth板块改为PSSM(打开工程时注意替换light_depth.fx为PSSM.fx)
-* 修复Spot近距离时产生的阴影锯齿
-* 修复了Bloom模糊产生的小方块，以及减少Bloom的闪烁
+##### 2016-10-1 ver 1.0.7
+* 改善对Alpha的兼容(载入天空盒，请将渲染顺序请调至第一位)
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -75,6 +64,7 @@ Ray-MMD
 ##### 3.0 载入模型 :
 * 将ray.x载入到MMD中, 关闭MMD自带的抗锯齿
 * 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
+* 将天空盒渲染顺序调至第一位
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
@@ -235,6 +225,20 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-9-29 ver 1.0.6
+* 添加了AmbientLight环境光
+* 添加了简单的材质
+* 添加了SSAO模式2(改ray_conf)，可以在新的板块中指定某些不产生AO
+* 添加了RGBMencode处理HDR文件(输出更高清的dds,只能用做天空盒,暂时不能一次输出3张)
+* 调整了主光源阴影
+* 独立了天空盒(可以打包单独存放任意目录)
+* 材质中materialnessBaseSpecular改为0将不反射IBL spec
+* 删除了IBL质量1
+* 删除了自定义Alpha贴图
+* 删除了LightDepth板块改为PSSM(打开工程时注意替换light_depth.fx为PSSM.fx)
+* 修复Spot近距离时产生的阴影锯齿
+* 修复了Bloom模糊产生的小方块，以及减少Bloom的闪烁
+
 ##### 2016-9-24 ver 1.0.6 beta
 * 添加了聚光灯的阴影
 * 添加了更详细的材质介绍
