@@ -96,7 +96,7 @@ float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
     int lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
     if (lightModel == LIGHTINGMODEL_EMISSIVE)
-        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * (buffer4.y * 255);
+        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y;
     else
         return 0;
 }

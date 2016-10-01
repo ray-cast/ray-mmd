@@ -427,7 +427,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity / 255, linearDepth, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, linearDepth, material.alpha);
     
     return gbuffer;
 }
@@ -511,7 +511,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
 
 float3 GetEmissiveColor(float2 uv, bool use_texture)
 {
-#if EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+#if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
     #if EMISSIVE_MAP_ENABLE || EMISSIVE_USE_ALBEDO       
         #if EMISSIVE_USE_ALBEDO
             float3 emissiveColor = GetAlbedo(uv, use_texture);
@@ -541,7 +541,16 @@ float3 GetEmissiveColor(float2 uv, bool use_texture)
         return emissive.rgb;
     #endif
 #else
-    return 0.0f;
+    return  MaterialSpecular * step(0, MaterialPower - 100);
+#endif
+}
+
+float GetEmissiveIntensity()
+{
+#if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
+    return emissiveIntensity;
+#else
+    return (MaterialPower - 100) * 0.1;
 #endif
 }
 
@@ -780,7 +789,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
-    material.emissiveIntensity = 1;
+    material.emissiveIntensity = GetEmissiveIntensity();
     material.alpha = 1;
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
@@ -788,7 +797,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
 #else
-    material.lightModel = LIGHTINGMODEL_NORMAL;
+    material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #endif
 
     return EncodeGbuffer(material, IN.Distance);
@@ -821,7 +830,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
         material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
         material.index = transmittanceStrength;
         material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
-        material.emissiveIntensity = 1;
+        material.emissiveIntensity = GetEmissiveIntensity();
         material.alpha = alpha;
         
     #if SSS_ENABLE && USE_CUSTOM_MATERIAL
@@ -829,7 +838,7 @@ GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool use
     #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
         material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
     #else
-        material.lightModel = LIGHTINGMODEL_NORMAL;
+        material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
     #endif
 
         return EncodeGbuffer(material, IN.Distance);
