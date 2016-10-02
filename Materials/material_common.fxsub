@@ -112,6 +112,17 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
+#if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
+    texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
+    sampler AlphaMapSamp = sampler_state
+    {
+        texture = AlphaMap;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
+    };
+#endif
+
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
     texture2D NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
     sampler NormalMapSamp = sampler_state
@@ -420,19 +431,48 @@ float3 ColorSynthesis(float3 diffuse, float m)
 
 float GetAlpha(float2 coord, bool use_texture)
 {
-#if USE_CUSTOM_MATERIAL
-    #if ALBEDO_MAP_ENABLE
-        #if ALBEDO_MAP_UV_FLIP
+#if SKYBOX_ENABLE
+    return 1;
+#elif USE_CUSTOM_MATERIAL
+    #if ALPHA_MAP_ENABLE
+        #if ALPHA_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
     
-        #if ALBEDO_MAP_IN_TEXTURE
-            return use_texture ? tex2D(DiffuseMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a : MaterialDiffuse.a;
+        #if ALPHA_MAP_IN_TEXTURE
+            if (use_texture)
+            {
+                #if ALPHA_MAP_SWIZZLE == 0
+                    return tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a;
+                #elif ALPHA_MAP_SWIZZLE == 1
+                    return tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a;
+                #elif ALPHA_MAP_SWIZZLE == 2
+                    return tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a;
+                #elif ALPHA_MAP_SWIZZLE == 3
+                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
+                #else
+                    return tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a;
+                #endif            
+            }
+            else
+            {
+                return MaterialDiffuse.a;
+            }
         #else
-            return tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).a * MaterialDiffuse.a;
+            #if ALPHA_MAP_SWIZZLE == 0
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).r;
+            #elif ALPHA_MAP_SWIZZLE == 1
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).g;
+            #elif ALPHA_MAP_SWIZZLE == 2
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).b;
+            #elif ALPHA_MAP_SWIZZLE == 3
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
+            #else
+                return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
+            #endif
         #endif
     #else
-        return 1.0;
+        return alpha;
     #endif
 #else
     return use_texture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
