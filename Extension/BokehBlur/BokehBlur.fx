@@ -219,9 +219,18 @@ float Script : STANDARDSGLOBAL <
     string ScriptOrder  = "postprocess";
 > = 0.8;
 
+const float4 BackColor  = float4(0,0,0,0);
+const float ClearDepth  = 1.0;
+
 technique DepthOfField <
     string Script = 
+    "RenderColorTarget0=;"
+    "ClearSetColor=BackColor;"
+    "ClearSetDepth=ClearDepth;"
+    
     "RenderColorTarget0=ScnMap;"
+    "Clear=Color;"
+    "Clear=Depth;"
     "RenderDepthStencilTarget=;"
     "ScriptExternal=Color;"
     

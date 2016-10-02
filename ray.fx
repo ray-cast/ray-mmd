@@ -4,7 +4,6 @@ const float4 BackColor  = float4(0,0,0,0);
 const float ClearDepth  = 1.0;
 const int ClearStencil  = 0;
 
-#if !defined(MIKUMIKUMOVING)
 float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
 float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
 float mIndirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "IndirectLight+"; >;
@@ -18,8 +17,6 @@ float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item 
 float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
 float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
 float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DispersionRadius"; >;
-float mFilmGrain : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FilmGrain"; >;
-float mFilmLine : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FilmLine"; >;
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
 float mBloomRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomRadius"; >;
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
@@ -48,66 +45,19 @@ float mSSRFadeStart :  CONTROLOBJECT < string name="SSRController.pmx"; string i
 float mSSRFadeEnd :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeEnd"; >;
 float mSSRFadeDistance :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "FadeDistance"; >;
 
-    #if FOG_ENABLE
-        float mFogR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "R+"; >;
-        float mFogG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "G+"; >;
-        float mFogB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "B+"; >;
-        float mFogDensity :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Density"; >;
-        float mFogHeight :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Height"; >;
-        float mFogRadius :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Radius"; >;
-        float mFogFadeoff :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Fadeoff"; >;
-        float mFogSky :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Sky"; >;
-        float mFogSkyTwoColor :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyTwoColor"; >;
-        float mFogSkyR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyR+"; >;
-        float mFogSkyG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyG+"; >;
-        float mFogSkyB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyB+"; >;
-    #endif
-#else
-float mDirectLightP <string UIName = "DirectLight+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDirectLightM <string UIName = "DirectLight-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mIndirectLightP <string UIName = "IndirectLight+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mIndirectLightM <string UIName = "IndirectLight-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mEnvShadowP <string UIName = "EnvShadow+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAOP <string UIName = "SSAO+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAOM <string UIName = "SSAO-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAORadiusP <string UIName = "SSAORadius+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSAORadiusM <string UIName = "SSAORadius-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mExposure <string UIName = "Exposure"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mVignette <string UIName = "Vignett"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDispersion <string UIName = "Dispersion"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mDispersionRadius <string UIName = "DispersionRadius"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mFilmGrain <string UIName = "FilmGrain"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mFilmLine <string UIName = "FilmLine"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomThreshold <string UIName = "BloomThreshold"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomRadius <string UIName = "BloomRadiud"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mBloomIntensity <string UIName = "BloomIntensity"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mShoStrength <string UIName = "ShoStrength"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mLinStrength <string UIName = "LinStrength"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mLinWhite <string UIName = "LinWhith"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mToeNum <string UIName = "ToeNum"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mToneMapping <string UIName = "ToneMappinp"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceRP <string UIName = "ColBalanceR+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceGP <string UIName = "ColBalanceG+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceBP <string UIName = "ColBalanceB+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceRM <string UIName = "ColBalanceR-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceGM <string UIName = "ColBalanceG-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalanceBM <string UIName = "ColBalanceB-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mColBalance <string UIName = "BalanceGray"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-
-float mISO <string UIName = "ISO"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mAperture <string UIName = "Aperture"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mShutterTimeP <string UIName = "ShutterTime+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mShutterTimeM <string UIName = "ShutterTime-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-
-float mSSRRangeP  <string UIName = "Range+"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRRangeM  <string UIName = "Range-"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRThickness  <string UIName = "Thickness"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRJitter  <string UIName = "Jitter"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRStride  <string UIName = "Stride"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRStrideZCutoff  <string UIName = "StrideZCutoff"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRFadeStart  <string UIName = "FadeStart"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRFadeEnd  <string UIName = "FadeEnd"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
-float mSSRFadeDistance  <string UIName = "FadeDistance"; string UIWidget = "Slider"; bool UIVisible = true; float UIMin = 0; float UIMax = 1;> = 0;
+#if FOG_ENABLE
+    float mFogR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "R+"; >;
+    float mFogG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "G+"; >;
+    float mFogB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "B+"; >;
+    float mFogDensity :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Density"; >;
+    float mFogHeight :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Height"; >;
+    float mFogRadius :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Radius"; >;
+    float mFogFadeoff :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Fadeoff"; >;
+    float mFogSky :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Sky"; >;
+    float mFogSkyTwoColor :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyTwoColor"; >;
+    float mFogSkyR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyR+"; >;
+    float mFogSkyG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyG+"; >;
+    float mFogSkyB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyB+"; >;
 #endif
 
 float3  LightDiffuse    : DIFFUSE   < string Object = "Light"; >;
@@ -216,11 +166,9 @@ technique DeferredLighting<
 #endif
 
 #if SSSS_QUALITY > 0
-#if !defined(MIKUMIKUMOVING)
     "RenderDepthStencilTarget=DepthBuffer;"
     "Clear=Depth;"
     "Pass=SSSSStencilTest;"
-#endif
     "RenderColorTarget0=ShadingMapTemp;  Pass=SSSSBlurX;"
     "RenderColorTarget0=ShadingMap;      Pass=SSSSBlurY;"
 #endif
@@ -314,7 +262,6 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         ColorWriteEnable = false;
-#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = ALWAYS;
         StencilRef = 1;
@@ -322,31 +269,26 @@ technique DeferredLighting<
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilWriteMask = 1;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSSStencilTestPS();
     }
     pass SSSSBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = EQUAL;
         StencilRef = 1;
         StencilWriteMask = 0;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 GuassBlurPS(ShadingMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass SSSSBlurY < string Script= "Draw=Buffer;"; > {
          AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = EQUAL;
         StencilRef = 1;
         StencilWriteMask = 0;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 GuassBlurPS(ShadingMapTempSamp, float2(0.0f, ViewportOffset2.y));
     }
@@ -355,7 +297,6 @@ technique DeferredLighting<
     pass SSRayTracing < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = ALWAYS;
         StencilRef = 1;
@@ -363,7 +304,6 @@ technique DeferredLighting<
         StencilFail = KEEP;
         StencilZFail = KEEP;
         StencilWriteMask = 1;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSRayTracingPS();
     }
@@ -383,12 +323,10 @@ technique DeferredLighting<
         AlphaBlendEnable = true; AlphaTestEnable = false;
         SrcBlend = SRCALPHA; DestBlend = ONE;
         ZEnable = false; ZWriteEnable = false;
-#if !defined(MIKUMIKUMOVING)
         StencilEnable = true;
         StencilFunc = EQUAL;
         StencilRef = 1;
         StencilWriteMask = 0;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSRConeTracingPS();
     }

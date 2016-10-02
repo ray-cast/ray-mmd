@@ -1,11 +1,4 @@
-texture2D NoiseMap<string ResourceName = "shader/noise.png";>; 
-sampler NoiseMapSamp = sampler_state
-{
-    texture = NoiseMap;
-    MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
-
-float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float4 offset0, uniform float4 offset1) : SV_Target0
+float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float4 offset0, uniform float4 offset1) : COLOR
 { 
     float4 color = tex2D(source, coord);
     color = min(tex2D(source, coord + offset0.xy), color);
@@ -118,37 +111,12 @@ float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
 
 float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
 {
-    float L = length(CoordToPos(coord));
+    float L = length(coord * 2 - 1);
     L = 1 - smoothstep(outer, inner, L);
     float3 color = tex2D(source, coord).rgb;
     color.g = tex2D(source, coord - ViewportOffset2 * L * (mDispersion * 8)).g;
     color.b = tex2D(source, coord + ViewportOffset2 * L * (mDispersion * 8)).b;
     return color;
-}
-
-float3 Overlay(float3 a, float3 b)
-{
-    return pow(abs(b), 2.2) < 0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
-}
-
-float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
-{
-    float noiseIntensity = mFilmGrain;
-    coord.x *= (ViewportSize.y / ViewportSize.x);
-    coord.x += time * 6;
-    
-    float noise = tex2D(NoiseMapSamp, coord).r;
-    float exposureFactor = exposure / 2.0;
-    exposureFactor = sqrt(exposureFactor);
-    float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
-    
-    return Overlay(color, lerp(0.5, noise, t));
-}
-
-float3 AppleFilmLine(float3 color, float2 coord, int2 screenPosition)
-{
-    bool pattern = fmod(screenPosition.y, 2.0) > 0 ? 1 : 0;
-    return lerp(color, 0, mFilmLine * pattern);
 }
 
 float BloomFactor(float factor) 
@@ -168,7 +136,7 @@ float ComputeExposureFromEV100(float EV100)
     return 1.0f / maxLuminance;
 }
 
-float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position, uniform sampler2D source) : COLOR
+float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
@@ -214,8 +182,6 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, in float4 screenPosition :
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
-    color = AppleFilmGrain(color, coord, exposure);
-    color = AppleFilmLine(color, coord, screenPosition.xy);
     
     color = saturate(color);
     color = linear2srgb(color);
