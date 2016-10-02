@@ -46,20 +46,37 @@ void DrawObjectVS(
 {
     oNormal = Normal;
     oTexcoord = Texcoord;
-    oViewdir = CameraPosition - Position;
+    oViewdir = CameraPosition - Position.xyz;
     oPosition = mul(Position, matViewProject);
 }
 
 float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
 {
-    float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
+#if EXIST_RAY
+    #if CASTER_ALPHA_ENABLE
+        float alpha = MaterialDiffuse.a;
+    #if CASTER_ALPHA_MAP_ENABLE
+        if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
+    #endif
+        clip(alpha - CasterAlphaThreshold);
+    #endif
+        return 0;
+#else
     if (ExistRay)
     {
-        clip(albedo.a * MaterialDiffuse.a - 0.999);
+#if CASTER_ALPHA_ENABLE
+        float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
+        if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
+#endif
+        clip(alpha - CasterAlphaThreshold);
+#endif
         return 0;
     }
     else
-    {           
+    {
+        float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
+        
         float3 L = normalize(-LightDirection);
         float3 V = normalize(viewdir);
         float3 N = normalize(normal);
@@ -73,6 +90,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, floa
 
         return linear2srgb(lighting);
     }
+#endif
 }
 
 #define OBJECT_TEC(name, mmdpass) \
