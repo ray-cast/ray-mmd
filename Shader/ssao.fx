@@ -121,9 +121,8 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    ao = ao * ao;
     
-    return pow(ao,  1 + ao * (mSSAOP * 10 - mSSAOM));
+    return pow(ao,  2 * ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 
 float SSAOBlurWeight(float2 coord, float r, float center_d)
