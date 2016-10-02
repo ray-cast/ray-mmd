@@ -84,7 +84,7 @@ const float transmittanceMapLoopNum = 1.0;
 #define MELANIN_MAP_FILE "melanin.png"
 
 const float melanin = 0.2;
-const float melaninMapLoopNum = 0.0;
+const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0
