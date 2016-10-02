@@ -4,4 +4,4 @@
 // 输入的纹理是SRGB时启用
 #define IBL_ENABLE_GAMMA_CORRECTION 1
 
-#include "envlighting.fxsub"
+#include "skylighting.fxsub"
