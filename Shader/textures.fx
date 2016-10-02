@@ -79,7 +79,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
     bool AntiAlias = false;
     string DefaultEffect =
         "self = hide;"
-        "ray_controller.pmx=hide;"
+        "*controller.pmx=hide;"
         "skybox*.* = ./materials/material_skybox.fx;"
         "LED*.pmx =./materials/material_led.fx;"
         "*.pmd = ./materials/material.fx;"

@@ -1,5 +1,4 @@
-#include "../ray.conf"
-#include "../shader/common.fx"
+#include "../../shader/common.fx"
 
 shared texture2D DummyScreenTex : RenderColorTarget
 <
@@ -9,10 +8,10 @@ shared texture2D DummyScreenTex : RenderColorTarget
     string Format= "A8B8G8R8";
 >;
 
-texture ObjectTexture: MATERIALTEXTURE;
-sampler ObjTexSampler = sampler_state
+texture DiffuseMap : MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state
 {
-    texture = <ObjectTexture>;
+    texture = <DiffuseMap>;
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
@@ -32,7 +31,7 @@ void DummyScreenVS(
 
 float4 DummyScreenPS(in float2 coord : TEXCOORD0) : COLOR 
 {
-    return tex2D(ObjTexSampler, coord);
+    return tex2D(DiffuseMapSamp, coord);
 }
 
 float Script : STANDARDSGLOBAL <
@@ -45,8 +44,7 @@ technique MainTec0 <
     string Script = 
     "RenderColorTarget=DummyScreenTex;"
     "Pass=CopyDummyScreenTex;"
-    ;
-> {
+;> {
     pass CopyDummyScreenTex < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
 	    ZEnable = False; ZWriteEnable = False;

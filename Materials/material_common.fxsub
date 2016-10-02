@@ -378,12 +378,6 @@ float ShininessToSmoothness(float spec)
     return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
 }
 
-void DoWetProcess(inout float3 diffuse, inout float smoothness, float level)
-{
-   diffuse *= lerp(1.0, 0.3, level);
-   smoothness = min(smoothness * lerp(1.0, 2.5, level), 1.0);
-}
-
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
     GbufferParam gbuffer;
