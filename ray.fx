@@ -125,7 +125,7 @@ float3  LightDirection  : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fx"
 #endif
 
-#if SSAO_MODE > 0 && (SSAO_SAMPLER_COUNT > 0 || SSGI_SAMPLER_COUNT > 0)
+#if SSAO_MODE > 0 && (SSAO_SAMPLER_COUNT > 0)
 #   include "shader/ssao.fx"
 #endif
 
@@ -195,9 +195,10 @@ technique DeferredLighting<
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
-    "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"
-#endif
+    "RenderColorTarget0=ShadingMap;  Pass=SSAOBlurY;"
+#else
     "RenderColorTarget0=ShadingMap;  Pass=SSAOApply;"
+#endif
 #endif
     
 #if SSR_QUALITY > 0
@@ -212,14 +213,6 @@ technique DeferredLighting<
     
     "RenderColorTarget=ShadingMap;"
     "Pass=SSRConeTracing;"
-#endif
-    
-#if SSGI_SAMPLER_COUNT > 0
-    "RenderColorTarget0=SSAOMap;  Pass=SSGI;"
-#if SSGI_BLUR_RADIUS > 0
-    "RenderColorTarget0=SSAOMapTemp; Pass=SSGIBlurX;"
-    "RenderColorTarget0=ShadingMap;  Pass=SSGIBlurY;"
-#endif
 #endif
 
 #if SSSS_QUALITY > 0
@@ -279,6 +272,12 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
+    pass DeferredShading < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 DeferredShadingPS();
+    }
 #if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -294,46 +293,19 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass SSAOBlurY < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
+        AlphaBlendEnable = true; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
+        DestBlend = SRCCOLOR; SrcBlend = ZERO;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-    #endif
+    #else
     pass SSAOApply < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = true; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         DestBlend = SRCCOLOR; SrcBlend = ZERO;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAOApplyPS();
-    }
-#endif
-    pass DeferredShading < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 DeferredShadingPS();
-    }
-#if SSGI_SAMPLER_COUNT > 0
-    pass SSGI < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSGI();
-    }
-    #if SSGI_BLUR_RADIUS > 0
-    pass SSGIBlurX < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSGIBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
-    }
-    pass SSGIBlurY < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = true; AlphaTestEnable = false;
-        SrcBlend = ONE; DestBlend = ONE;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSGIBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
     #endif
 #endif

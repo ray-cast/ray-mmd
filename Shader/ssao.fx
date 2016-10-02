@@ -1,3 +1,7 @@
+#define SSGI_SAMPLER_COUNT 0
+#define SSGI_BLUR_RADIUS 8
+#define SSGI_BLUR_SHARPNESS 1
+
 #if SSAO_MODE >= 2
 shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
@@ -87,16 +91,16 @@ float2 tapLocation(int index, float noise)
     return float2(cos(angle), sin(angle)) * (index * radiusStep + ViewportOffset2);
 }
 
-float4 SSAO(in float2 coord : TEXCOORD0) : COLOR
+float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
-    float3 viewPosition = GetPosition(coord);
     float3 viewNormal = GetNormal(coord);
+    float3 viewPosition = -viewdir * linearizeDepth(coord);
 
-    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
-    
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;
+    float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
 
+    [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
     {
         float2 sampleOffset = coord + tapLocation(j, sampleNoise); 
@@ -133,27 +137,30 @@ float SSAOBlurWeight(float2 coord, float r, float center_d)
     return exp2(-r * r * blurFalloff - ddiff * ddiff);
 }
 
-float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler smp, uniform float2 offset) : SV_Target
+float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
 {
     float center_d = linearizeDepth(coord);
 
-    float4 total_c = tex2D(smp, coord);
+    float total_c = tex2D(source, coord).r;
     float total_w = 1.0f;
-
+    
+    float2 offset1 = coord + offset;
+    float2 offset2 = coord - offset;
+    
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
     {
-        float2 offset1 = coord + offset * r;
-        float2 offset2 = coord - offset * r;
-
         float bilateralWeight1 = SSAOBlurWeight(offset1, r, center_d);
         float bilateralWeight2 = SSAOBlurWeight(offset2, r, center_d);
 
-        total_c += tex2D(smp, offset1) * bilateralWeight1;
-        total_c += tex2D(smp, offset2) * bilateralWeight2;
-
+        total_c += tex2D(source, offset1).r * bilateralWeight1;
+        total_c += tex2D(source, offset2).r * bilateralWeight2;
+        
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
+        
+        offset1 += offset;
+        offset2 -= offset;
     }
 
     return total_c / total_w;
@@ -164,10 +171,10 @@ float4 SSAOApplyPS(in float2 coord : TEXCOORD0) : COLOR
     return tex2D(SSAOMapSamp, coord).r;
 }
 
-float4 SSGI(in float2 coord : TEXCOORD0) : COLOR
+float4 SSGI(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
-    float3 viewPosition = GetPosition(coord);
     float3 viewNormal = GetNormal(coord);
+    float3 viewPosition = -viewdir * linearizeDepth(coord);
 
     float sampleNoise = GetJitterOffset(int2(coord * ViewportSize)) * (PI * 2.0);  
     
@@ -222,11 +229,11 @@ float SSGIBlurWeight(float2 coord, float r, float center_d)
     return exp2(-r * r * blurFalloff - ddiff * ddiff);
 }
 
-float4 SSGIBlur(in float2 coord : TEXCOORD0, uniform sampler smp, uniform float2 offset) : COLOR
+float4 SSGIBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
     float center_d = linearizeDepth(coord);
 
-    float4 total_c = tex2D(smp, coord);
+    float3 total_c = tex2D(source, coord).rgb;
     float total_w = 1.0f;
 
     [unroll]
@@ -238,12 +245,12 @@ float4 SSGIBlur(in float2 coord : TEXCOORD0, uniform sampler smp, uniform float2
         float bilateralWeight1 = SSGIBlurWeight(offset1, r, center_d);
         float bilateralWeight2 = SSGIBlurWeight(offset2, r, center_d);
 
-        total_c += tex2D(smp, offset1) * bilateralWeight1;
-        total_c += tex2D(smp, offset2) * bilateralWeight2;
+        total_c += tex2D(source, offset1).rgb * bilateralWeight1;
+        total_c += tex2D(source, offset2).rgb * bilateralWeight2;
 
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
     }
 
-    return float4(total_c.rgb / total_w, 1);
+    return float4(total_c / total_w, 1);
 }

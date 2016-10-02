@@ -15,14 +15,11 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
-    
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);   
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
     
-    bloom.rgb += DecodeGBufferEmissive(MRT3, MRT4);
-    bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
+    bloom.rgb += DecodeGBufferEmissive(MRT3) * 2;
+    bloom.rgb += DecodeGBufferEmissive(MRT7) * 2;
     
     return bloom;
 }
@@ -154,7 +151,7 @@ float3 AppleFilmLine(float3 color, float2 coord, int2 screenPosition)
     return lerp(color, 0, mFilmLine * pattern);
 }
 
-float BloomFactor(const in float factor) 
+float BloomFactor(float factor) 
 {
     float mirrorFactor = 1.2 - factor;
     return lerp(factor, mirrorFactor, mBloomRadius);

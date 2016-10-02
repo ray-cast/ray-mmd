@@ -196,7 +196,7 @@ sampler ShadingMapTempSamp = sampler_state {
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-shared texture2D FinalMap : RENDERCOLORTARGET <
+texture2D FinalMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A8R8G8B8";

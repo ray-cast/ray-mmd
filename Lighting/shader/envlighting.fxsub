@@ -120,11 +120,6 @@ float4 EnvLightingPS(
     
     MaterialParam material;    
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-
-    float3 V = normalize(viewdir);
-    
-    float3 diffuse, specular;    
-    ShadingMaterial(V, material, diffuse, specular);
     
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
@@ -133,6 +128,11 @@ float4 EnvLightingPS(
 
     MaterialParam materialAlpha;    
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 V = normalize(viewdir);
+    
+    float3 diffuse, specular;    
+    ShadingMaterial(V, material, diffuse, specular);
     
     float3 diffuse2, specular2;
     ShadingMaterial(V, materialAlpha, diffuse2, specular2);

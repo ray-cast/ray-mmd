@@ -23,6 +23,7 @@ struct MaterialParam
     float smoothness;
     float index;
     float alpha;
+    float linearDepth;
     int lightModel;
 };
 
@@ -68,6 +69,8 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.transmittance = 0;
     material.emissive = 0;
     material.emissiveIntensity = 0;
+    
+    material.linearDepth = buffer4.x;
     material.alpha = buffer4.w;
     
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
@@ -92,13 +95,27 @@ float3 DecodeGBufferNormal(float4 buffer2)
     return DecodeNormal(buffer2.rgb);
 }
 
-float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
+float3 DecodeGBufferEmissive(float4 buffer3)
 {
     int lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
     if (lightModel == LIGHTINGMODEL_EMISSIVE)
-        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y;
+        return ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
     else
         return 0;
+}
+
+float AdjustRoughness(float roughness, float3 normal)
+{
+    float len = length(normal);
+    if (len < 1.0)
+    {
+        float len2 = len * len;
+        float kappa = (3 * len - len * len2) / (1 - len2);
+        float variance = 1.0 / (2.0 * kappa);
+        return sqrt(roughness * roughness + variance);
+    }
+    
+    return roughness;
 }
 
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)

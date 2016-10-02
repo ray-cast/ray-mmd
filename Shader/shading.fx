@@ -56,7 +56,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
         
-    float3 V = normalize(mul(viewdir, (float3x3)matViewInverse));
+    float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
@@ -88,18 +88,16 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 
     lighting = lerp(lighting, lighting2, materialAlpha.alpha);
 
-#if FOG_ENABLE
-    float distance = tex2D(Gbuffer4Map, coord).r;
-    
-    float3 P = mul(float4(-viewdir * distance, 1), matViewInverse).xyz;
-    
-    lighting = ApplyGroundFog(lighting, distance, P);
-    lighting = ApplySkyFog(lighting, distance, V);
-#endif
-
-    float linearDepth = tex2D(Gbuffer4Map, coord).r;
-    float linearDepth2 = tex2D(Gbuffer8Map, coord).r;
+    float linearDepth = material.linearDepth;
+    float linearDepth2 = materialAlpha.linearDepth;
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+
+#if FOG_ENABLE
+    float3 P = mul(float4(-viewdir * linearDepth, 1), matViewInverse).xyz;
+    
+    lighting = ApplyGroundFog(lighting, linearDepth, P);
+    lighting = ApplySkyFog(lighting, linearDepth, V);
+#endif
 
     return float4(lighting, linearDepth);
 }

@@ -95,12 +95,12 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, unifo
 
     float2 sum = float2(center.x, 1);
 
+    float2 offset1 = coord + offset;
+    float2 offset2 = coord - offset;
+
     [unroll]
     for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
-    {
-        float2 offset1 = coord + offset * r;
-        float2 offset2 = coord - offset * r;
-        
+    {        
         float2 shadow1 = tex2D(source, offset1).xy;
         float2 shadow2 = tex2D(source, offset2).xy;
         
@@ -112,6 +112,9 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, unifo
 
         sum.y += bilateralWeight1;
         sum.y += bilateralWeight2;
+        
+        offset1 += offset;
+        offset2 -= offset;
     }
 
     return float4(sum.x / sum.y, center.y, 1, 1);

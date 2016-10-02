@@ -378,20 +378,6 @@ float ShininessToSmoothness(float spec)
     return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
 }
 
-float AdjustRoughness(float roughness, float3 normal)
-{
-    float len = length(normal);
-    if (len < 1.0)
-    {
-        float len2 = len * len;
-        float kappa = (3 * len - len * len2) / (1 - len2);
-        float variance = 1.0 / (2.0 * kappa);
-        return sqrt(roughness * roughness + variance);
-    }
-    
-    return roughness;
-}
-
 void DoWetProcess(inout float3 diffuse, inout float smoothness, float level)
 {
    diffuse *= lerp(1.0, 0.3, level);
@@ -421,13 +407,13 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
     else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
     {
-        material.emissive = rgb2ycbcr(material.emissive);
+        material.emissive = rgb2ycbcr(material.emissive * material.emissiveIntensity);
         gbuffer.buffer3.yz = material.emissive.gb;
         gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, linearDepth, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, linearDepth, linearDepth, material.alpha);
     
     return gbuffer;
 }
@@ -541,16 +527,16 @@ float3 GetEmissiveColor(float2 uv, bool use_texture)
         return emissive.rgb;
     #endif
 #else
-    return  MaterialSpecular * step(0, MaterialPower - 100);
+    return  MaterialSpecular * step(0, MaterialPower - 200);
 #endif
 }
 
 float GetEmissiveIntensity()
 {
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
-    return emissiveIntensity;
+    return saturate(emissiveIntensity);
 #else
-    return (MaterialPower - 100) * 0.1;
+    return saturate((MaterialPower - 200) * 0.1);
 #endif
 }
 
