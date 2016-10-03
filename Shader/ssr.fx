@@ -130,7 +130,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
-        float depth = tex2D(ShadingMapSamp, projPos.xy).a;
+        float depth = tex2D(GbufferFilterMap, projPos.xy).a;
         
         if (abs(depth - projPos.z) < intervalSize)
         {
@@ -154,21 +154,14 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
 float4 SSRayTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
 {
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
-
-    MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
-
-    clip(-material.normal.z);
+    float4 NormalDepth = tex2D(GbufferFilterMap, coord);
+    clip(-NormalDepth.z);
     
-    float linearDepth = tex2D(ShadingMapSamp, coord).a;
+    float linearDepth = NormalDepth.w;
 
     float3 V = normalize(-viewdir);    
     float3 viewPosition = V * linearDepth / V.z;
-    float3 viewReflect = normalize(reflect(V, material.normal));
+    float3 viewReflect = normalize(reflect(V, NormalDepth.xyz));
     
     float maxDistance = viewPosition.z * (1.5 + mSSRRangeP - mSSRRangeM);
     
@@ -226,7 +219,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
-    float linearDepth = tex2D(Gbuffer4Map, coord).r;
+    float linearDepth = tex2D(GbufferFilterMap, coord).a;
     
     float3 V = normalize(viewdir);
     float3 viewPosition = V * linearDepth / V.z;

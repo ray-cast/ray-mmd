@@ -123,6 +123,12 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET <
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
+texture GbufferFilterRT: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
 sampler Gbuffer1Map = sampler_state {
     texture = <MaterialMap>;
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
@@ -160,7 +166,12 @@ sampler Gbuffer7Map = sampler_state {
 };
 sampler Gbuffer8Map = sampler_state {
     texture = <Gbuffer8RT>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler GbufferFilterMap = sampler_state {
+    texture = <GbufferFilterRT>;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 texture2D ShadingMap : RENDERCOLORTARGET <

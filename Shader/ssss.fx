@@ -18,7 +18,7 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && materialAlpha.lightModel  != LIGHTINGMODEL_TRANSMITTANCE)
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && materialAlpha.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
     {
         clip(-1);
     }

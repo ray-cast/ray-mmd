@@ -559,7 +559,7 @@ float3 GetEmissiveColor(float2 uv, bool use_texture)
         return emissive.rgb;
     #endif
 #else
-    return  MaterialSpecular * step(0, MaterialPower - 200);
+    return MaterialSpecular * step(0, MaterialPower - 200);
 #endif
 }
 

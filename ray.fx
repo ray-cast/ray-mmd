@@ -125,20 +125,20 @@ technique DeferredLighting<
     "Clear=Color;"
     "Clear=Depth;"
     "ScriptExternal=Color;"
-
-    "RenderColorTarget0=ShadingMap;"
-    "RenderDepthStencilTarget=;"
-    "Pass=DeferredShading;"
+    
+    "RenderColorTarget0=GbufferFilterRT;Pass=GbufferFilter;"
 
 #if SSAO_MODE && SSAO_SAMPLER_COUNT
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
-    "RenderColorTarget0=ShadingMap;  Pass=SSAOBlurY;"
-#else
-    "RenderColorTarget0=ShadingMap;  Pass=SSAOApply;"
+    "RenderColorTarget0=SSAOMap;  Pass=SSAOBlurY;"
 #endif
 #endif
+
+    "RenderColorTarget0=ShadingMap;"
+    "RenderDepthStencilTarget=;"
+    "Pass=DeferredShading;"
     
 #if SSR_QUALITY > 0
     "RenderColorTarget=SSRayTracingMap;"
@@ -215,6 +215,12 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 DeferredShadingPS();
     }
+    pass GbufferFilter < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 GbufferFilterPS();
+    }
 #if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -230,19 +236,10 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass SSAOBlurY < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = true; AlphaTestEnable = false;
+        AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        DestBlend = SRCCOLOR; SrcBlend = ZERO;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
-    }
-    #else
-    pass SSAOApply < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = true; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        DestBlend = SRCCOLOR; SrcBlend = ZERO;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSAOApplyPS();
     }
     #endif
 #endif

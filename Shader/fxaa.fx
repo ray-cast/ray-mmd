@@ -694,6 +694,6 @@ float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
             );
     color.rgb = linear2srgb(color.rgb);
-    color.rgb = ApplyDithering(color.rgb, coord);
+    color.rgb = ApplyDithering(color.rgb, coord.xy);
     return color;
 }

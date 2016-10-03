@@ -51,12 +51,12 @@ sampler SSAOMapSampTemp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-float linearizeDepth(float2 texcoord)
+float linearizeDepth(float2 uv)
 {
 #if SSAO_MODE >= 2
-    return tex2D(SSAODepthMapSamp, texcoord).a;
+    return tex2D(SSAODepthMapSamp, uv).a;
 #else
-    return tex2D(ShadingMapSamp, texcoord).a;
+    return tex2D(GbufferFilterMap, uv).a;
 #endif
 }
 
@@ -72,13 +72,8 @@ float3 GetNormal(float2 uv)
     float4 MRT1 = tex2D(SSAODepthMapSamp, uv);
     return MRT1.xyz;
 #else
-    float4 MRT2 = tex2D(Gbuffer2Map, uv);
-    float4 MRT6 = tex2D(Gbuffer6Map, uv);
-    
-    float linearDepth = tex2D(Gbuffer4Map, uv).r;
-    float linearDepth2 = tex2D(Gbuffer8Map, uv).r;
-    float4 MRT = linearDepth2 > 1.0 ? (linearDepth < linearDepth2 ? MRT2 : MRT6) : MRT2;
-    return DecodeGBufferNormal(MRT);
+    float4 filtered = tex2D(GbufferFilterMap, uv);
+    return filtered.xyz;
 #endif
 }
 
@@ -163,11 +158,6 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     }
 
     return total_c / total_w;
-}
-
-float4 SSAOApplyPS(in float2 coord : TEXCOORD0) : COLOR
-{
-    return tex2D(SSAOMapSamp, coord).r;
 }
 
 float4 SSGI(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
