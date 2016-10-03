@@ -53,23 +53,23 @@ void DrawObjectVS(
 float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
 {
 #if EXIST_RAY
-    #if CASTER_ALPHA_ENABLE
+    #if DISCARD_ALPHA_ENABLE
         float alpha = MaterialDiffuse.a;
-    #if CASTER_ALPHA_MAP_ENABLE
+    #if DISCARD_ALPHA_MAP_ENABLE
         if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
     #endif
-        clip(alpha - CasterAlphaThreshold);
+        clip(alpha - DiscardAlphaThreshold);
     #endif
         return 0;
 #else
     if (ExistRay)
     {
-#if CASTER_ALPHA_ENABLE
+#if DISCARD_ALPHA_ENABLE
         float alpha = MaterialDiffuse.a;
-#if CASTER_ALPHA_MAP_ENABLE
+#if DISCARD_ALPHA_MAP_ENABLE
         if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
 #endif
-        clip(alpha - CasterAlphaThreshold);
+        clip(alpha - DiscardAlphaThreshold);
 #endif
         return 0;
     }

@@ -62,8 +62,6 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #   define TEXTURE_MIP_FILTER POINT
 #endif
 
-#define AlphaThreshold 0.999
-
 #define PI 3.141592654f
 
 #define InvLog2 3.32192809489f
@@ -794,7 +792,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    clip(alpha - AlphaThreshold);
+    clip(alpha - alphaThreshold);
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
@@ -826,7 +824,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
 {
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    if (alpha > AlphaThreshold)
+    if (alpha > alphaThreshold)
     {
         return (GbufferParam)0;
     }
