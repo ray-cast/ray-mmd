@@ -1,3 +1,13 @@
+#if SHADOW_QUALITY == 1
+#   define SHADOW_MAP_SIZE 1024
+#elif SHADOW_QUALITY == 2
+#   define SHADOW_MAP_SIZE 2048
+#elif SHADOW_QUALITY == 3
+#   define SHADOW_MAP_SIZE 4096
+#elif SHADOW_QUALITY == 4
+#   define SHADOW_MAP_SIZE 8192
+#endif
+
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
@@ -81,6 +91,75 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
         "*.x = hide;"
         "* = hide;";
 >;
+texture DepthMap : OFFSCREENRENDERTARGET <
+    string Description = "SSAO and shadow rendering for ray";
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "G16R16F";
+    float4 ClearColor = { 1, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect =
+        "self = hide;"
+        "ray_controller.pmx=hide;"
+        "skybox*.*=hide;"
+        "AmbientLight*.* =shadow/Depth_noalpha.fx;"
+        "PointLight*.*=shadow/Depth_noalpha.fx;"
+        "SpotLight*.*=shadow/Depth_noalpha.fx;"
+        "SphereLight*.*=shadow/Depth_noalpha.fx;"
+        "TubeLight*.* =shadow/Depth_noalpha.fx;"
+        "LED*.*=shadow/Depth_noalpha.fx;"
+        "RectangleLight*.*=shadow/Depth_noalpha.fx;"
+        "*.pmx=shadow/Depth.fx;"
+        "*.pmd=shadow/Depth.fx;"
+        "*.x=hide;";
+>;
+
+shared texture PSSM : OFFSCREENRENDERTARGET <
+    string Description = "Cascade shadow map for ray";
+    int Width = SHADOW_MAP_SIZE;
+    int Height = SHADOW_MAP_SIZE;
+    string Format = "R32F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect =
+        "self = hide;"
+        "ray_controller.pmx=hide;"
+        "skybox*.*=hide;"
+        "AmbientLight*.* =shadow/PSSM_noalpha.fx;"
+        "PointLight*.*=shadow/PSSM_noalpha.fx;"
+        "SpotLight*.*=shadow/PSSM_noalpha.fx;"
+        "SphereLight*.*=shadow/PSSM_noalpha.fx;"
+        "TubeLight*.* =shadow/PSSM_noalpha.fx;"
+        "LED*.*=shadow/PSSM_noalpha.fx;"
+        "RectangleLight*.*=shadow/PSSM_noalpha.fx;"
+        "*.pmx=shadow/PSSM.fx;"
+        "*.pmd=shadow/PSSM.fx;"
+        "*.x=hide;";
+>;
+shared texture2D ShadowmapMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "G16R16F";
+>;
+texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "G16R16F";
+>;
+sampler DepthMapSamp = sampler_state {
+    texture = <DepthMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler ShadowmapSamp = sampler_state {
+    texture = <ShadowmapMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler ShadowmapSampTemp = sampler_state {
+    texture = <ShadowmapMapTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A8R8G8B8" ;

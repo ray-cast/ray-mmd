@@ -2,26 +2,6 @@
 #define SSGI_BLUR_RADIUS 8
 #define SSGI_BLUR_SHARPNESS 1
 
-#if SSAO_MODE >= 2
-shared texture SSAODepthMap : OFFSCREENRENDERTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    string DefaultEffect =
-        "self = hide;"
-        "ray_controller.pmx=hide;"
-        "*.pmd = ./shadow/SSAO.fx;"
-        "*.pmx = ./shadow/SSAO.fx;"
-        "*=hide;";
->;
-sampler SSAODepthMapSamp = sampler_state {
-    texture = <SSAODepthMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-#endif
-
 shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
@@ -53,11 +33,7 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 uv)
 {
-#if SSAO_MODE >= 2
-    return tex2D(SSAODepthMapSamp, uv).a;
-#else
-    return tex2D(GbufferFilterMap, uv).a;
-#endif
+    return tex2D(DepthMapSamp, uv).g;
 }
 
 float3 GetPosition(float2 uv)
@@ -68,13 +44,13 @@ float3 GetPosition(float2 uv)
 
 float3 GetNormal(float2 uv)
 {
-#if SSAO_MODE >= 2
-    float4 MRT1 = tex2D(SSAODepthMapSamp, uv);
-    return MRT1.xyz;
-#else
-    float4 filtered = tex2D(GbufferFilterMap, uv);
-    return filtered.xyz;
-#endif
+    float4 MRT2 = tex2D(Gbuffer2Map, uv);
+    float4 MRT6 = tex2D(Gbuffer6Map, uv);
+    
+    float linearDepth = tex2D(Gbuffer4Map, uv).r;
+    float linearDepth2 = tex2D(Gbuffer8Map, uv).r;
+    float4 MRT = linearDepth2 > 1.0 ? (linearDepth < linearDepth2 ? MRT2 : MRT6) : MRT2;
+    return DecodeGBufferNormal(MRT);
 }
 
 float2 tapLocation(int index, float noise)
@@ -94,6 +70,11 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
+    
+    if (viewPosition.z < 0.0)
+    {
+        return 1.0;
+    }
 
     [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
@@ -120,20 +101,19 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 
-float SSAOBlurWeight(float2 coord, float r, float center_d)
+float SSAOBlurWeight(float r, float depth, float center_d)
 {
     const float blurSharpness = SSAO_BLUR_SHARPNESS;
     const float blurSigma = SSAO_BLUR_RADIUS * 0.5f;
     const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
-    float d = linearizeDepth(coord);
-    float ddiff = (d - center_d) * blurSharpness;
+    float ddiff = (depth - center_d) * blurSharpness;
     return exp2(-r * r * blurFalloff - ddiff * ddiff);
 }
 
 float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
 {
-    float center_d = linearizeDepth(coord);
+    float center_d = abs(linearizeDepth(coord));
 
     float total_c = tex2D(source, coord).r;
     float total_w = 1.0f;
@@ -144,8 +124,11 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
     {
-        float bilateralWeight1 = SSAOBlurWeight(offset1, r, center_d);
-        float bilateralWeight2 = SSAOBlurWeight(offset2, r, center_d);
+        float depth1 = abs(linearizeDepth(offset1));
+        float depth2 = abs(linearizeDepth(offset2));
+        
+        float bilateralWeight1 = SSAOBlurWeight(r, depth1, center_d);
+        float bilateralWeight2 = SSAOBlurWeight(r, depth2, center_d);
 
         total_c += tex2D(source, offset1).r * bilateralWeight1;
         total_c += tex2D(source, offset2).r * bilateralWeight2;

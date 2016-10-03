@@ -20,7 +20,6 @@ const float LightZMin = 1;
 const float LightDistance = 1000;
 
 const float CascadeScale = 0.5;
-const float RecieverAlphaThreshold = 0.01;
 
 const float LightPlaneNear = 0.1;
 const float LightPlaneFar = 500.0;

@@ -38,37 +38,6 @@ float3 ApplyGroundFog(float3 color, float distance, float3 P)
 }
 #endif
 
-float4 GbufferFilterPS(in float2 coord: TEXCOORD0) : COLOR
-{
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
-
-    MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
-    
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
-    
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-    
-    float linearDepth = material.linearDepth;
-    float linearDepth2 = materialAlpha.linearDepth;
-    
-    if (linearDepth2 > 1.0 && linearDepth > linearDepth2)
-    {
-        return float4(materialAlpha.normal, linearDepth2);
-    }
-    else
-    {
-        return float4(material.normal, linearDepth);
-    }
-}
-
 float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -95,7 +64,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
     
-#if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
+#if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord);
     if (materialAlpha.alpha < 0.01)
     {
@@ -107,7 +76,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
-#if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
+#if SSAO_SAMPLER_COUNT > 0
     lighting2 *= ssao;
 #endif
 
@@ -125,7 +94,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     diffuse2 *= shadow;
 #endif
 
-#if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
+#if SSAO_SAMPLER_COUNT > 0
     diffuse *= ssao;
     diffuse2 *= ssao;
 #endif    

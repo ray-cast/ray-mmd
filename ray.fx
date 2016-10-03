@@ -69,7 +69,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fx"
 #endif
 
-#if SSAO_MODE > 0 && (SSAO_SAMPLER_COUNT > 0)
+#if SSAO_SAMPLER_COUNT > 0
 #   include "shader/ssao.fx"
 #endif
 
@@ -125,14 +125,12 @@ technique DeferredLighting<
     "Clear=Color;"
     "Clear=Depth;"
     "ScriptExternal=Color;"
-    
-    "RenderColorTarget0=GbufferFilterRT;Pass=GbufferFilter;"
 
-#if SSAO_MODE && SSAO_SAMPLER_COUNT
+#if SSAO_SAMPLER_COUNT
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
-    "RenderColorTarget0=SSAOMap;  Pass=SSAOBlurY;"
+    "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"
 #endif
 #endif
 
@@ -193,7 +191,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
+        PixelShader  = compile ps_3_0 ShadowMapBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
     pass ShadowBlurPassY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -206,22 +204,10 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(ShadowSamp, float2(ViewportOffset2.x, 0.0f));
+        PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
-    pass DeferredShading < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 DeferredShadingPS();
-    }
-    pass GbufferFilter < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 GbufferFilterPS();
-    }
-#if SSAO_MODE && SSAO_SAMPLER_COUNT > 0
+#if SSAO_SAMPLER_COUNT
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -243,6 +229,12 @@ technique DeferredLighting<
     }
     #endif
 #endif
+    pass DeferredShading < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 DeferredShadingPS();
+    }
 #if SSSS_QUALITY > 0
     pass SSSSStencilTest < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
