@@ -18,6 +18,7 @@ float showAlbedoAlpha : CONTROLOBJECT < string name="(self)"; string item = "Alb
 float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "NormalAlpha"; >;
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
+float showTransmittanceAlpha : CONTROLOBJECT < string name="(self)"; string item = "TransmittanceAlpha"; >;
 float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "EmissiveAlpha"; >;
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
@@ -112,7 +113,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
-    showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showEmissiveAlpha;
+    showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showEmissiveAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
     
     float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
@@ -127,13 +128,14 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
+    result += materialAlpha.transmittance * showTransmittanceAlpha;
     result += materialAlpha.transmittance * showEmissiveAlpha;
 
     result = linear2srgb(result);
 
     result += materialAlpha.alpha * showAlpha;
-    result += pow(tex2D(Gbuffer4Map, coord).r / 200, 0.5) * showDepth;
-    result += pow(tex2D(Gbuffer8Map, coord).r / 200, 0.5) * showDepthAlpha;
+    result += pow(material.linearDepth / 200, 0.5) * showDepth;
+    result += pow(materialAlpha.linearDepth / 200, 0.5) * showDepthAlpha;
 
     #if SSAO_SAMPLER_COUNT > 0
         result += tex2D(SSAOMapSamp, coord).r * showSSAO;
