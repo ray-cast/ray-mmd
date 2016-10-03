@@ -192,4 +192,16 @@ void DecodeYcbcrBilinearFilter(sampler source, float2 coord, float4 screenPositi
     color2 = ycbcr2rgb(color2);
 }
 
+float3 noise3(float2 seed)
+{
+    return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
+}
+
+float3 ApplyDithering(float3 color, float2 uv)
+{
+    float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
+    color += noise / 255.0;
+    return color;
+}
+
 #endif

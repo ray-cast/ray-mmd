@@ -676,7 +676,7 @@ FxaaFloat4 FxaaPixelShader(
 
 float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : SV_Target
 {
-    return FxaaPixelShader(coord.xy,
+    float4 color = FxaaPixelShader(coord.xy,
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
                 decal,
                 decal,
@@ -693,4 +693,7 @@ float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float
                 0.0f,
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
             );
+    color.rgb = linear2srgb(color.rgb);
+    color.rgb = ApplyDithering(color.rgb, coord);
+    return color;
 }

@@ -1,8 +1,8 @@
-#include "../ray.conf"
-#include "../shader/common.fx"
-#include "../shader/math.fx"
-#include "../shader/gbuffer.fx"
-#include "../shader/gbuffer_sampler.fx"
+#include "../../ray.conf"
+#include "../../shader/common.fx"
+#include "../../shader/math.fx"
+#include "../../shader/gbuffer.fx"
+#include "../../shader/gbuffer_sampler.fx"
 
 #if !defined(MIKUMIKUMOVING)
 float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo"; >;
@@ -57,7 +57,7 @@ sampler ScnSamp = sampler_state {
 };
 
 #if SSAO_SAMPLER_COUNT > 0
-shared texture2D SSAOMap : RENDERCOLORTARGET;
+shared texture SSAOMap : RENDERCOLORTARGET;
 sampler SSAOMapSamp = sampler_state {
     texture = <SSAOMap>;
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;

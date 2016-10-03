@@ -17,7 +17,7 @@ sampler ScnSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-shared texture LightMap: OFFSCREENRENDERTARGET <
+texture LightMap: OFFSCREENRENDERTARGET <
     string Description = "Multi light source map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
@@ -178,13 +178,15 @@ sampler Gbuffer8Map = sampler_state {
 };
 texture2D ShadingMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F";
 >;
 texture2D ShadingMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F";
+>;
+texture2D FinalMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A8R8G8B8";
 >;
 sampler ShadingMapSamp = sampler_state {
     texture = <ShadingMap>;
@@ -196,11 +198,6 @@ sampler ShadingMapTempSamp = sampler_state {
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-texture2D FinalMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
-    string Format = "A8R8G8B8";
->;
 sampler FinalMapSamp = sampler_state {
     texture = <FinalMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;

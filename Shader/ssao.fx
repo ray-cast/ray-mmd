@@ -3,7 +3,7 @@
 #define SSGI_BLUR_SHARPNESS 1
 
 #if SSAO_MODE >= 2
-shared texture2D SSAODepthMap : OFFSCREENRENDERTARGET <
+shared texture SSAODepthMap : OFFSCREENRENDERTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
     float4 ClearColor = { 0, 0, 0, 0 };
@@ -22,22 +22,22 @@ sampler SSAODepthMapSamp = sampler_state {
 };
 #endif
 
-shared texture2D SSAOMap : RENDERCOLORTARGET <
+shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
 #if SSGI_SAMPLER_COUNT > 0
     string Format = "A8R8G8B8";
 #else
-    string Format = "R16F";
+    string Format = "L8";
 #endif
 >;
-texture2D SSAOMapTemp : RENDERCOLORTARGET <
+texture SSAOMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     float4 ClearColor = { 0, 0, 0, 0 };
 #if SSGI_SAMPLER_COUNT > 0
     string Format = "A8R8G8B8";
 #else
-    string Format = "R16F";
+    string Format = "L8";
 #endif
 >;
 sampler SSAOMapSamp = sampler_state {
@@ -122,7 +122,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
     
-    return pow(ao,  2 * ao + ao * ao * (mSSAOP * 10 - mSSAOM));
+    return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 
 float SSAOBlurWeight(float2 coord, float r, float center_d)

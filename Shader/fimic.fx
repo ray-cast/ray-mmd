@@ -91,18 +91,6 @@ float3 FilmicTonemap(float3 color, float exposure)
 #endif
 }
 
-float3 noise3(float2 seed)
-{
-    return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
-}
-
-float3 ApplyDithering(float3 color, float2 uv)
-{
-    float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
-    color += noise / 255.0;
-    return color;
-}
-
 float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
@@ -182,10 +170,12 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
-    
     color = saturate(color);
+    
+#if AA_QUALITY == 0
     color = linear2srgb(color);
     color = ApplyDithering(color, coord);
+#endif
 
     return float4(color, luminance(color));
 }
