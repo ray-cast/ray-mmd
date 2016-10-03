@@ -23,7 +23,6 @@ const float albedoMapLoopNum = 1.0;
 
 const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
-const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0

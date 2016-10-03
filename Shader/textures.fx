@@ -12,7 +12,7 @@ texture2D ScnMap : RENDERCOLORTARGET <
 >;
 sampler ScnSamp = sampler_state {
     texture = <ScnMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 texture LightMap: OFFSCREENRENDERTARGET <
@@ -135,27 +135,27 @@ sampler Gbuffer2Map = sampler_state {
 };
 sampler Gbuffer3Map = sampler_state {
     texture = <Gbuffer3RT>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer4Map = sampler_state {
     texture = <Gbuffer4RT>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer5Map = sampler_state {
     texture = <Gbuffer5RT>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer6Map = sampler_state {
     texture = <Gbuffer6RT>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer7Map = sampler_state {
     texture = <Gbuffer7RT>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer8Map = sampler_state {
