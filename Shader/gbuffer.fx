@@ -1,6 +1,3 @@
-#ifndef _H_GBUFFER_H_
-#define _H_GBUFFER_H_
-
 #define LIGHTINGMODEL_NORMAL         0
 #define LIGHTINGMODEL_TRANSMITTANCE  1
 #define LIGHTINGMODEL_EMISSIVE       2
@@ -203,5 +200,3 @@ float3 ApplyDithering(float3 color, float2 uv)
     color += noise / 255.0;
     return color;
 }
-
-#endif

@@ -4,7 +4,6 @@ texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
     bool AntiAlias = false;
     string Format = "D24S8";
 >;
-
 texture2D ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
@@ -16,7 +15,6 @@ sampler ScnSamp = sampler_state {
     MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
 texture LightMap: OFFSCREENRENDERTARGET <
     string Description = "Multi light source map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
@@ -36,17 +34,15 @@ texture LightMap: OFFSCREENRENDERTARGET <
         "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"
         "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
         "TubeLight*.* =./Lighting/shader/tube_lighting.fx;"
-        "LED*.pmx =./Lighting/shader/LED.fx;"
+        "LED*.pmx =./Lighting/shader/rectangle_lighting_led.fx;"
         "* = hide;";
 >;
-
 sampler LightMapSamp = sampler_state {
     texture = <LightMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
-#if IBL_QUALITY > 0
+#if IBL_QUALITY
 texture EnvLightMap: OFFSCREENRENDERTARGET <
     string Description = "Image-based-lighting map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
@@ -61,14 +57,12 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
         "skybox*.*=./skybox/skylighting.fx;"
         "*= hide;";
 >;
-
 sampler EnvLightMapSamp = sampler_state {
     texture = <EnvLightMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
-
 shared texture MaterialMap: OFFSCREENRENDERTARGET <
     string Description = "Material cache map for ray";
     float2 ViewPortRatio = {1.0, 1.0};
@@ -89,49 +83,42 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
 >;
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0};
     string Format = "A8R8G8B8" ;
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
 shared texture Gbuffer3RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A8R8G8B8";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
 shared texture Gbuffer4RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F" ;
     bool AntiAlias = false;
     int MipLevels = 1;
 >;
 shared texture Gbuffer5RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A8R8G8B8";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
 shared texture Gbuffer6RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A8R8G8B8";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
 shared texture Gbuffer7RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A8R8G8B8";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
 shared texture Gbuffer8RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
     string Format = "A16B16G16R16F";
     int Miplevels = 1;
     bool AntiAlias = false;
@@ -143,7 +130,7 @@ sampler Gbuffer1Map = sampler_state {
 };
 sampler Gbuffer2Map = sampler_state {
     texture = <Gbuffer2RT>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP; AddressV  = CLAMP;
 };
 sampler Gbuffer3Map = sampler_state {
@@ -153,7 +140,7 @@ sampler Gbuffer3Map = sampler_state {
 };
 sampler Gbuffer4Map = sampler_state {
     texture = <Gbuffer4RT>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer5Map = sampler_state {
@@ -179,14 +166,20 @@ sampler Gbuffer8Map = sampler_state {
 texture2D ShadingMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
+    int Miplevels = 1;
+    bool AntiAlias = false;
 >;
 texture2D ShadingMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
+    int Miplevels = 1;
+    bool AntiAlias = false;
 >;
 texture2D FinalMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A8R8G8B8";
+    int Miplevels = 1;
+    bool AntiAlias = false;
 >;
 sampler ShadingMapSamp = sampler_state {
     texture = <ShadingMap>;
@@ -206,7 +199,8 @@ sampler FinalMapSamp = sampler_state {
 #if HDR_BLOOM_QUALITY > 0
 texture2D BloomMapX1Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
 #if HDR_BLOOM_QUALITY > 2
     string Format = "A16B16G16R16F";
 #else
@@ -215,7 +209,8 @@ texture2D BloomMapX1Temp : RENDERCOLORTARGET <
 >;
 texture2D BloomMapX1 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
 #if HDR_BLOOM_QUALITY > 2
     string Format = "A16B16G16R16F";
 #else
@@ -224,42 +219,50 @@ texture2D BloomMapX1 : RENDERCOLORTARGET <
 >;
 texture2D BloomMapX2Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX2 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX3Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX3 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX4 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX5Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 texture2D BloomMapX5 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
-    int MipLevels = 1;
+    int Miplevels = 1;
+    bool AntiAlias = false;
     string Format="A2R10G10B10";
 >;
 sampler2D BloomSampX1Temp = sampler_state {

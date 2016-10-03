@@ -8,11 +8,11 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);   
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
     
-    bloom.rgb += DecodeGBufferEmissive(MRT3) * 2;
-    bloom.rgb += DecodeGBufferEmissive(MRT7) * 2;
+    bloom.rgb += DecodeGBufferEmissive(MRT3);
+    bloom.rgb += DecodeGBufferEmissive(MRT7);
     
     return bloom;
 }
@@ -128,26 +128,11 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
     
-    float exposure = 1 + mExposure * 10;
-#if ISO100_ENABLE
-    #if !defined(MIKUMIKUMOVING)
-        if (ExistISO)
-        {
-    #endif
-            float aperture = 1.0 + mAperture * 30;
-            float shutterTime = (1.2 + mShutterTimeP * 10 - mShutterTimeM);
-            float EV100 = ComputeEV100(aperture, shutterTime, 100 * (1 + mISO * 10));
-            exposure = ComputeExposureFromEV100(EV100);
-    #if !defined(MIKUMIKUMOVING)
-        }
-    #endif
-#endif
-
 #if HDR_ENABLE
 #if HDR_BLOOM_QUALITY > 0
     float bloomFactors[] = {1.0, 0.8, 0.6, 0.4, 0.2};
     
-    float3 bloom0 = tex2D(BloomSampX1, coord).rgb;
+    float3 bloom0 = BloomFactor(bloomFactors[0]) * tex2D(BloomSampX1, coord).rgb;
     float3 bloom1 = BloomFactor(bloomFactors[1]) * tex2D(BloomSampX2, coord).rgb;
     float3 bloom2 = BloomFactor(bloomFactors[2]) * tex2D(BloomSampX3, coord).rgb;
     float3 bloom3 = BloomFactor(bloomFactors[3]) * tex2D(BloomSampX4, coord).rgb;
@@ -160,13 +145,18 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom3;
     bloom += bloom4;
     
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    bloom += DecodeGBufferEmissive(MRT3);
+    bloom += DecodeGBufferEmissive(MRT7);
+    
     float bloomIntensity = lerp(1, 20, mBloomIntensity);
     color += bloom * bloomIntensity;
 #endif
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
-    color = FilmicTonemap(color, exposure);
+    color = FilmicTonemap(color, 1 + mExposure * 10);
 #endif
   
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);

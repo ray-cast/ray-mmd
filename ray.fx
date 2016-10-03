@@ -29,12 +29,6 @@ float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
-bool ExistISO : CONTROLOBJECT<string name = "ISO.pmx";>;
-float mISO : CONTROLOBJECT < string name="ISO.pmx"; string item = "ISO"; >;
-float mAperture : CONTROLOBJECT < string name="ISO.pmx"; string item = "Aperture"; >;
-float mShutterTimeP : CONTROLOBJECT < string name="ISO.pmx"; string item = "ShutterTime+"; >;
-float mShutterTimeM : CONTROLOBJECT < string name="ISO.pmx"; string item = "ShutterTime-"; >;
-
 float mSSRRangeP :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range+"; >;
 float mSSRRangeM :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Range-"; >;
 float mSSRThickness :  CONTROLOBJECT < string name="SSRController.pmx"; string item = "Thickness"; >;
@@ -60,9 +54,9 @@ float mSSRFadeDistance :  CONTROLOBJECT < string name="SSRController.pmx"; strin
     float mFogSkyB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyB+"; >;
 #endif
 
-float3  LightDiffuse    : DIFFUSE   < string Object = "Light"; >;
-float3  LightSpecular   : SPECULAR  < string Object = "Light"; >;
-float3  LightDirection  : DIRECTION < string Object = "Light"; >;
+float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
+float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
+float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
 #include "shader/math.fx"
 #include "shader/common.fx"
@@ -104,11 +98,6 @@ void ScreenSpaceQuadVS(
     oViewdir = -mul(Position, matProjectInverse).xyz;
     oTexcoord = Texcoord;
     oTexcoord.xy += ViewportOffset;
-}
-
-float4 ScreenSpaceQuadPS(in float4 Texcoord : TEXCOORD0, uniform sampler source) : COLOR
-{
-    return tex2D(source, Texcoord.xy);
 }
 
 float Script : STANDARDSGLOBAL <

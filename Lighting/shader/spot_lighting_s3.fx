@@ -11,8 +11,8 @@
 #define SPOTLIGHT_ENABLE 1
 
 // 阴影
-#define SHADOW_MAP_ENABLE 0
-#define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 0 // (0 ~ 3)
+#define SHADOW_MAP_ENABLE 1
+#define SHADOW_MAP_QUALITY 3 // (0 ~ 3)
+#define SHADOW_MAP_SOFT_QUALITY 1 // (0 ~ 3)
 
 #include "light_source.fxsub"
