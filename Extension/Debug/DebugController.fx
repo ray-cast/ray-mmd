@@ -57,7 +57,7 @@ sampler ScnSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY > 0
 shared texture SSAOMap : RENDERCOLORTARGET;
 sampler SSAOMapSamp = sampler_state {
     texture = <SSAOMap>;
@@ -137,7 +137,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += pow(material.linearDepth / 200, 0.5) * showDepth;
     result += pow(materialAlpha.linearDepth / 200, 0.5) * showDepthAlpha;
 
-    #if SSAO_SAMPLER_COUNT > 0
+    #if SSAO_QUALITY > 0
         result += tex2D(SSAOMapSamp, coord).r * showSSAO;
     #endif
 
@@ -146,7 +146,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     #endif
 
     #if SHADOW_QUALITY > 0
-        result += tex2D(PSSMsamp, coord).r * 4 * showPSSM;
+        result += pow(tex2D(PSSMsamp, coord).r * 4, 10) * showPSSM;
     #endif
 
     return float4(result, 1);

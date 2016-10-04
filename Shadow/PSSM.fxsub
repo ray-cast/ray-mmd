@@ -30,7 +30,7 @@ void CascadeShadowMapVS(
 {
     float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
     
-    oPosition = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightViewProject);
+    oPosition = mul(Position + float4(Normal * cosAngle * 0.02, 0), matLightViewProject);
     oPosition.xy = oPosition.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
     oPosition.xy = oPosition.xy * 0.5 + (offset.xy * 0.5f);
    

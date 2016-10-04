@@ -12,14 +12,13 @@
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 #define SELFSHADOW_COS_MAX 0.00872653549837393496488821397358 //cos 89.5 degree
 
-const float CascadeZMax = 2000;
 const float CascadeZMin = 5;
-
-const float LightZMax = 4000.0;
-const float LightZMin = 1;
-const float LightDistance = 1000;
-
+const float CascadeZMax = 2000;
 const float CascadeScale = 0.5;
+
+const float LightZMin = 1;
+const float LightZMax = 4000.0;
+const float LightDistance = 1000;
 
 const float LightPlaneNear = 0.1;
 const float LightPlaneFar = 500.0;
@@ -209,8 +208,8 @@ float ChebyshevUpperBound(float2 moments, float depth, float minVariance, float 
     variance = max(variance, minVariance);
 
     float d = depth - moments.x;
-    float pMax = variance / (variance + (d * d));
+    float d_max = variance / (variance + (d * d));
 
-    pMax = ReduceLightBleeding(pMax, lightBleedingReduction);
-    return (depth <= moments.x ? 1.0f : pMax);
+    d_max = ReduceLightBleeding(d_max, lightBleedingReduction);
+    return (depth <= moments.x ? 1.0f : d_max);
 }

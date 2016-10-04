@@ -1,6 +1,18 @@
+#if SSAO_QUALITY == 1
+#   define SSAO_SAMPLER_COUNT 8
+#elif SSAO_QUALITY == 2
+#   define SSAO_SAMPLER_COUNT 12
+#elif SSAO_QUALITY >= 3
+#   define SSAO_SAMPLER_COUNT 16
+#else
+#   define SSAO_SAMPLER_COUNT 16
+#endif
+
+#define SSAO_SPACE_RADIUS 10
+#define SSAO_SPACE_RADIUS2 SSAO_SPACE_RADIUS * SSAO_SPACE_RADIUS
+#define SSAO_BLUR_RADIUS 8
 #define SSGI_SAMPLER_COUNT 0
 #define SSGI_BLUR_RADIUS 8
-#define SSGI_BLUR_SHARPNESS 1
 
 shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
@@ -101,16 +113,6 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 
-float SSAOBlurWeight(float r, float depth, float center_d)
-{
-    const float blurSharpness = SSAO_BLUR_SHARPNESS;
-    const float blurSigma = SSAO_BLUR_RADIUS * 0.5f;
-    const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
-
-    float ddiff = (depth - center_d) * blurSharpness;
-    return exp2(-r * r * blurFalloff - ddiff * ddiff);
-}
-
 float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
 {
     float center_d = abs(linearizeDepth(coord));
@@ -127,8 +129,8 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
         float depth1 = abs(linearizeDepth(offset1));
         float depth2 = abs(linearizeDepth(offset2));
         
-        float bilateralWeight1 = SSAOBlurWeight(r, depth1, center_d);
-        float bilateralWeight2 = SSAOBlurWeight(r, depth2, center_d);
+        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, 1);
+        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, 1);
 
         total_c += tex2D(source, offset1).r * bilateralWeight1;
         total_c += tex2D(source, offset2).r * bilateralWeight2;
@@ -190,39 +192,34 @@ float4 SSGI(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     return sampleIndirect;
 }
 
-float SSGIBlurWeight(float2 coord, float r, float center_d)
-{
-    const float blurSharpness = SSGI_BLUR_SHARPNESS;
-    const float blurSigma = SSGI_BLUR_RADIUS * 0.5f;
-    const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
-
-    float d = linearizeDepth(coord);
-    float ddiff = (d - center_d) * blurSharpness;
-    return exp2(-r * r * blurFalloff - ddiff * ddiff);
-}
-
 float4 SSGIBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
     float center_d = linearizeDepth(coord);
 
-    float3 total_c = tex2D(source, coord).rgb;
+    float4 total_c = tex2D(source, coord);
     float total_w = 1.0f;
+
+    float2 offset1 = coord + offset;
+    float2 offset2 = coord - offset;
 
     [unroll]
     for (int r = 1; r < SSGI_BLUR_RADIUS; r++)
-    {
-        float2 offset1 = coord + offset * r;
-        float2 offset2 = coord - offset * r;
+    {       
+        float depth1 = abs(linearizeDepth(offset1));
+        float depth2 = abs(linearizeDepth(offset2));
 
-        float bilateralWeight1 = SSGIBlurWeight(offset1, r, center_d);
-        float bilateralWeight2 = SSGIBlurWeight(offset2, r, center_d);
+        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSGI_BLUR_RADIUS, 1);
+        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSGI_BLUR_RADIUS, 1);
 
-        total_c += tex2D(source, offset1).rgb * bilateralWeight1;
-        total_c += tex2D(source, offset2).rgb * bilateralWeight2;
+        total_c += tex2D(source, offset1) * bilateralWeight1;
+        total_c += tex2D(source, offset2) * bilateralWeight2;
 
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
+        
+        offset1 += offset;
+        offset2 -= offset;
     }
 
-    return float4(total_c / total_w, 1);
+    return total_c / total_w;
 }

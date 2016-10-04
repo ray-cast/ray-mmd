@@ -302,4 +302,13 @@ float GetJitterOffset(int2 iuv)
 #endif
 }
 
+float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)
+{
+    const float blurSigma = sigma * 0.5f;
+    const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
+
+    float ddiff = (depth - center_d) * sharpness;
+    return exp2(-r * r * blurFalloff - ddiff * ddiff);
+}
+
 #endif

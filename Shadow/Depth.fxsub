@@ -115,7 +115,7 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 #if RECIEVER_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
 #if RECIEVER_ALPHA_MAP_ENABLE
-	if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, IN.Tex.xy).a;
+	if (useTexture) alpha *= tex2D(DiffuseMapSamp, IN.Tex.xy).a;
 #endif
 	clip(alpha - 0.01);
 #endif
@@ -161,10 +161,10 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 
 #if RECIEVER_ALPHA_ENABLE
 	shadow = (alpha <= RecieverAlphaThreshold) ? 1 : shadow;
-	return float4(shadow, IN.PPos.z, 0, 1);
-#else
-	return float4(shadow, IN.PPos.z, 0, 1);
 #endif
+	
+	shadow = min(shadow, dot(IN.Normal, -LightDirection) * 0.5 + 0.5);
+	return float4(shadow, IN.PPos.z, 0, 1);
 }
 
 #define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \

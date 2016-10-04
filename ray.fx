@@ -69,7 +69,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fx"
 #endif
 
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY > 0
 #   include "shader/ssao.fx"
 #endif
 
@@ -126,12 +126,10 @@ technique DeferredLighting<
     "Clear=Depth;"
     "ScriptExternal=Color;"
 
-#if SSAO_SAMPLER_COUNT
+#if SSAO_QUALITY
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
-#if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
     "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"
-#endif
 #endif
 
     "RenderColorTarget0=ShadingMap;"
@@ -207,7 +205,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
 #endif
-#if SSAO_SAMPLER_COUNT
+#if SSAO_QUALITY
     pass SSAO < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;

@@ -2,6 +2,6 @@
 #define CASTER_ALPHA_MAP_ENABLE 1
 
 // 不产生阴影的Alpha阈值
-const float CasterAlphaThreshold = 0.7;
+const float CasterAlphaThreshold = 0.5;
 
 #include "PSSM.fxsub"
