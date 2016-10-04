@@ -1,6 +1,3 @@
-#ifndef _H_COMMON_H_
-#define _H_COMMON_H_
-
 float time : TIME;
 float elapsed : ELAPSEDTIME;
 
@@ -44,5 +41,3 @@ uniform bool use_spheremap;
 uniform bool use_toon;
 
 uniform bool opadd;
-
-#endif
