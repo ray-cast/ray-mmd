@@ -84,18 +84,18 @@ float3 ACESFilmRec2020(float3 x)
 
 float3 FilmicTonemap(float3 color, float exposure)
 {
-#if TONEMAP_OPERATOR == TONEMAP_LINEAR
-    return exposure * color;
-#elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_709
+#if HDR_TONEMAP_OPERATOR == 0
+    return color * exposure;
+#elif HDR_TONEMAP_OPERATOR == 1
     color = color * exposure;
     float3 curr = ACESFilmRec709(color);
     return lerp(curr, color, mToneMapping);
-#elif TONEMAP_OPERATOR == TONEMAP_ACES_FILM_REC_2020
+#elif HDR_TONEMAP_OPERATOR == 2
     color = color * exposure;
     float3 curr = ACESFilmRec2020(color);
     return lerp(curr, color, mToneMapping);
 #else
-    return color;
+    return color * exposure;
 #endif
 }
 
