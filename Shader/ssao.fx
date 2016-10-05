@@ -83,11 +83,6 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
     
-    if (viewPosition.z < 0.0)
-    {
-        return 1.0;
-    }
-
     [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
     {
@@ -96,12 +91,12 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
         float3 sampleDirection = samplePosition - viewPosition;
 
         float sampleLength2 = dot(sampleDirection, sampleDirection);
-        float sampleAngle = dot(normalize(sampleDirection), viewNormal);
-
+        float sampleOcclustion = dot(sampleDirection, viewNormal) * rsqrt(sampleLength2);
+        
         if (sampleLength2 < SSAO_SPACE_RADIUS2)
         {
-            float bias = 0.002;
-            float occlustion  = saturate(sampleAngle - samplePosition.z * bias);
+            float bias = 0.002;            
+            float occlustion  = saturate(sampleOcclustion - samplePosition.z * bias);
             
             sampleAmbient += occlustion;
             sampleWeight += 1.0;
@@ -109,6 +104,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
+    ao = viewPosition.z < 0 ? 1 : ao;
     
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
