@@ -1,6 +1,3 @@
-#ifndef  _H_LIGHTING_H_
-#define  _H_LIGHTING_H_
-
 float SmoothnessToRoughness(float smoothness)
 {
     return (1.0f - smoothness) * (1.0f - smoothness);
@@ -431,5 +428,3 @@ float TubeLightAttenuation(float3 N, float3 L0, float3 L1, float3 P)
     
     return (2.0 * clamp(nl0 + nl1, 0.0, 1.0)) / (length1 * length2 + dot(L0, L1) + 2.0);
 }
-
-#endif

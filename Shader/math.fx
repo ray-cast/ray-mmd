@@ -1,6 +1,3 @@
-#ifndef _H_MATH_H_
-#define _H_MATH_H_
-
 #ifndef InvLog2
 #   define InvLog2 3.32192809489f
 #endif
@@ -310,5 +307,3 @@ float BilateralWeight(float r, float depth, float center_d, float sigma, float s
     float ddiff = (depth - center_d) * sharpness;
     return exp2(-r * r * blurFalloff - ddiff * ddiff);
 }
-
-#endif
