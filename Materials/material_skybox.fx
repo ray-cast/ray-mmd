@@ -19,7 +19,7 @@ const float albedoMapLoopNum = 1.0;
 #define ALPHA_MAP_FILE "alpha.png"
 
 const float alpha = 1.0;
-const float alphaThreshold = 0.98; // (see main.fx)
+const float alphaThreshold = 0.98; // (保持和 main.fx一致)
 const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
