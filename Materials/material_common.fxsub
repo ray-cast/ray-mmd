@@ -410,13 +410,13 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
     else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
     {
-        material.emissive = rgb2ycbcr(material.emissive * material.emissiveIntensity);
+        material.emissive = rgb2ycbcr(material.emissive);
         gbuffer.buffer3.yz = material.emissive.gb;
         gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, linearDepth, linearDepth, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, linearDepth, material.alpha);
     
     return gbuffer;
 }
@@ -565,10 +565,14 @@ float3 GetEmissiveColor(float2 uv, bool use_texture)
 
 float GetEmissiveIntensity()
 {
-#if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
-    return saturate(emissiveIntensity);
+#if USE_CUSTOM_MATERIAL
+    #if EMISSIVE_ENABLE
+        return emissiveIntensity;
+    #else
+        return 0;
+    #endif
 #else
-    return saturate((MaterialPower - 200) * 0.1);
+    return max(0, (MaterialPower - 200) * 0.1);
 #endif
 }
 

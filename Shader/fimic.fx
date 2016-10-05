@@ -9,10 +9,18 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, u
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 
     float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
     
-    bloom.rgb += DecodeGBufferEmissive(MRT3);
-    bloom.rgb += DecodeGBufferEmissive(MRT7);
+#if HDR_BLOOM_QUALITY == 3
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+#else
+    float4 MRT7 = 1;
+    float4 MRT8 = 1;
+#endif
+
+    bloom.rgb += DecodeGBufferEmissive(MRT3, MRT4);
+    bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
     
     return bloom;
 }
@@ -144,11 +152,6 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom2;
     bloom += bloom3;
     bloom += bloom4;
-    
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    bloom += DecodeGBufferEmissive(MRT3);
-    bloom += DecodeGBufferEmissive(MRT7);
     
 #if HDR_BLOOM_MODE == 0
     float bloomIntensity = lerp(1, 20, mBloomIntensity);

@@ -98,6 +98,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
+const float emissiveIntensity = 1.0;
 const float emissiveMapLoopNum = 1.0;
 
 // 视差贴图
