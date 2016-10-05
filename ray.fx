@@ -1,8 +1,8 @@
 #include "ray.conf"
 
-const float4 BackColor  = float4(0,0,0,0);
-const float ClearDepth  = 1.0;
-const int ClearStencil  = 0;
+const float4 BackColor = float4(0,0,0,0);
+const float ClearDepth = 1.0;
+const int ClearStencil = 0;
 
 float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
 float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
@@ -115,10 +115,10 @@ technique DeferredLighting<
     "ClearSetStencil=ClearStencil;"
     
 #if SHADOW_QUALITY && SHADOW_SOFT_ENABLE
-    "RenderColorTarget0=ShadowmapMapTemp;  Pass=ShadowBlurPassX;"
-    "RenderColorTarget0=ShadowmapMap;      Pass=ShadowBlurPassY;"
+    "RenderColorTarget0=ShadowmapMapTemp; Pass=ShadowBlurPassX;"
+    "RenderColorTarget0=ShadowmapMap;     Pass=ShadowBlurPassY;"
 #elif SHADOW_QUALITY
-    "RenderColorTarget0=ShadowmapMap;  Pass=ShadowMapNoBlur;"
+    "RenderColorTarget0=ShadowmapMap; Pass=ShadowMapNoBlur;"
 #endif
 
     "RenderColorTarget0=ScnMap;"
@@ -154,20 +154,20 @@ technique DeferredLighting<
     "RenderDepthStencilTarget=DepthBuffer;"
     "Clear=Depth;"
     "Pass=SSSSStencilTest;"
-    "RenderColorTarget0=ShadingMapTemp;  Pass=SSSSBlurX;"
-    "RenderColorTarget0=ShadingMap;      Pass=SSSSBlurY;"
+    "RenderColorTarget0=ShadingMapTemp; Pass=SSSSBlurX;"
+    "RenderColorTarget0=ShadingMap;     Pass=SSSSBlurY;"
 #endif
 
 #if HDR_BLOOM_QUALITY > 0
-    "RenderColorTarget0=BloomMapX1;      Pass=GlareDetection;"
-    "RenderColorTarget0=BloomMapX2Temp;  Pass=BloomBlurX2;"
-    "RenderColorTarget0=BloomMapX2;      Pass=BloomBlurY2;"
-    "RenderColorTarget0=BloomMapX3Temp;  Pass=BloomBlurX3;"
-    "RenderColorTarget0=BloomMapX3;      Pass=BloomBlurY3;"
-    "RenderColorTarget0=BloomMapX4Temp;  Pass=BloomBlurX4;"
-    "RenderColorTarget0=BloomMapX4;      Pass=BloomBlurY4;"
-    "RenderColorTarget0=BloomMapX5Temp;  Pass=BloomBlurX5;"
-    "RenderColorTarget0=BloomMapX5;      Pass=BloomBlurY5;"
+    "RenderColorTarget0=BloomMapX1;     Pass=GlareDetection;"
+    "RenderColorTarget0=BloomMapX2Temp; Pass=BloomBlurX2;"
+    "RenderColorTarget0=BloomMapX2;     Pass=BloomBlurY2;"
+    "RenderColorTarget0=BloomMapX3Temp; Pass=BloomBlurX3;"
+    "RenderColorTarget0=BloomMapX3;     Pass=BloomBlurY3;"
+    "RenderColorTarget0=BloomMapX4Temp; Pass=BloomBlurX4;"
+    "RenderColorTarget0=BloomMapX4;     Pass=BloomBlurY4;"
+    "RenderColorTarget0=BloomMapX5Temp; Pass=BloomBlurX5;"
+    "RenderColorTarget0=BloomMapX5;     Pass=BloomBlurY5;"
 #endif
 
 #if AA_QUALITY > 0

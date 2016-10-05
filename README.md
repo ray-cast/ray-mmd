@@ -131,7 +131,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/point_light2.png)](https://github.com/ray-cast/images/raw/master/point_light2.png)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
-* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理 
+* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理  
 [![link text](https://github.com/ray-cast/images/raw/master/point_light3_small.png)](https://github.com/ray-cast/images/raw/master/point_light3.png)
 * 接着说下如何使用纹理的方形区域光
 * 首先在Lighting目录中拖拽一个RectangleLight.pmx至窗口  

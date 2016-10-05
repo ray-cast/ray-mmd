@@ -3,31 +3,31 @@
 #include "../../shader/gbuffer.fx"
 #include "../../shader/gbuffer_sampler.fx"
 
-texture2D ScnMap : RENDERCOLORTARGET <
+texture ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
     bool AntiAlias = false;
-    string Format = "X8R8G8B8";
+    string Format = "A2B10G10R10";
 >;
-texture2D DownsampleX0Map : RENDERCOLORTARGET <
+texture DownsampleX0Map : RENDERCOLORTARGET <
     float2 ViewportRatio = {1.0, 1.0};
     bool AntiAlias = false;
     int MipLevels = 0;
     string Format = "A16B16G16R16F";
 >;
-texture2D DownsampleX1Map : RENDERCOLORTARGET <
+texture DownsampleX1Map : RENDERCOLORTARGET <
     float2 ViewportRatio = {0.5, 0.5};
     bool AntiAlias = false;
     int MipLevels = 0;
     string Format = "A16B16G16R16F";
 >;
-texture2D DofFontBlurMap : RENDERCOLORTARGET <
+texture DofFontBlurMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
     bool AntiAlias = false;
     string Format = "A2B10G10R10";
 >;
-texture2D DofFarBlurMap : RENDERCOLORTARGET <
+texture DofFarBlurMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int MipLevels = 1;
     bool AntiAlias = false;
@@ -50,12 +50,12 @@ sampler DownsampleX1MapSamp = sampler_state {
 };
 sampler DofFontBlurMapSamp = sampler_state {
     texture = <DofFontBlurMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler DofFarBlurMapSamp = sampler_state {
     texture = <DofFarBlurMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
@@ -63,7 +63,6 @@ float mFocalDepth : CONTROLOBJECT < string name="BokehController.pmx"; string it
 float mFocalLengthP : CONTROLOBJECT < string name="BokehController.pmx"; string item = "FocalLength+"; >;
 float mFocalLengthM : CONTROLOBJECT < string name="BokehController.pmx"; string item = "FocalLength-"; >;
 float mFocalShow : CONTROLOBJECT < string name="BokehController.pmx"; string item = "FocalShow"; >;
-float mBokehIntensity : CONTROLOBJECT < string name="BokehController.pmx"; string item = "BokehIntensity"; >;
 float mBokehRadius : CONTROLOBJECT < string name="BokehController.pmx"; string item = "BokehRadius"; >;
 float mBokehInner : CONTROLOBJECT < string name="BokehController.pmx"; string item = "BokehInner"; >;
 
@@ -77,7 +76,6 @@ static float focusShow = mFocalShow;
 
 static float bokehRadius = (1 + mBokehRadius * 2);
 static float bokehInner = (0.5 + mBokehInner);
-static float bokehIntensity = mBokehIntensity * 10;
 
 #define RINGS_SAMPLER_COUNT 5
 #define RINGS_SAMPLER_COUNT2 6
@@ -137,6 +135,13 @@ float CalcFocusBlur(float depth)
     return (b - a) * c;
 }
 
+float3 ShowDebugFocus(float3 color, float blur)
+{
+    color = lerp(color, float3(1.0, 0.5, 0.0), -min(0, blur));
+    color = lerp(color, float3(0.0, 0.5, 1.0), max(0, blur));
+    return color;
+}
+
 void DofDownsampleVS(
     in float4 Position : POSITION,
     in float4 Texcoord : TEXCOORD,
@@ -176,8 +181,7 @@ float4 DofDownsamplePS(
     color += tex2D(source, coord1.xy);
     color += tex2D(source, coord1.zw);
     color += tex2D(source, coord2.xy);
-    color += tex2D(source, coord2.zw);
-    
+    color += tex2D(source, coord2.zw);    
     return color /= 4;
 }
 
@@ -192,15 +196,7 @@ float4 DofFrontBlurPS(
     color += tex2D(source, coord1.zw);
     color += tex2D(source, coord2.xy);
     color += tex2D(source, coord2.zw);
-    color /= 4;
-    
-    return color;
-}
-
-float3 ShowDebugFocus(float3 color, float blur)
-{
-    color = lerp(color, float3(1.0, 0.5, 0.0), -min(0, blur));
-    color = lerp(color, float3(0.0, 0.5, 1.0), max(0, blur));
+    color /= 4;    
     return color;
 }
 
@@ -208,7 +204,7 @@ float4 DofFarBlurPS(in float2 coord : TEXCOORD, uniform sampler source) : COLOR0
 {       
     float4 totalWeight = 1.0;
     float4 totalColor = tex2D(source, coord);
-    
+        
     float radius = totalColor.a;
     float radiusScaled = radius * bokehRadius;
     float bias = bokehInner;
@@ -216,28 +212,44 @@ float4 DofFarBlurPS(in float2 coord : TEXCOORD, uniform sampler source) : COLOR0
     for (int i = 1; i <= RINGS_SAMPLER_COUNT; i++)
     {   
         int ringsamples = i * RINGS_SAMPLER_COUNT2;
+        float step = PI * 2.0 / float(ringsamples);
         
         for (int j = 0 ; j < ringsamples ; j++)   
         {
-            float step = PI * 2.0 / float(ringsamples);
             float pw = (cos(step * j) * i);
             float ph = (sin(step * j) * i);
             
-            float2 offset = float2(pw, ph) * ViewportOffset2 * radiusScaled * radiusScaled;
+            float2 offset = float2(pw, ph) * ViewportOffset2 * radiusScaled;
             
-            float4 col0 = tex2Dlod(source, float4(coord + offset, 0, radiusScaled / 2));
-            float4 color = col0;
-            
-            float weight = max(0, lerp(1.0, (float(i)) / (float(RINGS_SAMPLER_COUNT)), bias));
-            float4 bokeh = pow(color * color * 1.5, 10.0) * radiusScaled * 500.0 + 0.4;
-            
-            totalColor += color * bokeh * weight;
-            totalWeight += bokeh * weight;
+            float4 color = tex2Dlod(source, float4(coord + offset, 0, radiusScaled / 2));
+            if (color.a > 0.0)
+            {
+                float weight = max(0, lerp(1.0, (float(i)) / (float(RINGS_SAMPLER_COUNT)), bias));
+                float4 bokeh = pow(color * color.a, 10.0) * radiusScaled * 500.0 + 0.01;
+                
+                totalColor += color * bokeh * weight;
+                totalWeight += bokeh * weight;
+            }
         }
     }
     
     totalColor /= totalWeight;        
     return totalColor;
+}
+
+void DepthOfFieldVS(
+    in float4 Position : POSITION,
+    in float4 Texcoord : TEXCOORD,
+    out float4 oTexcoord0 : TEXCOORD0,
+    out float4 oTexcoord1 : TEXCOORD1,
+    out float4 oTexcoord2 : TEXCOORD2,
+    out float4 oPosition : POSITION,
+    uniform float2 offset)
+{
+    oPosition = Position;   
+    oTexcoord0 = Texcoord + (offset * 0.5).xyxy;
+    oTexcoord1 = oTexcoord0.xyxy + offset.xyxy * 1.5 + offset.xyxy * float4(-1, -1, -1, 1);
+    oTexcoord2 = oTexcoord0.xyxy + offset.xyxy * 1.5 + offset.xyxy * float4( 1, -1,  1, 1);
 }
 
 float4 DepthOfFieldPS(
@@ -278,8 +290,8 @@ float Script : STANDARDSGLOBAL <
     string ScriptOrder  = "postprocess";
 > = 0.8;
 
-const float4 ClearColor  = float4(0,0,0,0);
-const float ClearDepth  = 1.0;
+const float4 ClearColor = float4(0,0,0,0);
+const float ClearDepth = 1.0;
 
 technique DepthOfField <
     string Script = 
@@ -328,7 +340,7 @@ technique DepthOfField <
     pass DepthOfField < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 DofDownsampleVS(ViewportOffset2);
+        VertexShader = compile vs_3_0 DepthOfFieldVS(ViewportOffset2);
         PixelShader  = compile ps_3_0 DepthOfFieldPS();
     }
 }
