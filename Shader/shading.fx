@@ -1,3 +1,6 @@
+bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
+bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
+
 float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
 {
     float3 lighting = 0;
@@ -72,7 +75,8 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     }
 #endif
 
-    lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
+    float4 screenMap = tex2D(ScnSamp, coord);
+    lighting += srgb2linear(screenMap.rgb);
     
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
@@ -82,10 +86,14 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 
 #if IBL_QUALITY > 0   
     float3 diffuse, diffuse2;
+    float3 specular, specular2;
+    
 #if IBL_QUALITY == 1
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
 #else
     DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+    DecodeYcbcrWithEdgeFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
 #endif
 
 #if SHADOW_QUALITY > 0
@@ -97,10 +105,16 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #if SSAO_SAMPLER_COUNT > 0
     diffuse *= ssao;
     diffuse2 *= ssao;
+    specular *= ComputeSpecularOcclusion(dot(N, V), ssao, material.smoothness);
+    specular2 *= ComputeSpecularOcclusion(dot(N2, V), ssao, materialAlpha.smoothness);
 #endif    
 
-    lighting += diffuse;
-    lighting2 += diffuse2;
+    if (ExistSkybox || ExistSkyboxHDR)
+    {
+        lighting += diffuse + specular * step(0, screenMap.a);
+        lighting2 += diffuse2 + specular2 * step(0, screenMap.a);   
+    }
+    
 #endif
 
     lighting = lerp(lighting, lighting2, materialAlpha.alpha);

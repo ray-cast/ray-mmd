@@ -99,10 +99,12 @@ void EnvLightingVS(
     oTexcoord = oPosition = mul(Position, matWorldViewProject);
 }
 
-float4 EnvLightingPS(
+void EnvLightingPS(
     float4 texcoord : TEXCOORD0,
     float3 viewdir  : TEXCOORD1,
-    float4 screenPosition : SV_Position) : SV_Target
+    float4 screenPosition : SV_Position,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
 {
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
@@ -132,15 +134,19 @@ float4 EnvLightingPS(
     float3 diffuse2, specular2;
     ShadingMaterial(V, materialAlpha, diffuse2, specular2);
     
-    diffuse += specular;
-    diffuse2 += specular2;
-
-    return EncodeYcbcr(screenPosition, diffuse, diffuse2);
+    oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse2);
+    oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
 }
+
+shared texture EnvLightSpecMap: RENDERCOLORTARGET;
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
-    > { \
+    string Script = \
+        "RenderColorTarget0=;" \
+        "RenderColorTarget1=EnvLightSpecMap;" \
+        "Pass=DrawObject;" \
+    ;> { \
         pass DrawObject { \
             AlphaBlendEnable = false; AlphaTestEnable = false;\
             VertexShader = compile vs_3_0 EnvLightingVS(); \

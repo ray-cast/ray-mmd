@@ -67,8 +67,19 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
         "skybox*.*=./skybox/skylighting.fx;"
         "*= hide;";
 >;
+shared texture EnvLightSpecMap: RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+>;
 sampler EnvLightMapSamp = sampler_state {
     texture = <EnvLightMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler EnvLightSpecMapSamp = sampler_state {
+    texture = <EnvLightSpecMap>;
     MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
