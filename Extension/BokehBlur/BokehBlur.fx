@@ -12,10 +12,16 @@ texture ScnMap : RENDERCOLORTARGET <
 texture DownsampleX0Map : RENDERCOLORTARGET <
     float2 ViewportRatio = {1.0, 1.0};
     bool AntiAlias = false;
-    int MipLevels = 0;
+    int MipLevels = 1;
     string Format = "A16B16G16R16F";
 >;
 texture DownsampleX1Map : RENDERCOLORTARGET <
+    float2 ViewportRatio = {0.5, 0.5};
+    bool AntiAlias = false;
+    int MipLevels = 1;
+    string Format = "A16B16G16R16F";
+>;
+texture DownsampleX1BackMap : RENDERCOLORTARGET <
     float2 ViewportRatio = {0.5, 0.5};
     bool AntiAlias = false;
     int MipLevels = 0;
@@ -35,7 +41,7 @@ texture DofFarBlurMap : RENDERCOLORTARGET <
 >;
 sampler ScnSamp = sampler_state {
     texture = <ScnMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler DownsampleX0MapSamp = sampler_state {
@@ -46,6 +52,11 @@ sampler DownsampleX0MapSamp = sampler_state {
 sampler DownsampleX1MapSamp = sampler_state {
     texture = <DownsampleX1Map>;
     MinFilter = POINT; MagFilter = POINT; MipFilter = LINEAR;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = float4(0,0,0,0);
+};
+sampler DownsampleX1BackMapSamp = sampler_state {
+    texture = <DownsampleX1BackMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
     AddressU = BORDER; AddressV = BORDER; BorderColor = float4(0,0,0,0);
 };
 sampler DofFontBlurMapSamp = sampler_state {
@@ -87,37 +98,8 @@ float GetFocusDistance()
 }
 
 float GetLinearDepth(sampler source, float2 coord, float2 offset)
-{
-    float2 wh = offset * 1.5;
-    
-    float2 offsets[9];    
-    offsets[0] = float2(-wh.x, -wh.y);
-    offsets[1] = float2( 0.0,  -wh.y);
-    offsets[2] = float2( wh.x, -wh.y);
-    
-    offsets[3] = float2(-wh.x,  0.0);
-    offsets[4] = float2( 0.0,   0.0);
-    offsets[5] = float2( wh.x,  0.0);
-    
-    offsets[6] = float2(-wh.x, wh.y);
-    offsets[7] = float2( 0.0,  wh.y);
-    offsets[8] = float2( wh.x, wh.y);
-    
-    float kernel[9];
-    kernel[0] = 1.0 / 16.0;   kernel[1] = 2.0 / 16.0;   kernel[2] = 1.0 / 16.0;
-    kernel[3] = 2.0 / 16.0;   kernel[4] = 4.0 / 16.0;   kernel[5] = 2.0 / 16.0;
-    kernel[6] = 1.0 / 16.0;   kernel[7] = 2.0 / 16.0;   kernel[8] = 1.0 / 16.0;
-    
-    float depth = 0;
-    
-    [unroll]
-    for (int i = 0; i < 9; i++)
-    {
-        float tmp = tex2D(source, coord + offsets[i]).r;
-        depth += tmp * kernel[i];
-    }
-    
-    return depth;
+{    
+    return tex2D(source, coord).r;
 }
 
 float CalcFocusBlur(float depth)
@@ -137,8 +119,8 @@ float CalcFocusBlur(float depth)
 
 float3 ShowDebugFocus(float3 color, float blur)
 {
-    color = lerp(color, float3(1.0, 0.5, 0.0), -min(0, blur));
-    color = lerp(color, float3(0.0, 0.5, 1.0), max(0, blur));
+    color = lerp(color, float3(1.0, 0.5, 0.0), max(0, -blur));
+    color = lerp(color, float3(0.0, 0.5, 1.0), max(0,  blur));
     return color;
 }
 
@@ -162,13 +144,32 @@ float4 DofComputeCocPS(
     in float4 coord1 : TEXCOORD1,
     in float4 coord2 : TEXCOORD2) : COLOR0
 {
-    float depth = GetLinearDepth(Gbuffer4Map, coord0.xy, ViewportOffset2);
-    float blur = CalcFocusBlur(depth);
+    float linearDepth = GetLinearDepth(Gbuffer4Map, coord0.xy, ViewportOffset2);
+    float linearDepth2 = GetLinearDepth(Gbuffer8Map, coord0.xy, ViewportOffset2);
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+    
+    float blur = CalcFocusBlur(linearDepth);
     
     float3 color = tex2D(ScnSamp, coord0.xy).rgb;
     color = srgb2linear(color);
-    
+
     return float4(color, blur);
+}
+
+float4 DofDownsampleBackPS(
+    in float4 coord0 : TEXCOORD0,
+    in float4 coord1 : TEXCOORD1,
+    in float4 coord2 : TEXCOORD2,
+    uniform sampler source) : COLOR0
+{
+    float4 color = 0;
+    color += tex2D(source, coord1.xy);
+    color += tex2D(source, coord1.zw);
+    color += tex2D(source, coord2.xy);
+    color += tex2D(source, coord2.zw);    
+    color /= 4;
+    
+    return color;
 }
 
 float4 DofDownsamplePS(
@@ -204,31 +205,31 @@ float4 DofFarBlurPS(in float2 coord : TEXCOORD, uniform sampler source) : COLOR0
 {       
     float4 totalWeight = 1.0;
     float4 totalColor = tex2D(source, coord);
-        
-    float radius = totalColor.a;
+
+    float radius = abs(totalColor.a);
     float radiusScaled = radius * bokehRadius;
     float bias = bokehInner;
     
     for (int i = 1; i <= RINGS_SAMPLER_COUNT; i++)
     {   
         int ringsamples = i * RINGS_SAMPLER_COUNT2;
-        float step = PI * 2.0 / float(ringsamples);
-        
+
         for (int j = 0 ; j < ringsamples ; j++)   
         {
+            float step = PI * 2.0 / float(ringsamples);
             float pw = (cos(step * j) * i);
             float ph = (sin(step * j) * i);
             
             float2 offset = float2(pw, ph) * ViewportOffset2 * radiusScaled;
             
-            float4 color = tex2Dlod(source, float4(coord + offset, 0, radiusScaled / 2));
-            if (color.a > 0.0)
+            float4 color = tex2Dlod(source, float4(coord + offset, 0, radiusScaled / 2.5));
+            if (color.a > 0)
             {
                 float weight = max(0, lerp(1.0, (float(i)) / (float(RINGS_SAMPLER_COUNT)), bias));
-                float4 bokeh = pow(color * color.a, 10.0) * radiusScaled * 500.0 + 0.01;
+                float4 bokeh = pow(color * color.a, 10);
                 
                 totalColor += color * bokeh * weight;
-                totalWeight += bokeh * weight;
+                totalWeight += bokeh * weight;   
             }
         }
     }
@@ -257,9 +258,7 @@ float4 DepthOfFieldPS(
     in float4 coord1 : TEXCOORD1,
     in float4 coord2 : TEXCOORD2) : COLOR0
 {
-    float4 Coc = tex2D(DownsampleX0MapSamp, coord0.xy);
-    
-    float3 color = Coc.rgb;
+    float4 color = tex2D(DownsampleX0MapSamp, coord0.xy);
     
     float3 front = 0;
     front += tex2D(DofFontBlurMapSamp, coord1.xy).rgb;
@@ -268,20 +267,15 @@ float4 DepthOfFieldPS(
     front += tex2D(DofFontBlurMapSamp, coord2.zw).rgb;
     front /= 4;
     
-    float3 back = 0;
-    back += tex2D(DofFarBlurMapSamp, coord1.xy).rgb;
-    back += tex2D(DofFarBlurMapSamp, coord1.zw).rgb;
-    back += tex2D(DofFarBlurMapSamp, coord2.xy).rgb;
-    back += tex2D(DofFarBlurMapSamp, coord2.zw).rgb;
-    back /= 4;
+    float3 back = tex2D(DofFarBlurMapSamp, coord0.xy).rgb;
+
+    color.rgb = lerp(color.rgb, back, saturate(color.a));
+    color.rgb = lerp(color.rgb, front, saturate(-color.a));
     
-    color = lerp(color, back, saturate(Coc.a));
-    color = lerp(color, front, saturate(-Coc.a));
+    color.rgb = lerp(color.rgb, ShowDebugFocus(color.rgb, color.a), focusShow);
+    color.rgb = linear2srgb(color.rgb);
     
-    color = lerp(color, ShowDebugFocus(color, Coc.a), focusShow);
-    color = linear2srgb(color);
-    
-    return float4(color, 1);
+    return color;
 }
 
 float Script : STANDARDSGLOBAL <
@@ -304,6 +298,7 @@ technique DepthOfField <
     "ScriptExternal=Color;"
     
     "RenderColorTarget=DownsampleX0Map; Pass=DofComputeCoc;"
+    "RenderColorTarget=DownsampleX1BackMap; Pass=DofDownsampleBack;"
     "RenderColorTarget=DownsampleX1Map; Pass=DofDownsampleX1;"
     
     "RenderColorTarget=DofFontBlurMap; Pass=DofFrontBlur;"
@@ -318,6 +313,12 @@ technique DepthOfField <
         ZEnable = False; ZWriteEnable = False;
         VertexShader = compile vs_3_0 DofDownsampleVS(ViewportOffset2);
         PixelShader  = compile ps_3_0 DofComputeCocPS();
+    }
+    pass DofDownsampleBack < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = False; ZWriteEnable = False;
+        VertexShader = compile vs_3_0 DofDownsampleVS(ViewportOffset2);
+        PixelShader  = compile ps_3_0 DofDownsampleBackPS(DownsampleX0MapSamp);
     }
     pass DofDownsampleX1 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -335,7 +336,7 @@ technique DepthOfField <
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = False; ZWriteEnable = False;
         VertexShader = compile vs_3_0 DofDownsampleVS(ViewportOffset2);
-        PixelShader  = compile ps_3_0 DofFarBlurPS(DownsampleX0MapSamp);
+        PixelShader  = compile ps_3_0 DofFarBlurPS(DownsampleX1BackMapSamp);
     }
     pass DepthOfField < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
