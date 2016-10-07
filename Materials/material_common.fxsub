@@ -517,7 +517,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
     
     if (use_texture)
     {
-        float4 TexColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum);
+        float4 TexColor = tex2D(DiffuseMapSamp, uv);
         TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
         TexColor.rgb = TexColor.rgb;
         diffuse *= TexColor.rgb;

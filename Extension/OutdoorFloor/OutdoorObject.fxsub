@@ -1,0 +1,147 @@
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+
+float4x4 matWorldView : WORLDVIEW;
+float4x4 matWorldViewProjMatrix : WORLDVIEWPROJECTION;
+float4x4 matWorldMirror: CONTROLOBJECT < string Name = "(OffscreenOwner)"; >;
+
+float4 MaterialDiffuse : DIFFUSE  < string Object = "Geometry"; >;
+float  MaterialPower   : SPECULARPOWER < string Object = "Geometry"; >;
+
+float4 TextureAddValue : ADDINGTEXTURE;
+float4 TextureMulValue : MULTIPLYINGTEXTURE;
+float3 CameraPosition : POSITION  < string Object = "Camera"; >;
+
+static float3 MirrorPos = float3(0.0, 0.0, 0.0);
+static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
+static float3 WorldMirrorPos = mul(float4(MirrorPos, 1.0f), matWorldMirror).xyz;
+static float3 WorldMirrorNormal = normalize(mul(MirrorNormal, (float3x3)matWorldMirror));
+
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state
+{
+    texture = <DiffuseMap>;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+
+float4 TransMirrorPos(float4 Pos)
+{
+    Pos.xyz -= WorldMirrorNormal * 2.0f * dot(WorldMirrorNormal, Pos.xyz - WorldMirrorPos);
+    return Pos;
+}
+
+float3 srgb2linear(float3 rgb)
+{
+    const float ALPHA = 0.055f;
+    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+}
+
+float4 srgb2linear(float4 rgba)
+{
+    return float4(srgb2linear(rgba.rgb), rgba.a);
+}
+
+float IsFace(float4 Pos)
+{
+    return min(dot(Pos.xyz - WorldMirrorPos, WorldMirrorNormal), dot(CameraPosition-WorldMirrorPos, WorldMirrorNormal));
+}
+
+float3 rgb2ycbcr(float3 col)
+{
+    float3 encode;
+    encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+    encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb);
+    encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb);
+    return float3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
+}
+
+float2 EncodeNormal(float3 n)
+{
+    float f = sqrt(8*n.z+8);
+    return n.xy / f + 0.5;
+}
+
+float2 EncodeYcbcr(float4 screenPosition, float3 color)
+{
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+
+    color = rgb2ycbcr(color);
+
+    float2 result = 0.0f;
+    result.r = color.r;
+    result.g = (pattern) ? color.g: color.b;
+    return result;   
+}
+
+float4 GetAlbedo(float2 uv, bool use_texture)
+{
+    float4 diffuse = MaterialDiffuse;
+    
+    if (use_texture)
+    {
+        float4 TexColor = tex2D(DiffuseMapSamp, uv);
+        TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
+        TexColor.rgb = TexColor.rgb;
+        diffuse.rgb *= TexColor.rgb;
+    }
+    
+    return srgb2linear(diffuse);
+}
+
+void OutdoorObjectVS(
+    float4 Position : POSITION,
+    float3 Normal : NORMAL,
+    float2 Texcoord : TEXCOORD0,
+    out float2 oTexcoord : TEXCOORD0,
+    out float3 oNormal   : TEXCOORD1,
+    out float4 oWorldPos : TEXCOORD2,
+    out float4 oPosition : POSITION)
+{
+    oWorldPos = Position;
+    oPosition = mul(TransMirrorPos(Position), matWorldViewProjMatrix);
+    oPosition.x = -oPosition.x;
+    oNormal = mul(Normal, (float3x3)matWorldView);
+    oTexcoord = Texcoord;
+}
+
+float4 OutdoorObjectPS(
+    in float2 coord : TEXCOORD0,
+    in float3 normal   : TEXCOORD1,
+    in float4 position : TEXCOORD2,
+    in float4 screenPosition : SV_Position,
+    uniform bool use_texture) : COLOR
+{
+    float4 color = GetAlbedo(coord, use_texture);
+    
+    clip(IsFace(position));
+    clip(color.a - 0.01);
+
+    normal = normalize(normal);
+    return float4(EncodeNormal(normal), EncodeYcbcr(screenPosition, color));
+}
+
+#define OBJECT_TEC(name, mmdpass, tex) \
+    technique name<string MMDPass = mmdpass; bool UseTexture = tex; \
+    > { \
+        pass DrawObject { \
+            AlphaTestEnable = false; AlphaBlendEnable = false; \
+            VertexShader = compile vs_3_0 OutdoorObjectVS(); \
+            PixelShader  = compile ps_3_0 OutdoorObjectPS(tex); \
+        } \
+    }
+
+OBJECT_TEC(MainTec0, "object", false)
+OBJECT_TEC(MainTec1, "object", true)
+OBJECT_TEC(MainTec2, "object", false)
+OBJECT_TEC(MainTec3, "object", true)
+OBJECT_TEC(MainTecBS0, "object_ss", false)
+OBJECT_TEC(MainTecBS1, "object_ss", true)
+OBJECT_TEC(MainTecBS2, "object_ss", false)
+OBJECT_TEC(MainTecBS3, "object_ss", true)
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTec < string MMDPass = "shadow"; > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}
