@@ -30,6 +30,7 @@ Ray-MMD
 * 改进了主光源阴影
 * 改进BokehBlur(暂无卵用)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
+* 修复部分显卡使用RectangleLight会编译错误
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)

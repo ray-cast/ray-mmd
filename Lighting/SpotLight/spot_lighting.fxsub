@@ -47,10 +47,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
         "self = hide;"
         "skybox*.pmx = hide;"
         "ray_controller.pmx=hide;"
-
         "*.pmx = spot_shadow.fx;"
         "*.pmd = spot_shadow.fx;"
-#endif
         "* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
@@ -110,6 +108,8 @@ float PCF(float3 viewPosition, int samples)
     
     return saturate(shadow / (samples * samples));
 }
+
+#endif
 
 void LightSourceVS(
     in float4 Position : POSITION,
