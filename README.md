@@ -17,8 +17,8 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2016-10-8 ver 1.0.8
-* 添加了地板反射(WF改, 修改ray.conf 的 OUTDOORFLOOR_QUALITY) [Image](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
-* 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [Image](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
+* 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
+* 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
 * 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
 * 添加HDR_BLOOM_MODE (ray.conf 中 HDR_BLOOM_MODE)
 * 材质中还原了自定义Alpha
@@ -26,7 +26,7 @@ Ray-MMD
 * 材质添加alphaThreshold大于以上阈值认为不是透明物体
 * 独立出FilmGrain
 * 改进了FXAA
-* 改进了SSAO的强度曲线，且可以在DepthMap中指定不产生SSAO的物体 [Image](https://github.com/ray-cast/images/raw/master/1.0.8_nossao.jpg)
+* 改进了SSAO的强度曲线，且可以在DepthMap中指定不产生SSAO的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_nossao.jpg)
 * 改进了主光源阴影
 * 改进BokehBlur(暂无卵用)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
