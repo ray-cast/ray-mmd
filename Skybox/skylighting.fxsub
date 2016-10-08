@@ -42,6 +42,76 @@ sampler IBLSpecularSampler = sampler_state {
     ADDRESSV  = CLAMP;
 };
 
+shared texture EnvLightSpecMap : RENDERCOLORTARGET;
+shared texture OutdoorShadingMap : RENDERCOLORTARGET;
+shared texture OutdoorMap : OFFSCREENRENDERTARGET;
+shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET;
+
+sampler OutdoorMapSamp = sampler_state 
+{
+    texture = <OutdoorMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler OutdoorDepthMapSamp = sampler_state 
+{
+    texture = <OutdoorDepthMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler OutdoorShadingMapSamp = sampler_state {
+    texture = <OutdoorShadingMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+static float3 MirrorPos = float3(0.0, 0.0, 0.0);
+static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
+static float3 WorldMirrorPos = MirrorPos;
+static float3 WorldMirrorNormal = MirrorNormal;
+
+float IsFace(float4 Pos)
+{
+    return min(dot(Pos.xyz - WorldMirrorPos, WorldMirrorNormal), dot(CameraPosition-WorldMirrorPos, WorldMirrorNormal));
+}
+
+float4 TransMirrorPos(float4 Pos)
+{
+    Pos.xyz -= WorldMirrorNormal * 2.0f * dot(WorldMirrorNormal, Pos.xyz - WorldMirrorPos);
+    return Pos;
+}
+
+float3 DecodePack2Normal(float2 enc)
+{
+    float2 fenc = enc.xy * 4 - 2;
+    float f = dot(fenc,fenc);
+    float g = sqrt(1-f/4);
+    float3 n;
+    n.xy = fenc*g;
+    n.z = 1-f/2;
+    return n;
+}
+
+void DecodeGbuffer(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color, out float3 normal)
+{
+    float4 packed = tex2D(source, coord);
+    
+    float4 env2 = tex2D(source, coord + float2(offset.x, 0.0));
+    float4 env3 = tex2D(source, coord - float2(offset.x, 0.0));
+    float4 env4 = tex2D(source, coord + float2(0.0, offset.y));
+    float4 env5 = tex2D(source, coord - float2(0.0, offset.y));
+    
+    env2.rg = (env2.rg + env3.rg + env4.rg + env5.rg) * 0.25;
+    env2.ba = (env2.ba + env3.ba + env4.ba + env5.ba) * 0.25;
+
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+    
+    color = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+    color = ycbcr2rgb(color);
+    
+    normal = DecodePack2Normal(packed.xy);
+}
+
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
     float3 worldView = V;
@@ -66,7 +136,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
     float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, computeSphereCoord(-N));
 
-#if IBL_ENABLE_GAMMA_CORRECTION
+#if IBL_GAMMA_CORRECTION_ENABLE
     prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
     prefilteredSpeculr.rgb = srgb2linear(prefilteredSpeculr.rgb);
     prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
@@ -138,21 +208,88 @@ void EnvLightingPS(
     oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
 }
 
-shared texture EnvLightSpecMap: RENDERCOLORTARGET;
+float4 OutdoorFloorEnvPS(
+    in float4 texcoord : TEXCOORD0,
+    in float3 viewdir  : TEXCOORD1,
+    in float4 screenPosition : SV_Position) : COLOR
+{
+    float2 mirror = -texcoord.xy / texcoord.w;
+    mirror = (mirror * 0.5 + 0.5);
+    mirror += ViewportOffset;
+    
+    float2 screen = texcoord.xy / texcoord.w;
+    screen = PosToCoord(screen);
+    screen += ViewportOffset;
+    
+    float3 V = normalize(viewdir);
 
-#define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-    string Script = \
-        "RenderColorTarget0=;" \
-        "RenderColorTarget1=EnvLightSpecMap;" \
-        "Pass=DrawObject;" \
-    ;> { \
-        pass DrawObject { \
-            AlphaBlendEnable = false; AlphaTestEnable = false;\
-            VertexShader = compile vs_3_0 EnvLightingVS(); \
-            PixelShader  = compile ps_3_0 EnvLightingPS(); \
-        } \
-    }
+    float4 MRT0 = tex2D(Gbuffer1Map, screen);
+    float4 MRT1 = tex2D(Gbuffer2Map, screen);
+    float4 MRT2 = tex2D(Gbuffer3Map, screen);
+    float4 MRT3 = tex2D(Gbuffer4Map, screen);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    
+    float3 normal;
+    float3 albedo;
+    DecodeGbuffer(OutdoorMapSamp, mirror, screenPosition, ViewportOffset2, albedo, normal);
+    
+    MaterialParam outdoorMaterial;
+    outdoorMaterial.albedo = albedo;
+    outdoorMaterial.normal = normal;
+    outdoorMaterial.specular = 0.04;
+    outdoorMaterial.transmittance = 0;
+    outdoorMaterial.emissiveIntensity = 0;
+    outdoorMaterial.emissive = 0;
+    outdoorMaterial.smoothness = 0.2;
+    
+    float3 diffuse, specular;
+    ShadingMaterial(V, outdoorMaterial, diffuse, specular);
+
+    float visable = step(0.9, dot(material.normal, mul(float3(0, 1, 0), (float3x3)matView)));
+        
+    float3 lighting = diffuse + specular;
+    lighting *= visable;
+        
+    return float4(lighting, visable < 1 ? 1 : -1);
+}
+
+#if OUTDOORFLOOR_QUALITY == 0
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        string Script = \
+            "RenderColorTarget0=;" \
+            "RenderColorTarget1=EnvLightSpecMap;" \
+            "Pass=DrawObject;" \
+        ;> { \
+            pass DrawObject { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 EnvLightingPS(); \
+            } \
+        }
+#else
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        string Script = \
+            "RenderColorTarget0=OutdoorShadingMap;Pass=OutdoorFloorEnv;"\
+            "RenderColorTarget0=;" \
+            "RenderColorTarget1=EnvLightSpecMap;" \
+            "Pass=DrawObject;" \
+        ;> { \
+            pass OutdoorFloorEnv { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 OutdoorFloorEnvPS(); \
+            } \
+            pass DrawObject { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 EnvLightingPS(); \
+            } \
+        }
+#endif
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

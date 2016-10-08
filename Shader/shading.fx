@@ -66,6 +66,11 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 lighting = 0;
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
+#if OUTDOORFLOOR_QUALITY > 0
+    float4 floor = tex2D(OutdoorShadingMapSamp, coord);
+    lighting += floor;
+#endif    
+
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord);
@@ -100,6 +105,12 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
     diffuse *= shadow;
     diffuse2 *= shadow;
+    specular *= shadow;
+    specular2 *= shadow;
+#endif
+
+#if OUTDOORFLOOR_QUALITY > 0
+    specular *= step(0, floor.a);
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0

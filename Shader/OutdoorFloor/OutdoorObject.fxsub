@@ -1,3 +1,7 @@
+#ifndef InvPIE
+#   define InvPIE 0.318309886142f
+#endif
+
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
 float4x4 matWorldView : WORLDVIEW;
@@ -91,6 +95,12 @@ float4 GetAlbedo(float2 uv, bool use_texture)
     return srgb2linear(diffuse);
 }
 
+float2 computeSphereCoord(float3 normal)
+{
+    float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+    return coord;
+}
+
 void OutdoorObjectVS(
     float4 Position : POSITION,
     float3 Normal : NORMAL,
@@ -100,8 +110,13 @@ void OutdoorObjectVS(
     out float4 oWorldPos : TEXCOORD2,
     out float4 oPosition : POSITION)
 {
+#if SKYBOX_ENABLE
+    oNormal = normalize(Position);
+    oWorldPos = float4(oNormal * 10000, 1);
+#else
     oWorldPos = Position;
-    oPosition = mul(TransMirrorPos(Position), matWorldViewProjMatrix);
+#endif
+    oPosition = mul(TransMirrorPos(oWorldPos), matWorldViewProjMatrix);
     oPosition.x = -oPosition.x;
     oNormal = mul(Normal, (float3x3)matWorldView);
     oTexcoord = Texcoord;
@@ -114,12 +129,16 @@ float4 OutdoorObjectPS(
     in float4 screenPosition : SV_Position,
     uniform bool use_texture) : COLOR
 {
+    normal = normalize(normal);
+    
+#if SKYBOX_ENABLE
+    coord = computeSphereCoord(normal);
+#endif
     float4 color = GetAlbedo(coord, use_texture);
     
     clip(IsFace(position));
     clip(color.a - 0.01);
 
-    normal = normalize(normal);
     return float4(EncodeNormal(normal), EncodeYcbcr(screenPosition, color));
 }
 

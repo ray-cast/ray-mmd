@@ -73,6 +73,10 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #   include "shader/ssao.fx"
 #endif
 
+#if OUTDOORFLOOR_QUALITY > 0
+#   include "shader/OutdoorFloor/OutdoorFloor.fx"
+#endif
+
 #if SSSS_QUALITY > 0
 #   include "shader/ssss.fx"
 #endif
@@ -227,6 +231,14 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
     #endif
+#endif
+#if OUTDOORFLOOR_QUALITY
+    pass OutdoorFloor < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 OutdoorFloorVS();
+        PixelShader  = compile ps_3_0 OutdoorFloorPS();
+    }
 #endif
     pass DeferredShading < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;

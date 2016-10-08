@@ -6,7 +6,7 @@ Ray-MMD
 以及MME版本037，并且关闭MMD自带的抗锯齿。
 #### Screenshot :
 [![link text](https://github.com/ray-cast/images/raw/master/bloom_small.jpg)](https://github.com/ray-cast/images/raw/master/bloom.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/hou_small.png)](https://github.com/ray-cast/images/raw/master/hou.png)
+[![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/skin_small.jpg)](https://github.com/ray-cast/images/raw/master/skin.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 

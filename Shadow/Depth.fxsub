@@ -163,7 +163,7 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	shadow = (alpha <= RecieverAlphaThreshold) ? 1 : shadow;
 #endif
 	
-	shadow = min(shadow, dot(IN.Normal, -LightDirection) * 0.5 + 0.5);
+	shadow = min(shadow, saturate(dot(normalize(IN.Normal), -LightDirection)));
 	return float4(shadow, IN.PPos.z, 0, 1);
 }
 
