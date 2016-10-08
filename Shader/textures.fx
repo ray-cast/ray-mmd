@@ -63,8 +63,8 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
     bool AntiAlias = false;
     string DefaultEffect =
         "self = hide;"
-        "skybox_hdr*.*=./skybox/skylighting_hdr.fx;"
-        "skybox*.*=./skybox/skylighting.fx;"
+        "skybox_hdr*.*=./Lighting/EnvLight/envlighting_hdr.fx;"
+        "skybox*.*=./Lighting/EnvLight/envlighting.fx;"
         "*= hide;";
 >;
 shared texture EnvLightSpecMap: RENDERCOLORTARGET <

@@ -77,7 +77,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     floor.rgb *= floorVisiable;
     floor.rgb *= EnvironmentSpecularUnreal4(N, V, roughness, material.specular);
     floor.rgb *= P.y > 1 ? 0 : 1;
-    lighting += floor;
+    lighting += floor * (1 + mFloorLightP * 10 - mFloorLightM);
 #endif
     
 #if SSAO_SAMPLER_COUNT > 0

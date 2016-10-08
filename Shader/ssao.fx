@@ -50,7 +50,7 @@ float linearizeDepth(float2 uv)
 
 float3 GetPosition(float2 uv)
 {
-    float depth = linearizeDepth(uv);
+    float depth = abs(linearizeDepth(uv));
     return ReconstructPos(uv, matProjectInverse, depth);
 }
 
@@ -76,8 +76,9 @@ float2 tapLocation(int index, float noise)
 
 float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
+    float depth = linearizeDepth(coord);
     float3 viewNormal = GetNormal(coord);
-    float3 viewPosition = -viewdir * linearizeDepth(coord);
+    float3 viewPosition = -viewdir * abs(depth);
 
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;
@@ -104,7 +105,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    ao = viewPosition.z < 0 ? 1 : ao;
+    ao = depth < 0 ? 1 : ao;
     
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }

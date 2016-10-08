@@ -7,4 +7,4 @@
 // 输入的纹理是HDR的DDS文件时启用
 #define IBL_HDR_ENABLE 1
 
-#include "skylighting.fxsub"
+#include "envlighting.fxsub"
