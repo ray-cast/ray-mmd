@@ -258,6 +258,7 @@ float4 OutdoorFloorEnvPS(
     
     float4 wpos = tex2D(OutdoorDepthMapSamp, mirror);
     
+#if OUTDOORFLOOR_QUALITY >= 2
     float4 proj = mul(wpos, matLightViewProject);
     proj.xy /= proj.w;
 
@@ -290,7 +291,7 @@ float4 OutdoorFloorEnvPS(
     float s = 1.5 / SHADOW_MAP_SIZE;    
     float sdrate = 30000.0 / 4.0 - 0.05;
     float shadow = CalcLight(casterDepth, receiverDepth, sdrate);
-#if OUTDOORFLOOR_QUALITY >= 2
+#if OUTDOORFLOOR_QUALITY >= 3
     shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
     shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
     shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
@@ -306,6 +307,9 @@ float4 OutdoorFloorEnvPS(
     direction *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
     
     float3 lighting = lerp(albedo, diffuse + specular + direction, any(wpos.a));
+#else
+    float3 lighting = lerp(albedo, diffuse + specular, any(wpos.a));
+#endif
         
     return float4(lighting, 1);
 }

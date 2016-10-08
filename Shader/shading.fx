@@ -60,6 +60,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
         
     float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
+    float3 P = mul(float4(-viewdir * material.linearDepth, 1), matViewInverse).xyz;
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
 
@@ -70,13 +71,14 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #if OUTDOORFLOOR_QUALITY > 0
     float floorVisiable = step(0.9, dot(N, float3(0, 1, 0)));
     float roughness = SmoothnessToRoughness(material.smoothness);
+    float mipLevel = EnvironmentMip(roughness, 6);
     
-    float4 floor = tex2D(OutdoorShadingMapSamp, coord);
+    float4 floor = tex2Dlod(OutdoorShadingMapSamp, float4(coord, 0, mipLevel));
     floor.rgb *= floorVisiable;
     floor.rgb *= EnvironmentSpecularUnreal4(N, V, roughness, material.specular);
+    floor.rgb *= P.y > 1 ? 0 : 1;
     lighting += floor;
-#endif    
-
+#endif
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
@@ -86,8 +88,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     }
 #endif
 
-    float4 screenMap = tex2D(ScnSamp, coord);
-    lighting += srgb2linear(screenMap.rgb);
+    lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
     
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
@@ -128,8 +129,8 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 
     if (ExistSkybox || ExistSkyboxHDR)
     {
-        lighting += diffuse + specular * step(0, screenMap.a);
-        lighting2 += diffuse2 + specular2 * step(0, screenMap.a);   
+        lighting += diffuse + specular;
+        lighting2 += diffuse2 + specular2; 
     }
     
 #endif
@@ -141,9 +142,9 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
 
 #if FOG_ENABLE
-    float3 P = mul(float4(-viewdir * linearDepth, 1), matViewInverse).xyz;
+    float3 FogP = mul(float4(-viewdir * linearDepth, 1), matViewInverse).xyz;
     
-    lighting = ApplyGroundFog(lighting, linearDepth, P);
+    lighting = ApplyGroundFog(lighting, linearDepth, FogP);
     lighting = ApplySkyFog(lighting, linearDepth, V);
 #endif
 

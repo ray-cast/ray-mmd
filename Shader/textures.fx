@@ -38,13 +38,13 @@ texture LightMap: OFFSCREENRENDERTARGET <
         "ray_controller.pmx=hide;"
         "skybox_hdr.*=hide;"
         "skybox.*=hide;"
-        "AmbientLight*.* =./Lighting/shader/ambient_lighting.fx;"
-        "SpotLight*.* =./Lighting/shader/spot_lighting.fx;"
-        "PointLight*.* =./Lighting/shader/point_lighting.fx;"
-        "SphereLight*.* =./Lighting/shader/sphere_lighting.fx;"
-        "RectangleLight*.* =./Lighting/shader/rectangle_lighting.fx;"
-        "TubeLight*.* =./Lighting/shader/tube_lighting.fx;"
-        "LED*.pmx =./Lighting/shader/rectangle_lighting_led.fx;"
+        "AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
+        "SpotLight*.* =./Lighting/SpotLight/spot_lighting.fx;"
+        "PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
+        "SphereLight*.* =./Lighting/SphereLight/sphere_lighting.fx;"
+        "TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
+        "LED*.pmx =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
+        "RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
         "* = hide;";
 >;
 sampler LightMapSamp = sampler_state {

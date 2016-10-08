@@ -31,7 +31,11 @@ shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET <
 shared texture OutdoorShadingMap: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
+#if OUTDOORFLOOR_QUALITY >= 3
+    int Miplevels = 0;
+#else
     int Miplevels = 1;
+#endif
     bool AntiAlias = false;
 >;
 sampler OutdoorMapSamp = sampler_state 
@@ -48,7 +52,11 @@ sampler OutdoorDepthMapSamp = sampler_state
 };
 sampler OutdoorShadingMapSamp = sampler_state {
     texture = <OutdoorShadingMap>;
+#if OUTDOORFLOOR_QUALITY >= 3
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = LINEAR;
+#else
     MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+#endif
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 

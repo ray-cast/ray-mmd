@@ -1,4 +1,4 @@
-// 最大光照范围
+// 最大范围
 #define LIGHTSOURCE_MAX_RANGE 50
 
 // 最小强度
@@ -7,10 +7,4 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 2000
 
-// 球形光源
-#define SPHERELIGHT_ENABLE 1
-
-// 最大大小
-#define SPHERELIGHT_MAX_SIZE 25
-
-#include "light_source.fxsub"
+#include "tube_lighting.fxsub"

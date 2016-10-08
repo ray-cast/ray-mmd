@@ -11,13 +11,9 @@ float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item 
 
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
 static float3 LightDirection = normalize(mDirection - mPosition);
-
-#if SPOTLIGHT_ENABLE
 static float3 LightPosition = mDirection;
-#else
-static float3 LightPosition = mPosition;
-#endif
 
+#if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
@@ -28,6 +24,7 @@ sampler DiffuseMapSamp = sampler_state
     ADDRESSU  = WRAP;
     ADDRESSV  = WRAP;
 };
+#endif
 
 void ShadowMapVS(
     in float4 Position : POSITION,
@@ -43,12 +40,15 @@ void ShadowMapVS(
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
 {
+#if CASTER_ALPHA_ENABLE
     clip(!opadd - 0.001f);
     
     float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
     if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
+#endif
     clip(alpha - CasterAlphaThreshold);
-
+#endif
     return exp(position.z * 0.5);
 }
 
