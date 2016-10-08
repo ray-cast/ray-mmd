@@ -16,7 +16,7 @@ Ray-MMD
 ```
 
 #### 更新内容 :
-##### 2016-10-8 ver 1.0.8
+##### 2016-10-9 ver 1.0.8
 * 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
 * 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
 * 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
