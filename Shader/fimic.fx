@@ -162,7 +162,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color = FilmicTonemap(color, 1 + mExposure * 10);
     
 #if HDR_BLOOM_QUALITY > 0
-    color += lerp(0, bloom * bloomIntensity, mBloomTonemapping);
+    color += lerp(0, bloom * bloomIntensity * (1 + mExposure * 10), mBloomTonemapping);
 #endif
 #endif
   
