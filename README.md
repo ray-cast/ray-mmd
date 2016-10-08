@@ -32,7 +32,7 @@ Ray-MMD
 * 改进BokehBlur(暂时没用，改进中)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
 * 修复部分显卡使用RectangleLight会编译错误
-* 注 : 1.0.8版会出更正确的spec计算，以及多光源的Alpha支持
+* 注 : 1.0.8版会出多光源的透明物体支持，正确的天空盒反射计算，以及代替cmftstudio的工具
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
