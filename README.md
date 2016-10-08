@@ -16,11 +16,12 @@ Ray-MMD
 ```
 
 #### 更新内容 :
-##### 2016-10-9 ver 1.0.8
+##### 2016-10-9 ver 1.0.8beta
 * 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
 * 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
 * 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
 * 添加HDR_BLOOM_MODE在ray.conf中
+* 调整了IBL spec的曲线
 * 材质中还原了自定义Alpha
 * 材质添加EmissiveIntensity，指定发光强度
 * 材质添加alphaThreshold大于以上阈值认为不是透明物体
@@ -28,9 +29,10 @@ Ray-MMD
 * 改进了FXAA
 * 改进了SSAO的强度曲线，且可以在DepthMap中指定不产生SSAO的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_nossao.jpg)
 * 改进了主光源阴影
-* 改进BokehBlur(暂无卵用)
+* 改进BokehBlur(暂时没用，改进中)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
 * 修复部分显卡使用RectangleLight会编译错误
+* 注 : 1.0.8版会出更正确的spec计算，以及多光源的Alpha支持
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)

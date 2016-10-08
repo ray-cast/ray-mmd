@@ -48,8 +48,8 @@ sampler IBLSpecularSampler = sampler_state {
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
     
-    ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
 };
 
 shared texture PSSM : OFFSCREENRENDERTARGET;
@@ -136,7 +136,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
     
     float roughness = SmoothnessToRoughness(material.smoothness);
-    float mipLayer = EnvironmentMip(roughness, IBL_MIPMAP_LEVEL);
+    float mipLayer = EnvironmentMip(sqrt(roughness), IBL_MIPMAP_LEVEL + 4);
 
 #if 1
     float3 R = mul(rotate, worldReflect);
