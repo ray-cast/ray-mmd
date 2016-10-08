@@ -20,7 +20,7 @@ Ray-MMD
 * 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
 * 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
 * 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
-* 添加HDR_BLOOM_MODE (ray.conf 中 HDR_BLOOM_MODE)
+* 添加HDR_BLOOM_MODE在ray.conf中
 * 材质中还原了自定义Alpha
 * 材质添加EmissiveIntensity，指定发光强度
 * 材质添加alphaThreshold大于以上阈值认为不是透明物体
