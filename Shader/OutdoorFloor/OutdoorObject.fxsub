@@ -87,8 +87,12 @@ float3 DecodeRGBM(in float4 rgbm)
 
 float4 GetAlbedo(float2 uv, bool use_texture)
 {
-#if SKYBOX_ENABLE   
-    return float4(DecodeRGBM(tex2D(DiffuseMapSamp, uv)), 1);
+#if SKYBOX_ENABLE
+    #if SKYBOX_HDR_ENABLE
+        return float4(DecodeRGBM(tex2D(DiffuseMapSamp, uv)), 1);
+    #else
+        return float4(srgb2linear(tex2D(DiffuseMapSamp, uv).rgb), 1);
+    #endif
 #else
     float4 diffuse = MaterialDiffuse;
 

@@ -8,7 +8,8 @@ shared texture OutdoorMap : OFFSCREENRENDERTARGET <
     bool AntiAlias = false;
     string DefaultEffect = 
         "*controller.pmx = hide;"
-        "skybox*.*=shader/OutdoorFloor/OutdoorSkybox.fx;"
+        "skybox.*=shader/OutdoorFloor/OutdoorSkybox.fx;"
+        "skybox_hdr.*=shader/OutdoorFloor/OutdoorSkyboxHDR.fx;"
         "*.pmd = shader/OutdoorFloor/OutdoorObject.fx;"
         "*.pmx = shader/OutdoorFloor/OutdoorObject.fx;"
         "* = hide;" ;
@@ -17,7 +18,7 @@ shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET <
     string Description = "OffScreen RenderTarget for OutdoorFloor";
     string Format = "A16B16G16R16F";
     float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0.0 };
+    float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     int Miplevels = 1;
     bool AntiAlias = false;
