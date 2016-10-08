@@ -154,7 +154,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom4;
     
     float bloomIntensity = lerp(1, 20, mBloomIntensity);
-    color += color += lerp(bloom * bloomIntensity, 0, mBloomTonemapping);
+    color += lerp(bloom * bloomIntensity, 0, mBloomTonemapping);
 #endif
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
