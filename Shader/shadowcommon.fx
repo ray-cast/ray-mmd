@@ -213,3 +213,21 @@ float ChebyshevUpperBound(float2 moments, float depth, float minVariance, float 
     d_max = ReduceLightBleeding(d_max, lightBleedingReduction);
     return (depth <= moments.x ? 1.0f : d_max);
 }
+
+float CalcEdgeFalloff(float2 texCoord)
+{
+    const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
+    const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
+    float2 falloff = abs(texCoord) * (-m * 4.0) + (m - a);
+    return saturate(min(falloff.x, falloff.y));
+}
+
+float4 CalcCascadePPos(float2 uv, float2 offset, float index)
+{
+    return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
+}
+
+float CalcLight(float casterDepth, float receiverDepth, float rate)
+{
+    return 1.0 - saturate((receiverDepth - casterDepth) * rate);
+}

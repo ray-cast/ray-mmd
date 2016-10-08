@@ -80,10 +80,18 @@ float2 EncodeYcbcr(float4 screenPosition, float3 color)
     return result;   
 }
 
+float3 DecodeRGBM(in float4 rgbm)
+{
+    return 6 * rgbm.rgb * rgbm.a;
+}
+
 float4 GetAlbedo(float2 uv, bool use_texture)
 {
+#if SKYBOX_ENABLE   
+    return float4(DecodeRGBM(tex2D(DiffuseMapSamp, uv)), 1);
+#else
     float4 diffuse = MaterialDiffuse;
-    
+
     if (use_texture)
     {
         float4 TexColor = tex2D(DiffuseMapSamp, uv);
@@ -93,6 +101,7 @@ float4 GetAlbedo(float2 uv, bool use_texture)
     }
     
     return srgb2linear(diffuse);
+#endif
 }
 
 float2 computeSphereCoord(float3 normal)
@@ -112,13 +121,14 @@ void OutdoorObjectVS(
 {
 #if SKYBOX_ENABLE
     oNormal = normalize(Position);
+    oNormal = mul(oNormal, (float3x3)matWorldView);
     oWorldPos = float4(oNormal * 10000, 1);
 #else
     oWorldPos = Position;
+    oNormal = mul(Normal, (float3x3)matWorldView);
 #endif
     oPosition = mul(TransMirrorPos(oWorldPos), matWorldViewProjMatrix);
     oPosition.x = -oPosition.x;
-    oNormal = mul(Normal, (float3x3)matWorldView);
     oTexcoord = Texcoord;
 }
 

@@ -59,13 +59,19 @@ void OutdoorDepthVS(
     float2 Texcoord : TEXCOORD0,
     out float2 oTexcoord : TEXCOORD0,
     out float3 oNormal   : TEXCOORD1,
-    out float4 oMirrorPos : TEXCOORD2,
+    out float4 oWorldPos : TEXCOORD2,
     out float4 oPosition : POSITION)
-{
-    oMirrorPos = Position;
-    oPosition = mul(TransMirrorPos(Position), matWorldViewProjMatrix);
-    oPosition.x = -oPosition.x;
+{   
+#if SKYBOX_ENABLE
+    oNormal = normalize(Position);
+    oNormal = mul(oNormal, (float3x3)matWorldView);
+    oWorldPos = float4(oNormal * 10000, 1);
+#else
+    oWorldPos = Position;
     oNormal = mul(Normal, (float3x3)matWorldView);
+#endif
+    oPosition = mul(TransMirrorPos(oWorldPos), matWorldViewProjMatrix);
+    oPosition.x = -oPosition.x;
     oTexcoord = Texcoord;
 }
 
@@ -81,7 +87,11 @@ float4 OutdoorDepthPS(
     clip(IsFace(position));
     clip(color.a - 0.01);
 
-    return float4(position);
+#if SKYBOX_ENABLE
+    return float4(position.xyz, 0);
+#else
+    return float4(position.xyz, 1);
+#endif
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

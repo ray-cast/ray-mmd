@@ -66,14 +66,20 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 lighting = 0;
     lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
+    
 #if OUTDOORFLOOR_QUALITY > 0
+    float floorVisiable = step(0.9, dot(N, float3(0, 1, 0)));
+    float roughness = SmoothnessToRoughness(material.smoothness);
+    
     float4 floor = tex2D(OutdoorShadingMapSamp, coord);
+    floor.rgb *= floorVisiable;
+    floor.rgb *= EnvironmentSpecularUnreal4(N, V, roughness, material.specular);
     lighting += floor;
 #endif    
 
     
 #if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord);
+    float ssao = tex2D(SSAOMapSamp, coord).r;
     if (materialAlpha.alpha < 0.01)
     {
         lighting *= ssao;
@@ -110,7 +116,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #endif
 
 #if OUTDOORFLOOR_QUALITY > 0
-    specular *= step(0, floor.a);
+    specular *= floorVisiable < 1 ? 1 : 0;
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
