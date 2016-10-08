@@ -153,19 +153,16 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     bloom += bloom3;
     bloom += bloom4;
     
-#if HDR_BLOOM_MODE == 0
     float bloomIntensity = lerp(1, 20, mBloomIntensity);
-    color += bloom * bloomIntensity;
-#endif
+    color += color += lerp(bloom * bloomIntensity, 0, mBloomTonemapping);
 #endif
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
     color = FilmicTonemap(color, 1 + mExposure * 10);
     
-#if HDR_BLOOM_QUALITY > 0 && HDR_BLOOM_MODE == 1
-    float bloomIntensity = lerp(1, 20, mBloomIntensity);
-    color += bloom * bloomIntensity;
+#if HDR_BLOOM_QUALITY > 0
+    color += lerp(0, bloom * bloomIntensity, mBloomTonemapping);
 #endif
 #endif
   

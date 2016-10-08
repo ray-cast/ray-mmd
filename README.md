@@ -17,10 +17,12 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2016-10-9 ver 1.0.8beta
+* 注1 : 此版本不可以和1.0.7覆盖
+* 注2 : 1.0.8版会出多光源的透明物体支持，正确的天空盒反射计算，以及代替cmftstudio的工具
 * 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
 * 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
 * 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
-* 添加HDR_BLOOM_MODE在ray.conf中
+* 添加BloomTonemapping表情
 * 调整了IBL spec的曲线
 * 材质中还原了自定义Alpha
 * 材质添加EmissiveIntensity，指定发光强度
@@ -32,7 +34,6 @@ Ray-MMD
 * 改进BokehBlur(暂时没用，改进中)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
 * 修复部分显卡使用RectangleLight会编译错误
-* 注 : 1.0.8版会出多光源的透明物体支持，正确的天空盒反射计算，以及代替cmftstudio的工具
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
