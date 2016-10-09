@@ -54,8 +54,8 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
     
-    float vis = saturate(dot(material.normal, L2));
-    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float vis = saturate(dot(material.normal, L2)) * atten;
     if (vis <= 0)
     {
         clip(-1);
@@ -63,40 +63,26 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     
     float4 lighting = 0.0f;
             
-    lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
     lighting.rgb *= material.albedo;    
-    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
+    lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
     
     return lighting;
 }
 
-#if RECTANGLIELIGHT_ENABLE || AMBIENT_ENABLE
-    #define OBJECT_TEC(name, mmdpass) \
-        technique name < string MMDPass = mmdpass;\
-        > { \
-            pass DrawObject { \
-                ZEnable = false; ZWriteEnable = false;\
-                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-                SrcBlend = ONE; DestBlend = ONE;\
-                VertexShader = compile vs_3_0 LightSourceVS(); \
-                PixelShader  = compile ps_3_0 LightSourcePS(); \
-            } \
-        }
-#else
-    #define OBJECT_TEC(name, mmdpass) \
-        technique name < string MMDPass = mmdpass;\
-        > { \
-            pass DrawObject { \
-                ZEnable = false; ZWriteEnable = false;\
-                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-                SrcBlend = ONE; DestBlend = ONE;\
-                CullMode = CW;\
-                VertexShader = compile vs_3_0 LightSourceVS(); \
-                PixelShader  = compile ps_3_0 LightSourcePS(); \
-            } \
-        }
-#endif
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+    > { \
+        pass DrawObject { \
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
+            CullMode = CW;\
+            VertexShader = compile vs_3_0 LightSourceVS(); \
+            PixelShader  = compile ps_3_0 LightSourcePS(); \
+        } \
+    }
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

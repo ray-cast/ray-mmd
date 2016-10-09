@@ -21,7 +21,7 @@ static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float LightSize = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
-static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE)) * SPHERELIGHT_MAX_SIZE;
+static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE));
 
 void LightSourceVS(
     in float4 Position : POSITION,
@@ -57,18 +57,18 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
     
-    float vis = saturate(dot(material.normal, L2));
-    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float vis = saturate(dot(material.normal, L2)) * atten;
     if (vis <= 0)
     {
         clip(-1);
     }
     
     float4 lighting = 0.0f;
-    lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
+    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
     lighting.rgb *= material.albedo;
-    lighting.rgb += SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
+    lighting.rgb += vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
     return lighting;
 }
 

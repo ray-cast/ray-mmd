@@ -68,18 +68,18 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
     float3 L2 = normalize(L);
     
-    float vis = saturate(dot(material.normal, L2));
-    vis *= GetPhysicalLightAttenuation(L, LightRange);
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float vis = saturate(dot(material.normal, L2)) * atten;
     if (vis <= 0)
     {
         clip(-1);
     }
     
     float4 lighting = 0.0f;    
-    lighting.rgb = DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
+    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
     lighting.rgb *= material.albedo;
-    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * vis * any(material.albedo + material.specular);
+    lighting.rgb += vis * TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
     return lighting;
 }
 
