@@ -112,7 +112,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "skybox*.*=hide;"
+        "skybox*.* =shadow/Depth_noalpha.fx;"
         "AmbientLight*.* =shadow/Depth_noalpha.fx;"
         "PointLight*.*=shadow/Depth_noalpha.fx;"
         "SpotLight*.*=shadow/Depth_noalpha.fx;"
@@ -136,7 +136,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
     string DefaultEffect =
         "self = hide;"
         "ray_controller.pmx=hide;"
-        "skybox*.*=hide;"
+        "skybox*.* =shadow/PSSM_noalpha.fx;"
         "AmbientLight*.* =shadow/PSSM_noalpha.fx;"
         "PointLight*.*=shadow/PSSM_noalpha.fx;"
         "SpotLight*.*=shadow/PSSM_noalpha.fx;"
