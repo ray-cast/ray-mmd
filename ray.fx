@@ -132,7 +132,7 @@ technique DeferredLighting<
     "Clear=Depth;"
     "ScriptExternal=Color;"
 
-#if SSAO_QUALITY
+#if SSAO_QUALITY > 0
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
     "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"

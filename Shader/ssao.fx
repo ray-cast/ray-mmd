@@ -11,6 +11,7 @@
 #define SSAO_SPACE_RADIUS 5
 #define SSAO_SPACE_RADIUS2 SSAO_SPACE_RADIUS * SSAO_SPACE_RADIUS
 #define SSAO_BLUR_RADIUS 8
+
 #define SSGI_SAMPLER_COUNT 0
 #define SSGI_BLUR_RADIUS 8
 
@@ -20,7 +21,7 @@ shared texture SSAOMap : RENDERCOLORTARGET <
 #if SSGI_SAMPLER_COUNT > 0
     string Format = "A8R8G8B8";
 #else
-    string Format = "L8";
+    string Format = "R16F";
 #endif
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET <
@@ -29,7 +30,7 @@ texture SSAOMapTemp : RENDERCOLORTARGET <
 #if SSGI_SAMPLER_COUNT > 0
     string Format = "A8R8G8B8";
 #else
-    string Format = "L8";
+    string Format = "R16F";
 #endif
 >;
 sampler SSAOMapSamp = sampler_state {
@@ -69,7 +70,7 @@ float2 tapLocation(int index, float noise)
 {
     float alpha = 2.0 * PI * 7 / SSAO_SAMPLER_COUNT;
     float angle = (index + noise) * alpha;
-    float radius = (mSSAORadiusM - mSSAORadiusP + 1) * 16;
+    float radius = (1 + mSSAORadiusM - mSSAORadiusP) * 16;
     float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) / SSAO_SAMPLER_COUNT;
     return float2(cos(angle), sin(angle)) * (index * radiusStep + ViewportOffset2);
 }
@@ -78,35 +79,32 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
     float depth = linearizeDepth(coord);
     float3 viewNormal = GetNormal(coord);
-    float3 viewPosition = -viewdir * abs(depth);
+    float3 viewPosition = -viewdir * depth;
 
     float sampleWeight = 0.0f;
     float sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
-    
-    [unroll]
+
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
     {
-        float2 sampleOffset = coord + tapLocation(j, sampleNoise); 
+        float2 sampleOffset = coord + tapLocation(j, sampleNoise);
         float3 samplePosition = GetPosition(sampleOffset);
         float3 sampleDirection = samplePosition - viewPosition;
 
         float sampleLength2 = dot(sampleDirection, sampleDirection);
-        float sampleOcclustion = dot(sampleDirection, viewNormal) * rsqrt(sampleLength2);
-        
-        if (sampleLength2 < SSAO_SPACE_RADIUS2)
-        {
-            float bias = 0.002;            
-            float occlustion  = saturate(sampleOcclustion - viewPosition.z * bias);
-            
-            sampleAmbient += occlustion;
-            sampleWeight += 1.0;
-        }
+        float sampleAngle = dot(sampleDirection, viewNormal);
+
+        float f = max(SSAO_SPACE_RADIUS2 - sampleLength2, 0.0f);
+        float falloff = f * f * f;
+
+        float bias = viewPosition.z * 0.002;
+        float occlustion  = max(0.0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
+
+        sampleWeight += falloff;
+        sampleAmbient += occlustion;
     }
 
-    float ao = saturate(1 - sampleAmbient / sampleWeight);
-    ao = depth < 0 ? 1 : ao;
-    
+    float ao = 1 - sampleAmbient / sampleWeight;
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 
