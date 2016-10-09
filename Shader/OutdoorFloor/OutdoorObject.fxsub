@@ -1,3 +1,7 @@
+#ifndef PI_2
+#   define PI_2 (3.141592654f * 2.0)
+#endif
+
 #ifndef InvPIE
 #   define InvPIE 0.318309886142f
 #endif
@@ -14,6 +18,10 @@ float  MaterialPower   : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 float3 CameraPosition : POSITION  < string Object = "Camera"; >;
+
+float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
+float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
+float EnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
 
 static float3 MirrorPos = float3(0.0, 0.0, 0.0);
 static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
@@ -85,6 +93,39 @@ float3 DecodeRGBM(in float4 rgbm)
     return 6 * rgbm.rgb * rgbm.a;
 }
 
+float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
+{
+    float sj, cj, si, ci, sh, ch;
+
+    sincos(eulerX, si, ci);
+    sincos(eulerY, sj, cj);
+    sincos(eulerZ, sh, ch);
+
+    float cc = ci * ch;
+    float cs = ci * sh;
+    float sc = si * ch;
+    float ss = si * sh;
+
+    float a1 = cj * ch;
+    float a2 = sj * sc - cs;
+    float a3 = sj * cc + ss;
+
+    float b1 = cj * sh;
+    float b2 = sj * ss + cc;
+    float b3 = sj * cs - sc;
+
+    float c1 = -sj;
+    float c2 = cj * si;
+    float c3 = cj * ci;
+    
+    float3x3 rotate;
+    rotate[0] = float3(a1, a2, a3);
+    rotate[1] = float3(b1, b2, b3);
+    rotate[2] = float3(c1, c2, c3);
+    
+    return rotate;
+}
+
 float4 GetAlbedo(float2 uv, bool use_texture)
 {
 #if SKYBOX_ENABLE
@@ -113,6 +154,11 @@ float2 computeSphereCoord(float3 normal)
     float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
     return coord;
 }
+
+static float rotateX = EnvRotateX * PI_2;
+static float rotateY = EnvRotateY * PI_2;
+static float rotateZ = EnvRotateZ * PI_2;
+static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
 
 void OutdoorObjectVS(
     float4 Position : POSITION,
@@ -143,7 +189,7 @@ float4 OutdoorObjectPS(
     in float4 screenPosition : SV_Position,
     uniform bool use_texture) : COLOR
 {
-    normal = normalize(normal);
+    normal = normalize(mul(rotate, normal));
     
 #if SKYBOX_ENABLE
     coord = computeSphereCoord(normal);

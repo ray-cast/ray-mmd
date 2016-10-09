@@ -775,8 +775,14 @@ float GetMelanin(float2 coord)
 VS_OUTPUT MaterialVS(float4 Position : POSITION, float3 Normal : NORMAL, float2 Texcoord: TEXCOORD0)
 {
     VS_OUTPUT Out;
+    
+#if SKYBOX_ENABLE
+    Out.Position = mul(Position, matViewProject);
+    Out.Normal = mul(normalize(Position.xyz), (float3x3)matWorldView);
+#else
     Out.Position = mul(Position, matWorldViewProject);
     Out.Normal = normalize(mul(Normal, (float3x3)matWorldView));
+#endif
     Out.Texcoord = Texcoord;
     Out.Distance = Out.Position.w;
     Out.Viewdir = mul(CameraPosition - Position.xyz, (float3x3)matView);
