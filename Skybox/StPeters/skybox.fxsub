@@ -118,11 +118,11 @@ void SkyboxVS(
     oNormal = normalize(Position);
     oNormal.y = oNormal.y < -0.05 ? -0.05 : oNormal.y;
     oNormal.y += 0.04999;
-    oPosition = mul(float4(oNormal.xyz * lerp(SKYBOX_MIN_SIZE, SKYBOX_MAX_SIZE, mScale), 1) , matViewProject);
+    oPosition = mul(float4(oNormal.xyz * length(Position), 1) , matViewProject);
     oNormal.y -= 0.04999;
 #else
     oNormal = normalize(Position);
-    oPosition = mul(float4(oNormal.xyz * lerp(SKYBOX_MIN_SIZE, SKYBOX_MAX_SIZE, mScale), 1), matViewProject);
+    oPosition = mul(float4(oNormal.xyz * length(Position), 1), matViewProject);
 #endif
 }
 

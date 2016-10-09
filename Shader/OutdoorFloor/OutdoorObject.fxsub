@@ -126,7 +126,7 @@ void OutdoorObjectVS(
 #if SKYBOX_ENABLE
     oNormal = normalize(Position);
     oNormal = mul(oNormal, (float3x3)matWorldView);
-    oWorldPos = float4(oNormal * 10000, 1);
+    oWorldPos = float4(oNormal * length(Position), 1);
 #else
     oWorldPos = Position;
     oNormal = mul(Normal, (float3x3)matWorldView);
