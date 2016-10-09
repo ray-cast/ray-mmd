@@ -97,7 +97,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
         if (sampleLength2 < SSAO_SPACE_RADIUS2)
         {
             float bias = 0.002;            
-            float occlustion  = saturate(sampleOcclustion - samplePosition.z * bias);
+            float occlustion  = saturate(sampleOcclustion - viewPosition.z * bias);
             
             sampleAmbient += occlustion;
             sampleWeight += 1.0;
