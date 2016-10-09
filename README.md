@@ -16,8 +16,26 @@ Ray-MMD
 ```
 
 #### 更新内容 :
-##### 2016-10-1 ver 1.0.7
-* 改善对Alpha的兼容(载入天空盒，请将渲染顺序请调至第一位)
+##### 2016-10-10 ver 1.0.8beta
+* 注1 : 此版本不可以和1.0.7覆盖
+* 注2 : 1.0.8版会出多光源的透明物体支持，正确的天空盒反射计算，以及代替cmftstudio的工具
+* 添加了地板反射,修改ray.conf 的 OUTDOORFLOOR_QUALITY [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_wf.jpg)
+* 添加了xxx_noalpha.fx用于优化不需要计算alpha的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_noalpha.jpg)
+* 添加PMX中specular power大于200时自动发光,使用PMX中的specular color
+* 添加BloomTonemapping表情
+* 调整了IBL spec的曲线
+* 调整了光源目录布局，添加了聚光灯的简单材质 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_spot.jpg)
+* 天空盒大小改为PMXEditor调整
+* 材质中还原了自定义Alpha
+* 材质添加EmissiveIntensity，指定发光强度
+* 材质添加alphaThreshold大于以上阈值认为不是透明物体
+* 独立出FilmGrain
+* 改进了FXAA
+* 改进了SSAO的强度曲线，且可以在DepthMap中指定不产生SSAO的物体 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_nossao.jpg)
+* 改进了主光源阴影
+* 改进BokehBlur(暂时没用，改进中)
+* 修复部分显卡使用带有阴影的SpotLight会编译错误
+* 修复部分显卡使用RectangleLight会编译错误
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -224,6 +242,9 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-10-1 ver 1.0.7
+* 改善对Alpha的兼容(载入天空盒，请将渲染顺序请调至第一位)
+
 ##### 2016-9-29 ver 1.0.6
 * 添加了AmbientLight环境光
 * 添加了简单的材质

@@ -94,7 +94,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_ANIMATION_SPEED 1
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
-#define EMISSIVE_APPLY_MORPH_COLOR 0
+#define EMISSIVE_APPLY_MORPH_COLOR 1
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
