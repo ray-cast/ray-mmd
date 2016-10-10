@@ -54,7 +54,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
     
-    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float atten = GetPointLightAttenuation(L, LightRange);
     float vis = saturate(dot(material.normal, L2)) * atten;
    
     float4 lighting = 0.0f;

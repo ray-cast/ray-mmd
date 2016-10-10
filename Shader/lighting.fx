@@ -102,7 +102,7 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittan
     float wn = 1.0 / ((1 + w) * (1 + w));
     float transmittanceBack = saturate((-nl + w) * wn);
     float diffuse = DiffuseBRDF(N, L, V, gloss);
-    return lerp(diffuse * nl, saturate((nl + w) * wn) + transmittanceColor * transmittanceBack, step(1e-5, w));
+    return lerp(diffuse * saturate(nl), saturate((nl + w) * wn) + transmittanceColor * transmittanceBack, step(1e-5, w));
 }
 
 float3 SpecularBRDF_BlinnPhong(float3 N, float3 L, float3 V, float smoothness, float3 specular)
@@ -280,7 +280,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius)
 float GetPointLightAttenuation(float3 L, float radius)
 {
     float attenuation = GetPhysicalLightAttenuation(L, radius);
-    return attenuation;
+    return attenuation * attenuation;
 }
 
 float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, float scale, float radius)
