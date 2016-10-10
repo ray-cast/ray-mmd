@@ -280,7 +280,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius)
 float GetPointLightAttenuation(float3 L, float radius)
 {
     float attenuation = GetPhysicalLightAttenuation(L, radius);
-    return attenuation * attenuation;
+    return attenuation;
 }
 
 float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, float scale, float radius)
