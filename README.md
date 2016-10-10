@@ -16,6 +16,10 @@ Ray-MMD
 ```
 
 #### 更新内容 :
+##### 2016-10-10 ver 1.0.8beta
+* 修复多光源的Bug
+* 添加了SSS可以计算内部散射 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_sss.jpg)　[(皮肤测试)](https://github.com/ray-cast/images/raw/master/1.0.8_skin_sss.jpg)
+
 ##### 2016-10-9 ver 1.0.8beta
 * 注1 : 此版本不可以和1.0.7覆盖,旧的PMM需要在DepthMap和PSSM里Skybox挂上对应的材质
 * 注2 : 1.0.8版会出多光源的透明物体支持，正确的天空盒反射计算，以及代替cmftstudio的工具
