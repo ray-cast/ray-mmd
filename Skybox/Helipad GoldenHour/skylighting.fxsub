@@ -28,7 +28,8 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);
 
-texture IBLDiffuseTexture: MATERIALTOONTEXTURE;
+#if IBL_ENABLE
+texture2D IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
     
@@ -40,7 +41,7 @@ sampler IBLDiffuseSampler = sampler_state {
     ADDRESSV  = CLAMP;
 };
 
-texture IBLSpecularTexture : MATERIALSPHEREMAP;
+texture2D IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL + 1;>; 
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
 
@@ -51,6 +52,7 @@ sampler IBLSpecularSampler = sampler_state {
     ADDRESSU  = WRAP;
     ADDRESSV  = WRAP;
 };
+#endif
 
 shared texture PSSM : OFFSCREENRENDERTARGET;
 sampler PSSMsamp = sampler_state {
@@ -129,51 +131,44 @@ void DecodeGbuffer(sampler source, float2 coord, float4 screenPosition, float2 o
     normal = DecodePack2Normal(packed.xy);
 }
 
+#if IBL_ENABLE
+
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
     float3 worldView = V;
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
     
-    float roughness = SmoothnessToRoughness(material.smoothness);
-    float mipLayer = EnvironmentMip(sqrt(roughness), IBL_MIPMAP_LEVEL + 4);
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
 
-#if 1
     float3 R = mul(rotate, worldReflect);
     float3 N = mul(rotate, worldNormal);
-#else
-    float3 R = GetSpecularDominantDir(worldNormal, worldReflect, roughness);
-    float3 N = GetDiffuseDominantDir(worldNormal, worldView, roughness);
-
-    R = mul(rotate, normalize(R));
-    N = mul(rotate, normalize(N));
-#endif
 
     float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(N));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
     float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, computeSphereCoord(-N));
 
-#if IBL_GAMMA_CORRECTION_ENABLE
+#if IBL_HDR_ENABLE
+    prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse);
+    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr);
+    prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
+#else
     prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
     prefilteredSpeculr.rgb = srgb2linear(prefilteredSpeculr.rgb);
     prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
 #endif
 
-#if IBL_HDR_ENABLE
-    prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse);
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr);
-    prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
-#endif
-
     prefilteredSpeculr *= HorizonOcclusion(worldNormal, worldReflect);
 
     diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
-    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, roughness, material.specular);
+    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
     specular *= step(0, material.specular - 1e-5);
 
     diffuse *= (1 + mEnvLightP * 5 - mEnvLightM);
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }
+
+#endif
 
 void EnvLightingVS(
     in float4 Position : POSITION,
@@ -193,6 +188,7 @@ void EnvLightingPS(
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
+#if IBL_ENABLE
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
@@ -223,6 +219,10 @@ void EnvLightingPS(
     
     oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse2);
     oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
+#else
+    oColor0 = EncodeYcbcr(screenPosition, 0, 0);
+    oColor1 = EncodeYcbcr(screenPosition, 0, 0);
+#endif
 }
 
 float4 OutdoorFloorEnvPS(
@@ -253,9 +253,11 @@ float4 OutdoorFloorEnvPS(
     outdoorMaterial.emissive = 0;
     outdoorMaterial.smoothness = 0.2;
     
-    float3 diffuse, specular;
+    float3 diffuse = 0, specular = 0;
+#if IBL_ENABLE
     ShadingMaterial(V, outdoorMaterial, diffuse, specular);
-    
+#endif
+
     float4 wpos = tex2D(OutdoorDepthMapSamp, mirror);
     
 #if OUTDOORFLOOR_QUALITY >= 2

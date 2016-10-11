@@ -228,14 +228,14 @@ float3 GetDiffuseDominantDir(float3 N, float3 V, float roughness)
 
 float3 GetSpecularDominantDir(float3 N, float3 R, float roughness)
 {
-    float smoothness = 1.0 - roughness;
+    float smoothness = RoughnessToSmoothness(roughness);
     float factor = smoothness * (sqrt(smoothness) + roughness);
     return lerp(N, R, factor);    
 }
 
-float EnvironmentMip(float roughness, int miplevel)
+float EnvironmentMip(int miplevel, float smoothness)
 {
-    return sqrt(roughness) * miplevel;
+    return lerp(miplevel, 0, smoothness * smoothness);
 }
 
 float3 EnvironmentReflect(float3 normal, float3 view)
@@ -252,11 +252,11 @@ float3 EnvironmentSpecularBlackOpsII(float3 N, float3 V, float smoothness, float
     return saturate(lerp(a0, a1, specular));
 }
 
-float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float roughness, float3 specular)
+float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 specular)
 {
     float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
     float4 c1 = float4(1, 0.0425, 1.04, -0.04);
-    float4 r = roughness * c0 + c1;
+    float4 r = SmoothnessToRoughness(smoothness) * c0 + c1;
     float a004 = min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
     float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
     return specular * AB.x + AB.y;
