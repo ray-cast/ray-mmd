@@ -1,0 +1,361 @@
+#include "../../ray.conf"
+#include "../../shader/math.fx"
+#include "../../shader/common.fx"
+#include "../../shader/gbuffer.fx"
+#include "../../shader/gbuffer_sampler.fx"
+#include "../../shader/shadowcommon.fx"
+#include "../../shader/lighting.fx"
+
+float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
+float3 LightDirection : DIRECTION < string Object = "Light"; >;
+
+float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
+float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
+float mEnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
+float mEnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
+float mEnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
+float mEnvLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight+";>;
+float mEnvLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+
+static float rotateX = mEnvRotateX * PI_2;
+static float rotateY = mEnvRotateY * PI_2;
+static float rotateZ = mEnvRotateZ * PI_2;
+static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
+static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
+static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);
+
+#if IBL_ENABLE
+texture2D IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
+sampler IBLDiffuseSampler = sampler_state {
+    texture = <IBLDiffuseTexture>;
+    
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = NONE;
+    
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
+};
+
+texture2D IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL + 1;>; 
+sampler IBLSpecularSampler = sampler_state {
+    texture = <IBLSpecularTexture>;
+
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+    
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+#endif
+
+shared texture PSSM : OFFSCREENRENDERTARGET;
+sampler PSSMsamp = sampler_state {
+    texture = <PSSM>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+shared texture EnvLightSpecMap : RENDERCOLORTARGET;
+shared texture OutdoorShadingMap : RENDERCOLORTARGET;
+shared texture OutdoorMap : OFFSCREENRENDERTARGET;
+shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET;
+
+sampler OutdoorMapSamp = sampler_state 
+{
+    texture = <OutdoorMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler OutdoorDepthMapSamp = sampler_state 
+{
+    texture = <OutdoorDepthMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler OutdoorShadingMapSamp = sampler_state {
+    texture = <OutdoorShadingMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+
+static float3 MirrorPos = float3(0.0, 0.0, 0.0);
+static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
+static float3 WorldMirrorPos = MirrorPos;
+static float3 WorldMirrorNormal = MirrorNormal;
+
+float IsFace(float4 Pos)
+{
+    return min(dot(Pos.xyz - WorldMirrorPos, WorldMirrorNormal), dot(CameraPosition-WorldMirrorPos, WorldMirrorNormal));
+}
+
+float4 TransMirrorPos(float4 Pos)
+{
+    Pos.xyz -= WorldMirrorNormal * 2.0f * dot(WorldMirrorNormal, Pos.xyz - WorldMirrorPos);
+    return Pos;
+}
+
+float3 DecodePack2Normal(float2 enc)
+{
+    float2 fenc = enc.xy * 4 - 2;
+    float f = dot(fenc,fenc);
+    float g = sqrt(1-f/4);
+    float3 n;
+    n.xy = fenc*g;
+    n.z = 1-f/2;
+    return n;
+}
+
+void DecodeGbuffer(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color, out float3 normal)
+{
+    float4 packed = tex2D(source, coord);
+    
+    float4 env2 = tex2D(source, coord + float2(offset.x, 0.0));
+    float4 env3 = tex2D(source, coord - float2(offset.x, 0.0));
+    float4 env4 = tex2D(source, coord + float2(0.0, offset.y));
+    float4 env5 = tex2D(source, coord - float2(0.0, offset.y));
+    
+    env2.rg = (env2.rg + env3.rg + env4.rg + env5.rg) * 0.25;
+    env2.ba = (env2.ba + env3.ba + env4.ba + env5.ba) * 0.25;
+
+    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+    
+    color = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+    color = ycbcr2rgb(color);
+    
+    normal = DecodePack2Normal(packed.xy);
+}
+
+#if IBL_ENABLE
+
+void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
+{
+    float3 worldView = V;
+    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+    float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
+    
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
+
+    float3 R = mul(rotate, worldReflect);
+    float3 N = mul(rotate, worldNormal);
+
+    float4 prefilteredDiffuse = tex2D(IBLDiffuseSampler, computeSphereCoord(N));
+    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(R), 0, mipLayer));
+    float4 prefilteredTransmittance = tex2D(IBLDiffuseSampler, computeSphereCoord(-N));
+
+#if IBL_HDR_ENABLE
+    prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse);
+    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr);
+    prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
+#else
+    prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
+    prefilteredSpeculr.rgb = srgb2linear(prefilteredSpeculr.rgb);
+    prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
+#endif
+
+    prefilteredSpeculr *= HorizonOcclusion(worldNormal, worldReflect);
+
+    diffuse = prefilteredDiffuse.rgb * material.albedo + prefilteredTransmittance.rgb * material.transmittance;
+    specular = prefilteredSpeculr.rgb * EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    specular *= step(0, material.specular - 1e-5);
+
+    diffuse *= (1 + mEnvLightP * 5 - mEnvLightM);
+    specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
+}
+
+#endif
+
+void EnvLightingVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float3 oViewdir   : TEXCOORD1,
+    out float4 oPosition  : SV_Position)
+{
+    oViewdir = CameraPosition - Position.xyz;
+    oTexcoord = oPosition = mul(Position, matWorldViewProject);
+}
+
+void EnvLightingPS(
+    float4 texcoord : TEXCOORD0,
+    float3 viewdir  : TEXCOORD1,
+    float4 screenPosition : SV_Position,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
+{
+#if IBL_ENABLE
+    float2 coord = texcoord.xy / texcoord.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
+
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    
+    MaterialParam material;    
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+    
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;    
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 V = normalize(viewdir);
+    
+    float3 diffuse, specular;    
+    ShadingMaterial(V, material, diffuse, specular);
+    
+    float3 diffuse2, specular2;
+    ShadingMaterial(V, materialAlpha, diffuse2, specular2);
+    
+    oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse2);
+    oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
+#else
+    oColor0 = EncodeYcbcr(screenPosition, 0, 0);
+    oColor1 = EncodeYcbcr(screenPosition, 0, 0);
+#endif
+}
+
+float4 OutdoorFloorEnvPS(
+    in float4 texcoord : TEXCOORD0,
+    in float3 viewdir  : TEXCOORD1,
+    in float4 screenPosition : SV_Position) : COLOR
+{
+    float2 mirror = -texcoord.xy / texcoord.w;
+    mirror = (mirror * 0.5 + 0.5);
+    mirror += ViewportOffset;
+    
+    float2 screen = texcoord.xy / texcoord.w;
+    screen = PosToCoord(screen);
+    screen += ViewportOffset;
+    
+    float3 V = normalize(viewdir);
+    
+    float3 normal;
+    float3 albedo;
+    DecodeGbuffer(OutdoorMapSamp, mirror, screenPosition, ViewportOffset2, albedo, normal);
+    
+    MaterialParam outdoorMaterial;
+    outdoorMaterial.albedo = albedo;
+    outdoorMaterial.normal = normal;
+    outdoorMaterial.specular = 0.04;
+    outdoorMaterial.transmittance = 0;
+    outdoorMaterial.emissiveIntensity = 0;
+    outdoorMaterial.emissive = 0;
+    outdoorMaterial.smoothness = 0.2;
+    
+    float3 diffuse = 0, specular = 0;
+#if IBL_ENABLE
+    ShadingMaterial(V, outdoorMaterial, diffuse, specular);
+#endif
+
+    float4 wpos = tex2D(OutdoorDepthMapSamp, mirror);
+    
+#if OUTDOORFLOOR_QUALITY >= 2
+    float4 proj = mul(wpos, matLightViewProject);
+    proj.xy /= proj.w;
+
+    const float2 scale = float2(0.25, -0.25);
+    
+    float4 LightPPos01, LightPPos23;
+    LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
+    LightPPos01.zw = (proj.xy * lightParam[1].xy + lightParam[1].zw);
+    LightPPos23.xy = (proj.xy * lightParam[2].xy + lightParam[2].zw);
+    LightPPos23.zw = (proj.xy * lightParam[3].xy + lightParam[3].zw);
+    LightPPos01 *= scale.xyxy;
+    LightPPos23 *= scale.xyxy;
+    
+    float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
+    float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
+    float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
+    float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
+
+    float4 texCoord0 = lightPPos3;
+    float4 texCoord1 = 0;
+    if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
+    if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
+    if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+    
+    float casterDepth0 = tex2D(PSSMsamp, texCoord0.xy).x;
+    float casterDepth1 = tex2D(PSSMsamp, texCoord1.xy).x;
+    float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
+    float receiverDepth = proj.z;
+
+    float s = 1.5 / SHADOW_MAP_SIZE;    
+    float sdrate = 30000.0 / 4.0 - 0.05;
+    float shadow = CalcLight(casterDepth, receiverDepth, sdrate);
+#if OUTDOORFLOOR_QUALITY >= 3
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s,-s)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, 0)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, 0)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0, s)).x, receiverDepth, sdrate);
+    shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0,-s)).x, receiverDepth, sdrate);
+    shadow /= 9;
+#endif
+
+    float3 direction = albedo * max(0, dot(outdoorMaterial.normal, -LightDirection)) * shadow;
+    direction *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
+    
+    float3 lighting = lerp(albedo, diffuse + specular + direction, any(wpos.a));
+#else
+    float3 lighting = lerp(albedo, diffuse + specular, any(wpos.a));
+#endif
+        
+    return float4(lighting, 1);
+}
+
+#if OUTDOORFLOOR_QUALITY == 0
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        string Script = \
+            "RenderColorTarget0=;" \
+            "RenderColorTarget1=EnvLightSpecMap;" \
+            "Pass=DrawObject;" \
+        ;> { \
+            pass DrawObject { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 EnvLightingPS(); \
+            } \
+        }
+#else
+    #define OBJECT_TEC(name, mmdpass) \
+        technique name < string MMDPass = mmdpass;\
+        string Script = \
+            "RenderColorTarget0=OutdoorShadingMap;"\
+            "Pass=OutdoorFloorEnv;"\
+            "RenderColorTarget0=;" \
+            "RenderColorTarget1=EnvLightSpecMap;" \
+            "Pass=EnvLighting;" \
+        ;> { \
+            pass OutdoorFloorEnv { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 OutdoorFloorEnvPS(); \
+            } \
+            pass EnvLighting { \
+                AlphaBlendEnable = false; AlphaTestEnable = false;\
+                VertexShader = compile vs_3_0 EnvLightingVS(); \
+                PixelShader  = compile ps_3_0 EnvLightingPS(); \
+            } \
+        }
+#endif
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTech < string MMDPass = "shadow";  > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}
