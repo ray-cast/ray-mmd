@@ -61,38 +61,38 @@ float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
 float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
-#include "shader/math.fx"
-#include "shader/common.fx"
-#include "shader/textures.fx"
-#include "shader/gbuffer.fx"
-#include "shader/lighting.fx"
-#include "shader/fimic.fx"
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
+#include "shader/textures.fxsub"
+#include "shader/gbuffer.fxsub"
+#include "shader/lighting.fxsub"
+#include "shader/fimic.fxsub"
 
 #if SHADOW_QUALITY > 0
-#   include "shader/shadowmap.fx"
+#   include "shader/shadowmap.fxsub"
 #endif
 
 #if SSAO_QUALITY > 0
-#   include "shader/ssao.fx"
+#   include "shader/ssao.fxsub"
 #endif
 
 #if OUTDOORFLOOR_QUALITY > 0
-#   include "shader/OutdoorFloor/OutdoorFloor.fx"
+#   include "shader/OutdoorFloor/OutdoorFloor.fxsub"
 #endif
 
 #if SSSS_QUALITY > 0
-#   include "shader/ssss.fx"
+#   include "shader/ssss.fxsub"
 #endif
 
 #if SSR_QUALITY > 0
-#   include "shader/ssr.fx"
+#   include "shader/ssr.fxsub"
 #endif
 
 #if AA_QUALITY > 0
-#   include "shader/fxaa.fx"
+#   include "shader/fxaa.fxsub"
 #endif
 
-#include "shader/shading.fx"
+#include "shader/shading.fxsub"
 
 void ScreenSpaceQuadVS(
     in float4 Position : POSITION,

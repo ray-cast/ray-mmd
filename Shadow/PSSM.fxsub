@@ -1,7 +1,7 @@
 #include "../ray.conf"
-#include "../shader/math.fx"
-#include "../shader/common.fx"
-#include "../shader/shadowcommon.fx"
+#include "../shader/math.fxsub"
+#include "../shader/common.fxsub"
+#include "../shader/shadowcommon.fxsub"
 
 float3 LightDirection : DIRECTION < string Object = "Light";>;
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection);

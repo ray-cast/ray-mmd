@@ -1,9 +1,9 @@
 #include "../../ray.conf"
-#include "../../shader/math.fx"
-#include "../../shader/common.fx"
-#include "../../shader/gbuffer.fx"
-#include "../../shader/gbuffer_sampler.fx"
-#include "../../shader/lighting.fx"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/lighting.fxsub"
 
 float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;

@@ -1,9 +1,9 @@
 #include "../../ray.conf"
-#include "../../shader/math.fx"
-#include "../../shader/common.fx"
-#include "../../shader/gbuffer.fx"
-#include "../../shader/gbuffer_sampler.fx"
-#include "../../shader/lighting.fx"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/lighting.fxsub"
 
 #define TUBELIGHT_MAX_WIDTH 55
 #define TUBELIGHT_MAX_RADIUS 10
