@@ -94,7 +94,11 @@ static float rotateY = EnvRotateY * PI_2;
 static float rotateZ = EnvRotateZ * PI_2;
 static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
 
-texture decal : MATERIALTEXTURE;
+#if SKYBOX_HDR_ENABLE
+texture2D decal<string ResourceName = SKYBOX_HDR_FILE;>; 
+#else
+texture2D decal<string ResourceName = SKYBOX_MAP_FILE;>; 
+#endif
 sampler decalMap = sampler_state
 {
     texture = <decal>;
@@ -135,7 +139,7 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 #endif
     
 #if SKYBOX_HDR_ENABLE
-    return float4(linear2srgb(DecodeRGBM(color)), 1);
+    return float4(linear2srgb(color.rgb), 1);
 #else
     return color;
 #endif
