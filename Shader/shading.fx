@@ -147,6 +147,6 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting = ApplyGroundFog(lighting, linearDepth, FogP);
     lighting = ApplySkyFog(lighting, linearDepth, V);
 #endif
-
+    
     return float4(lighting, linearDepth);
 }

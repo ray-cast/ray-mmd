@@ -49,8 +49,8 @@ sampler IBLSpecularSampler = sampler_state {
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
     
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
 };
 #endif
 
