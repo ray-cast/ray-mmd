@@ -1,8 +1,8 @@
 #include "../../ray.conf"
-#include "../../shader/common.fx"
-#include "../../shader/math.fx"
-#include "../../shader/gbuffer.fx"
-#include "../../shader/gbuffer_sampler.fx"
+#include "../../shader/common.fxsub"
+#include "../../shader/math.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
 
 #if !defined(MIKUMIKUMOVING)
 float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo"; >;

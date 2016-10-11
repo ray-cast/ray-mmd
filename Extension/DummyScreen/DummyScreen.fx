@@ -1,4 +1,4 @@
-#include "../../shader/common.fx"
+#include "../../shader/common.fxsub"
 
 shared texture2D DummyScreenTex : RenderColorTarget
 <

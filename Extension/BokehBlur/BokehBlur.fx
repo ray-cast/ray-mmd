@@ -1,7 +1,7 @@
-#include "../../shader/math.fx"
-#include "../../shader/common.fx"
-#include "../../shader/gbuffer.fx"
-#include "../../shader/gbuffer_sampler.fx"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
 
 texture ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
