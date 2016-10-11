@@ -8,6 +8,8 @@ float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string i
 float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
 float mFloorLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FloorLight+"; >;
 float mFloorLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FloorLight-"; >;
+float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
+float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 float mEnvShadowP  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;
 float mSSAOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO+"; >;
 float mSSAOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO-"; >;

@@ -65,7 +65,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 L = normalize(-LightDirection);
 
     float3 lighting = 0;
-    lighting += tex2D(LightMapSamp, coord).rgb;
+    lighting += tex2D(LightMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
     lighting += ShadingMaterial(N, V, L, coord, material);
     
 #if OUTDOORFLOOR_QUALITY > 0
