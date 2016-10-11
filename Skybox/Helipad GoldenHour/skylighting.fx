@@ -8,4 +8,4 @@
 #define IBLDIFF_MAP_FILE "texture/skydiff.dds"
 #define IBLSPEC_MAP_FILE "texture/skyspec.dds"
 
-#include "skylighting.fxsub"
+#include "../shader/skylighting.fxsub"

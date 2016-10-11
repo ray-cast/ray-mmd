@@ -233,14 +233,6 @@ technique DeferredLighting<
     }
     #endif
 #endif
-#if OUTDOORFLOOR_QUALITY
-    pass OutdoorFloor < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 OutdoorFloorVS();
-        PixelShader  = compile ps_3_0 OutdoorFloorPS();
-    }
-#endif
     pass DeferredShading < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
