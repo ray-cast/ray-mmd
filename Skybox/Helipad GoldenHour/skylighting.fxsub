@@ -41,7 +41,7 @@ sampler IBLDiffuseSampler = sampler_state {
     ADDRESSV  = CLAMP;
 };
 
-texture2D IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL + 1;>; 
+texture2D IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
 
@@ -139,7 +139,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
     float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
     
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 
     float3 R = mul(rotate, worldReflect);
     float3 N = mul(rotate, worldNormal);
