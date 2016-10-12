@@ -23,18 +23,19 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 float3 mRightTop : CONTROLOBJECT < string name="(self)"; string item = "RightTop"; >;
 float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "RightBottom"; >;
 
-static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mPosition;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
 
+static float3 LightPosition = mPosition;
+static float3 LightDirection = normalize(mDirection - mPosition);
+
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+static float3 viewLightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
+static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight));
 
-static float3 LightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
-static float3 LightUp = normalize(cross(viewLightDirection, LightRight));
 static float2 LightRect = float2(LightWidth, LightHeight);
 
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
@@ -96,7 +97,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     
     float2 coord1, coord2;
     float3 L = viewLightPosition - P;
-    float3 Lw = RectangleDirection(L, LightRight, LightUp, viewLightDirection, LightRect, coord1);
+    float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
     float3 L2 = normalize(Lw);
     
     float atten1 = GetPhysicalLightAttenuation(Lw, LightRange);
@@ -110,13 +111,15 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 diffuse = material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
     
     #if VIDEO_MAP_ENABLE
-        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 5, 10).rgb);
+        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10).rgb);
     #endif
     
-    float3 specular = RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
+    float3 specular = RectangleLightBRDF(material.normal, V, L, viewLightRight, viewLightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
+    
+    coord2 = abs(coord2);
     
     #if VIDEO_MAP_ENABLE
-        specular *= abs(coord2) > 1.0 ? 0 : srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
+        specular *= (coord2.x > 1.0 || coord2.y > 1.0) ? 0.0 : srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
     #endif
     
     float4 lighting = 0;

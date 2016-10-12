@@ -17,11 +17,12 @@ float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 
-static float3 LightPosition = mPosition;
-static float3 LightDirection = normalize(mDirection - mPosition);
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+
+static float3 LightPosition = mPosition;
+static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
