@@ -29,7 +29,7 @@ sampler PSSMsamp = sampler_state {
 float PCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
     float shadow = 0.0;
-    float s = 1.25 / SHADOW_MAP_SIZE;
+    float s = 1.5 / SHADOW_MAP_SIZE;
 
     [unroll]
     for (int x = -samples; x <= samples; x++) 
