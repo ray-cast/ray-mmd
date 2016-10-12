@@ -309,7 +309,7 @@ float4 OutdoorFloorEnvPS(
     shadow /= 9;
 #endif
 
-    float3 direction = albedo * max(0, dot(outdoorMaterial.normal, -LightDirection)) * shadow;
+    float3 direction = albedo * max(0, dot(outdoorMaterial.normal, mul(-LightDirection, matView))) * shadow;
     direction *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
     
     float3 lighting = lerp(albedo, diffuse + specular + direction, any(wpos.a));

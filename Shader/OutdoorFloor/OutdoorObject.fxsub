@@ -8,6 +8,7 @@
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
+float4x4 matView : VIEW;
 float4x4 matWorldView : WORLDVIEW;
 float4x4 matWorldViewProjMatrix : WORLDVIEWPROJECTION;
 float4x4 matWorldMirror: CONTROLOBJECT < string Name = "(OffscreenOwner)"; >;
@@ -38,6 +39,12 @@ sampler DiffuseMapSamp = sampler_state
     ADDRESSU  = WRAP;
     ADDRESSV  = WRAP;
 };
+
+float3 TransMirrorPos(float3 Pos)
+{
+    Pos -= WorldMirrorNormal * 2.0f * dot(WorldMirrorNormal, Pos - WorldMirrorPos);
+    return Pos;
+}
 
 float4 TransMirrorPos(float4 Pos)
 {
@@ -130,7 +137,7 @@ float4 GetAlbedo(float2 uv, bool use_texture)
 {
 #if SKYBOX_ENABLE
     #if SKYBOX_HDR_ENABLE
-        return float4(DecodeRGBM(tex2D(DiffuseMapSamp, uv)), 1);
+        return float4(tex2D(DiffuseMapSamp, uv).rgb, 1);
     #else
         return float4(srgb2linear(tex2D(DiffuseMapSamp, uv).rgb), 1);
     #endif
@@ -175,7 +182,7 @@ void OutdoorObjectVS(
     oWorldPos = float4(oNormal * length(Position), 1);
 #else
     oWorldPos = Position;
-    oNormal = mul(Normal, (float3x3)matWorldView);
+    oNormal = mul(Normal, (float3x3)matView);
 #endif
     oPosition = mul(TransMirrorPos(oWorldPos), matWorldViewProjMatrix);
     oPosition.x = -oPosition.x;
@@ -189,9 +196,9 @@ float4 OutdoorObjectPS(
     in float4 screenPosition : SV_Position,
     uniform bool use_texture) : COLOR
 {
-    normal = normalize(mul(rotate, normal));
-    
+    normal = normalize(normal);
 #if SKYBOX_ENABLE
+    normal = normalize(mul(rotate, normal));
     coord = computeSphereCoord(normal);
 #endif
     float4 color = GetAlbedo(coord, use_texture);

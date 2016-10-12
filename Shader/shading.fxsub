@@ -70,14 +70,13 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     
 #if OUTDOORFLOOR_QUALITY > 0
     float floorVisiable = step(0.9, dot(N, float3(0, 1, 0)));
-    floorVisiable = abs(P.y) > 1 ? 0 : (1 - P.y);
     
-    float roughness = SmoothnessToRoughness(material.smoothness);
-    float mipLevel = EnvironmentMip(roughness, 6);
+    float mipLevel = EnvironmentMip(6, material.smoothness);
     
     float4 floor = tex2Dlod(OutdoorShadingMapSamp, float4(coord, 0, mipLevel));
-    floor.rgb *= EnvironmentSpecularUnreal4(N, V, roughness, material.specular);
+    floor.rgb *= EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
     floor.rgb *= floorVisiable;
+    floor.rgb *= abs(P.y) > 1 ? 0 : (1 - P.y);
     lighting += floor * (1 + mFloorLightP * 10 - mFloorLightM);
 #endif
     
