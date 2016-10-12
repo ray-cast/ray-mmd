@@ -344,6 +344,7 @@ const float4 BackColor = float4(0,0,0,0);
         technique name < string MMDPass = mmdpass;\
         string Script = \
             "RenderColorTarget0=LightAlphaMap;"\
+            "ClearSetColor=BackColor;"\
             "Clear=Color;"
             "RenderColorTarget0=OutdoorShadingMap;"\
             "Pass=OutdoorFloorEnv;"\

@@ -320,11 +320,14 @@ float4 OutdoorFloorEnvPS(
     return float4(lighting, 1);
 }
 
+const float4 BackColor = float4(0,0,0,0);
+
 #if OUTDOORFLOOR_QUALITY == 0
     #define OBJECT_TEC(name, mmdpass) \
         technique name < string MMDPass = mmdpass;\
         string Script = \
             "RenderColorTarget0=LightAlphaMap;"\
+            "ClearSetColor=BackColor;"\
             "Clear=Color;"\
             "RenderColorTarget0=;" \
             "RenderColorTarget1=EnvLightSpecMap;" \
@@ -341,6 +344,7 @@ float4 OutdoorFloorEnvPS(
         technique name < string MMDPass = mmdpass;\
         string Script = \
             "RenderColorTarget0=LightAlphaMap;"\
+            "ClearSetColor=BackColor;"\
             "Clear=Color;"\
             "RenderColorTarget0=OutdoorShadingMap;"\
             "Pass=OutdoorFloorEnv;"\
