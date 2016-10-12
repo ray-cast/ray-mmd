@@ -24,6 +24,27 @@ static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mI
 static float LightSize = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
 static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE));
 
+static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+
+float4 ShadingMaterial(MaterialParam material, float3 V)
+{
+    float3 P = V * material.linearDepth / V.z;
+    
+    float3 L = viewLightPosition - P;
+    float3 L2 = normalize(L);
+    
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float vis = saturate(dot(material.normal, L2)) * atten;
+    
+    float4 lighting = 0.0f;
+    lighting.rgb = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
+    lighting.rgb += vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * step(0, material.albedo + material.specular - 1e-5);
+    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    
+    return lighting;
+}
+
 void LightSourceVS(
     in float4 Position : POSITION,
     in float3 Normal : NORMAL,
@@ -37,66 +58,54 @@ void LightSourceVS(
     oTexcoord1 = -mul(Position, matView);
 }
 
-float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+void LightSourcePS(
+    float4 texcoord : TEXCOORD0, 
+    float3 viewdir : TEXCOORD1,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
 {
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
 
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+    
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float3 V = normalize(viewdir);
-    float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
-    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
     
-    float3 L = viewLightPosition - P;
-    float3 L2 = normalize(L);
-    
-    float atten = GetPhysicalLightAttenuation(L, LightRange);
-    float vis = saturate(dot(material.normal, L2)) * atten;
-    
-    float4 lighting = 0.0f;
-    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
-    lighting.rgb *= material.albedo;
-    lighting.rgb += vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
-    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    
-    return lighting;
+    oColor0 = ShadingMaterial(material, V);
+    oColor1 = ShadingMaterial(materialAlpha, V);
 }
 
-#if RECTANGLIELIGHT_ENABLE || AMBIENT_ENABLE
-    #define OBJECT_TEC(name, mmdpass) \
-        technique name < string MMDPass = mmdpass;\
-        > { \
-            pass DrawObject { \
-                ZEnable = false; ZWriteEnable = false;\
-                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-                SrcBlend = ONE; DestBlend = ONE;\
-                VertexShader = compile vs_3_0 LightSourceVS(); \
-                PixelShader  = compile ps_3_0 LightSourcePS(); \
-            } \
-        }
-#else
-    #define OBJECT_TEC(name, mmdpass) \
-        technique name < string MMDPass = mmdpass;\
-        > { \
-            pass DrawObject { \
-                ZEnable = false; ZWriteEnable = false;\
-                AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-                SrcBlend = ONE; DestBlend = ONE;\
-                CullMode = CW;\
-                VertexShader = compile vs_3_0 LightSourceVS(); \
-                PixelShader  = compile ps_3_0 LightSourcePS(); \
-            } \
-        }
-#endif
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;\
+        string Script = \
+            "RenderColorTarget0=;"\
+            "RenderColorTarget1=LightAlphaMap;"\
+            "Pass=DrawObject;"\
+    ;> { \
+        pass DrawObject { \
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
+            CullMode = CW;\
+            VertexShader = compile vs_3_0 LightSourceVS(); \
+            PixelShader  = compile ps_3_0 LightSourcePS(); \
+        } \
+    }
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

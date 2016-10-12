@@ -802,6 +802,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);
+    clip(alpha - alphaThreshold);
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
@@ -817,7 +818,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.alpha = alpha < alphaThreshold ? 0 : 1;
+    material.alpha = 1;
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;

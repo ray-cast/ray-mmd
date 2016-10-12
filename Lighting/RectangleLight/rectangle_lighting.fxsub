@@ -30,6 +30,13 @@ static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
 
+static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+
+static float3 LightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
+static float3 LightUp = normalize(cross(viewLightDirection, LightRight));
+static float2 LightRect = float2(LightWidth, LightHeight);
+
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
     #if VIDEO_MAP_IN_SCREEN_MAP
         shared texture2D DummyScreenTex : RenderColorTarget;
@@ -83,6 +90,44 @@ float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, flo
     return (totalColor / totalWeight);
 }
 
+float4 ShadingMaterial(MaterialParam material, float3 V)
+{
+    float3 P = V * material.linearDepth / V.z;
+    
+    float2 coord1, coord2;
+    float3 L = viewLightPosition - P;
+    float3 Lw = RectangleDirection(L, LightRight, LightUp, viewLightDirection, LightRect, coord1);
+    float3 L2 = normalize(Lw);
+    
+    float atten1 = GetPhysicalLightAttenuation(Lw, LightRange);
+    
+    #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
+        atten1 *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
+    #endif
+    
+    float atten2 = saturate(dot(material.normal, L2)) * atten1;
+    
+    float3 diffuse = material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    
+    #if VIDEO_MAP_ENABLE
+        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 5, 10).rgb);
+    #endif
+    
+    float3 specular = RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
+    
+    #if VIDEO_MAP_ENABLE
+        specular *= abs(coord2) > 1.0 ? 0 : srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
+    #endif
+    
+    float4 lighting = 0;
+    lighting.rgb += atten1 * diffuse;
+    lighting.rgb += atten2 * specular;    
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * step(0, material.albedo + material.specular - 1e-5);
+    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    
+    return lighting;
+}
+
 void LightSourceVS(
     in float4 Position : POSITION,
     in float3 Normal : NORMAL,
@@ -98,65 +143,41 @@ void LightSourceVS(
     oTexcoord1 = -mul(oPosition, matProjectInverse);
 }
 
-float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+void LightSourcePS(
+    float2 coord : TEXCOORD0, 
+    float3 viewdir : TEXCOORD1,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
 {
-    float2 coord = texcoord;
-
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+    
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float3 V = normalize(viewdir);
-    float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
-    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
-    float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
     
-    float3 LightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
-    float3 LightUp = normalize(cross(viewLightDirection, LightRight));
-    float2 LightRect = float2(LightWidth, LightHeight);
-    
-    float2 coord1, coord2;
-    float3 L = viewLightPosition - P;
-    float3 Lw = RectangleDirection(L, LightRight, LightUp, viewLightDirection, LightRect, coord1);
-    float3 L2 = normalize(Lw);
-    
-    float atten = GetPhysicalLightAttenuation(Lw, LightRange);
-    #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
-        atten *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
-    #endif
-    
-    float vis = saturate(dot(material.normal, L2)) * atten;
-    
-    float4 lighting = 0.0f;   
-    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
-    lighting.rgb *= material.albedo;
-    
-    #if VIDEO_MAP_ENABLE
-        lighting.rgb *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 5, 10).rgb);
-    #endif
-    
-    #if VIDEO_MAP_ENABLE
-        float3 specular = 0;
-        specular = RectangleLightBRDFWithUV(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
-        specular *= srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
-        lighting.rgb += vis * specular;
-    #else
-        lighting.rgb += vis * RectangleLightBRDF(material.normal, V, L, LightRight, LightUp, viewLightDirection, LightRect, material.smoothness, material.specular);
-    #endif
-    
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
-    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    
-    return lighting;
+    oColor0 = ShadingMaterial(material, V);
+    oColor1 = ShadingMaterial(materialAlpha, V);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
-    > { \
+        string Script = \
+            "RenderColorTarget0=;"\
+            "RenderColorTarget1=LightAlphaMap;"\
+            "Pass=DrawObject;"\
+    ;> { \
         pass DrawObject { \
             ZEnable = false; ZWriteEnable = false;\
             AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\

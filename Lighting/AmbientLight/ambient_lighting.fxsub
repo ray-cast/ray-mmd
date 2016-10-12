@@ -31,43 +31,57 @@ void LightSourceVS(
     oTexcoord1 = -mul(oPosition, matProjectInverse);
 }
 
-float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+void LightSourcePS(
+    float2 coord : TEXCOORD0, 
+    float3 viewdir : TEXCOORD1,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
 {
-    float2 coord = texcoord;
-
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+    
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float3 V = normalize(viewdir);
-    float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
+    float3 P = V * material.linearDepth / V.z;
 
     float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
     float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
     
     float3 L = normalize(viewLightDirection);
     
-    float vis = saturate(dot(material.normal, L) * 0.5 + 0.5);
-    if (vis < 0)
-    {
-        clip(-1);
-    }
-    
     float4 lighting = 0;
-    lighting.rgb = float3(mR, mG, mB) * vis * LightIntensity;
-    lighting.rgb *= material.albedo;
+    lighting.rgb = float3(mR, mG, mB) * LightIntensity;
+    lighting.rgb *= material.albedo * saturate(dot(material.normal, L) * 0.5 + 0.5);
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     
-    return lighting;
+    float4 lightingAlpha = 0;
+    lightingAlpha.rgb = float3(mR, mG, mB) * LightIntensity;
+    lightingAlpha.rgb *= materialAlpha.albedo * saturate(dot(materialAlpha.normal, L) * 0.5 + 0.5);
+    lightingAlpha *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    
+    oColor0 = lighting;
+    oColor1 = lightingAlpha;
 }
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
-    > { \
+        string Script = \
+            "RenderColorTarget0=;"\
+            "RenderColorTarget1=LightAlphaMap;"\
+            "Pass=DrawObject;"\
+    ;> { \
         pass DrawObject { \
             ZEnable = false; ZWriteEnable = false;\
             AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\

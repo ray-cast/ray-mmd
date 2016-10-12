@@ -15,10 +15,33 @@ float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 
+static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+
+float4 ShadingMaterial(MaterialParam material, float3 V)
+{
+    float3 P = V * material.linearDepth / V.z;
+
+    float3 L = viewLightPosition - P;
+    float3 L2 = normalize(L);
+    
+    float atten = GetPointLightAttenuation(L, LightRange);
+    float vis = saturate(dot(material.normal, L2)) * atten;
+   
+    float4 lighting = 0.0f;
+            
+    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    lighting.rgb *= material.albedo;
+    lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * step(0, material.albedo + material.specular - 1e-5);
+    lighting.rgb *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+     
+    return lighting;
+}
 
 void LightSourceVS(
     in float4 Position : POSITION,
@@ -51,24 +74,6 @@ void LightSourcePS(
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
-    float3 V = normalize(viewdir);
-    float3 P = V * tex2D(Gbuffer4Map, coord).r / V.z;
-
-    float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
-    
-    float3 L = viewLightPosition - P;
-    float3 L2 = normalize(L);
-    
-    float atten = GetPointLightAttenuation(L, LightRange);
-    float vis = saturate(dot(material.normal, L2)) * atten;
-   
-    float4 lighting = 0.0f;
-            
-    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
-    lighting.rgb *= material.albedo;
-    lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
-    
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
@@ -76,24 +81,11 @@ void LightSourcePS(
 
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+
+    float3 V = normalize(viewdir);
     
-    float3 alphaPosition = V * materialAlpha.linearDepth / V.z;    
-    float3 alphaL = viewLightPosition - alphaPosition;
-    float3 alphaL2 = normalize(alphaL);
-    
-    float alphaAtten = GetPointLightAttenuation(alphaL, LightRange);
-    float alphaVis = saturate(dot(materialAlpha.normal, alphaL2)) * alphaAtten;
-   
-    float4 lightingAlpha = 0.0f;
-            
-    lightingAlpha.rgb = alphaAtten * DiffuseBRDF(materialAlpha.normal, alphaL2, V, materialAlpha.smoothness, materialAlpha.transmittance);
-    lightingAlpha.rgb *= materialAlpha.albedo;
-    lightingAlpha.rgb += alphaVis * SpecularBRDF(materialAlpha.normal, alphaL2, V, materialAlpha.smoothness, materialAlpha.specular);
-    lightingAlpha.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lightingAlpha.rgb *= step(0, materialAlpha.albedo + materialAlpha.specular - 1e-5);
-    
-    oColor0 = lighting * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    oColor1 = lightingAlpha * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    oColor0 = ShadingMaterial(material, V);
+    oColor1 = ShadingMaterial(materialAlpha, V);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
