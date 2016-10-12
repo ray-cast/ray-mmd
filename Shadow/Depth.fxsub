@@ -26,6 +26,27 @@ sampler PSSMsamp = sampler_state {
 	AddressU  = CLAMP;	AddressV = CLAMP;
 };
 
+float PCF(float2 coord, float receiverDepth, float sdrate, int samples) 
+{
+    float shadow = 0.0;
+    float s = 1.25 / SHADOW_MAP_SIZE;
+
+    [unroll]
+    for (int x = -samples; x <= samples; x++) 
+    {
+        [unroll]
+        for (int y = -samples; y <= samples; y++)
+        {
+            float2 pos = coord + float2(x, y) * s;
+            shadow += CalcLight(tex2D(PSSMsamp, pos).x, receiverDepth, sdrate);
+        }
+    }
+    
+    samples = samples * 2 + 1;
+    
+    return saturate(shadow / (samples * samples));
+}
+
 void ShadowlessObjectVS(
 	in float4 Position : POSITION, 
 	in float2 Texcoord : TEXCOORD0,
@@ -113,29 +134,13 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
 	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
 
-	float casterDepth0 = tex2D(PSSMsamp, texCoord0.xy).x;
-	float casterDepth1 = tex2D(PSSMsamp, texCoord1.xy).x;
-	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = IN.Tex.w;
-
 	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
 	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * 0.005;
 	receiverDepth -= depthBias;
 
-	float s = 1.5 / SHADOW_MAP_SIZE;	
 	float sdrate = 30000.0 / 4.0 - 0.05;
-
-	float shadow = 0;
-	shadow += CalcLight(casterDepth, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, s)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, s)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s,-s)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s,-s)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( s, 0)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2(-s, 0)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0, s)).x, receiverDepth, sdrate);
-	shadow += CalcLight(tex2D(PSSMsamp, texCoord0.xy + float2( 0,-s)).x, receiverDepth, sdrate);
-	shadow /= 9;
+	float shadow = PCF(texCoord0.xy, receiverDepth, sdrate, 3);
 	
 #if SSAO_DISABLE
 	IN.PPos.z = -IN.PPos.z;

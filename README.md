@@ -230,18 +230,19 @@ Ray-MMD
 * DirectLight+/-直接光照中整体光强
 * SSAO+- 环境光遮蔽强度  
 * SSAO Radius+- 环境光遮蔽的范围
-* EnvLight+-环境光的漫反射光强
+* EnvDiffLight+-环境光的漫反射光强
+* EnvSSSLight+-环境光的次表面散射光强
 * EnvSpecLight+-环境光的镜面光强
 * EnvRotateX/Y/Z 旋转天空盒的X/Y/Z轴
 * EnvShadow 主光源阴影用于环境光阴影的强度
 * BloomThreshold 提取最亮部分的阈值
 * BloomRadius 产生泛光的大小
 * BloomIntensity 泛光的整体强度
+* BloomToneMapping 色调映射的模式 (为0时ACES709, 为1时线性映射)
 * Vignette 窗口四周的暗角(虚角)
 * Exposure 曝光强度
 * Dispersion 相机色散的效果
 * DispersionRadius 相机色散的区域大小
-* FilmGrain 相机因曝光不足参数的噪点
 * ToneMapping 色调映射的模式 (为0时ACES709, 为1时线性映射)
 * BalanceR/G/B 色彩平衡
 
