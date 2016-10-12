@@ -6,17 +6,15 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     float3 lighting = 0;
 
     float vis = saturate(dot(N, L));
-    if (vis > 0)
-    {
-        lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, material.transmittance);
-        lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
-        lighting *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
-        lighting *= step(0, material.albedo + material.specular - 1e-5);
-        
+
+    lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, material.transmittance);
+    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
+    lighting *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
+    lighting *= step(0, material.albedo + material.specular - 1e-5);
+    
 #if SHADOW_QUALITY > 0
-        lighting *= tex2D(ShadowmapSamp, coord).r;
+    lighting *= tex2D(ShadowmapSamp, coord).r;
 #endif
-    }
     
     return lighting;
 }
