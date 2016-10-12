@@ -33,7 +33,11 @@ void LightSourceVS(
     oTexcoord1 = -mul(Position, matView);
 }
 
-float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+void LightSourcePS(
+    float4 texcoord : TEXCOORD0, 
+    float3 viewdir : TEXCOORD1,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
 {
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
@@ -64,14 +68,41 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     lighting.rgb *= material.albedo;
     lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
-    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     
-    return lighting;
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 alphaPosition = V * materialAlpha.linearDepth / V.z;    
+    float3 alphaL = viewLightPosition - alphaPosition;
+    float3 alphaL2 = normalize(alphaL);
+    
+    float alphaAtten = GetPointLightAttenuation(alphaL, LightRange);
+    float alphaVis = saturate(dot(materialAlpha.normal, alphaL2)) * alphaAtten;
+   
+    float4 lightingAlpha = 0.0f;
+            
+    lightingAlpha.rgb = alphaAtten * DiffuseBRDF(materialAlpha.normal, alphaL2, V, materialAlpha.smoothness, materialAlpha.transmittance);
+    lightingAlpha.rgb *= materialAlpha.albedo;
+    lightingAlpha.rgb += alphaVis * SpecularBRDF(materialAlpha.normal, alphaL2, V, materialAlpha.smoothness, materialAlpha.specular);
+    lightingAlpha.rgb *= float3(mR, mG, mB) * LightIntensity;
+    lightingAlpha.rgb *= step(0, materialAlpha.albedo + materialAlpha.specular - 1e-5);
+    
+    oColor0 = lighting * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    oColor1 = lightingAlpha * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 }
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
-    > { \
+        string Script = \
+            "RenderColorTarget0=;"\
+            "RenderColorTarget1=LightAlphaMap;"\
+            "Pass=DrawObject;"\
+    ;> { \
         pass DrawObject { \
             ZEnable = false; ZWriteEnable = false;\
             AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\

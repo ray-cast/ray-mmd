@@ -6,6 +6,7 @@ shared texture Gbuffer5RT: RENDERCOLORTARGET;
 shared texture Gbuffer6RT: RENDERCOLORTARGET;
 shared texture Gbuffer7RT: RENDERCOLORTARGET;
 shared texture Gbuffer8RT: RENDERCOLORTARGET;
+shared texture LightAlphaMap : RENDERCOLORTARGET;
 
 sampler Gbuffer1Map = sampler_state {
     texture = <MaterialMap>;

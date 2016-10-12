@@ -802,7 +802,6 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 #endif
 
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    clip(alpha - alphaThreshold);
     
     float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
@@ -818,7 +817,7 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
     material.index = transmittanceStrength;
     material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.alpha = 1;
+    material.alpha = alpha < alphaThreshold ? 0 : 1;
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
     material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
@@ -834,43 +833,33 @@ GbufferParam MaterialPS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useS
 GbufferParam Material2PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap)
 {
     float alpha = GetAlpha(IN.Texcoord, useTexture);
-    if (alpha > alphaThreshold)
-    {
-        return (GbufferParam)0;
-    }
-    else
-    {    
-        if (alpha < 0.01)
-        {
-            clip(-1);
-        }
+    clip(alpha - 0.01);
+
+    float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
+    albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
+   
+    float3 MaterialMetalness = GetMetalness(IN.Texcoord);
+
+    MaterialParam material;
+    material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
+    material.smoothness = GetSmoothness(IN.Texcoord);
+    material.albedo = albedoColor * (1.0 - MaterialMetalness);
+    material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
+    material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
+    material.index = transmittanceStrength;
+    material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
+    material.emissiveIntensity = GetEmissiveIntensity();
+    material.alpha = alpha < alphaThreshold ? alpha : 0;
     
-        float3 albedoColor = GetAlbedo(IN.Texcoord, useTexture);
-        albedoColor = ColorSynthesis(albedoColor, GetMelanin(IN.Texcoord));
-       
-        float3 MaterialMetalness = GetMetalness(IN.Texcoord);
+#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+#elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
+#else
+    material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+#endif
 
-        MaterialParam material;
-        material.normal = GetNormal(normalize(IN.Normal), normalize(-IN.Viewdir), IN.Texcoord);
-        material.smoothness = GetSmoothness(IN.Texcoord);
-        material.albedo = albedoColor * (1.0 - MaterialMetalness);
-        material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
-        material.transmittance = GetTransmittance(IN.Texcoord) * (1.0 - MaterialMetalness);
-        material.index = transmittanceStrength;
-        material.emissive = GetEmissiveColor(IN.Texcoord, useTexture);
-        material.emissiveIntensity = GetEmissiveIntensity();
-        material.alpha = alpha;
-        
-    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-        material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
-    #else
-        material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-    #endif
-
-        return EncodeGbuffer(material, IN.Distance);
-    }
+    return EncodeGbuffer(material, IN.Distance);
 }
 
 #define OBJECT_TEC(name, mmdpass, tex, sphere) \
