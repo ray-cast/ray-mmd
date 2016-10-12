@@ -13,6 +13,7 @@ float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 
@@ -161,6 +162,7 @@ float4 LightSourcePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : 
     lighting.rgb *= material.albedo;
     lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
+    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     
 #if SHADOW_MAP_ENABLE
     #if SHADOW_MAP_SOFT_QUALITY == 1
@@ -209,7 +211,8 @@ float4 LightSourceShadowlessPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEX
     lighting.rgb *= material.albedo;
     lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
-
+    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    
     return lighting;
 }
 
