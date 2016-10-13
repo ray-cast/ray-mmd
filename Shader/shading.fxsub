@@ -41,13 +41,13 @@ float3 ApplyGroundFog(float3 color, float distance, float3 P)
 
 float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
     
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
@@ -100,20 +100,12 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 diffuse, diffuse2;
     float3 specular, specular2;
     
-#if IBL_QUALITY == 1
-    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
-    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
-#else
+#if IBL_QUALITY > 1
     DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
     DecodeYcbcrWithEdgeFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
-#endif
-
-#if SHADOW_QUALITY > 0
-    float shadow = lerp(1, tex2D(ShadowmapSamp, coord).r, mEnvShadowP);
-    diffuse *= shadow;
-    diffuse2 *= shadow;
-    specular *= shadow;
-    specular2 *= shadow;
+#else
+    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
+    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
 #endif
 
 #if OUTDOORFLOOR_QUALITY > 0
@@ -127,19 +119,29 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     specular2 *= ComputeSpecularOcclusion(dot(N2, V), ssao, materialAlpha.smoothness);
 #endif    
 
+    float shadow = 1;
+#if SHADOW_QUALITY > 0
+    float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
+    shadow = lerp(1, shadowDepth.r, mEnvShadowP);
+#endif
+
     if (ExistSkybox || ExistSkyboxHDR)
     {
-        lighting += diffuse + specular;
-        lighting2 += diffuse2 + specular2; 
+        lighting += (diffuse + specular) * shadow;
+        lighting2 += (diffuse2 + specular2) * shadow; 
     }
     
 #endif
 
     lighting = lerp(lighting, lighting2, materialAlpha.alpha);
 
+#if SHADOW_QUALITY > 0
+    float linearDepth = shadowDepth.g;
+#else
     float linearDepth = material.linearDepth;
     float linearDepth2 = materialAlpha.linearDepth;
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+#endif
 
 #if FOG_ENABLE
     float3 FogP = mul(float4(-viewdir * linearDepth, 1), matViewInverse).xyz;
