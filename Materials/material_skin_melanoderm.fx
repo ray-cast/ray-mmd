@@ -22,7 +22,6 @@ const float albedoMapLoopNum = 1.0;
 #define ALPHA_MAP_FILE "alpha.png"
 
 const float alpha = 1.0;
-const float alphaThreshold = 0.98; // (保持和 main.fx一致)
 const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
@@ -109,14 +108,5 @@ const float emissiveMapLoopNum = 1.0;
 
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
-
-// 纹理过滤方式
-#define TEXTURE_USE_LINEAR 0
-#define TEXTURE_USE_NEAREST 0
-#define TEXTURE_USE_ANISOTROPY 1
-#define TEXTURE_USE_MIP_NONE 0
-#define TEXTURE_USE_MIP_LINEAR 0
-#define TEXTURE_USE_MIP_NEAREST 1
-#define TEXTURE_ANISOTROPY_LEVEL 16 // 启用各向异性采样时最大的采样等级 (0 ~ 16)
 
 #include "material_common.fxsub"
