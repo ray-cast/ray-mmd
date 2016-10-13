@@ -65,7 +65,7 @@ float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : C
 #if RECIEVER_ALPHA_MAP_ENABLE
 	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
-	clip(alpha - RecieverAlphaThreshold);
+	clip(alpha - 0.01);
 #endif
 
 #if SSAO_DISABLE
