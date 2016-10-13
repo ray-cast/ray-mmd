@@ -69,85 +69,79 @@ float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : C
 #endif
 
 #if SSAO_DISABLE
-	return float4(1, -coord.z, 0, 1);
-#else
-	return float4(1, coord.z, 0, 1);
+	coord.z = -coord.z;
 #endif
+
+	return float4(1, coord.z, 0, 1);
 }
 
-struct DrawObject_OUTPUT
+void ShadowObjectVS(
+    in float4 Position : POSITION, 
+    in float3 Normal : NORMAL, 
+    in float2 Texcoord : TEXCOORD0,
+    out float4 oTexcoord : TEXCOORD0,
+    out float3 oNormal   : TEXCOORD1,
+    out float4 oLightPPos01 : TEXCOORD2,
+    out float4 oLightPPos23 : TEXCOORD3,
+    out float4 oPosition : POSITION)
 {
-	float4 Pos	  : POSITION;
-	float4 Tex	  : TEXCOORD0;
-	float3 Normal	: TEXCOORD1;
+    oPosition = mul(Position, matViewProject);
+    oNormal = Normal;
 
-	float4 LightPPos01	: TEXCOORD2;
-	float4 LightPPos23	: TEXCOORD3;
+    float4 PPos = mul(Position, matLightViewProject);
+    PPos.xy /= PPos.w;
 
-	float4 PPos		: TEXCOORD4;
-};
+    const float2 scale = float2(0.25, -0.25);
+    oLightPPos01.xy = (PPos.xy * lightParam[0].xy + lightParam[0].zw);
+    oLightPPos01.zw = (PPos.xy * lightParam[1].xy + lightParam[1].zw);
+    oLightPPos23.xy = (PPos.xy * lightParam[2].xy + lightParam[2].zw);
+    oLightPPos23.zw = (PPos.xy * lightParam[3].xy + lightParam[3].zw);
+    oLightPPos01 *= scale.xyxy;
+    oLightPPos23 *= scale.xyxy;
 
-DrawObject_OUTPUT ShadowObjectVS(
-	float4 Pos : POSITION, 
-	float3 Normal : NORMAL, 
-	float2 Tex : TEXCOORD0)
-{
-	DrawObject_OUTPUT Out = (DrawObject_OUTPUT)0;
-
-	Out.PPos = Out.Pos = mul(Pos, matViewProject);
-	Out.Normal = Normal;
-
-	float4 PPos = mul(Pos, matLightViewProject);
-	PPos.xy /= PPos.w;
-
-	const float2 scale = float2(0.25, -0.25);
-	Out.LightPPos01.xy = (PPos.xy * lightParam[0].xy + lightParam[0].zw);
-	Out.LightPPos01.zw = (PPos.xy * lightParam[1].xy + lightParam[1].zw);
-	Out.LightPPos23.xy = (PPos.xy * lightParam[2].xy + lightParam[2].zw);
-	Out.LightPPos23.zw = (PPos.xy * lightParam[3].xy + lightParam[3].zw);
-	Out.LightPPos01 *= scale.xyxy;
-	Out.LightPPos23 *= scale.xyxy;
-
-	Out.Tex = float4(Tex.xy, Out.Pos.z, PPos.z);
-
-	return Out;
+    oTexcoord = float4(Texcoord.xy, oPosition.z, PPos.z);
 }
 
-float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
+float4 ShadowObjectPS(
+    in float4 coord : TEXCOORD0,
+    in float3 normal : TEXCOORD1,
+    in float4 LightPPos01 : TEXCOORD2,
+    in float4 LightPPos23 : TEXCOORD3,
+    uniform bool useTexture) : COLOR
 {
 #if RECIEVER_ALPHA_ENABLE
-	float alpha = MaterialDiffuse.a;
+    float alpha = MaterialDiffuse.a;
 #if RECIEVER_ALPHA_MAP_ENABLE
-	if (useTexture) alpha *= tex2D(DiffuseMapSamp, IN.Tex.xy).a;
+    if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
-	clip(alpha - 0.01);
+    clip(alpha - 0.01);
 #endif
 
-	float4 lightPPos0 = CalcCascadePPos(IN.LightPPos01.xy, float2(0, 0), 0);
-	float4 lightPPos1 = CalcCascadePPos(IN.LightPPos01.zw, float2(1, 0), 1);
-	float4 lightPPos2 = CalcCascadePPos(IN.LightPPos23.xy, float2(0, 1), 2);
-	float4 lightPPos3 = CalcCascadePPos(IN.LightPPos23.zw, float2(1, 1), 3);
+    float4 cascadeLightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
+    float4 cascadeLightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
+    float4 cascadeLightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
+    float4 cascadeLightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
 
-	float4 texCoord0 = lightPPos3;
-	float4 texCoord1 = 0;
-	if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
-	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
-	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+    float4 texCoord0 = cascadeLightPPos3;
+    float4 texCoord1 = 0;
+    if (cascadeLightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = cascadeLightPPos2; }
+    if (cascadeLightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = cascadeLightPPos1; }
+    if (cascadeLightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = cascadeLightPPos0; }
 
-	float receiverDepth = IN.Tex.w;
-	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * 0.005;
-	receiverDepth -= depthBias;
+    float receiverDepth = coord.w;
+    float depthSlope = ShadowSlopeScaledBias(receiverDepth);
+    float depthBias = (coord.z / LightZMax + depthSlope) * 0.005;
+    receiverDepth -= depthBias;
 
-	float sdrate = 30000.0 / 4.0 - 0.05;
-	float shadow = PCF(texCoord0.xy, receiverDepth, sdrate, 3);
-	
+    float sdrate = 30000.0 / 4.0 - 0.05;
+    float shadow = PCF(texCoord0.xy, receiverDepth, sdrate, 3);
+    
 #if SSAO_DISABLE
-	IN.PPos.z = -IN.PPos.z;
+    coord.z = -coord.z;
 #endif
-	
-	shadow = min(shadow, saturate(dot(normalize(IN.Normal), -LightDirection)));
-	return float4(shadow, IN.PPos.z, 0, 1);
+    
+    shadow = min(shadow, saturate(dot(normalize(normal), -LightDirection)));
+    return float4(shadow, coord.z, 0, 1);
 }
 
 #define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \
@@ -170,12 +164,13 @@ float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
 		} \
 	}
 	
-OBJECT_SHADOWLESS_TEC(MainTec2, "object", false)
-OBJECT_SHADOWLESS_TEC(MainTec3, "object", true)
+OBJECT_SHADOWLESS_TEC(DepthTec2, "object", false)
+OBJECT_SHADOWLESS_TEC(DepthTec3, "object", true)
 	
-OBJECT_TEC(MainTecBS2, "object_ss", false)
-OBJECT_TEC(MainTecBS3, "object_ss", true)
+OBJECT_TEC(DepthTecBS2, "object_ss", false)
+OBJECT_TEC(DepthTecBS3, "object_ss", true)
 
+technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
