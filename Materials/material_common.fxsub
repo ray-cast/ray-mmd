@@ -776,8 +776,7 @@ GbufferParam MaterialPS(
     in float3 normal   : TEXCOORD0,
     in float3 coord : TEXCOORD1,
     in float3 viewdir  : TEXCOORD2,
-    uniform bool useTexture,
-    uniform bool useSphereMap)
+    uniform bool useTexture)
 {
 #if PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
@@ -823,8 +822,7 @@ GbufferParam Material2PS(
     in float3 normal   : TEXCOORD0,
     in float3 coord : TEXCOORD1,
     in float3 viewdir  : TEXCOORD2,
-    uniform bool useTexture,
-    uniform bool useSphereMap)
+    uniform bool useTexture)
 {
     float alpha = GetAlpha(coord.xy, useTexture);
     clip(alpha - 0.01);
@@ -856,8 +854,8 @@ GbufferParam Material2PS(
     return EncodeGbuffer(material, coord.z);
 }
 
-#define OBJECT_TEC(name, mmdpass, tex, sphere) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; bool UseSphereMap = sphere; \
+#define OBJECT_TEC(name, mmdpass, tex) \
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
     string Script = \
         "RenderColorTarget0=;" \
         "RenderColorTarget1=Gbuffer2RT;" \
@@ -874,23 +872,23 @@ GbufferParam Material2PS(
         pass DrawObject { \
             AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
-            PixelShader  = compile ps_3_0 MaterialPS(tex, sphere); \
+            PixelShader  = compile ps_3_0 MaterialPS(tex); \
         } \
         pass DrawAlphaObject { \
             AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
-            PixelShader  = compile ps_3_0 Material2PS(tex, sphere); \
+            PixelShader  = compile ps_3_0 Material2PS(tex); \
         } \
     }
 
-OBJECT_TEC(MainTec0, "object", false, false)
-OBJECT_TEC(MainTec1, "object", true, false)
-OBJECT_TEC(MainTec2, "object", false, true)
-OBJECT_TEC(MainTec3, "object", true, true)
-OBJECT_TEC(MainTecBS0, "object_ss", false, false)
-OBJECT_TEC(MainTecBS1, "object_ss", true, false)
-OBJECT_TEC(MainTecBS2, "object_ss", false, true)
-OBJECT_TEC(MainTecBS3, "object_ss", true, true)
+OBJECT_TEC(MainTec0, "object", false)
+OBJECT_TEC(MainTec1, "object", true)
+OBJECT_TEC(MainTec2, "object", false)
+OBJECT_TEC(MainTec3, "object", true)
+OBJECT_TEC(MainTecBS0, "object_ss", false)
+OBJECT_TEC(MainTecBS1, "object_ss", true)
+OBJECT_TEC(MainTecBS2, "object_ss", false)
+OBJECT_TEC(MainTecBS3, "object_ss", true)
 
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTech < string MMDPass = "shadow";  > {}
