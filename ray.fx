@@ -24,6 +24,8 @@ float mBloomRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string it
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
 float mBloomTonemapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomTonemapping"; >;
 float mToneMapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "ToneMapping"; >;
+float mContrastP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast+"; >;
+float mContrastM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast-"; >;
 float mColBalanceRP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceR+"; >;
 float mColBalanceGP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG+"; >;
 float mColBalanceBP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB+"; >;

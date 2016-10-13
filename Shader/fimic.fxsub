@@ -165,7 +165,8 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler2D source) 
     color += lerp(0, bloom * bloomIntensity * (1 + mExposure * 10), mBloomTonemapping);
 #endif
 #endif
-  
+    
+    color = lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
     color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
     color = saturate(color);
     
