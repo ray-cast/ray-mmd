@@ -309,7 +309,7 @@ float4 OutdoorFloorEnvPS(
     shadow /= 9;
 #endif
 
-    float3 direction = albedo * max(0, dot(outdoorMaterial.normal, mul(-LightDirection, matView))) * shadow;
+    float3 direction = albedo * max(0, dot(outdoorMaterial.normal, mul(-LightDirection, (float3x3)matView))) * shadow;
     direction *= LightSpecular * (1 + mDirectLightP * 10 - mDirectLightM);
     
     float3 lighting = lerp(albedo, diffuse + specular + direction, any(wpos.a));
@@ -345,7 +345,7 @@ const float4 BackColor = float4(0,0,0,0);
         string Script = \
             "RenderColorTarget0=LightAlphaMap;"\
             "ClearSetColor=BackColor;"\
-            "Clear=Color;"
+            "Clear=Color;"\
             "RenderColorTarget0=OutdoorShadingMap;"\
             "Pass=OutdoorFloorEnv;"\
             "RenderColorTarget0=;" \
