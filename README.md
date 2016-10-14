@@ -179,54 +179,20 @@ Ray-MMD
 * 最后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_5.png)](https://github.com/ray-cast/images/raw/master/LED_5.png)
 
-##### 6.0 制作基于物理的环境光贴图(IBL)  旧:
-　　预处理的环境光贴图需要对天空盒纹理处理所以需要借助以下工具 (已放入了Tools目录中)
-```
-    https://github.com/dariomanesku/cmftStudio
-```
-* 启动cmftstudio(HDR建议看下面的教程，这篇适用与JPG,PNG之类非HDR的图片)
-* 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
-* 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
-* 如果是HDR文件，点ToneMapping，然后Apply即可(tga文件不需要此操作)  
-[![link text](https://github.com/ray-cast/images/raw/master/4.1_small.png)](https://github.com/ray-cast/images/raw/master/4.1.png)
-* 点击Radiance中的Filter skybox with cmft，选中Wrap模式并Process  
-[![link text](https://github.com/ray-cast/images/raw/master/4.2_small.png)](https://github.com/ray-cast/images/raw/master/4.2.png)
-* 点击Irradiance中的Fiter skybox with cmft，直接点Process即可  
-[![link text](https://github.com/ray-cast/images/raw/master/4.3_small.png)](https://github.com/ray-cast/images/raw/master/4.3.png)
-* 如下图分别保存出Radiance和Irradiance，因为MMD并不支持浮点格式纹理，因此保存为BGRA8
-[![link text](https://github.com/ray-cast/images/raw/master/4.4_small.png)](https://github.com/ray-cast/images/raw/master/4.4.png)
-[![link text](https://github.com/ray-cast/images/raw/master/4.5_small.png)](https://github.com/ray-cast/images/raw/master/4.5.png)
-* 将导出的Irradiance和Radiance放入Skybox/textures/目录中
-* 如图PMXEditor打开skybox.pmx，这里Texture里放渲染天空的纹理，Tone放Irradiance中的纹理SphereMap放Radiance中的纹理  
-[![link text](https://github.com/ray-cast/images/raw/master/4.6.png)](https://github.com/ray-cast/images/raw/master/4.6.png)
-* 至此完成了IBL需要的纹理，SphereMap模式需要改为加算/乘算，不然会无效
-
-##### 7.0 制作基于物理的环境光贴图(IBL) 新:
-　　以上方法适用于创建出非HDR文件的天空盒，接下介绍HDR文件如何使用  
-　　因为MMD里不支持RGBA32F和RGBA16F的浮点格式，所以需要将数据压缩到RGBA8中  
-　　因此作者写了一个RGBMencode工具，用于将cmftstudio保存的DDS用于MMD的渲染  
-
-* 首先启动cmftstudio
-* 选择一张(dds,ktx,tga,hdr)的图片文件，如果没有这些格式需要自行转换
-* 如下图点击右侧的图片然后浏览需要处理的天空盒图片  
-* 这里因为处理的是HDR文件了，不要再ToneMapping了  
-[![link text](https://github.com/ray-cast/images/raw/master/4.1_small.png)](https://github.com/ray-cast/images/raw/master/4.1.png)
-* 点击Radiance中的Filter skybox with cmft，选中Wrap模式，以及Gamma中全改为None并Process  
-[![link text](https://github.com/ray-cast/images/raw/master/6.1.png)](https://github.com/ray-cast/images/raw/master/6.1.png)
-* 点击Irradiance中的Fiter skybox with cmft，Gamma中全改为None，Process即可  
-[![link text](https://github.com/ray-cast/images/raw/master/6.2.png)](https://github.com/ray-cast/images/raw/master/6.2.png)
-* 处理完后效果图如下  
-[![link text](https://github.com/ray-cast/images/raw/master/6.3_small.png)](https://github.com/ray-cast/images/raw/master/6.3.png)
-* 接着将它们以RGBA16F或者RGBA32F的格式保存，并放入RGBMencode的同级目录下  
-[![link text](https://github.com/ray-cast/images/raw/master/6.4.png)](https://github.com/ray-cast/images/raw/master/6.4.png)
-* 分次拖拽它们到RGBMencode 依次输出对应的文件
-* 并改为skydome_hdr.dds, skydiff_hdr.dds, skyspec_hdr.dds即可使用  
-[![link text](https://github.com/ray-cast/images/raw/master/6.5.png)](https://github.com/ray-cast/images/raw/master/6.5.png)
-* 这里提供一些天空盒的地址
+##### 6.0 自定义天空盒
+* 解压cmft.rar
+* 选择一张hdr文件, 并改名为skybox.hdr, 然后拖拽到exe上  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_drag.png)](https://github.com/ray-cast/images/raw/master/IBL_drag.png)
+* 如果文件格式是正确的将会进行处理，效果如下  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)
+* 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_output.png)](https://github.com/ray-cast/images/raw/master/IBL_output.png)
+* 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录
+* 一些天空盒的地址
     * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
     * [++skies](https://aokcub.net/cg/incskies/)
 
-##### 8.0 全局设置 (ray_controller.pmx):
+##### 7.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
 * SSAO+- 环境光遮蔽强度  
 * SSAO Radius+- 环境光遮蔽的范围
