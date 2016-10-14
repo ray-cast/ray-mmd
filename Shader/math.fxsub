@@ -68,106 +68,6 @@ float3 ycbcr2rgb(float3 YCbCr)
     return float3(R, G, B);
 }
 
-float3 rgb2xyz(float3 rgb)
-{
-    const float3x3 m = float3x3 (
-        0.5141364, 0.3238786, 0.16036376,
-        0.265068, 0.67023428, 0.06409157,
-        0.0241188, 0.1228178, 0.84442666);
-    return mul(m, rgb);
-}
-
-float3 xyz2rgb(float3 xyz)
-{
-    const float3x3 m = float3x3(
-        2.5651, -1.1665, -0.3986,
-        -1.0217, 1.9777, 0.0439,
-        0.0753, -0.2543, 1.1892);
-    return mul(m, xyz);
-}
-
-float3 xyz2yxy(float3 xyz)
-{
-    float w = xyz.r + xyz.g + xyz.b;
-    if (w > 0.0)
-    {
-        float3 Yxy;
-        Yxy.r = xyz.g;
-        Yxy.g = xyz.r / w;
-        Yxy.b = xyz.g / w;
-        return Yxy;
-    }
-    else
-    {
-        return float3(0.0, 0.0, 0.0);
-    }
-}
-
-float3 yxy2xyz(float3 Yxy)
-{
-    float3 xyz;
-    xyz.g = Yxy.r;
-    if (Yxy.b > 0.0f)
-    {
-        xyz.r = Yxy.r * Yxy.g / Yxy.b;
-        xyz.b = Yxy.r * (1.0f - Yxy.g - Yxy.b) / Yxy.b;
-    }
-    else
-    {
-        xyz.rb = float2(0.0, 0.0);
-    }
-    return xyz;
-}
-
-float3 rgb2hsv(float3 rgb) 
-{
-    float minValue = min(min(rgb.r, rgb.g), rgb.b);
-    float maxValue = max(max(rgb.r, rgb.g), rgb.b);
-    float d = maxValue - minValue;
-
-    float3 hsv = 0.0;
-    hsv.b = maxValue;
-    if (d != 0) 
-    {
-        hsv.g = d / maxValue;
-
-        float3 delrgb = (((maxValue.xxx - rgb) / 6.0) + d / 2.0) / d;
-        if      (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
-        else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
-        else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
-
-        if (hsv.r < 0.0) { hsv.r += 1.0; }
-        if (hsv.r > 1.0) { hsv.r -= 1.0; }
-    }
-    return hsv;
-}
-
-float3 hsv2rgb(float3 hsv)
-{
-    float h = hsv.r;
-    float s = hsv.g;
-    float v = hsv.b;
-
-    float3 rgb = v;
-    if (hsv.g != 0.0)
-    {
-        float h_i = floor(6 * h);
-        float f = 6 * h - h_i;
-
-        float p = v * (1.0f - s);
-        float q = v * (1.0f - f * s);
-        float t = v * (1.0f - (1.0f - f) * s);
-
-        if (h_i == 0) { rgb = float3(v, t, p); }
-        else if (h_i == 1) { rgb = float3(q, v, p); }
-        else if (h_i == 2) { rgb = float3(p, v, t); }
-        else if (h_i == 3) { rgb = float3(p, q, v); }
-        else if (h_i == 4) { rgb = float3(t, p, v); }
-        else { rgb = float3(v, p, q); }
-    }
-    return rgb;
-}
-
 float luminance(float3 rgb)
 {
     const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
@@ -213,6 +113,23 @@ float4 EncodeRGBM(float3 color)
 float3 DecodeRGBM(in float4 rgbm)
 {
     return 6 * rgbm.rgb * rgbm.a;
+}
+
+float4 EncodeRGBE8(float3 color)
+{
+    float4 encode;
+    float maxComponent = max(max(color.x, color.y), color.z);
+    float exponent = ceil(log2(maxComponent));
+    encode.xyz = color / exp2(exponent);
+    encode.w = (exponent + 128.0) / 255.0;
+    return encode;
+}
+
+float3 DecodeRGBE8(float4 color)
+{
+    float exponent = color.w * 255.0 - 128.0;
+    float3 rgb = color.xyz * exp2(exponent);
+    return rgb;
 }
 
 float2 PosToCoord(float2 position)
