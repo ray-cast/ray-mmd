@@ -142,7 +142,20 @@ Ray-MMD
     * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白，取值范围0 ~ 1
     * SSS中的截图就调节了Melain的系数, 所以会看起来像鸡蛋
 
-##### 5.0 多光源
+##### 5.0 自定义天空盒
+* 解压cmft.rar
+* 选择一张hdr文件, 并改名为skybox.hdr, 然后拖拽到exe上  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_drag.png)](https://github.com/ray-cast/images/raw/master/IBL_drag.png)
+* 如果文件格式是正确的将会进行处理，效果如下  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)
+* 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_output.png)](https://github.com/ray-cast/images/raw/master/IBL_output.png)
+* 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录
+* 一些天空盒的地址
+    * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
+    * [++skies](https://aokcub.net/cg/incskies/)
+
+##### 6.0 多光源
 * 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
 [![link text](https://github.com/ray-cast/images/raw/master/floor.png)](https://github.com/ray-cast/images/raw/master/floor.png)
@@ -178,19 +191,6 @@ Ray-MMD
 * 然后选择菜单->背景->(全画面/AVI背景)
 * 最后将RectangleLight.pmx在LightMap板块选择LED.fx,在MaterialMap板块选择material_led.fx即可  
 [![link text](https://github.com/ray-cast/images/raw/master/LED_5.png)](https://github.com/ray-cast/images/raw/master/LED_5.png)
-
-##### 6.0 自定义天空盒
-* 解压cmft.rar
-* 选择一张hdr文件, 并改名为skybox.hdr, 然后拖拽到exe上  
-[![link text](https://github.com/ray-cast/images/raw/master/IBL_drag.png)](https://github.com/ray-cast/images/raw/master/IBL_drag.png)
-* 如果文件格式是正确的将会进行处理，效果如下  
-[![link text](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)
-* 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds  
-[![link text](https://github.com/ray-cast/images/raw/master/IBL_output.png)](https://github.com/ray-cast/images/raw/master/IBL_output.png)
-* 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录
-* 一些天空盒的地址
-    * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
-    * [++skies](https://aokcub.net/cg/incskies/)
 
 ##### 7.0 全局设置 (ray_controller.pmx):
 * DirectLight+/-直接光照中整体光强
