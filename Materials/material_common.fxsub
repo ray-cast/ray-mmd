@@ -15,7 +15,7 @@ float4 TextureMulValue : MULTIPLYINGTEXTURE;
 float4 SphereAddValue  : ADDINGSPHERETEXTURE;
 float4 SphereMulValue  : MULTIPLYINGSPHERETEXTURE;
 
-#if EMISSIVE_APPLY_MORPH_COLOR
+#if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
