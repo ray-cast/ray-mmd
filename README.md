@@ -150,7 +150,8 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)
 * 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_output.png)](https://github.com/ray-cast/images/raw/master/IBL_output.png)
-* 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录
+* 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录  
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_final.png)](https://github.com/ray-cast/images/raw/master/IBL_final.png)
 * 一些天空盒的地址
     * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
     * [++skies](https://aokcub.net/cg/incskies/)
