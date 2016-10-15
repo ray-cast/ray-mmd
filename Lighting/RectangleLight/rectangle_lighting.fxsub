@@ -53,14 +53,14 @@ static float2 LightRect = float2(LightWidth, LightHeight);
 #else
         texture = VideoMap;
 #endif
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #elif VIDEO_MAP_ENABLE
     texture VideoMap: MATERIALTEXTURE;
     sampler VideoMapSamp = sampler_state
     {
         texture = <VideoMap>;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
@@ -81,7 +81,7 @@ float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, flo
             float gaussianY = exp(-(j * j) / (2.0 * sigma * sigma));
 
             float offsetY = j * offset.y;
-            float4 color = tex2D(source, coord + float2(offsetX, offsetY));
+            float4 color = tex2D(source, (coord + float2(offsetX, offsetY)) * vedioMapLoopNum);
 
             totalWeight += gaussianX * gaussianY;
             totalColor += color * gaussianX * gaussianY;

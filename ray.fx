@@ -6,8 +6,6 @@ const int ClearStencil = 0;
 
 float mDirectLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight+"; >;
 float mDirectLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectLight-"; >;
-float mFloorLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FloorLight+"; >;
-float mFloorLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "FloorLight-"; >;
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 float mEnvShadowP  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;

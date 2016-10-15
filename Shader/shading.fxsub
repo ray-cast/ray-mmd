@@ -75,7 +75,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float4 floor = tex2Dlod(OutdoorShadingMapSamp, float4(coord, 0, mipLevel));
     floor.rgb *= EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
     floor.rgb *= floorVisiable;
-    lighting += floor * (1 + mFloorLightP * 10 - mFloorLightM);
+    lighting += floor;
 #endif
     
 #if SSAO_SAMPLER_COUNT > 0
