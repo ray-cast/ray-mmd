@@ -1,0 +1,171 @@
+#include "../ray.conf"
+#include "../shader/math.fxsub"
+#include "../shader/common.fxsub"
+#include "../shader/shadowcommon.fxsub"
+
+float3 LightDirection : DIRECTION < string Object = "Light"; >;
+
+static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
+static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);
+
+#if CASTER_ALPHA_MAP_ENABLE
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
+	MinFilter = POINT;	MagFilter = POINT;	MipFilter = POINT;
+	ADDRESSU  = WRAP;	ADDRESSV  = WRAP;
+};
+#endif
+
+shared texture PSSM : OFFSCREENRENDERTARGET;
+sampler PSSMsamp = sampler_state {
+	texture = <PSSM>;
+	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = NONE;
+	AddressU  = CLAMP;	AddressV = CLAMP;
+};
+
+float CalcEdgeFalloff(float2 texCoord)
+{
+	const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
+	const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
+	float2 falloff = abs(texCoord) * (-m * 4.0) + (m - a);
+	return saturate(min(falloff.x, falloff.y));
+}
+
+float4 CalcCascadePPos(float2 uv, float2 offset, float index)
+{
+	return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
+}
+
+void ShadowlessObjectVS(
+	in float4 Position : POSITION, 
+	in float2 Texcoord : TEXCOORD0,
+	out float3 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
+{
+	oPosition = mul(Position, matViewProject);
+	oTexcoord = float3(Texcoord.xy, oPosition.z);
+}
+
+float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
+{
+#if CASTER_ALPHA_ENABLE
+	clip(!opadd - 0.001f);
+	float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
+	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
+#endif
+	clip(alpha - RecieverAlphaThreshold);
+#endif
+	return float4(1, coord.z, 0, 0);
+}
+
+struct DrawObject_OUTPUT
+{
+	float4 Pos	  : POSITION;
+	float4 Tex	  : TEXCOORD0;
+	float3 Normal	: TEXCOORD1;
+
+	float4 LightPPos01	: TEXCOORD2;
+	float4 LightPPos23	: TEXCOORD3;
+
+	float4 PPos		: TEXCOORD4;
+};
+
+DrawObject_OUTPUT ShadowObjectVS(
+	float4 Pos : POSITION, 
+	float3 Normal : NORMAL, 
+	float2 Tex : TEXCOORD0)
+{
+	DrawObject_OUTPUT Out = (DrawObject_OUTPUT)0;
+
+	Out.PPos = Out.Pos = mul(Pos, matViewProject);
+	Out.Normal = Normal;
+
+	float4 PPos = mul(Pos, matLightViewProject);
+	PPos.xy /= PPos.w;
+
+	const float2 scale = float2(0.25, -0.25);
+	Out.LightPPos01.xy = (PPos.xy * lightParam[0].xy + lightParam[0].zw);
+	Out.LightPPos01.zw = (PPos.xy * lightParam[1].xy + lightParam[1].zw);
+	Out.LightPPos23.xy = (PPos.xy * lightParam[2].xy + lightParam[2].zw);
+	Out.LightPPos23.zw = (PPos.xy * lightParam[3].xy + lightParam[3].zw);
+	Out.LightPPos01 *= scale.xyxy;
+	Out.LightPPos23 *= scale.xyxy;
+
+	Out.Tex = float4(Tex.xy, Out.Pos.z, PPos.z);
+
+	return Out;
+}
+
+float4 ShadowObjectPS(DrawObject_OUTPUT IN, uniform bool useTexture) : COLOR
+{
+#if CASTER_ALPHA_ENABLE
+	float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
+	if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, IN.Tex.xy).a;
+#endif
+	clip(alpha - RecieverAlphaThreshold);
+#endif
+
+	float4 lightPPos0 = CalcCascadePPos(IN.LightPPos01.xy, float2(0, 0), 0);
+	float4 lightPPos1 = CalcCascadePPos(IN.LightPPos01.zw, float2(1, 0), 1);
+	float4 lightPPos2 = CalcCascadePPos(IN.LightPPos23.xy, float2(0, 1), 2);
+	float4 lightPPos3 = CalcCascadePPos(IN.LightPPos23.zw, float2(1, 1), 3);
+
+	float4 texCoord0 = lightPPos3;
+	float4 texCoord1 = 0;
+	if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
+	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
+	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+
+	float4 casterDepth0 = tex2D(PSSMsamp, texCoord0.xy);
+	float4 casterDepth1 = tex2D(PSSMsamp, texCoord1.xy);
+	float4 casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
+	float receiverDepth = IN.Tex.w;
+
+	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
+	float depthBias = (IN.PPos.z / LightZMax + depthSlope) * 0.05;
+
+    float2 exponents = GetEVSMExponents();
+    float2 warpedDepth = WarpDepth(receiverDepth, exponents);
+    float2 depthScale = exponents * warpedDepth * 0.005;
+    float2 minVariance = depthScale * depthScale;
+
+    float posContrib = ChebyshevUpperBound(casterDepth.xz, warpedDepth.x, minVariance.x, 0.99);
+    float negContrib = ChebyshevUpperBound(casterDepth.yw, warpedDepth.y, minVariance.y, 0.99);
+            
+	return float4(min(posContrib, negContrib), IN.PPos.z, 0, 1);
+}
+
+#define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \
+	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+	>{ \
+		pass DrawObject { \
+			AlphaTestEnable = false; AlphaBlendEnable = false; \
+			VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
+			PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
+		} \
+	}
+
+#define OBJECT_TEC(name, mmdpass, tex) \
+	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+	>{ \
+		pass DrawObject { \
+			AlphaTestEnable = false; AlphaBlendEnable = false; \
+			VertexShader = compile vs_3_0 ShadowObjectVS(); \
+			PixelShader  = compile ps_3_0 ShadowObjectPS(tex); \
+		} \
+	}
+	
+OBJECT_SHADOWLESS_TEC(MainTec2, "object", false)
+OBJECT_SHADOWLESS_TEC(MainTec3, "object", true)
+	
+OBJECT_TEC(MainTecBS2, "object_ss", false)
+OBJECT_TEC(MainTecBS3, "object_ss", true)
+
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTec < string MMDPass = "shadow"; > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}
