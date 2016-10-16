@@ -132,7 +132,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TONEMAP != 1
+#if USE_CUSTOM_MATERIAL && SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TOONMAP != 1 && SMOOTHNESS_MAP_IN_TONEMAP != 1
     texture2D SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
     sampler SmoothnessMapSamp = sampler_state
     {
@@ -616,7 +616,7 @@ float GetSmoothness(float2 coord)
             coord.y = 1 - coord.y;
         #endif
     
-        #if SMOOTHNESS_MAP_IN_TONEMAP
+        #if SMOOTHNESS_MAP_IN_TOONMAP || SMOOTHNESS_MAP_IN_TONEMAP
             #if SMOOTHNESS_MAP_SWIZZLE == 0
                 float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).r;
             #elif SMOOTHNESS_MAP_SWIZZLE == 1
