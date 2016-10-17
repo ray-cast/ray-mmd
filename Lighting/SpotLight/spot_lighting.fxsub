@@ -130,27 +130,27 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     return lighting;
 }
 
-float4 ShadingMaterialShadow(MaterialParam material, float3 V)
+float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
 {
-    float4 lighting = ShadingMaterial(material, V);
+    float linearDepth = material.linearDepth;
+    float linearDepth2 = materialAlpha.linearDepth;
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
     
+    float shadow = 1;
 #if SHADOW_MAP_ENABLE
-    float3 P = V * material.linearDepth / V.z;
-    if (any(lighting))
-    {
-#if SHADOW_MAP_SOFT_QUALITY == 1
-    lighting *= PCF(P, 1);
-#elif SHADOW_MAP_SOFT_QUALITY >= 2
-    lighting *= PCF(P, 2);
-#elif SHADOW_MAP_SOFT_QUALITY >= 3
-    lighting *= PCF(P, 3);
-#else
-    lighting *= ESM(P);
-#endif
-    }
+    float3 P = V * linearDepth / V.z;
+    #if SHADOW_MAP_SOFT_QUALITY == 1
+        shadow *= PCF(P, 1);
+    #elif SHADOW_MAP_SOFT_QUALITY >= 2
+        shadow *= PCF(P, 2);
+    #elif SHADOW_MAP_SOFT_QUALITY >= 3
+        shadow *= PCF(P, 3);
+    #else
+        shadow *= ESM(P);
+    #endif
 #endif
 
-    return lighting;
+    return shadow;
 }
 
 void LightSourceVS(
@@ -199,8 +199,12 @@ void LightSourcePS(
     
     float3 V = normalize(viewdir);
     
-    oColor0 = ShadingMaterialShadow(material, V);
-    oColor1 = ShadingMaterialShadow(materialAlpha, V);
+    oColor0 = ShadingMaterial(material, V);
+    oColor1 = ShadingMaterial(materialAlpha, V);
+    
+    float shadow = ShadingShadow(material, materialAlpha, V);
+    oColor0 *= shadow;
+    oColor1 *= shadow;
 }
 
 void LightSourceShadowlessPS(
