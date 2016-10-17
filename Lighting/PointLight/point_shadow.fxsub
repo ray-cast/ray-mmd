@@ -5,23 +5,23 @@
 
 float3 LightPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 
-float4x4 GetDualViewMatrix(float FB)
+float4x4 GetDualViewMatrix(float face)
 {
     return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,
-                     0.0f, FB,   0.0f, 0.0f,
-                     0.0f, 0.0f, FB,   0.0f,
-                     -LightPosition.x, -LightPosition.y*FB, -LightPosition.z*FB, 1.0f );
+                     0.0f, face,   0.0f, 0.0f,
+                     0.0f, 0.0f, face,   0.0f,
+                     -LightPosition.x, -LightPosition.y*face, -LightPosition.z*face, 1.0f );
 };
 
-float4x4 GetDualProjMatrix(float4 P, float FB)
+float4x4 GetDualProjMatrix(float4 P, float face)
 {
     float L = length(P.xyz);
     float vL = 1.0f / L;
     float z = PointLightFar * vL * (L - PointLightNear) / (PointLightFar - PointLightNear);
     return float4x4( vL, 0.0f, 0.0f,  0.0f,
                      0.0f,   0.5f*vL, 0.0f,  0.0f,
-                     0.0f,   0.5f*vL*FB,  z*vL,  vL,  
-                     0.0f,   0.5f*FB,     z,     1.0f );
+                     0.0f,   0.5f*vL*face,  z*vL,  vL,  
+                     0.0f,   0.5f*face,     z,     1.0f );
 }
 
 texture DiffuseMap: MATERIALTEXTURE;
@@ -42,11 +42,11 @@ void ShadowMapGenVS(
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oTexcoord2 : TEXCOORD2,
     out float4 oPosition  : POSITION,
-    uniform float FB)
+    uniform float face)
 {
     oTexcoord0 = Texcoord;
-    oTexcoord1 = mul(Position, GetDualViewMatrix(FB));
-    oTexcoord2 = oPosition = mul(oTexcoord1, GetDualProjMatrix(oTexcoord1, FB));
+    oTexcoord1 = mul(Position, GetDualViewMatrix(face));
+    oTexcoord2 = oPosition = mul(oTexcoord1, GetDualProjMatrix(oTexcoord1, face));
 }
 
 float4 ShadowMapGenPS(
@@ -54,9 +54,9 @@ float4 ShadowMapGenPS(
     in float3 view : TEXCOORD1,
     in float4 proj : TEXCOORD2,
     uniform bool useTexture, 
-    uniform float FB) : COLOR
+    uniform float face) : COLOR
 {
-    clip(proj.y * FB);
+    clip(proj.y * face);
     float3 viewdir = normalize(view);
     clip(0.7f - dot(viewdir, float3(0.0f ,0.0f, -1.0f)));
 

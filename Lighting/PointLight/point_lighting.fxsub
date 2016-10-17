@@ -71,13 +71,12 @@ static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP
 
 float2 GetShadowCoord(float3 L)
 {
-    bool flagFront = (L.z >= 0) ? true : false;
-
-    if ( !flagFront ) L.yz = -L.yz;
+    bool face = (L.z >= 0) ? true : false;
+    if ( !face ) L.yz = -L.yz;
     float2 coord = L.xy / (1.0f + L.z);
     coord.y = -coord.y;
     coord = (coord + 1.0f) * 0.5f;
-    coord.y = flagFront ? 0.5f*coord.y : 0.5f * (coord.y+1.0f) + 1.0f / SHADOW_MAP_HEIGHT;
+    coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / SHADOW_MAP_HEIGHT;
 
     return coord;
 }
