@@ -28,28 +28,27 @@ static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matVi
 
 #if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
-#   define SPOT_SHADOW_MAP_SIZE 256
+#   define SHADOW_MAP_SIZE 256
 #elif SHADOW_MAP_QUALITY == 1
-#   define SPOT_SHADOW_MAP_SIZE 512
+#   define SHADOW_MAP_SIZE 512
 #elif SHADOW_MAP_QUALITY >= 2
-#   define SPOT_SHADOW_MAP_SIZE 1024
+#   define SHADOW_MAP_SIZE 1024
 #elif SHADOW_MAP_QUALITY >= 3
-#   define SPOT_SHADOW_MAP_SIZE 2048
+#   define SHADOW_MAP_SIZE 2048
 #else
-#   define SPOT_SHADOW_MAP_SIZE 256
+#   define SHADOW_MAP_SIZE 256
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-    string Description = "Shadow Rendering";
-    int Width = SPOT_SHADOW_MAP_SIZE;
-    int Height = SPOT_SHADOW_MAP_SIZE;
+    string Description = "Shadow Rendering for SpotLight";
+    int Width = SHADOW_MAP_SIZE;
+    int Height = SHADOW_MAP_SIZE;
     string Format = "R32F";
     float4 ClearColor = { 0, 0, 0, 0 };
     float ClearDepth = 1.0;
     int MipLevels = 1;
     string DefaultEffect = 
         "self = hide;"
-        "skybox*.pmx = hide;"
         "ray_controller.pmx=hide;"
         "*.pmx = spot_shadow.fx;"
         "*.pmd = spot_shadow.fx;"
@@ -64,17 +63,13 @@ sampler ShadowMapSamp = sampler_state {
     AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = float2(0.5 / SPOT_SHADOW_MAP_SIZE, 0.5 / SPOT_SHADOW_MAP_SIZE);
-static float2 ShadowmapOffset2 = float2(1.0 / SPOT_SHADOW_MAP_SIZE, 1.0 / SPOT_SHADOW_MAP_SIZE);
+static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
+static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
 
 float ESM(float3 viewPosition) 
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-#if SPOTLIGHT_ENABLE
     float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, mDirection));
-#else
-    float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, LightPosition));
-#endif
     float4 proj = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, shadowPosition);
     
     proj.xy = PosToCoord(proj.xy / proj.w);

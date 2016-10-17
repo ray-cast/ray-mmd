@@ -1,0 +1,97 @@
+#include "../../ray.conf"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/shadowcommon.fxsub"
+
+float3 LightPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
+
+float4x4 GetDualViewMatrix(float FB)
+{
+    return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,
+                     0.0f, FB,   0.0f, 0.0f,
+                     0.0f, 0.0f, FB,   0.0f,
+                     -LightPosition.x, -LightPosition.y*FB, -LightPosition.z*FB, 1.0f );
+};
+
+float4x4 GetDualProjMatrix(float4 P, float FB)
+{
+    float L = length(P.xyz);
+    float vL = 1.0f / L;
+    float z = PointLightFar * vL * (L - PointLightNear) / (PointLightFar - PointLightNear);
+    return float4x4( vL, 0.0f, 0.0f,  0.0f,
+                     0.0f,   0.5f*vL, 0.0f,  0.0f,
+                     0.0f,   0.5f*vL*FB,  z*vL,  vL,  
+                     0.0f,   0.5f*FB,     z,     1.0f );
+}
+
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state 
+{
+    texture = <DiffuseMap>;
+    MINFILTER = POINT;
+    MAGFILTER = POINT;
+    MIPFILTER = POINT;
+    ADDRESSU  = WRAP;
+    ADDRESSV  = WRAP;
+};
+
+void ShadowMapGenVS(
+    in float4 Position : POSITION, 
+    in float2 Texcoord : TEXCOORD0, 
+    out float2 oTexcoord0 : TEXCOORD0,
+    out float4 oTexcoord1 : TEXCOORD1,
+    out float4 oTexcoord2 : TEXCOORD2,
+    out float4 oPosition  : POSITION,
+    uniform float FB)
+{
+    oTexcoord0 = Texcoord;
+    oTexcoord1 = mul(Position, GetDualViewMatrix(FB));
+    oTexcoord2 = oPosition = mul(oTexcoord1, GetDualProjMatrix(oTexcoord1, FB));
+}
+
+float4 ShadowMapGenPS(
+    in float2 coord : TEXCOORD0,
+    in float3 view : TEXCOORD1,
+    in float4 proj : TEXCOORD2,
+    uniform bool useTexture, 
+    uniform float FB) : COLOR
+{
+    clip(proj.y * FB);
+    float3 viewdir = normalize(view);
+    clip(0.7f - dot(viewdir, float3(0.0f ,0.0f, -1.0f)));
+
+#if CASTER_ALPHA_ENABLE
+    clip(!opadd - 0.001f);
+    
+    float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
+    if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
+#endif
+    clip(alpha - CasterAlphaThreshold);
+#endif
+
+    return proj.z / proj.w;
+}
+
+#define OBJECT_TEC(name, mmdpass, tex) \
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+    > { \
+        pass DrawObjectF {\
+            AlphaBlendEnable = FALSE;\
+            VertexShader = compile vs_3_0 ShadowMapGenVS(1);\
+            PixelShader  = compile ps_3_0 ShadowMapGenPS(true, 1);\
+        }\
+        pass DrawObjectB {\
+            AlphaBlendEnable = FALSE;\
+            VertexShader = compile vs_3_0 ShadowMapGenVS(-1);\
+            PixelShader  = compile ps_3_0 ShadowMapGenPS(true, -1);\
+        }\
+    }
+
+OBJECT_TEC(DepthTecSS0, "object_ss", false)
+OBJECT_TEC(DepthTecSS1, "object_ss", true)
+
+technique DepthTec0 < string MMDPass = "object"; >{}
+technique EdgeTec < string MMDPass = "edge"; > {}
+technique ShadowTec < string MMDPass = "shadow"; > {}
+technique ZplotTec < string MMDPass = "zplot"; > {}

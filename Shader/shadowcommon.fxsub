@@ -25,6 +25,9 @@ const float LightDistance = 1000;
 const float LightPlaneNear = 0.1;
 const float LightPlaneFar = 500.0;
 
+const float PointLightNear = 1.0;
+const float PointLightFar  = 1000.0;
+
 float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
 {
    float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
