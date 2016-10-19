@@ -1,11 +1,10 @@
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float4 offset0, uniform float4 offset1) : COLOR
 { 
     float4 color = tex2D(source, coord);
-    color += tex2D(source, coord + offset0.xy);
-    color += tex2D(source, coord + offset0.zw);
-    color += tex2D(source, coord + offset1.xy);
-    color += tex2D(source, coord + offset1.zw);
-    color /= 5;
+    color = min(color, tex2D(source, coord + offset0.xy));
+    color = min(color, tex2D(source, coord + offset0.zw));
+    color = min(color, tex2D(source, coord + offset1.xy));
+    color = min(color, tex2D(source, coord + offset1.zw));
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
 

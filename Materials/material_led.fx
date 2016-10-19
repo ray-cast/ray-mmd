@@ -44,7 +44,7 @@ const float normalMapSubScale = 1;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
-#define SMOOTHNESS_MAP_IN_TONEMAP 0
+#define SMOOTHNESS_MAP_IN_TOONMAP 0
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE  0
@@ -55,7 +55,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
 #define METALNESS_MAP_ENABLE 0
-#define METALNESS_MAP_IN_TONEMAP 0
+#define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE  0
 #define METALNESS_MAP_FILE "metalness.png"

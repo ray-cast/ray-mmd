@@ -143,7 +143,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TONEMAP != 1
+#if USE_CUSTOM_MATERIAL && METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TONEMAP != 1 && METALNESS_MAP_IN_TOONMAP != 1
     texture2D MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
     sampler MetalnessMapSamp = sampler_state
     {
@@ -225,9 +225,9 @@ sampler SphereMapSamp = sampler_state {
     ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-texture ToneMap : MATERIALTOONTEXTURE;
-sampler ToneMapSamp = sampler_state {
-    texture = <ToneMap>;
+texture ToonMap : MATERIALTOONTEXTURE;
+sampler ToonMapSamp = sampler_state {
+    texture = <ToonMap>;
     MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
     MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
     ADDRESSU = WRAP; ADDRESSV = WRAP;
@@ -618,15 +618,15 @@ float GetSmoothness(float2 coord)
     
         #if SMOOTHNESS_MAP_IN_TOONMAP || SMOOTHNESS_MAP_IN_TONEMAP
             #if SMOOTHNESS_MAP_SWIZZLE == 0
-                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).r;
+                float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
             #elif SMOOTHNESS_MAP_SWIZZLE == 1
-                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).g;
+                float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).g;
             #elif SMOOTHNESS_MAP_SWIZZLE == 2
-                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).b;
+                float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).b;
             #elif SMOOTHNESS_MAP_SWIZZLE == 3
-                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).a;
+                float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).a;
             #else
-                float smoothness = tex2D(ToneMapSamp, coord * smoothnessMapLoopNum).r;
+                float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
             #endif
         #else
             #if SMOOTHNESS_MAP_SWIZZLE == 0
@@ -667,17 +667,17 @@ float GetMetalness(float2 coord)
             coord.y = 1 - coord.y;
         #endif
         
-        #if METALNESS_MAP_IN_TONEMAP
+        #if METALNESS_MAP_IN_TONEMAP || METALNESS_MAP_IN_TOONMAP
             #if METALNESS_MAP_SWIZZLE == 0
-                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).r;
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
             #elif METALNESS_MAP_SWIZZLE == 1
-                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).g;
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
             #elif METALNESS_MAP_SWIZZLE == 2
-                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).b;
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
             #elif METALNESS_MAP_SWIZZLE == 3
-                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).a;
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
             #else
-                return tex2D(ToneMapSamp, coord * metalnessMapLoopNum).r;
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
             #endif
         #else
             #if METALNESS_MAP_SWIZZLE == 0
@@ -709,7 +709,7 @@ float3 GetTransmittance(float2 coord)
                 coord.y = 1 - coord.y;
             #endif
         
-            #if SSS_APPLY_COLOR
+            #if SSS_MAP_APPLY_COLOR
                 return srgb2linear(transmittance * tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
             #else
                 return srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
