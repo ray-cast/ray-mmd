@@ -29,7 +29,7 @@ void BloomBlurVS(
     in float4 Position : POSITION,
     in float4 Texcoord : TEXCOORD,
     out float4 oTexcoord : TEXCOORD0,
-    out float4 oPosition : SV_Position,
+    out float4 oPosition : POSITION,
     uniform int n)
 {
     oPosition = Position;
@@ -52,6 +52,37 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, unifor
     }
 
     return color;
+}
+
+void StarStreakVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD,
+    out float2 oTexcoord0 : TEXCOORD0,
+    out float2 oTexcoord1 : TEXCOORD1,
+    out float2 oTexcoord2 : TEXCOORD2,
+    out float2 oTexcoord3 : TEXCOORD3,
+    out float4 oPosition : POSITION,
+    uniform float2 stepSize)
+{
+    oPosition = Position;
+    oTexcoord0 = Texcoord + ViewportOffset;
+    oTexcoord1 = oTexcoord0 + stepSize;
+    oTexcoord2 = oTexcoord0 + stepSize * 2;
+    oTexcoord3 = oTexcoord0 + stepSize * 3;
+}
+
+float4 StarStreakPS(
+    in float2 coord0 : TEXCOORD0,
+    in float2 coord1 : TEXCOORD1,
+    in float2 coord2 : TEXCOORD2,
+    in float2 coord3 : TEXCOORD3,
+    uniform sampler source, uniform float4 colorCoeff[4]) : COLOR
+{
+    return
+        tex2D(source, coord0) * colorCoeff[0] +
+        tex2D(source, coord1) * colorCoeff[1] +
+        tex2D(source, coord2) * colorCoeff[2] +
+        tex2D(source, coord3) * colorCoeff[3];
 }
 
 float3 ColorBalance(float3 color, float4 balance)

@@ -88,14 +88,14 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
         float f = max(SSAO_SPACE_RADIUS2 - sampleLength2, 0.0f);
         float falloff = f * f * f;
 
-        float bias = viewPosition.z * 0.002;
+        float bias = viewPosition.z * 0.002 + (1 - max(0, viewPosition.z / 300)) * 0.02;
         float occlustion  = max(0.0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
 
         sampleWeight += falloff;
         sampleAmbient += occlustion;
     }
 
-    float ao = 1 - sampleAmbient / sampleWeight;
+    float ao = saturate(1 - sampleAmbient / sampleWeight);
     return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
 }
 

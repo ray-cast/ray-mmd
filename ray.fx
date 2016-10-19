@@ -136,8 +136,10 @@ technique DeferredLighting<
 
 #if SSAO_QUALITY > 0
     "RenderColorTarget0=SSAOMap;  Pass=SSAO;"
+#if SSAO_BLUR_RADIUS > 0
     "RenderColorTarget0=SSAOMapTemp; Pass=SSAOBlurX;"
     "RenderColorTarget0=SSAOMap;     Pass=SSAOBlurY;"
+#endif
 #endif
 
     "RenderColorTarget0=ShadingMap;"

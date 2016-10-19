@@ -262,7 +262,7 @@ sampler Gbuffer7Map = sampler_state {
 };
 sampler Gbuffer8Map = sampler_state {
     texture = <Gbuffer8RT>;
-    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 texture2D ShadingMap : RENDERCOLORTARGET <
