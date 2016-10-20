@@ -1,4 +1,19 @@
-float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float4 offset0, uniform float4 offset1) : COLOR
+float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
+float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.55);
+float4 ghost_camera_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(1.00, 0.69, 0.30, 1.0)};
+float4 ghost_camera_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.01, 0.10, 1.0)};
+float4 ghost_filmic_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
+float4 ghost_filmic_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
+
+texture2D GhostMaskMap<string ResourceName = "shader/textures/mask.dds";>; 
+sampler GhostMaskMapSamp = sampler_state
+{
+    texture = GhostMaskMap;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+
+float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float4 offset0, uniform float4 offset1) : COLOR
 { 
     float4 color = tex2D(source, coord);
     color = min(color, tex2D(source, coord + offset0.xy));
@@ -37,7 +52,7 @@ void BloomBlurVS(
     oTexcoord.xy += ViewportOffset * n;
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : SV_Target
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
 {    
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
@@ -85,12 +100,39 @@ float4 StarStreakPS(
         tex2D(source, coord3) * colorCoeff[3];
 }
 
-float3 ColorBalance(float3 color, float4 balance)
+void GhostImageVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD,
+    out float2 oTexcoord0 : TEXCOORD0,
+    out float2 oTexcoord1 : TEXCOORD1,
+    out float2 oTexcoord2 : TEXCOORD2,
+    out float2 oTexcoord3 : TEXCOORD3,
+    out float4 oPosition : POSITION,
+    uniform float4 scalar)
 {
-    float3 lum = luminance(color);
-    color = lerp(lum, color, 1 - balance.a);
-    color *= balance.rgb;
-    return color;
+    oTexcoord0 = (Texcoord - 0.5) * scalar[0] + 0.5;
+    oTexcoord1 = (Texcoord - 0.5) * scalar[1] + 0.5;
+    oTexcoord2 = (Texcoord - 0.5) * scalar[2] + 0.5;
+    oTexcoord3 = (Texcoord - 0.5) * scalar[3] + 0.5;
+    oPosition = Position;
+}
+
+float4 GhostImagePS(
+    in float2 coord0 : TEXCOORD0,
+    in float2 coord1 : TEXCOORD1,
+    in float2 coord2 : TEXCOORD2,
+    in float2 coord3 : TEXCOORD3,
+    uniform sampler source1,
+    uniform sampler source2,
+    uniform sampler source3,
+    uniform sampler source4, 
+    uniform float4 colorCoeff[4]) : COLOR
+{
+    return
+        tex2D(source1, coord0) * tex2D(source4, coord0) * colorCoeff[0] +
+        tex2D(source1, coord1) * tex2D(source4, coord1) * colorCoeff[1] +
+        tex2D(source2, coord2) * tex2D(source4, coord2) * colorCoeff[2] +
+        tex2D(source3, coord3) * tex2D(source4, coord3) * colorCoeff[3];
 }
 
 float3 ACESFilmRec709(float3 x)
@@ -130,13 +172,21 @@ float3 FilmicTonemap(float3 color, float exposure)
 #endif
 }
 
+float3 ColorBalance(float3 color, float4 balance)
+{
+    float3 lum = luminance(color);
+    color = lerp(lum, color, 1 - balance.a);
+    color *= balance.rgb;
+    return color;
+}
+
 float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
     return color * smoothstep(outer, inner, L);
 }
 
-float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
+float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
     L = 1 - smoothstep(outer, inner, L);

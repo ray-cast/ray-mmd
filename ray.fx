@@ -178,6 +178,10 @@ technique DeferredLighting<
     "RenderColorTarget0=BloomMapX4;     Pass=BloomBlurY4;"
     "RenderColorTarget0=BloomMapX5Temp; Pass=BloomBlurX5;"
     "RenderColorTarget0=BloomMapX5;     Pass=BloomBlurY5;"
+#if HDR_BLOOM_QUALITY > 1
+    "RenderColorTarget0=BloomMapX2Temp; Pass=GhostImage1st;"
+    "RenderColorTarget0=BloomMapX2;     Pass=GhostImage2nd;"
+#endif
 #endif
 
 #if AA_QUALITY > 0
@@ -384,6 +388,28 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 BloomBlurVS(16);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSampX5Temp, float2(0.0f, ViewportOffset2.y * 16));
     }
+#if HDR_BLOOM_QUALITY >= 2
+    pass GhostImage1st < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar1st);
+#if HDR_BLOOM_QUALITY == 2
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSampX2, BloomSampX3, BloomSampX3, GhostMaskMapSamp, ghost_filmic_modulation1st);
+#else
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSampX2, BloomSampX3, BloomSampX3, GhostMaskMapSamp, ghost_camera_modulation1st);   
+#endif
+    }
+    pass GhostImage2nd < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar2nd);
+#if HDR_BLOOM_QUALITY == 2
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSampX2Temp, BloomSampX2Temp, BloomSampX3, GhostMaskMapSamp, ghost_filmic_modulation2nd);
+#else
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSampX2Temp, BloomSampX2Temp, BloomSampX3, GhostMaskMapSamp, ghost_camera_modulation2nd);
+#endif
+    }
+#endif
 #endif
     pass FimicToneMapping < string Script= "Draw=Buffer;"; > {
          AlphaBlendEnable = false; AlphaTestEnable = false;
