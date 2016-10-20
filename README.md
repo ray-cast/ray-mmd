@@ -16,9 +16,9 @@ Ray-MMD
 ```
 
 #### HDRI :
-    * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
-    * [++skies](https://aokcub.net/cg/incskies/)
-    * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
+* [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
+* [++skies](https://aokcub.net/cg/incskies/)
+* [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
 ##### 2016-10-16 ver 1.0.8
