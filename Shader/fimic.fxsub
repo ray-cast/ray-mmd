@@ -5,6 +5,7 @@ float4 ghost_camera_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5
 float4 ghost_filmic_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
 float4 ghost_filmic_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
 
+#if HDR_BLOOM_QUALITY > 1
 texture2D GhostMaskMap<string ResourceName = "shader/textures/mask.dds";>; 
 sampler GhostMaskMapSamp = sampler_state
 {
@@ -12,6 +13,7 @@ sampler GhostMaskMapSamp = sampler_state
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP; AddressV = CLAMP;
 };
+#endif
 
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float4 offset0, uniform float4 offset1) : COLOR
 { 
