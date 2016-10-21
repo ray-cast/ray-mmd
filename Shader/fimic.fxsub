@@ -1,17 +1,245 @@
+texture BloomMapX1Temp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format = "A16B16G16R16F";
+>;
+texture BloomMapX1 : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format = "A16B16G16R16F";
+>;
+texture BloomMapX2Temp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.5, 0.5};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX2 : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.5, 0.5};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX3Temp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX3 : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX4Temp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.125, 0.125};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX4 : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.125, 0.125};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX5Temp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.0625, 0.0625};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture BloomMapX5 : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.0625, 0.0625};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+sampler BloomSampX1Temp = sampler_state {
+    texture = <BloomMapX1Temp>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX1 = sampler_state {
+    texture = <BloomMapX1>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX2Temp = sampler_state {
+    texture = <BloomMapX2Temp>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX2 = sampler_state {
+    texture = <BloomMapX2>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX3Temp = sampler_state {
+    texture = <BloomMapX3Temp>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX3 = sampler_state {
+    texture = <BloomMapX3>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX4Temp = sampler_state {
+    texture = <BloomMapX4Temp>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX4 = sampler_state {
+    texture = <BloomMapX4>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX5Temp = sampler_state {
+    texture = <BloomMapX5Temp>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+sampler BloomSampX5 = sampler_state {
+    texture = <BloomMapX5>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+
+#if HDR_BLOOM_QUALITY > 1
+
+float4 star_modulation1st[4] = {float4(0.25,0.2375,0.225,0.25), float4(0.20,0.20,0.180,0.25), float4(0.225,0.2025,0.225,0.25),float4(0.225,0.225,0.2025,0.25)};
+float4 star_modulation2nd[4] = {float4(0.25,0.2250,0.200,0.25), float4(0.25,0.15,0.125,0.25), float4(0.125,0.1250,0.075,0.25),float4(0.150,0.060,0.1500,0.25)};
+float4 star_modulation3rd[4] = {float4(0.25,0.2500,0.250,0.25), float4(0.25,0.15,0.150,0.25), float4(0.150,0.1500,0.090,0.25),float4(0.150,0.090,0.1500,0.25)};
+
+float4 star_colorCoeff1st[4] = {float4(0.25,0.2375,0.225,0.25), float4(0.20,0.20,0.180,0.25), float4(0.225,0.2025,0.225,0.25),float4(0.225,0.225,0.2025,0.25)};
+float4 star_colorCoeff2nd[4] = {float4(0.25,0.2250,0.200,0.25), float4(0.25,0.15,0.125,0.25), float4(0.125,0.1250,0.075,0.25),float4(0.150,0.060,0.1500,0.25)};
+float4 star_colorCoeff3rd[4] = {float4(0.25,0.2500,0.250,0.25), float4(0.25,0.15,0.150,0.25), float4(0.150,0.1500,0.090,0.25),float4(0.150,0.090,0.1500,0.25)};
+
+float4 hori_colorCoeff1st[4] = {float4(0.1,0.15,0.475,0.5),float4(0.096,0.144,0.456,0.48),float4(0.04608,0.09216,0.41472,0.4608),float4(0.0884736,0.13271,0.42025,0.442368)};
+float4 hori_colorCoeff2nd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0849346,0.127402,0.40344,0.424673),float4(0.0360695,0.072139,0.324625,0.360695),float4(0.061271,0.0919064,0.291037,0.306355)};
+float4 hori_colorCoeff3rd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0260201,0.0520403,0.234181,0.260201),float4(0.00270819,0.013541,0.134055,0.13541),float4(0.00140935,0.00704675,0.0697628,0.0704675)};
+float4 hori_colorCoeff4th[4] = {float4(0.5,0.5,0.5,0.5),float4(0.0366715,0.0366715,0.0366715,0.0366715),float4(0.00268959,0.00268959,0.00268959,0.00268959),float4(0.000197263,0.000197263,0.000197263,0.000197263)};
+
 float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
 float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.55);
+
 float4 ghost_camera_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(1.00, 0.69, 0.30, 1.0)};
 float4 ghost_camera_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.01, 0.10, 1.0)};
+
 float4 ghost_filmic_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
 float4 ghost_filmic_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
 
-#if HDR_BLOOM_QUALITY > 1
-texture2D GhostMaskMap<string ResourceName = "shader/textures/mask.dds";>; 
+texture GhostMaskMap<string ResourceName = "shader/textures/mask.dds";>; 
 sampler GhostMaskMapSamp = sampler_state
 {
-    texture = GhostMaskMap;
+    texture = <GhostMaskMap>;
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP; AddressV = CLAMP;
+};
+
+texture GhostImageMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.5, 0.5};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+sampler GhostImageMapSamp = sampler_state {
+    texture = <GhostImageMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+
+texture StreakMap1st : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap1stTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap2nd : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap2ndTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap3rd : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap3rdTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap4th : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+texture StreakMap4thTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.25, 0.25};
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string Format="A2R10G10B10";
+>;
+sampler StreakSamp1st = sampler_state {
+    texture = <StreakMap1st>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp1stTemp = sampler_state {
+    texture = <StreakMap1stTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp2nd = sampler_state {
+    texture = <StreakMap2nd>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp2ndTemp = sampler_state {
+    texture = <StreakMap2ndTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp3rd = sampler_state {
+    texture = <StreakMap3rd>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp3rdTemp = sampler_state {
+    texture = <StreakMap3rdTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp4th = sampler_state {
+    texture = <StreakMap4th>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler StreakSamp4thTemp = sampler_state {
+    texture = <StreakMap4thTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 #endif
 
@@ -27,14 +255,8 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source, uni
 
     float4 MRT3 = tex2D(Gbuffer3Map, coord);
     float4 MRT4 = tex2D(Gbuffer4Map, coord);
-    
-#if HDR_BLOOM_QUALITY == 3
     float4 MRT7 = tex2D(Gbuffer7Map, coord);
     float4 MRT8 = tex2D(Gbuffer8Map, coord);
-#else
-    float4 MRT7 = 1;
-    float4 MRT8 = 1;
-#endif
 
     bloom.rgb += DecodeGBufferEmissive(MRT3, MRT4);
     bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
@@ -79,13 +301,14 @@ void StarStreakVS(
     out float2 oTexcoord2 : TEXCOORD2,
     out float2 oTexcoord3 : TEXCOORD3,
     out float4 oPosition : POSITION,
-    uniform float2 stepSize)
+    uniform float2 stepSize,
+    uniform float stride)
 {
+    oTexcoord0 = Texcoord + ViewportOffset * 4;
+    oTexcoord1 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride;
+    oTexcoord2 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride * 2;
+    oTexcoord3 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride * 3;
     oPosition = Position;
-    oTexcoord0 = Texcoord + ViewportOffset;
-    oTexcoord1 = oTexcoord0 + stepSize;
-    oTexcoord2 = oTexcoord0 + stepSize * 2;
-    oTexcoord3 = oTexcoord0 + stepSize * 3;
 }
 
 float4 StarStreakPS(
@@ -234,10 +457,22 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : 
     bloom += bloom1;
     bloom += bloom2;
     bloom += bloom3;
-    bloom += bloom4;
+    bloom += bloom4;    
+
+#if HDR_BLOOM_QUALITY > 1
+    bloom += tex2D(StreakSamp1st, coord).rgb;
+    bloom += tex2D(StreakSamp2nd, coord).rgb;
+#if HDR_BLOOM_QUALITY > 2
+    bloom += tex2D(StreakSamp3rd, coord).rgb;
+    bloom += tex2D(StreakSamp4th, coord).rgb;
+#endif
+
+    bloom *= lerp(1, 20, mBloomIntensity);
+    bloom += tex2D(GhostImageMapSamp, coord).rgb;
     
-    float bloomIntensity = lerp(1, 20, mBloomIntensity);
-    color += lerp(bloom * bloomIntensity, 0, mBloomTonemapping);
+    color += lerp(bloom, 0, mBloomTonemapping);
+#endif
+
 #endif
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
@@ -245,7 +480,7 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : 
     color = FilmicTonemap(color, 1 + mExposure * 10);
     
 #if HDR_BLOOM_QUALITY > 0
-    color += lerp(0, bloom * bloomIntensity * (1 + mExposure * 10), mBloomTonemapping);
+    color += lerp(0, bloom * (1 + mExposure * 10), mBloomTonemapping);
 #endif
 #endif
     
