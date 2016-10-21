@@ -14,49 +14,49 @@ texture BloomMapX2Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture BloomMapX2 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture BloomMapX3Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 texture BloomMapX3 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.25, 0.25};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 texture BloomMapX4Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 texture BloomMapX4 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.125, 0.125};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 texture BloomMapX5Temp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 texture BloomMapX5 : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.0625, 0.0625};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 sampler BloomSampX1Temp = sampler_state {
     texture = <BloomMapX1Temp>;
@@ -139,7 +139,7 @@ texture GhostImageMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {0.5, 0.5};
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A2B10G10R10";
 >;
 sampler GhostImageMapSamp = sampler_state {
     texture = <GhostImageMap>;
@@ -148,52 +148,60 @@ sampler GhostImageMapSamp = sampler_state {
 };
 
 texture StreakMap1st : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap1stTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap2nd : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap2ndTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap3rd : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap3rdTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap4th : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 texture StreakMap4thTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.25, 0.25};
+    int Width = 256;
+    int height = 256;
     int Miplevels = 1;
     bool AntiAlias = false;
-    string Format="A2R10G10B10";
+    string Format="A16B16G16R16F";
 >;
 sampler StreakSamp1st = sampler_state {
     texture = <StreakMap1st>;
@@ -298,10 +306,10 @@ void StarStreakVS(
     uniform float2 stepSize,
     uniform float stride)
 {
-    oTexcoord0 = Texcoord + ViewportOffset * 4;
-    oTexcoord1 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride;
-    oTexcoord2 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride * 2;
-    oTexcoord3 = oTexcoord0 + stepSize * (ViewportOffset2 * 4) * stride * 3;
+    oTexcoord0 = Texcoord + (0.5 / 256);
+    oTexcoord1 = oTexcoord0 + stepSize / 256 * stride;
+    oTexcoord2 = oTexcoord0 + stepSize / 256 * stride * 2;
+    oTexcoord3 = oTexcoord0 + stepSize / 256 * stride * 3;
     oPosition = Position;
 }
 
@@ -456,17 +464,16 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : 
 #if HDR_BLOOM_QUALITY > 1
     bloom += tex2D(StreakSamp1st, coord).rgb;
     bloom += tex2D(StreakSamp2nd, coord).rgb;
-#if HDR_BLOOM_QUALITY > 2
-    bloom += tex2D(StreakSamp3rd, coord).rgb;
-    bloom += tex2D(StreakSamp4th, coord).rgb;
+    #if HDR_BLOOM_QUALITY > 2
+        bloom += tex2D(StreakSamp3rd, coord).rgb;
+        bloom += tex2D(StreakSamp4th, coord).rgb;
+    #endif
 #endif
 
     bloom *= lerp(1, 20, mBloomIntensity);
-    bloom += tex2D(GhostImageMapSamp, coord).rgb;
+    //bloom += tex2D(GhostImageMapSamp, coord).rgb;
     
     color += lerp(bloom, 0, mBloomTonemapping);
-#endif
-
 #endif
 
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
