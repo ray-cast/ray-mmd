@@ -530,6 +530,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp4thTemp, star_colorCoeff3rd, 0);
     }
 #endif
+#if HDR_FLARE_ENABLE
     pass GhostImage1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -543,6 +544,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar2nd);
         PixelShader  = compile ps_3_0 GhostImagePS(GhostImageMapSamp, GhostImageMapSamp, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation2nd, 0);
     }
+#endif
 #endif
 #endif
     pass FimicToneMapping < string Script= "Draw=Buffer;"; > {
