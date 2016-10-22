@@ -170,14 +170,6 @@ technique DeferredLighting<
 
 #if HDR_BLOOM_QUALITY > 0
     "RenderColorTarget0=BloomMap1st;     Pass=GlareDetection;"
-    "RenderColorTarget0=BloomMap1stTemp; Pass=BloomBlurX1;"
-    "RenderColorTarget0=BloomMap1st;     Pass=BloomBlurY1;"
-    "RenderColorTarget0=BloomMap2ndTemp; Pass=BloomBlurX2;"
-    "RenderColorTarget0=BloomMap2nd;     Pass=BloomBlurY2;"
-    "RenderColorTarget0=BloomMap3rdTemp; Pass=BloomBlurX3;"
-    "RenderColorTarget0=BloomMap3rd;     Pass=BloomBlurY3;"
-    "RenderColorTarget0=BloomMap4thTemp; Pass=BloomBlurX4;"
-    "RenderColorTarget0=BloomMap4th;     Pass=BloomBlurY4;"
 #if HDR_BLOOM_QUALITY == 2
     "RenderColorTarget0=StreakMap1stTemp; Pass=Star1stStreak1st;"
     "RenderColorTarget0=StreakMap1st;     Pass=Star1stStreak2nd;"
@@ -201,8 +193,16 @@ technique DeferredLighting<
     "RenderColorTarget0=StreakMap4thTemp; Pass=Star4thStreak2nd;"
     "RenderColorTarget0=StreakMap4th;     Pass=Star4thStreak3rd;"
 #endif
+    "RenderColorTarget0=BloomMap1stTemp; Pass=BloomBlurX1;"
+    "RenderColorTarget0=BloomMap1st;     Pass=BloomBlurY1;"
+    "RenderColorTarget0=BloomMap2ndTemp; Pass=BloomBlurX2;"
+    "RenderColorTarget0=BloomMap2nd;     Pass=BloomBlurY2;"
+    "RenderColorTarget0=BloomMap3rdTemp; Pass=BloomBlurX3;"
+    "RenderColorTarget0=BloomMap3rd;     Pass=BloomBlurY3;"
+    "RenderColorTarget0=BloomMap4thTemp; Pass=BloomBlurX4;"
+    "RenderColorTarget0=BloomMap4th;     Pass=BloomBlurY4;"
     "RenderColorTarget0=GlareLightMap;   Pass=GlareLightComp;"
-#if HDR_BLOOM_QUALITY >= 2
+#if HDR_FLARE_ENABLE > 0
     "RenderColorTarget0=GhostImageMap;   Pass=GhostImage1st;"
     "RenderColorTarget0=GlareLightMap;   Pass=GhostImage2nd;"
 #endif
@@ -367,13 +367,13 @@ technique DeferredLighting<
     pass BloomBlurX2 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 BloomBlurVS(8);
+        VertexShader = compile vs_3_0 BloomBlurVS(4);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp1st, BloomOffsetX2);
     }
     pass BloomBlurY2 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 BloomBlurVS(8);
+        VertexShader = compile vs_3_0 BloomBlurVS(16);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp2ndTemp, BloomOffsetY2);
     }
     pass BloomBlurX3 < string Script= "Draw=Buffer;"; > {
@@ -385,7 +385,7 @@ technique DeferredLighting<
     pass BloomBlurY3 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 BloomBlurVS(16);
+        VertexShader = compile vs_3_0 BloomBlurVS(32);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp3rdTemp, BloomOffsetY3);
     }
     pass BloomBlurX4 < string Script= "Draw=Buffer;"; > {
@@ -397,7 +397,7 @@ technique DeferredLighting<
     pass BloomBlurY4 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 BloomBlurVS(32);
+        VertexShader = compile vs_3_0 BloomBlurVS(64);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4thTemp, BloomOffsetY4);
     }
     pass GlareLightComp < string Script= "Draw=Buffer;"; > {
@@ -460,73 +460,73 @@ technique DeferredLighting<
     pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 1), 1);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 1);
         PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mGlareThreshold);
     }
     pass Star1stStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 1), 4);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 4);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp1st, star_colorCoeff2nd, 0);
     }
     pass Star1stStreak3rd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 1), 16);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 16);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp1stTemp, star_colorCoeff3rd, 0);
     }
     pass Star2ndStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 1), 1);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0.9), 1);
         PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mGlareThreshold);
     }
     pass Star2ndStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 1), 4);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0.9), 4);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp2nd, star_colorCoeff2nd, 0);
     }
     pass Star2ndStreak3rd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 1), 16);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0.9), 16);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp2ndTemp, star_colorCoeff3rd, 0);
     }
     pass Star3rdStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -1), 1);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -0.9), 1);
         PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mGlareThreshold);
     }
     pass Star3rdStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -1), 4);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -0.9), 4);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp3rd, star_colorCoeff2nd, 0);
     }
     pass Star3rdStreak3rd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -1), 16);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -0.9), 16);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp3rdTemp, star_colorCoeff3rd, 0);
     }
     pass Star4thStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -1), 1);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -0.9), 1);
         PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mGlareThreshold);
     }
     pass Star4thStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -1), 4);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -0.9), 4);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp4th, star_colorCoeff2nd, 0);
     }
     pass Star4thStreak3rd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -1), 16);
+        VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -0.9), 16);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp4thTemp, star_colorCoeff3rd, 0);
     }
 #endif

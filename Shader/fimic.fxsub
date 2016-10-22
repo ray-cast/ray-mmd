@@ -92,24 +92,6 @@ float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60,
 float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
 #endif
 
-texture GhostMaskMap<string ResourceName = "shader/textures/mask.dds";>; 
-sampler GhostMaskMapSamp = sampler_state
-{
-    texture = <GhostMaskMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP; AddressV = CLAMP;
-};
-
-texture GhostImageMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.5, 0.5};
-    string Format="A2B10G10R10";
->;
-sampler GhostImageMapSamp = sampler_state {
-    texture = <GhostImageMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
-};
-
 texture StreakMap1st : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
 texture StreakMap2nd : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
 texture StreakMap3rd : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
@@ -158,6 +140,26 @@ sampler StreakSamp4thTemp = sampler_state {
     texture = <StreakMap4thTemp>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+#endif
+
+#if HDR_FLARE_ENABLE > 0
+texture GhostMaskMap<string ResourceName = "shader/textures/mask.png";>; 
+sampler GhostMaskMapSamp = sampler_state
+{
+    texture = <GhostMaskMap>;
+    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+
+texture GhostImageMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {0.5, 0.5};
+    string Format="A2B10G10R10";
+>;
+sampler GhostImageMapSamp = sampler_state {
+    texture = <GhostImageMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
 
