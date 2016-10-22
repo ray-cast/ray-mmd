@@ -33,7 +33,7 @@ float2 ViewportSize : VIEWPORTPIXELSIZE;
 
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
 static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
-static float2 ViewportAspect  = float2(1, ViewportSize.x / ViewportSize.y);
+static float2 ViewportAspect  = float2(ViewportSize.x / ViewportSize.y, 1);
 
 uniform bool use_texture;
 uniform bool use_subtexture;
