@@ -531,14 +531,14 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar1st);
-        PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1st, BloomSamp2nd, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation1st);   
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1st, BloomSamp2nd, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation1st, mGlareThreshold);   
     }
     pass GhostImage2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = true; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         SrcBlend = ONE; DestBlend = ONE;
         VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar2nd);
-        PixelShader  = compile ps_3_0 GhostImagePS(GhostImageMapSamp, GhostImageMapSamp, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation2nd);
+        PixelShader  = compile ps_3_0 GhostImagePS(GhostImageMapSamp, GhostImageMapSamp, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation2nd, 0);
     }
 #endif
     pass FimicToneMapping < string Script= "Draw=Buffer;"; > {
