@@ -20,8 +20,7 @@ float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; stri
 float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
 float mBloomRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomRadius"; >;
 float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
-float mBloomAmount : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomAmount"; >;
-float mStarStreakFade : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "StarStreakFade"; >;
+float mBloomStarFade : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomStarFade"; >;
 float mContrastP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast+"; >;
 float mContrastM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast-"; >;
 float mColBalanceRP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceR+"; >;
@@ -447,7 +446,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star1stStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -471,7 +470,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star2ndStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -496,7 +495,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star1stStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -514,7 +513,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0.9), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star2ndStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -532,7 +531,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -0.9), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star3rdStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -550,7 +549,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -0.9), 1);
-        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mStarStreakFade);
+        PixelShader  = compile ps_3_0 StarStreakPS(BloomSamp1st, star_colorCoeff1st, mBloomStarFade);
     }
     pass Star4thStreak2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -570,7 +569,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar1st);
-        PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1st, BloomSamp2nd, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation1st, mStarStreakFade);   
+        PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1st, BloomSamp2nd, BloomSamp2nd, GhostMaskMapSamp, ghost_modulation1st, mBloomStarFade);   
     }
     pass GhostImage2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = true; AlphaTestEnable = false;
