@@ -21,14 +21,13 @@ Ray-MMD
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
-##### 2016-10-16 ver 1.0.8
-* 添加了新的cmft过滤工具，只支持hdr, dds, ktx, tga文件 [(使用方法1)](https://github.com/ray-cast/images/raw/master/IBL_filter.jpg) [(使用方法2)](https://github.com/ray-cast/images/raw/master/helloworld.jpg)
-* 添加MultiLight+/-和EnvSSSLight+/-在表情中
-* 添加Contrast+/-调节对比度在表情右下角中
-* 添加简单的金属材质
-* 添加多光源的透明物体支持
-* 添加了更高的阴影质量4和5
-* 改进主光源的阴影 
+##### 2016-10-16 ver 1.0.9beta
+* 添加点光源的阴影
+* 改进bloom的范围，使其产生更大的bloom [(预览1)](https://github.com/ray-cast/images/raw/master/bloomplus1.jpg)　[(预览2)](https://github.com/ray-cast/images/raw/master/bloomplus2.jpg)　[(预览3)](https://github.com/ray-cast/images/raw/master/bloomplus3.jpg)
+* 改进SSAO近处出现布线
+* 修复MMD输出png图片错误的透明通道问题
+* 修复同时启用SSS和Emissive时Emissive无效
+* 修复在Material.fx中Toon拼写为Tone的错误
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -200,6 +199,15 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-10-16 ver 1.0.8
+* 添加了新的cmft过滤工具，只支持hdr, dds, ktx, tga文件 [(使用方法1)](https://github.com/ray-cast/images/raw/master/IBL_filter.jpg) [(使用方法2)](https://github.com/ray-cast/images/raw/master/helloworld.jpg)
+* 添加MultiLight+/-和EnvSSSLight+/-在表情中
+* 添加Contrast+/-调节对比度在表情右下角中
+* 添加简单的金属材质
+* 添加多光源的透明物体支持
+* 添加了更高的阴影质量4和5
+* 改进主光源的阴影 
+
 ##### 2016-10-10 ver 1.0.8beta
 * 修复多光源的Bug
 * 添加了SSS可以计算内部散射 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_sss.jpg)　[(皮肤测试)](https://github.com/ray-cast/images/raw/master/1.0.8_skin_sss.jpg)
@@ -224,97 +232,6 @@ Ray-MMD
 * 改进BokehBlur(暂时没用，改进中)
 * 修复部分显卡使用带有阴影的SpotLight会编译错误
 * 修复部分显卡使用RectangleLight会编译错误
-
-##### 2016-10-1 ver 1.0.7
-* 改善对Alpha的兼容(载入天空盒，请将渲染顺序请调至第一位)
-
-##### 2016-9-29 ver 1.0.6
-* 添加了AmbientLight环境光
-* 添加了简单的材质
-* 添加了SSAO模式2(改ray_conf)，可以在新的板块中指定某些不产生AO
-* 添加了RGBMencode处理HDR文件(输出更高清的dds,只能用做天空盒,暂时不能一次输出3张)
-* 调整了主光源阴影
-* 独立了天空盒(可以打包单独存放任意目录)
-* 材质中materialnessBaseSpecular改为0将不反射IBL spec
-* 删除了IBL质量1
-* 删除了自定义Alpha贴图
-* 删除了LightDepth板块改为PSSM(打开工程时注意替换light_depth.fx为PSSM.fx)
-* 修复Spot近距离时产生的阴影锯齿
-* 修复了Bloom模糊产生的小方块，以及减少Bloom的闪烁
-
-##### 2016-9-24 ver 1.0.6 beta
-* 添加了聚光灯的阴影
-* 添加了更详细的材质介绍
-* 改进了光源，添加了Intensity+
-* 改进了IBL使其更贴贴合UE4
-* Bloom从LDR到了HDR空间中计算
-* 删除了老式的ToneMapping，增加了Rec2020的输出
-* 修复RGB转Ycbcr浮点误差引起的不正确亮度计算和Bloom
-
-##### 2016-9-18 ver 1.0.5
-* 添加SSR (屏幕空间的局部反射，需要修改ray.conf的SSR_QUALITY)
-* 添加纹理采样的过滤方式 (默认16x各向异性, 远景看不见闪烁了)
-* 添加alpha物体的自发光
-* 添加ALBEDO_MAP_APPLY_DIFFUSE 将PMX中的扩散色，以乘的方式用在纹理上
-* 添加FilmLine (扫面线)
-* 添加BokehBlur (将远景模糊成很多小圆(散焦)，暂时没用，以后会发展成景深)
-* 改进TubeLighting的漫反射 (以前是错误的计算)
-* 改进SSAO的采样，以及减少了SSAO采样的范围，增加SSAO表情控制的强度
-* 删除了Screenshot目录
-* 删除了ColorBalance，以放置ray_controller表情右下角
-* 修复了不正确的亮度计算导致的锯齿
-* 修复了skydome的阴影bug
-* 修复了旋转天空盒导致fresnel计算错误产生不正确的光照
-
-##### 2016-9-11 ver 1.0.4
-* 添加TubeLight
-* 添加播放GIF/APNG图片以及RectangleLight的双面光照
-* 添加视差贴图
-* 添加获取来至AVI/屏幕的纹理用于材质
-* 添加ALBEDO的参数代替自发光的参数，但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
-* 添加Debug的扩展
-* 添加MikuMikuMoving的兼容
-* 优化SSAO的模糊
-* 优化Bloom以及自发光
-
-##### 2016-9-4 ver 1.0.3
-* 改进光照模式，以及渲染速度
-* 添加了alpha的支持
-* 添加了纹理作为光源的矩形区域光
-* 添加了视频作为光源的矩形区域光(LED)
-* 添加了skydome的地面阴影
-* 调整ToneMapping在最大时改用线性曝光
-* 略微提高了天空球的清晰度(如果需要更清晰可以把skybox.pmx里的贴图纹理改成HDR文件)
-
-##### 2016-8-30 ver 1.0.3 beta
-* 改进默认材质对Diff&Spec的兼容
-* 添加了新的HDR和工具，以及更新HDR制作教程(现在可以支持HDR的天空了)
-* 添加了LightMap用于渲染多个光源
-* 添加了点光源，聚光灯，方形区域光和球形区域光 (都会根据材质进行光照)
-* 添加了天空盒旋转表情 (EnvRotateX/Y/Z)
-* 添加了主光源阴影用于IBL的表情 (EnvShadow)
-* 添加了Blub表情 (B快门)
-* 修复只启用次法线时normalMapSubScale无效
-
-##### 2016-8-25 ver 1.0.2
-* 修复了不启用USE_CUSTOM_MATERIAL产生的Bug
-* 修复了发光贴图的Bug
-* 修复了光滑贴图和金属性贴图的Bug
-* 表情Noise改为FilmGrain
-* 添加了BloomRadius表情，产生更大范围的Bloom
-* 增加了metalnessBaseSpec(默认0.04)，如果不想反射太强改为 0, 用于皮肤的渲染
-* 添加了transmittanceStrength，指定SS的模糊程度
-* 添加了HDR的dds文件支持(下个版本将会出将HDR转DDS支持的工具)
-* 垂直翻转了天空盒纹理
-* 增加了低版本的兼容性
-* 下版本预计会出多光源支持，以及改善alpha的兼容
-
-##### 2016-8-22 ver 1.0.1 版本
-* 增加材质单独存放其它目录(必须和 material_common.fxsub) 一起打包
-* 增加控制SSAO产生阴影半径的大小
-* 增加了相机色散，以及色散半径的效果 (表情: Dispersion && Dispersion Radius)
-* 增加了因相机曝光不足产生的噪点效果 (表情: Noise)
-* 优化了SSSS (提高了一定的fps)
 
 ##### Digging Deeper
 * [Moving to the Next Generation - The Rendering Technology of Ryse](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)
