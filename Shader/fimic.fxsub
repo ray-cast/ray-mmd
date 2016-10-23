@@ -1,29 +1,36 @@
-static float2 BloomOffset1 = 1.0f / 256;
-static float2 BloomOffset2 = 1.0f / 128;
-static float2 BloomOffset3 = 1.0f / 64;
-static float2 BloomOffset4 = 1.0f / 32;
+static float BloomScale = 256;
 
-static float2 BloomOffsetX1 = float2((1.0 / 256.0) * 1, 0.0);
-static float2 BloomOffsetX2 = float2((1.0 / 128.0) * 2, 0.0);
-static float2 BloomOffsetX3 = float2((1.0 / 64.0) * 2, 0.0);
-static float2 BloomOffsetX4 = float2((1.0 / 32.0) * 2, 0.0);
+static float2 BloomOffset1 = ViewportOffset2 * 4;
+static float2 BloomOffset2 = ViewportOffset2 * 8;
+static float2 BloomOffset3 = ViewportOffset2 * 16;
+static float2 BloomOffset4 = ViewportOffset2 * 32;
 
-static float2 BloomOffsetY1 = float2(0.0, (1.0 / 256.0) * 1 * ViewportAspect);
-static float2 BloomOffsetY2 = float2(0.0, (1.0 / 128.0) * 2 * ViewportAspect);
-static float2 BloomOffsetY3 = float2(0.0, (1.0 / 64.0) * 2 * ViewportAspect);
-static float2 BloomOffsetY4 = float2(0.0, (1.0 / 32.0) * 2 * ViewportAspect);
+static float BloomScale1 = ((ViewportSize.x * 0.25) / BloomScale);
+static float BloomScale2 = ((ViewportSize.x * 0.125) / (BloomScale * 0.5));
+static float BloomScale3 = ((ViewportSize.x * 0.0625) / (BloomScale * 0.25));
+static float BloomScale4 = ((ViewportSize.x * 0.03125) / (BloomScale * 0.125));
+
+static float2 BloomOffsetX1 = float2((ViewportOffset2.x * 4)  * BloomScale1, 0.0);
+static float2 BloomOffsetX2 = float2((ViewportOffset2.x * 16) * BloomScale2, 0.0);
+static float2 BloomOffsetX3 = float2((ViewportOffset2.x * 32) * BloomScale3, 0.0);
+static float2 BloomOffsetX4 = float2((ViewportOffset2.x * 64) * BloomScale4, 0.0);
+
+static float2 BloomOffsetY1 = float2(0.0, (ViewportOffset2.y * 4)  * BloomScale1);
+static float2 BloomOffsetY2 = float2(0.0, (ViewportOffset2.y * 16) * BloomScale2);
+static float2 BloomOffsetY3 = float2(0.0, (ViewportOffset2.y * 32) * BloomScale3);
+static float2 BloomOffsetY4 = float2(0.0, (ViewportOffset2.y * 64) * BloomScale4);
 
 texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
-texture BloomMap1st : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture BloomMap2nd : RENDERCOLORTARGET<int Width=128; int height=128; string Format="A16B16G16R16F";>;
-texture BloomMap3rd : RENDERCOLORTARGET<int Width=64; int height=64; string Format="A16B16G16R16F";>;
-texture BloomMap4th : RENDERCOLORTARGET<int Width=32; int height=32; string Format="A16B16G16R16F";>;
-texture BloomMap1stTemp : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture BloomMap2ndTemp : RENDERCOLORTARGET<int Width=128; int height=128; string Format="A16B16G16R16F";>;
-texture BloomMap3rdTemp : RENDERCOLORTARGET<int Width=64; int height=64; string Format="A16B16G16R16F";>;
-texture BloomMap4thTemp : RENDERCOLORTARGET<int Width=32; int height=32; string Format="A16B16G16R16F";>;
+texture BloomMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture BloomMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture BloomMap3rd : RENDERCOLORTARGET<float2 ViewPortRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
+texture BloomMap4th : RENDERCOLORTARGET<float2 ViewPortRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
+texture BloomMap1stTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture BloomMap2ndTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture BloomMap3rdTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
+texture BloomMap4thTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
 
 sampler DownsampleSamp1st = sampler_state {
     texture = <DownsampleMap1st>;
@@ -108,14 +115,14 @@ float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60,
 float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
 #endif
 
-texture StreakMap1st : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap2nd : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap3rd : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap4th : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap1stTemp : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap2ndTemp : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap3rdTemp : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
-texture StreakMap4thTemp : RENDERCOLORTARGET<int Width=256; int height=256; string Format="A16B16G16R16F";>;
+texture StreakMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap3rd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap4th : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap1stTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap2ndTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap3rdTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture StreakMap4thTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
 sampler StreakSamp1st = sampler_state {
     texture = <StreakMap1st>;
@@ -247,7 +254,7 @@ float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source) : C
     return bloom * lerp(1, 20, mBloomIntensity);
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {    
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
@@ -281,10 +288,11 @@ void StarStreakVS(
     uniform float2 stepSize,
     uniform float stride)
 {
-    oTexcoord0 = Texcoord + (0.5 / 256);
-    oTexcoord1 = oTexcoord0 + stepSize / 256 * stride;
-    oTexcoord2 = oTexcoord0 + stepSize / 256 * stride * 2;
-    oTexcoord3 = oTexcoord0 + stepSize / 256 * stride * 3;
+    float2 offset = ViewportSize * 0.25;
+    oTexcoord0 = Texcoord + (0.5 / offset);
+    oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride;
+    oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride * 2;
+    oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride * 3;
     oPosition = Position;
 }
 
