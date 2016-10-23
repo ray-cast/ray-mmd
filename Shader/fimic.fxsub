@@ -240,7 +240,7 @@ float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : CO
     return tex2D(source, coord);
 }
 
-float4 GlareDetectionPS(in float2 coord : TEXCOORD0, in uniform sampler source) : COLOR
+float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
     float4 color = tex2D(source, coord);    
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
@@ -299,7 +299,7 @@ float4 StarStreakPS(
     float4 color1 = tex2D(source, coord1) * colorCoeff[1];
     float4 color2 = tex2D(source, coord2) * colorCoeff[2];
     float4 color3 = tex2D(source, coord3) * colorCoeff[3];
-    return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold) * 10);
+    return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold + EPSILON) * 10);
 }
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
@@ -356,10 +356,10 @@ float4 GhostImagePS(
     uniform sampler source4, 
     uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-    float4 color1 = (tex2D(source1, coord0) - threshold / (1 - threshold) * 10) * tex2D(source4, coord0) * colorCoeff[0];
-    float4 color2 = (tex2D(source1, coord1) - threshold / (1 - threshold) * 10) * tex2D(source4, coord1) * colorCoeff[1];
-    float4 color3 = (tex2D(source2, coord2) - threshold / (1 - threshold) * 10) * tex2D(source4, coord2) * colorCoeff[2];
-    float4 color4 = (tex2D(source3, coord3) - threshold / (1 - threshold) * 10) * tex2D(source4, coord3) * colorCoeff[3];
+    float4 color1 = (tex2D(source1, coord0) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord0) * colorCoeff[0];
+    float4 color2 = (tex2D(source1, coord1) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord1) * colorCoeff[1];
+    float4 color3 = (tex2D(source2, coord2) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord2) * colorCoeff[2];
+    float4 color4 = (tex2D(source3, coord3) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord3) * colorCoeff[3];
     return max(0, (color1 + color2 + color3 + color4));
 }
 
