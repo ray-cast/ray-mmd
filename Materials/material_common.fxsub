@@ -808,9 +808,13 @@ GbufferParam MaterialPS(
     material.alpha = 1;
     
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #if EMISSIVE_ENABLE
+        material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
+    #else
+        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #endif
 #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
+    material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #else
     material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #endif
@@ -844,9 +848,13 @@ GbufferParam Material2PS(
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #if EMISSIVE_ENABLE
+        material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
+    #else
+        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
+    #endif
 #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = !any(material.emissive) ? LIGHTINGMODEL_NORMAL : LIGHTINGMODEL_EMISSIVE;
+    material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #else
     material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #endif
