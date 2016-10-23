@@ -437,7 +437,7 @@ technique DeferredLighting<
     pass GlareLightComp < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 HDRScreenQuadVS(0);
+        VertexShader = compile vs_3_0 HDRScreenQuadVS(BloomOffset1);
         PixelShader  = compile ps_3_0 GlareLightCompPS();
     }
 #if HDR_BLOOM_QUALITY >= 2

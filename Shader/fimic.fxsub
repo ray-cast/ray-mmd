@@ -10,15 +10,15 @@ static float BloomScale2 = ((ViewportSize.x * 0.125) / (BloomScale * 0.5));
 static float BloomScale3 = ((ViewportSize.x * 0.0625) / (BloomScale * 0.25));
 static float BloomScale4 = ((ViewportSize.x * 0.03125) / (BloomScale * 0.125));
 
-static float2 BloomOffsetX1 = float2((ViewportOffset2.x * 4)  * BloomScale1, 0.0);
-static float2 BloomOffsetX2 = float2((ViewportOffset2.x * 8) * BloomScale2, 0.0);
-static float2 BloomOffsetX3 = float2((ViewportOffset2.x * 16) * BloomScale3, 0.0);
-static float2 BloomOffsetX4 = float2((ViewportOffset2.x * 32) * BloomScale4, 0.0);
+static float2 BloomOffsetX1 = float2(ViewportOffset2.x * 4, 0.0)  * BloomScale1;
+static float2 BloomOffsetX2 = float2(ViewportOffset2.x * 8, 0.0)  * BloomScale2;
+static float2 BloomOffsetX3 = float2(ViewportOffset2.x * 16, 0.0) * BloomScale3;
+static float2 BloomOffsetX4 = float2(ViewportOffset2.x * 32, 0.0) * BloomScale4;
 
-static float2 BloomOffsetY1 = float2(0.0, (ViewportOffset2.y * 4)  * BloomScale1);
-static float2 BloomOffsetY2 = float2(0.0, (ViewportOffset2.y * 8) * BloomScale2);
-static float2 BloomOffsetY3 = float2(0.0, (ViewportOffset2.y * 16) * BloomScale3);
-static float2 BloomOffsetY4 = float2(0.0, (ViewportOffset2.y * 32) * BloomScale4);
+static float2 BloomOffsetY1 = float2(0.0, ViewportOffset2.y * 4)  * BloomScale1;
+static float2 BloomOffsetY2 = float2(0.0, ViewportOffset2.y * 8)  * BloomScale2;
+static float2 BloomOffsetY3 = float2(0.0, ViewportOffset2.y * 16) * BloomScale3;
+static float2 BloomOffsetY4 = float2(0.0, ViewportOffset2.y * 32) * BloomScale4;
 
 texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
@@ -249,9 +249,17 @@ float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : CO
 
 float4 GlareDetectionPS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
+    float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy * 2;
+    float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy * 2;
+    
     float4 color = tex2D(source, coord);
+    color = min(color, tex2D(source, coord + offset0.xy));
+    color = min(color, tex2D(source, coord + offset0.zw));
+    color = min(color, tex2D(source, coord + offset1.xy));
+    color = min(color, tex2D(source, coord + offset1.zw));
+    
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
-    return bloom * lerp(0.1, 20, mBloomIntensity);
+    return bloom * lerp(0.1, 2, mBloomIntensity);
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
@@ -312,7 +320,7 @@ float4 StarStreakPS(
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-    float bloomFactors[] = {0.2, 0.2, 0.3, 0.3};
+    float bloomFactors[] = {0.8, 0.6, 0.4, 0.2};
     
     float4 bloom1 = BloomFactor(bloomFactors[0]) * tex2D(BloomSamp1st, coord);
     float4 bloom2 = BloomFactor(bloomFactors[1]) * tex2D(BloomSamp2nd, coord);
