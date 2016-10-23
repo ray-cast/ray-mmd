@@ -8,6 +8,27 @@ static float2 BloomOffsetY2 = float2(0.0, ViewportOffset2.y * 16);
 static float2 BloomOffsetY3 = float2(0.0, ViewportOffset2.y * 32);
 static float2 BloomOffsetY4 = float2(0.0, ViewportOffset2.y * 64);
 
+texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+
+sampler DownsampleSamp1st = sampler_state {
+    texture = <DownsampleMap1st>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+
+sampler DownsampleSamp2nd = sampler_state {
+    texture = <DownsampleMap2nd>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+
+sampler GlareLightMapSamp = sampler_state {
+    texture = <DownsampleMap1st>;
+    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+    AddressU = CLAMP; AddressV = CLAMP;
+};
+
 texture BloomMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 texture BloomMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
 texture BloomMap3rd : RENDERCOLORTARGET<float2 ViewPortRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
@@ -56,16 +77,6 @@ sampler BloomSamp4th = sampler_state {
     texture = <BloomMap4th>;
     MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
     AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
-};
-
-texture GlareLightMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.5, 0.5};
-    string Format="A16B16G16R16F";
->;
-sampler GlareLightMapSamp = sampler_state {
-    texture = <GlareLightMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
 };
 
 #if HDR_BLOOM_QUALITY > 1
@@ -163,16 +174,47 @@ sampler GhostImageMapSamp = sampler_state {
 };
 #endif
 
-float4 GlareDetectionPS(in float2 coord : TEXCOORD0) : COLOR
+void HDRDownsampleVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD,
+    out float2 oTexcoord1 : TEXCOORD0,
+    out float2 oTexcoord2 : TEXCOORD1,
+    out float2 oTexcoord3 : TEXCOORD2,
+    out float2 oTexcoord4 : TEXCOORD3,
+    out float4 oPosition : POSITION,
+    uniform float2 step)
+{
+    oPosition = Position;
+    oTexcoord1 = Texcoord + ViewportOffset;
+    oTexcoord2 = oTexcoord1 + float2(step.x, 0);
+    oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
+    oTexcoord4 = oTexcoord1 + float2(0, step.x);
+}
+
+float4 HDRDownsamplePS(
+    in float2 coord1 : TEXCOORD0, 
+    in float2 coord2 : TEXCOORD1, 
+    in float2 coord3 : TEXCOORD2, 
+    in float2 coord4 : TEXCOORD3,
+    uniform sampler source) : COLOR
+{
+    float4 color = tex2D(source, coord1);
+    color += tex2D(source, coord2);
+    color += tex2D(source, coord3);
+    color += tex2D(source, coord4);
+    return color /= 4;
+}
+
+float4 GlareDetectionPS(in float2 coord : TEXCOORD0, in uniform sampler source) : COLOR
 {
     float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
     float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
     
-    float4 color = tex2D(ShadingMapSamp, coord);
-    color = min(color, tex2D(ShadingMapSamp, coord + offset0.xy));
-    color = min(color, tex2D(ShadingMapSamp, coord + offset0.zw));
-    color = min(color, tex2D(ShadingMapSamp, coord + offset1.xy));
-    color = min(color, tex2D(ShadingMapSamp, coord + offset1.zw));
+    float4 color = tex2D(source, coord);
+    color = min(color, tex2D(source, coord + offset0.xy));
+    color = min(color, tex2D(source, coord + offset0.zw));
+    color = min(color, tex2D(source, coord + offset1.xy));
+    color = min(color, tex2D(source, coord + offset1.zw));
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0) * (1 + mBloomIntensity * 19);   
     return bloom;
