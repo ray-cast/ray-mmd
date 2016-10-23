@@ -21,14 +21,13 @@ Ray-MMD
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
-##### 2016-10-16 ver 1.0.8
-* 添加了新的cmft过滤工具，只支持hdr, dds, ktx, tga文件 [(使用方法1)](https://github.com/ray-cast/images/raw/master/IBL_filter.jpg) [(使用方法2)](https://github.com/ray-cast/images/raw/master/helloworld.jpg)
-* 添加MultiLight+/-和EnvSSSLight+/-在表情中
-* 添加Contrast+/-调节对比度在表情右下角中
-* 添加简单的金属材质
-* 添加多光源的透明物体支持
-* 添加了更高的阴影质量4和5
-* 改进主光源的阴影 
+##### 2016-10-16 ver 1.0.9beta
+* 添加点光源的阴影
+* 改进bloom的范围，使其产生更大的bloom [(预览1)](https://github.com/ray-cast/images/raw/master/bloomplus1.jpg)　[(预览2)](https://github.com/ray-cast/images/raw/master/bloomplus2.jpg)　[(预览3)](https://github.com/ray-cast/images/raw/master/bloomplus3.jpg)
+* 改进SSAO近处出现布线
+* 修复MMD输出png图片错误的透明通道问题
+* 修复同时启用SSS和Emissive时Emissive无效
+* 修复在Material.fx中Toon拼写为Tone的错误
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -200,6 +199,15 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-10-16 ver 1.0.8
+* 添加了新的cmft过滤工具，只支持hdr, dds, ktx, tga文件 [(使用方法1)](https://github.com/ray-cast/images/raw/master/IBL_filter.jpg) [(使用方法2)](https://github.com/ray-cast/images/raw/master/helloworld.jpg)
+* 添加MultiLight+/-和EnvSSSLight+/-在表情中
+* 添加Contrast+/-调节对比度在表情右下角中
+* 添加简单的金属材质
+* 添加多光源的透明物体支持
+* 添加了更高的阴影质量4和5
+* 改进主光源的阴影 
+
 ##### 2016-10-10 ver 1.0.8beta
 * 修复多光源的Bug
 * 添加了SSS可以计算内部散射 [(使用方法)](https://github.com/ray-cast/images/raw/master/1.0.8_sss.jpg)　[(皮肤测试)](https://github.com/ray-cast/images/raw/master/1.0.8_skin_sss.jpg)
