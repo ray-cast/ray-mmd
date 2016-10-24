@@ -1,4 +1,5 @@
-static float BloomScale = 256;
+static float StarScale = 256;
+static float BloomScale = 512;
 
 static float2 BloomOffset1 = ViewportOffset2 * 2;
 static float2 BloomOffset2 = ViewportOffset2 * 4;
@@ -203,6 +204,37 @@ void HDRScreenQuadVS(
     oTexcoord = Texcoord + offset * 0.5;
 }
 
+void HDRDownsampleVS(
+    in float4 Position : POSITION,
+    in float2 Texcoord : TEXCOORD,
+    out float2 oTexcoord1 : TEXCOORD0,
+    out float2 oTexcoord2 : TEXCOORD1,
+    out float2 oTexcoord3 : TEXCOORD2,
+    out float2 oTexcoord4 : TEXCOORD3,
+    out float4 oPosition : POSITION,
+    uniform float2 step)
+{
+    oPosition = Position;
+    oTexcoord1 = Texcoord + step * 0.5;
+    oTexcoord2 = oTexcoord1 + float2(step.x, 0);
+    oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
+    oTexcoord4 = oTexcoord1 + float2(0, step.y);
+}
+
+float4 HDRDownsample4XPS(
+    in float2 coord1 : TEXCOORD0, 
+    in float2 coord2 : TEXCOORD1, 
+    in float2 coord3 : TEXCOORD2, 
+    in float2 coord4 : TEXCOORD3,
+    uniform sampler source) : COLOR
+{
+    float4 color = tex2D(source, coord1);
+    color += tex2D(source, coord2);
+    color += tex2D(source, coord3);
+    color += tex2D(source, coord4);
+    return color / 4;
+}
+
 float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
     return tex2D(source, coord);
@@ -283,9 +315,9 @@ void StarStreakVS(
 {
     float2 offset = ViewportSize * 0.25;
     oTexcoord0 = Texcoord + (0.5 / offset);
-    oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride;
-    oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride * 2;
-    oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / BloomScale)) * stride * 3;
+    oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride;
+    oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 2;
+    oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 3;
     oPosition = Position;
 }
 

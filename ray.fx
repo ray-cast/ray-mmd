@@ -359,14 +359,14 @@ technique DeferredLighting<
     pass HDRDownsample1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 HDRScreenQuadVS(ViewportOffset2);
-        PixelShader  = compile ps_3_0 HDRDownsamplePS(DownsampleSamp1st);
+        VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2);
+        PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp1st);
     }
     pass HDRDownsample2nd < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 HDRScreenQuadVS(ViewportOffset2 * 2);
-        PixelShader  = compile ps_3_0 HDRDownsamplePS(DownsampleSamp2nd);
+        VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2 * 2);
+        PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp2nd);
     }
     pass BloomBlurX1 < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
