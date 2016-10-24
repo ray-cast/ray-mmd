@@ -21,7 +21,10 @@ Ray-MMD
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
-##### 2016-10-16 ver 1.0.9beta
+##### 2016-10-24 ver 1.0.9beta
+* 改进Bloom
+
+##### 2016-10-23 ver 1.0.9beta
 * 添加点光源的阴影
 * 改进bloom的范围，使其产生更大的bloom [(预览1)](https://github.com/ray-cast/images/raw/master/bloomplus1.jpg)　[(预览2)](https://github.com/ray-cast/images/raw/master/bloomplus2.jpg)　[(预览3)](https://github.com/ray-cast/images/raw/master/bloomplus3.jpg)
 * 改进SSAO近处出现布线
