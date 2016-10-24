@@ -79,9 +79,8 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
-* 分配完后效果图:  
+* 分配完后效果图 [流程图](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Tutorial/00-Hello%20World/README.jpg):  
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
-* [流程图](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Tutorial/00-Hello%20World/README.jpg)
 
 ##### 4.0 材质介绍 :
 　　因为考虑跨地区，文本统一使用了UTF8的编码，所以使用系统自带的修改保存会导致出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器来修改
