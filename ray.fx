@@ -434,7 +434,6 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 HDRScreenQuadVS(BloomOffset4);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4thTemp, BloomOffsetY4);
     }
-#if HDR_BLOOM_QUALITY >= 2
 #if HDR_BLOOM_QUALITY == 2
     pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -558,12 +557,6 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp4thTemp, star_colorCoeff3rd, 0);
     }
 #endif
-    pass GlareLightComp < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 HDRScreenQuadVS(ViewportOffset2 * 2);
-        PixelShader  = compile ps_3_0 GlareLightCompPS();
-    }
 #if HDR_FLARE_ENABLE
     pass GhostImage1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -579,7 +572,12 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 GhostImagePS(GhostImageMapSamp, GhostImageMapSamp, BloomSamp3rd, GhostMaskMapSamp, ghost_modulation2nd, 0);
     }
 #endif
-#endif
+    pass GlareLightComp < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 HDRScreenQuadVS(ViewportOffset2 * 2);
+        PixelShader  = compile ps_3_0 GlareLightCompPS();
+    }
 #endif
     pass FimicToneMapping < string Script= "Draw=Buffer;"; > {
          AlphaBlendEnable = false; AlphaTestEnable = false;
