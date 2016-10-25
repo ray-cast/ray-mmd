@@ -423,11 +423,11 @@ float3 FilmicTonemap(float3 color, float exposure)
 #elif HDR_TONEMAP_OPERATOR == 1
     color = color * exposure;
     float3 curr = ACESFilmRec709(color);
-    return curr;
+    return lerp(curr, color, mTonemapping);
 #elif HDR_TONEMAP_OPERATOR == 2
     color = color * exposure;
     float3 curr = ACESFilmRec2020(color);
-    return curr;
+    return lerp(curr, color, mTonemapping);
 #else
     return color * exposure;
 #endif
