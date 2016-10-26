@@ -23,6 +23,7 @@ Ray-MMD
 #### 更新内容 :
 ##### 2016-10-24 ver 1.0.9beta
 * 改进Bloom
+* 修复DirectionalLight+表情的Bug
 
 ##### 2016-10-23 ver 1.0.9beta
 * 添加点光源的阴影
