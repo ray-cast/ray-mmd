@@ -17,7 +17,7 @@ Ray-MMD
 
 #### HDRI :
 * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
-* [++skies](https://aokcub.net/cg/incskies/)
+* [++skies;](https://aokcub.net/cg/incskies/)
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
@@ -135,7 +135,7 @@ Ray-MMD
     * SSS中的截图就调节了Melain的系数, 所以会看起来像鸡蛋
 
 ##### 5.0 自定义天空盒
-* 解压cmft.rar
+* 解压Tools目录中的cmft.rar
 * 选择一张hdr文件, 并改名为skybox.hdr, 然后拖拽到exe上  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_drag.png)](https://github.com/ray-cast/images/raw/master/IBL_drag.png)
 * 如果文件格式是正确的将会进行处理，效果如下  
@@ -154,6 +154,7 @@ Ray-MMD
 * 检查MME面板中，LightingMap板块是否有挂在point_lighting.fx (如果没有，挂载上去)
 * 然后修改表情中的RGB+和Radius+调到最大，效果如图  
 [![link text](https://github.com/ray-cast/images/raw/master/point_light2.png)](https://github.com/ray-cast/images/raw/master/point_light2.png)
+* 光源需要阴影可以在LightMap中选择point_lighting_s0.fx(s代表阴影，0代表质量)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
 * 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理  
