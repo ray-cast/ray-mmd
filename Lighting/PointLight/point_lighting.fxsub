@@ -174,25 +174,25 @@ void LightSourceVS(
     in float4 Position : POSITION,
     in float3 Normal : NORMAL,
     in float2 Texcoord : TEXCOORD0,
-    out float3 oTexcoord0 : TEXCOORD0,
+    out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
 {
     Position.xyz = LightPosition + Normal * LightRange;
     oPosition = mul(Position, matViewProject);
-    oTexcoord0.xy = PosToCoord(oPosition.xy / oPosition.w);
-    oTexcoord0.xy = oTexcoord0.xy * oPosition.w + ViewportOffset;
-    oTexcoord0.z = oPosition.w;
+    oTexcoord0 = oPosition;
     oTexcoord1 = -mul(Position, matView);
 }
 
 void LightSourcePS(
-    float3 texcoord : TEXCOORD0, 
+    float4 texcoord : TEXCOORD0, 
     float3 viewdir : TEXCOORD1,
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
-    float2 coord = texcoord.xy / texcoord.z;
+    float2 coord = texcoord.xy / texcoord.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
 
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
