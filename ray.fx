@@ -214,7 +214,7 @@ technique DeferredLighting<
 #endif
 
 #if AA_QUALITY > 0
-    "RenderColorTarget0=FinalMap;"
+    "RenderColorTarget0=ShadingMapTemp;"
     "Pass=FimicToneMapping;"
 
     "RenderColorTarget0=;"
@@ -591,7 +591,7 @@ technique DeferredLighting<
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 FXAA3(FinalMapSamp, ViewportOffset2);
+        PixelShader  = compile ps_3_0 FXAA3(ShadingMapTempSamp, ViewportOffset2);
     }
 #endif
 }

@@ -25,9 +25,9 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 
-float emissiveIntensityMin = 10.0;
-float emissiveIntensityMax = 255.0;
-static float LightIntensity = (1 - mIntensityM) * emissiveIntensityMin + mIntensityP * emissiveIntensityMax;
+float emissiveIntensityMin = log(100);
+float emissiveIntensityMax = log(2100);
+static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
 
 #define TEXTURE_USE_LINEAR 0
