@@ -276,7 +276,6 @@ float4 GlareDetectionPS(
     color = min(color, tex2D(source, coord5));
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
-    bloom *= lerp(0.1, 20, mBloomIntensity);
     
     float4 MRT3 = tex2D(Gbuffer3Map, coord1);
     float4 MRT4 = tex2D(Gbuffer4Map, coord1);
@@ -285,6 +284,7 @@ float4 GlareDetectionPS(
     
     bloom.rgb += DecodeGBufferEmissive(MRT3, MRT4);
     bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
+    bloom *= lerp(0.1, 20, mBloomIntensity);
     
     return bloom;
 }
