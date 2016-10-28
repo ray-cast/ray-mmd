@@ -4,8 +4,8 @@ shared texture2D DummyScreenTex : RenderColorTarget
 <
     float2 ViewPortRatio = {1.0, 1.0};
     bool AntiAlias = false;
-    int Miplevels = 1;
-    string Format= "A8B8G8R8";
+    int Miplevels = 0;
+    string Format= "A2B10G10R10";
 >;
 
 texture DiffuseMap : MATERIALTEXTURE;

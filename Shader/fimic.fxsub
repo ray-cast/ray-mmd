@@ -481,10 +481,18 @@ float ComputeExposureFromEV100(float EV100)
 float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
+
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    
+    color += DecodeGBufferEmissive(MRT3, MRT4);
+    color += DecodeGBufferEmissive(MRT7, MRT8);
     
 #if HDR_ENABLE
 #if HDR_BLOOM_QUALITY > 0
-    float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;  
+    float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;
     color = lerp(color, bloom, 0.33);
 #endif
 

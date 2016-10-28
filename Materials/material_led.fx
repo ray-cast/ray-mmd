@@ -3,6 +3,7 @@
 // 反照率贴图
 #define ALBEDO_MAP_ENABLE 0
 #define ALBEDO_MAP_IN_TEXTURE 0
+#define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define ALBEDO_MAP_UV_FLIP 0
@@ -95,7 +96,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
 #define EMISSIVE_APPLY_MORPH_COLOR 1 // Light color for multi-light-source
-#define EMISSIVE_APPLY_MORPH_INTENSITY 1 // Light intensity for multi-light-source
+#define EMISSIVE_APPLY_MORPH_INTENSITY 0 // Light intensity for multi-light-source
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1;
