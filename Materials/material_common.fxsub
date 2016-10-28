@@ -21,6 +21,15 @@ float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 #endif
 
+#if EMISSIVE_APPLY_MORPH_INTENSITY
+float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
+float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+
+float emissiveIntensityMin = 100.0;
+float emissiveIntensityMax = 2000.0;
+static float LightIntensity = (1 - mIntensityM) * emissiveIntensityMin + mIntensityP * emissiveIntensityMax;
+#endif
+
 #define TEXTURE_USE_LINEAR 0
 #define TEXTURE_USE_NEAREST 0
 #define TEXTURE_USE_ANISOTROPY 1
@@ -547,7 +556,11 @@ float GetEmissiveIntensity()
 {
 #if USE_CUSTOM_MATERIAL
     #if EMISSIVE_ENABLE
-        return emissiveIntensity;
+        #if EMISSIVE_APPLY_MORPH_INTENSITY
+            return emissiveIntensity * LightIntensity;
+        #else
+            return emissiveIntensity;
+        #endif
     #else
         return 0;
     #endif
