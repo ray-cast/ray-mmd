@@ -254,7 +254,7 @@ void GlareDetectionVS(
     float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
     
     oPosition = Position;
-    oTexcoord1 = Texcoord;
+    oTexcoord1 = Texcoord + ViewportOffset;
     oTexcoord2 = oTexcoord1 + offset0.xy;
     oTexcoord3 = oTexcoord1 + offset0.zw;
     oTexcoord4 = oTexcoord1 + offset1.xy;
