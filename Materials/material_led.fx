@@ -93,12 +93,13 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define EMISSIVE_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define EMISSIVE_MAP_UV_FLIP 0
-#define EMISSIVE_APPLY_COLOR 1
-#define EMISSIVE_APPLY_MORPH_COLOR 1
+#define EMISSIVE_APPLY_COLOR 0
+#define EMISSIVE_APPLY_MORPH_COLOR 1 // Light color for multi-light-source
+#define EMISSIVE_APPLY_MORPH_INTENSITY 1 // Light intensity for multi-light-source
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = 0.45;
-const float emissiveIntensity = 1.0;
+const float3 emissive = 1;
+const float emissiveIntensity = 0.4;
 const float emissiveMapLoopNum = 1.0;
 
 // 视差贴图
