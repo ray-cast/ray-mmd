@@ -21,6 +21,15 @@ Ray-MMD
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
+##### 2016-10-29 ver 1.0.9
+* 添加了区域光的阴影 (只是点光源阴影的模拟)
+* 添加了EMISSIVE_APPLY_MORPH_INTENSITY用于多光源强度的调节
+* 还原Tonemapping
+* 改进Bloom和自发光
+* 改进光源的衰减
+* 修复光源大于一定距离产生的bug
+* 修复过暗的场景出现的颜色梯度
+
 ##### 2016-10-24 ver 1.0.9beta
 * 改进Bloom
 * 修复DirectionalLight+表情的Bug
