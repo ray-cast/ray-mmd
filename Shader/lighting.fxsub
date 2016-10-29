@@ -277,24 +277,14 @@ float GetPhysicalLightAttenuation(float3 L, float radius)
     return attenuation *= GetPhysicalSmoothDistanceAtt(sqrDist, invRadius);
 }
 
-float GetPointLightAttenuation(float3 L, float radius)
-{
-    float attenuation = GetPhysicalLightAttenuation(L, radius);
-    return attenuation;
-}
-
 float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, float scale, float radius)
-{
-    float3 L2 = normalize(L);
-    
-    float spotAngle = dot(L2, -lightDirection);
+{   
+    float spotAngle = dot(L, -lightDirection);
     
     float lightAngleScale = 1.0f / max(0.001f, angle);
     float lightAngleOffset = angle * scale;
     
-    float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset); 
-    attenuation *= attenuation;
-    
+    float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset);
     return attenuation;
 }
 
