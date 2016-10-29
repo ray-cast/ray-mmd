@@ -76,16 +76,15 @@ Ray-MMD
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 
 ##### 3.0 载入模型 :
-* 将ray.x载入到MMD中, 关闭MMD自带的抗锯齿
-* 添加Skybox/skybox.pmx并且在MaterialMap选择Materials/material_skybox.fx  
+* 将ray.x载入到MMD中, 并且关闭MMD自带的抗锯齿
+* 添加Skybox/skybox.pmx,检查MaterialMap中是否挂载了material_skybox.fx  
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 在EnvLightMap板块中对skybox.pmx赋予天空球目录中的skylighting_hdr.fx
 [![link text](https://github.com/ray-cast/images/raw/master/2.3.png)](https://github.com/ray-cast/images/raw/master/2.3.png)
-* 将天空盒渲染顺序调至第一位  
 * 添加任意模型到MMD，并在Main板块选择Main.fx
 * 在MaterialMap板块中，对刚载入的模型在Materials文件夹中选择对应的材质
-* 分配完后效果图 [(流程图)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Tutorial/00-Hello%20World/README.jpg) :  
-[![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)
+* 最后将天空盒渲染顺序调至第一位,分配完后效果图 [(流程图)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Tutorial/00-Hello%20World/README.jpg) :  
+[![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)  
 
 ##### 4.0 材质介绍 :
 　　因为考虑跨地区，文本统一使用了UTF8的编码，所以使用系统自带的修改保存会导致出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器来修改
