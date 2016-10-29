@@ -262,13 +262,6 @@ float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 s
     return specular * AB.x + AB.y;
 }
 
-float GetPhysicalSmoothDistanceAtt(float squaredDistance, float invSqrAttRadius)
-{
-    float factor = squaredDistance * invSqrAttRadius;
-    float smoothFactor = saturate(1.0f - factor * factor);
-    return smoothFactor * smoothFactor;
-}
-
 float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
 {
     const float invRadius = 1 / radius;
