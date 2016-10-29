@@ -269,21 +269,27 @@ float GetPhysicalSmoothDistanceAtt(float squaredDistance, float invSqrAttRadius)
     return smoothFactor * smoothFactor;
 }
 
-float GetPhysicalLightAttenuation(float3 L, float radius)
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
 {
-    float invRadius = 1 / (radius * radius);
-    float sqrDist = dot(L, L);
-    float attenuation = 1.0 / (max(sqrDist, 1e-6));
-    return attenuation *= GetPhysicalSmoothDistanceAtt(sqrDist, invRadius);
+    const float invRadius = 1 / radius;
+    float d = length(L);
+    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
+    d = max(d - attenuationBulbSize, 0);
+    float denom = 1 + d / attenuationBulbSize;
+    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
+    return saturate(attenuation);
 }
 
-float GetSpotLightAttenuation(float3 L, float3 lightDirection, float angle, float scale, float radius)
+float GetPhysicalLightAttenuation(float3 L, float radius)
+{
+    return GetPhysicalLightAttenuation(L, radius, 1);
+}
+
+float GetSpotLightAttenuation(float3 L, float3 lightDirection, float cosAngle, float scale)
 {   
     float spotAngle = dot(L, -lightDirection);
-    
-    float lightAngleScale = 1.0f / max(0.001f, angle);
-    float lightAngleOffset = angle * scale;
-    
+    float lightAngleScale = 1.0f / max(0.001f, cosAngle);
+    float lightAngleOffset = cosAngle * scale;
     float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset);
     return attenuation;
 }

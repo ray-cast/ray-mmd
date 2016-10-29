@@ -117,7 +117,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 L2 = normalize(L);
     
     float atten1 = GetPhysicalLightAttenuation(L, LightRange);
-    atten1 *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2, LightRange);
+    atten1 *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
     
     float atten2 = saturate(dot(material.normal, L2)) * atten1;
     
