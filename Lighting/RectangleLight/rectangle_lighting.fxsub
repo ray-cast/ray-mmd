@@ -129,9 +129,10 @@ float ESM(float3 viewPosition)
     
     float linearDepth = length(L);
     
-    float depthScale = 89;
-    float depth = exp((PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear) * -depthScale);
-  
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
+    
     return saturate(depth * exp(tex2D(ShadowMapSamp, GetShadowCoord(L / linearDepth)).r * depthScale));
 }
 
@@ -142,9 +143,10 @@ float PCF(float3 viewPosition, int samples)
     
     float linearDepth = length(L);
     
-    float depthScale = 89;
-    float depth = exp((PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear) * -depthScale);
-
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
+    
     float2 coord = GetShadowCoord(L / linearDepth);
 
     float shadow = 0.0;

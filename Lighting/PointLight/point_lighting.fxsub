@@ -88,8 +88,9 @@ float ESM(float3 viewPosition)
     
     float linearDepth = length(L);
     
-    float depthScale = 89;
-    float depth = exp((PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear) * -depthScale);
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
   
     return saturate(depth * exp(tex2D(ShadowMapSamp, GetShadowCoord(L / linearDepth)).r * depthScale));
 }
@@ -101,9 +102,10 @@ float PCF(float3 viewPosition, int samples)
     
     float linearDepth = length(L);
     
-    float depthScale = 89;
-    float depth = exp((PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear) * -depthScale);
-
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
+    
     float2 coord = GetShadowCoord(L / linearDepth);
 
     float shadow = 0.0;
@@ -133,14 +135,13 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
     
-    float atten = GetPointLightAttenuation(L, LightRange);
-    float vis = saturate(dot(material.normal, L2)) * atten;
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float atten2 = saturate(dot(material.normal, L2)) * atten;
    
     float4 lighting = 0.0f;
             
-    lighting.rgb = atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
-    lighting.rgb *= material.albedo;
-    lighting.rgb += vis * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
+    lighting.rgb = atten * material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    lighting.rgb += atten2 * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity * step(0, material.albedo + material.specular - 1e-5);
     lighting.rgb *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
    
