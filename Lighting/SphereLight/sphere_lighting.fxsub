@@ -27,6 +27,8 @@ static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
+#undef SHADOW_MAP_SIZE
+
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0

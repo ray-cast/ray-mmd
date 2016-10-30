@@ -64,6 +64,8 @@ static float2 LightRect = float2(LightWidth, LightHeight);
     };
 #endif
 
+#undef SHADOW_MAP_SIZE
+
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0
@@ -274,9 +276,7 @@ void LightSourceVS(
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
-{
-    Position.xyz = LightPosition + Normal * LightRange;
-    
+{   
     oPosition = float4(CoordToPos(Texcoord), 0, 1);
     oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
     oTexcoord1 = -mul(oPosition, matProjectInverse);
