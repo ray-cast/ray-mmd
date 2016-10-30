@@ -490,15 +490,16 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : 
     color += DecodeGBufferEmissive(MRT3, MRT4);
     color += DecodeGBufferEmissive(MRT7, MRT8);
     
-#if HDR_ENABLE
-#if HDR_BLOOM_QUALITY > 0
+#if HDR_ENABLE && HDR_BLOOM_QUALITY > 0
     float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;
     color = lerp(color, bloom, 0.33);
-#endif
-
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
     color = FilmicTonemap(color, 1.5 + mExposure * 10);
+#else
+    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    color = ColorBalance(color, float4(balance, mColBalance));
+    color = FilmicTonemap(color, 1 + mExposure * 10);
 #endif
     
     color = lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);

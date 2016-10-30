@@ -299,7 +299,7 @@ technique DeferredLighting<
         StencilRef = 1;
         StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 GuassBlurXPS(ShadingMapSamp, float2(ViewportOffset2.x, 0.0f));
+        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapSamp, float2(ViewportOffset2.x * ViewportAspect, 0.0f));
     }
     pass SSSSBlurY < string Script= "Draw=Buffer;"; > {
          AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -309,7 +309,7 @@ technique DeferredLighting<
         StencilRef = 1;
         StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 GuassBlurYPS(ShadingMapTempSamp, ShadingMapSamp,float2(0.0f, ViewportOffset2.y));
+        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapTempSamp, ShadingMapSamp,float2(0.0f, ViewportOffset2.y));
     }
 #endif
 #if SSR_QUALITY > 0
