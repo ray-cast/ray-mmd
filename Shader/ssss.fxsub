@@ -1,6 +1,6 @@
-#define DEPTH_LENGTH (1.0 / 5000.0)
+#define DEPTH_LENGTH (1.0 / 20)
 
-float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : SV_TARGET0
+float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
     float4 MRT1 = tex2D(Gbuffer2Map, coord);
@@ -67,7 +67,7 @@ float4 SSSGuassBlurPS(
     float3 normal = cross(ddy(P), ddx(P));
     float perspectiveScaleX = dot(normalize(normal.xz), normalize(-P.xz));
     float perspectiveScaleY = dot(normalize(normal.yz), normalize(-P.yz));
-    float perspectiveScale = max((direction.x > 0.1) ? perspectiveScaleX : perspectiveScaleY, 0.3);
+    float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
     float profileIndex = floor(material.index);
     float sssAmount = frac(material.index);
@@ -105,7 +105,7 @@ float4 SSSGuassBlurPS(
 
     totalColor /= totalWeight;
     
-    if (direction.y > 0.1)
+    if (direction.y > 0.001)
     {
         totalColor = lerp(totalColor, tex2D(original, coord.xy).rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
     }

@@ -722,11 +722,14 @@ float3 GetTransmittance(float2 coord)
                 coord.y = 1 - coord.y;
             #endif
         
+            float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
+            transmittanceMapColor = srgb2linear(transmittanceMapColor);
+            
             #if SSS_MAP_APPLY_COLOR
-                return srgb2linear(transmittance * tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
-            #else
-                return srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
+                transmittanceMapColor *= transmittance;
             #endif
+            
+            return transmittanceMapColor;
         #else
             return transmittance;
         #endif
