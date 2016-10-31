@@ -96,7 +96,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  1 + ao + ao * ao * (mSSAOP * 10 - mSSAOM));
+    return pow(ao,  1 + ao * (mSSAOP * 10 - mSSAOM));
 }
 
 float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target

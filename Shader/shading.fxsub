@@ -78,24 +78,12 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += floor;
 #endif
     
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord).r;
-    if (materialAlpha.alpha < 0.01)
-    {
-        lighting *= ssao;
-    }
-#endif
-
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
     
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
     lighting2 += tex2D(LightAlphaMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
     
-#if SSAO_SAMPLER_COUNT > 0
-    lighting2 *= ssao;
-#endif
-
 #if IBL_QUALITY > 0   
     float3 diffuse, diffuse2;
     float3 specular, specular2;
@@ -113,6 +101,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2D(SSAOMapSamp, coord).r;
     diffuse *= ssao;
     diffuse2 *= ssao;
     specular *= ComputeSpecularOcclusion(dot(N, V), ssao, material.smoothness);
