@@ -13,20 +13,20 @@ static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraVi
 #if RECIEVER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state {
-	texture = <DiffuseMap>;
-	MinFilter = POINT;	MagFilter = POINT;	MipFilter = POINT;
-	ADDRESSU  = WRAP;	ADDRESSV  = WRAP;
+    texture = <DiffuseMap>;
+    MinFilter = POINT;  MagFilter = POINT;  MipFilter = POINT;
+    ADDRESSU  = WRAP;   ADDRESSV  = WRAP;
 };
 #endif
 
 shared texture PSSM : OFFSCREENRENDERTARGET;
 sampler PSSMsamp = sampler_state {
-	texture = <PSSM>;
-	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = NONE;
-	AddressU  = CLAMP;	AddressV = CLAMP;
+    texture = <PSSM>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-float PCF(float2 coord, float receiverDepth, float sdrate, int samples) 
+float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
     float shadow = 0.0;
     float s = 1.5 / SHADOW_MAP_SIZE;
@@ -48,31 +48,31 @@ float PCF(float2 coord, float receiverDepth, float sdrate, int samples)
 }
 
 void ShadowlessObjectVS(
-	in float4 Position : POSITION, 
-	in float2 Texcoord : TEXCOORD0,
-	out float3 oTexcoord : TEXCOORD0,
-	out float4 oPosition : POSITION)
+    in float4 Position : POSITION, 
+    in float2 Texcoord : TEXCOORD0,
+    out float3 oTexcoord : TEXCOORD0,
+    out float4 oPosition : POSITION)
 {
-	oPosition = mul(Position, matViewProject);
-	oTexcoord = float3(Texcoord.xy, oPosition.z);
+    oPosition = mul(Position, matViewProject);
+    oTexcoord = float3(Texcoord.xy, oPosition.z);
 }
 
 float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 {
 #if RECIEVER_ALPHA_ENABLE
-	clip(!opadd - 0.001f);
-	float alpha = MaterialDiffuse.a;
+    clip(!opadd - 0.001f);
+    float alpha = MaterialDiffuse.a;
 #if RECIEVER_ALPHA_MAP_ENABLE
-	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
+    if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
-	clip(alpha - 0.01);
+    clip(alpha - 0.01);
 #endif
 
 #if SSAO_DISABLE
-	coord.z = -coord.z;
+    coord.z = -coord.z;
 #endif
 
-	return float4(1, coord.z, 0, 1);
+    return float4(1, coord.z, 0, 1);
 }
 
 void ShadowObjectVS(
@@ -134,7 +134,7 @@ float4 ShadowObjectPS(
     receiverDepth -= depthBias;
 
     float sdrate = 30000.0 / 4.0 - 0.05;
-    float shadow = PCF(texCoord0.xy, receiverDepth, sdrate, 3);
+    float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
     
 #if SSAO_DISABLE
     coord.z = -coord.z;
@@ -145,28 +145,28 @@ float4 ShadowObjectPS(
 }
 
 #define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \
-	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-	>{ \
-		pass DrawObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
-			PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
-		} \
-	}
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+    >{ \
+        pass DrawObject { \
+            AlphaTestEnable = false; AlphaBlendEnable = false; \
+            VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
+            PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
+        } \
+    }
 
 #define OBJECT_TEC(name, mmdpass, tex) \
-	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-	>{ \
-		pass DrawObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 ShadowObjectVS(); \
-			PixelShader  = compile ps_3_0 ShadowObjectPS(tex); \
-		} \
-	}
-	
+    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+    >{ \
+        pass DrawObject { \
+            AlphaTestEnable = false; AlphaBlendEnable = false; \
+            VertexShader = compile vs_3_0 ShadowObjectVS(); \
+            PixelShader  = compile ps_3_0 ShadowObjectPS(tex); \
+        } \
+    }
+
 OBJECT_SHADOWLESS_TEC(DepthTec2, "object", false)
 OBJECT_SHADOWLESS_TEC(DepthTec3, "object", true)
-	
+
 OBJECT_TEC(DepthTecBS2, "object_ss", false)
 OBJECT_TEC(DepthTecBS3, "object_ss", true)
 

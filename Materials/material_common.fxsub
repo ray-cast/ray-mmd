@@ -35,7 +35,8 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define TEXTURE_USE_ANISOTROPY 1
 #define TEXTURE_USE_MIP_NONE 0
 #define TEXTURE_USE_MIP_LINEAR 0
-#define TEXTURE_USE_MIP_NEAREST 1
+#define TEXTURE_USE_MIP_NEAREST 0
+#define TEXTURE_USE_MIP_ANISOTROPIC 1
 #define TEXTURE_ANISOTROPY_LEVEL 16
 
 #if TEXTURE_USE_LINEAR
@@ -52,6 +53,8 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #   define TEXTURE_MIP_FILTER LINEAR
 #elif TEXTURE_USE_MIP_NEAREST
 #   define TEXTURE_MIP_FILTER POINT
+#elif TEXTURE_USE_MIP_ANISOTROPIC
+#   define TEXTURE_MIP_FILTER ANISOTROPIC
 #elif TEXTURE_USE_MIP_NONE
 #   define TEXTURE_MIP_FILTER NONE
 #else
@@ -282,7 +285,7 @@ float luminance(float3 rgb)
 float3 srgb2linear(float3 rgb)
 {
     const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+    return rgb < 0.04045f ? rgb / 12.92f : pow(abs(rgb) + ALPHA / (1 + ALPHA), 2.4f);
 }
 
 float4 srgb2linear(float4 c)
@@ -299,7 +302,7 @@ float3 rgb2ycbcr(float3 col)
     return half3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
-float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, float3 tangentNormal)
 {
     float3 dp1 = ddx(viewdir);
     float3 dp2 = ddy(viewdir);
@@ -310,8 +313,16 @@ float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
     float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
     float3 T = mul(float2(duv1.x, duv2.x), I);
     float3 B = mul(float2(duv1.y, duv2.y), I);
+    
+    float scaleT = 1.0f / (dot(T, T) + 1e-6);
+    float scaleB = 1.0f / (dot(B, B) + 1e-6);
+    
+    float3x3 tbnTransform;
+    tbnTransform[0] = normalize(T * scaleT);
+    tbnTransform[1] = normalize(B * scaleB);
+    tbnTransform[2] = N;
 
-    return float3x3(normalize(T), normalize(B), N);
+    return normalize(mul(tangentNormal, tbnTransform));
 }
 
 float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSteps, float parallaxScale)
@@ -581,15 +592,15 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
         #endif
 
         #if NORMAL_MAP_IN_SPHEREMAP
-            float3 tangentNormal = normalize(tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
+            float3 tangentNormal = tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
             tangentNormal.rg *= normalMapScale;
             tangentNormal = normalize(tangentNormal);
         #elif NORMAL_MAP_SUB_ENABLE && !NORMAL_MAP_ENABLE
-            float3 tangentNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);
+            float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
             tangentNormal.rg *= normalMapSubScale;
             tangentNormal = normalize(tangentNormal);            
         #else    
-            float3 tangentNormal = normalize(tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1);
+            float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
             tangentNormal.rg *= normalMapScale;
             tangentNormal = normalize(tangentNormal);
         #endif
@@ -610,9 +621,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             tangentNormal = normalize(tangentNormal);
         #endif
         
-        float3x3 tangentFrame = computeTangentBinormalNormal(N, viewdir, coord);
-        float3 highNormal = normalize(mul(tangentNormal, tangentFrame));
-        return highNormal;
+        return computeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
     #else
         return N;
     #endif
