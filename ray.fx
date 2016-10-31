@@ -584,7 +584,7 @@ technique DeferredLighting<
          AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 FimicToneMappingPS(ShadingMapSamp);
+        PixelShader  = compile ps_3_0 FilmicToneMappingPS(ShadingMapSamp);
     }
 #if AA_QUALITY > 0
     pass AntiAliasing < string Script= "Draw=Buffer;"; > {

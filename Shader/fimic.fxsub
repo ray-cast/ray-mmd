@@ -426,7 +426,19 @@ float3 ACESFilmRec2020(float3 x)
     return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-float3 FilmicTonemap(float3 color, float exposure)
+float3 FilmicTonemap(float3 x) 
+{
+    float A = 0.15;
+    float B = 0.50;
+    float C = 0.10;
+    float D = 0.20;
+    float E = 0.02;
+    float F = 0.30;
+    float W = 11.2;
+    return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
+float3 ToneMapping(float3 color, float exposure)
 {
 #if HDR_TONEMAP_OPERATOR == 0
     return color * exposure;
@@ -437,6 +449,18 @@ float3 FilmicTonemap(float3 color, float exposure)
 #elif HDR_TONEMAP_OPERATOR == 2
     color = color * exposure;
     float3 curr = ACESFilmRec2020(color);
+    return lerp(curr, color, mTonemapping);
+#elif HDR_TONEMAP_OPERATOR == 3
+    color = color * exposure;
+    float3 curr = FilmicTonemap(color * 2);
+    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
+    curr = curr * whiteScale;
+    return lerp(curr, color, mTonemapping);
+#elif HDR_TONEMAP_OPERATOR == 4
+    color = color * exposure;
+    float3 curr = 2 * FilmicTonemap(color);
+    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
+    curr = curr * whiteScale;
     return lerp(curr, color, mTonemapping);
 #else
     return color * exposure;
@@ -478,7 +502,7 @@ float ComputeExposureFromEV100(float EV100)
     return 1.0f / maxLuminance;
 }
 
-float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
+float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
 
@@ -495,11 +519,11 @@ float4 FimicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : 
     color = lerp(color, bloom, 0.33);
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
-    color = FilmicTonemap(color, 1.5 + mExposure * 10);
+    color = ToneMapping(color, 1.5 + mExposure * 10);
 #else
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
-    color = FilmicTonemap(color, 1 + mExposure * 10);
+    color = ToneMapping(color, 1 + mExposure * 10);
 #endif
     
     color = lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
