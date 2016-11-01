@@ -327,6 +327,30 @@ float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
     return normalize(mul(tangentNormal, tbnTransform));
 }
 
+float3 ParallaxOcclusionDirection(float3 normal, float3 worldPos, float2 coord)
+{
+    float3 viewNormal = mul(normal, (float3x3)matView);
+    float3 viewPosition = mul(float4(worldPos, 1), matView).xyz;
+    float3 viewdir = normalize(-viewPosition);
+
+    float3 dp1 = ddx(viewPosition);
+    float3 dp2 = ddy(viewPosition);
+    
+    float2 duv1 = ddx(coord);
+    float2 duv2 = ddy(coord);
+
+    float3 R1 = cross(dp2, viewNormal);
+    float3 R2 = cross(viewNormal, dp1);
+    
+    float2 proj = float2(dot(R1, viewdir), dot(R2, viewdir)) / dot(dp1, R1);
+    
+    float3 direction;
+    direction.xy = duv1 * proj.x + duv2 * proj.y;
+    direction.z = dot(viewNormal, viewdir);
+    
+    return direction;
+}
+
 float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSteps, float parallaxScale)
 {
     float step = 1.0 / numSteps;
@@ -346,7 +370,7 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
         curTexcoord -= delta;
         curHeight = tex2D(heightMap, curTexcoord).r;
     }
-
+    
     float2 deltaTexcoord = delta *= 0.5;
     float deltaHeight = step *= 0.5;
 
@@ -799,11 +823,14 @@ GbufferParam MaterialPS(
     in float3 worldPos  : TEXCOORD2,
     uniform bool useTexture)
 {
+    normal = normalize(normal);
+    
 #if PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
-    coord = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, normalize(CameraPosition - worldPos), 15, parallaxMapScale);
+    float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy);
+    coord.xy = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -818,7 +845,7 @@ GbufferParam MaterialPS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(normal), worldPos, coord.xy);
+    material.normal = GetNormal(normal, worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
@@ -849,11 +876,14 @@ GbufferParam Material2PS(
     in float3 worldPos  : TEXCOORD2,
     uniform bool useTexture)
 {
+    normal = normalize(normal);
+    
 #if PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
-    coord = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, normalize(CameraPosition - worldPos), 15, parallaxMapScale);
+    float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy);
+    coord.xy = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -868,7 +898,7 @@ GbufferParam Material2PS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(normal), worldPos, coord.xy);
+    material.normal = GetNormal(normal, worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
