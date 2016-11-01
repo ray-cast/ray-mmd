@@ -167,8 +167,13 @@ float4 ShadowObjectPS(
 OBJECT_SHADOWLESS_TEC(DepthTec2, "object", false)
 OBJECT_SHADOWLESS_TEC(DepthTec3, "object", true)
 
-OBJECT_TEC(DepthTecBS2, "object_ss", false)
-OBJECT_TEC(DepthTecBS3, "object_ss", true)
+#if MAIN_LIGHT_ENABLE
+    OBJECT_TEC(DepthTecBS2, "object_ss", false)
+    OBJECT_TEC(DepthTecBS3, "object_ss", true)
+#else
+    OBJECT_SHADOWLESS_TEC(DepthTecBS2, "object_ss", false)
+    OBJECT_SHADOWLESS_TEC(DepthTecBS3, "object_ss", true)
+#endif
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}

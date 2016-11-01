@@ -120,12 +120,14 @@ technique DeferredLighting<
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
     "ClearSetStencil=ClearStencil;"
-    
-#if SHADOW_QUALITY && SHADOW_SOFT_ENABLE
+
+#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE    
+    #if SHADOW_SOFT_ENABLE
     "RenderColorTarget0=ShadowmapMapTemp; Pass=ShadowBlurPassX;"
     "RenderColorTarget0=ShadowmapMap;     Pass=ShadowBlurPassY;"
-#elif SHADOW_QUALITY
+    #else
     "RenderColorTarget0=ShadowmapMap; Pass=ShadowMapNoBlur;"
+    #endif
 #endif
 
     "RenderColorTarget0=ScnMap;"

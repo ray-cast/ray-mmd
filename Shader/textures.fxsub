@@ -146,6 +146,12 @@ texture DepthMap : OFFSCREENRENDERTARGET <
         "*.pmd=shadow/Depth.fx;"
         "*.x=hide;";
 >;
+sampler DepthMapSamp = sampler_state {
+    texture = <DepthMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#if MAIN_LIGHT_ENABLE
 shared texture PSSM : OFFSCREENRENDERTARGET <
     string Description = "Cascade shadow map for ray";
     int Width = SHADOW_MAP_SIZE;
@@ -178,11 +184,6 @@ texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
-sampler DepthMapSamp = sampler_state {
-    texture = <DepthMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
@@ -193,6 +194,7 @@ sampler ShadowmapSampTemp = sampler_state {
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
+#endif
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A8R8G8B8" ;

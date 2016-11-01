@@ -5,6 +5,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 {
     float3 lighting = 0;
 
+#if MAIN_LIGHT_ENABLE
     float vis = saturate(dot(N, L));
 
     lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, material.transmittance);
@@ -14,6 +15,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     
 #if SHADOW_QUALITY > 0
     lighting *= tex2D(ShadowmapSamp, coord).r;
+#endif
 #endif
     
     return lighting;
