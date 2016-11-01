@@ -24,6 +24,8 @@ Ray-MMD
 ##### 2016-XX-XX ver 1.1.0
 * 改进了NormalMap
 * 改进了ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
+* SSAO改为只作用于IBL
+* 纹理LOD采样方式改为各向异性
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
