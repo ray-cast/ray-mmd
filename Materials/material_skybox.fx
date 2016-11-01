@@ -24,10 +24,17 @@ const float alphaMapLoopNum = 1.0;
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0
+#define NORMAL_MAP_UV_FLIP 0
+#define NORMAL_MAP_MODE 0 // (0 = smooth lerp, 1 = exact lerp)
 #define NORMAL_MAP_FILE "normal.png"
 
 const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
+
+// 子法线贴图
+#define NORMAL_MAP_SUB_ENABLE 0
+#define NORMAL_MAP_SUB_UV_FLIP 0
+#define NORMAL_MAP_SUB_FILE "normal.png"
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0

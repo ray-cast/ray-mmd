@@ -38,7 +38,6 @@ const float normalMapScale = 1.0;
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
 #define NORMAL_MAP_SUB_UV_FLIP 0
-#define NORMAL_MAP_SUB_UV_ROTATE 0
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
 const float normalMapSubLoopNum = 1.0;
