@@ -15,7 +15,7 @@ float ShininessToSmoothness(float spec)
 
 float RoughnessToShininess(float roughness)
 {
-    return 2.0f / (roughness * roughness) - 2.0f;
+    return 2.0f / (roughness * roughness + 0.0001) - 2.0f;
 }
 
 float SmoothnessToShininess(float smoothness)

@@ -825,7 +825,7 @@ GbufferParam MaterialPS(
 {
     normal = normalize(normal);
     
-#if PARALLAX_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -878,7 +878,7 @@ GbufferParam Material2PS(
 {
     normal = normalize(normal);
     
-#if PARALLAX_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
