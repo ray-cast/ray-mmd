@@ -309,7 +309,11 @@ float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
     float2 duv1 = ddx(coord);
     float2 duv2 = ddy(coord);
 
+#if NORMAL_MAP_MODE
+    float3x3 M = float3x3(dp1, dp2, N);
+#else
     float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+#endif
     float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
     float3 T = mul(float2(duv1.x, duv2.x), I);
     float3 B = mul(float2(duv1.y, duv2.y), I);
