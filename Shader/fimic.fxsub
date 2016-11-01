@@ -491,17 +491,6 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
     return color;
 }
 
-float ComputeEV100(float aperture, float shutterTime, float ISO)
-{
-    return log2(aperture / shutterTime * 100 / ISO);
-}
-
-float ComputeExposureFromEV100(float EV100)
-{
-    float maxLuminance = 1.2f * pow (2.0f, EV100);
-    return 1.0f / maxLuminance;
-}
-
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);

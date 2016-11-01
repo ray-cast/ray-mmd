@@ -1,30 +1,13 @@
-#ifndef InvLog2
-#   define InvLog2 3.32192809489f
-#endif
+#define InvLog2 3.32192809489f
 
-#ifndef InvPIE
-#   define InvPIE 0.318309886142f
-#endif
+#define InvPIE 0.318309886142f
+#define InvPIE8 0.039788735767f
+#define InvPIE4 0.079577471535f
 
-#ifndef InvPIE8
-#   define InvPIE8 0.039788735767f
-#endif
+#define PI 3.141592654f
+#define PI_2 (3.141592654f * 2.0)
 
-#ifndef InvPIE4
-#   define InvPIE4 0.079577471535f
-#endif
-
-#ifndef PI
-#   define PI 3.141592654f
-#endif
-
-#ifndef PI_2
-#   define PI_2 (3.141592654f * 2.0)
-#endif
-
-#ifndef EPSILON
-#   define EPSILON 1e-5
-#endif
+#define EPSILON 1e-5
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
@@ -79,57 +62,9 @@ float pow2(float x)
     return x * x;
 }
 
-const static float3x3 InverseLogLuv = float3x3(
-    6.0013,    -2.700,    -1.7995,
-    -1.332,    3.1029,    -5.7720,
-    .3007,    -1.088,    5.6268);
-
-float3 DecodeLogLuv(in float4 vLogLuv)
-{
-    float Le = vLogLuv.z * 255 + vLogLuv.w;
-    float3 Xp_Y_XYZp;
-    Xp_Y_XYZp.y = exp2((Le - 127) / 2);
-    Xp_Y_XYZp.z = Xp_Y_XYZp.y / vLogLuv.y;
-    Xp_Y_XYZp.x = vLogLuv.x * Xp_Y_XYZp.z;
-    float3 vRGB = mul(Xp_Y_XYZp, InverseLogLuv);
-    return max(vRGB, 0);
-}
-
-float4 EncodeRGBM(float3 color)
-{
-    color.r *= 1.0 / 6.0;
-    color.g *= 1.0 / 6.0;
-    color.b *= 1.0 / 6.0;
-
-    float4 encode;
-    encode.a = min(1.0f, max(0.0f, (max(max(color.r, color.g), max(color.b, 1e-6f)))));
-    encode.a = ceil(encode.a * 255.0) / 255.0;
-    encode.r = color.r / encode.a;
-    encode.g = color.g / encode.a;
-    encode.b = color.b / encode.a;
-    return encode;
-}
-
 float3 DecodeRGBM(in float4 rgbm)
 {
     return 6 * rgbm.rgb * rgbm.a;
-}
-
-float4 EncodeRGBE8(float3 color)
-{
-    float4 encode;
-    float maxComponent = max(max(color.x, color.y), color.z);
-    float exponent = ceil(log2(maxComponent));
-    encode.xyz = color / exp2(exponent);
-    encode.w = (exponent + 128.0) / 255.0;
-    return encode;
-}
-
-float3 DecodeRGBE8(float4 color)
-{
-    float exponent = color.w * 255.0 - 128.0;
-    float3 rgb = color.xyz * exp2(exponent);
-    return rgb;
 }
 
 float2 PosToCoord(float2 position)
@@ -181,21 +116,6 @@ float2 computeSphereCoord(float3 normal)
 {
     float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
     return coord;
-}
-
-float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
-{
-    float3 dp1 = ddx(viewdir);
-    float3 dp2 = ddy(viewdir);
-    float2 duv1 = ddx(coord);
-    float2 duv2 = ddy(coord);
-
-    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
-    float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
-    float3 T = mul(float2(duv1.x, duv2.x), I);
-    float3 B = mul(float2(duv1.y, duv2.y), I);
-
-    return float3x3(normalize(T), normalize(B), N);
 }
 
 const static float JitterOffsets[16] = {
