@@ -287,7 +287,7 @@ float luminance(float3 rgb)
 float3 srgb2linear(float3 rgb)
 {
     const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow(abs(rgb) + ALPHA / (1 + ALPHA), 2.4f);
+    return rgb < 0.04045f ? rgb / 12.92f : pow((abs(rgb) + ALPHA) / (1 + ALPHA), 2.4f);
 }
 
 float4 srgb2linear(float4 c)
@@ -336,6 +336,7 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
     float curHeight = tex2D(heightMap, coord).r;
     float2 curTexcoord = coord;
 
+    [unroll]
     for (int i = 0; i < numSteps; i++)
     {
         if (curHeight <= curLayerHeight)
@@ -352,7 +353,8 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
     curTexcoord += deltaTexcoord;
     curLayerHeight -= deltaHeight;
 
-    for (int i = 0; i < 5; i++)
+    [unroll]
+    for (int j = 0; j < 5; j++)
     {
         deltaTexcoord *= 0.5;
         deltaHeight *= 0.5;
@@ -671,11 +673,7 @@ float GetSmoothness(float2 coord)
         #endif
         
         return smoothness;
-    #else
-        #if SMOOTHNESS_MAP_IS_ROUGHNESS
-            return RoughnessToSmoothness(smoothness);
-        #endif
-        
+    #else       
         return smoothness;
     #endif
 #else
@@ -726,29 +724,25 @@ float GetMetalness(float2 coord)
 
 float3 GetTransmittance(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL
-    #if SSS_ENABLE
-        #if SSS_MAP_ENABLE
-            #if SSS_MAP_UV_FLIP
-                coord.y = 1 - coord.y;
-            #endif
-        
-            float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
-            transmittanceMapColor = srgb2linear(transmittanceMapColor);
-            
-            #if SSS_MAP_APPLY_COLOR
-                transmittanceMapColor *= transmittance;
-            #endif
-            
-            return transmittanceMapColor;
-        #else
-            return transmittance;
+#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+    #if SSS_MAP_ENABLE
+        #if SSS_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
         #endif
+    
+        float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
+        transmittanceMapColor = srgb2linear(transmittanceMapColor);
+        
+        #if SSS_MAP_APPLY_COLOR
+            transmittanceMapColor *= transmittance;
+        #endif
+        
+        return transmittanceMapColor;
     #else
-        return 0.0f;
+        return transmittance;
     #endif
 #else
-    return 0.0;
+    return 0.0f;
 #endif
 }
 

@@ -31,7 +31,7 @@
 float3 srgb2linear(float3 rgb)
 {
     const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
+    return rgb < 0.04045f ? rgb / 12.92f : pow((abs(rgb) + ALPHA) / (1 + ALPHA), 2.4f);
 }
 
 float3 linear2srgb(float3 srgb)
