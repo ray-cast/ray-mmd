@@ -395,7 +395,10 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer1.xyz = material.albedo;
     gbuffer.buffer1.w = material.smoothness;
 
-    gbuffer.buffer2.xyz = EncodeNormal(normalize(material.normal));
+    material.normal = mul(material.normal, (float3x3)matView);
+    material.normal = normalize(material.normal);
+    
+    gbuffer.buffer2.xyz = EncodeNormal(material.normal);
     gbuffer.buffer2.w = 0;
 
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
@@ -782,18 +785,18 @@ void MaterialVS(
     in float2 Texcoord: TEXCOORD0,
     out float3 oNormal   : TEXCOORD0,
     out float3 oTexcoord : TEXCOORD1,
-    out float3 oWorldPos : TEXCOORD2,
+    out float4 oWorldPos : TEXCOORD2,
     out float4 oPosition : POSITION)
 {
 #if SKYBOX_ENABLE
     oPosition = mul(Position, matWorldViewProject);
-    oNormal = mul(normalize(Position.xyz), (float3x3)matWorld);
+    oNormal = normalize(Position.xyz);
 #else
     oPosition = mul(Position, matWorldViewProject);
-    oNormal = mul(Normal, (float3x3)matWorld);
+    oNormal = Normal;
 #endif
     oTexcoord = float3(Texcoord, oPosition.w);
-    oWorldPos = mul(Position, matWorld);
+    oWorldPos = Position;
 }
 
 GbufferParam MaterialPS(
@@ -821,7 +824,7 @@ GbufferParam MaterialPS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = mul(GetNormal(normalize(normal), worldPos, coord.xy), (float3x3)matView);
+    material.normal = GetNormal(normalize(normal), worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
@@ -871,7 +874,7 @@ GbufferParam Material2PS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = mul(GetNormal(normalize(normal), worldPos, coord.xy), (float3x3)matView);
+    material.normal = GetNormal(normalize(normal), worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
