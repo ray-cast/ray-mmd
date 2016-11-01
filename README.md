@@ -21,26 +21,9 @@ Ray-MMD
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
 #### 更新内容 :
-##### 2016-10-29 ver 1.0.9
-* 添加了区域光的阴影 (点光源阴影的模拟)
-* 添加了EMISSIVE_APPLY_MORPH_INTENSITY用于多光源强度的调节
-* 还原Tonemapping
-* 改进Bloom和自发光
-* 改进光源的衰减 (更加贴合物理的衰减行为)
-* 修复光源大于一定距离产生的bug
-* 修复过暗的场景出现的颜色梯度
-
-##### 2016-10-24 ver 1.0.9beta
-* 改进Bloom
-* 修复DirectionalLight+表情的Bug
-
-##### 2016-10-23 ver 1.0.9beta
-* 添加点光源的阴影
-* 改进bloom的范围，使其产生更大的bloom [(预览1)](https://github.com/ray-cast/images/raw/master/bloomplus1.jpg)　[(预览2)](https://github.com/ray-cast/images/raw/master/bloomplus2.jpg)　[(预览3)](https://github.com/ray-cast/images/raw/master/bloomplus3.jpg)
-* 改进SSAO近处出现布线
-* 修复MMD输出png图片错误的透明通道问题
-* 修复同时启用SSS和Emissive时Emissive无效
-* 修复在Material.fx中Toon拼写为Tone的错误
+##### 2016-XX-XX ver 1.1.0
+* 改进了NormalMap
+* 改进了ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
@@ -214,6 +197,27 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-10-29 ver 1.0.9
+* 添加了区域光的阴影 (点光源阴影的模拟)
+* 添加了EMISSIVE_APPLY_MORPH_INTENSITY用于多光源强度的调节
+* 还原Tonemapping
+* 改进Bloom和自发光
+* 改进光源的衰减 (更加贴合物理的衰减行为)
+* 修复光源大于一定距离产生的bug
+* 修复过暗的场景出现的颜色梯度
+
+##### 2016-10-24 ver 1.0.9beta
+* 改进Bloom
+* 修复DirectionalLight+表情的Bug
+
+##### 2016-10-23 ver 1.0.9beta
+* 添加点光源的阴影
+* 改进bloom的范围，使其产生更大的bloom [(预览1)](https://github.com/ray-cast/images/raw/master/bloomplus1.jpg)　[(预览2)](https://github.com/ray-cast/images/raw/master/bloomplus2.jpg)　[(预览3)](https://github.com/ray-cast/images/raw/master/bloomplus3.jpg)
+* 改进SSAO近处出现布线
+* 修复MMD输出png图片错误的透明通道问题
+* 修复同时启用SSS和Emissive时Emissive无效
+* 修复在Material.fx中Toon拼写为Tone的错误
+
 ##### 2016-10-16 ver 1.0.8
 * 添加了新的cmft过滤工具，只支持hdr, dds, ktx, tga文件 [(使用方法1)](https://github.com/ray-cast/images/raw/master/IBL_filter.jpg) [(使用方法2)](https://github.com/ray-cast/images/raw/master/helloworld.jpg)
 * 添加MultiLight+/-和EnvSSSLight+/-在表情中
