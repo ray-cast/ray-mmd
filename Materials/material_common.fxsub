@@ -1,6 +1,8 @@
 float time : TIME;
 float elapsed : ELAPSEDTIME;
 
+float4x4 matView : VIEW;
+float4x4 matWorld : WORLD;
 float4x4 matWorldView : WORLDVIEW;
 float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
 
@@ -309,11 +311,7 @@ float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
     float2 duv1 = ddx(coord);
     float2 duv2 = ddy(coord);
 
-#if NORMAL_MAP_MODE
     float3x3 M = float3x3(dp1, dp2, N);
-#else
-    float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
-#endif
     float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
     float3 T = mul(float2(duv1.x, duv2.x), I);
     float3 B = mul(float2(duv1.y, duv2.y), I);
@@ -784,31 +782,31 @@ void MaterialVS(
     in float2 Texcoord: TEXCOORD0,
     out float3 oNormal   : TEXCOORD0,
     out float3 oTexcoord : TEXCOORD1,
-    out float3 oViewdir  : TEXCOORD2,
+    out float3 oWorldPos : TEXCOORD2,
     out float4 oPosition : POSITION)
 {
 #if SKYBOX_ENABLE
     oPosition = mul(Position, matWorldViewProject);
-    oNormal = mul(normalize(Position.xyz), (float3x3)matWorldView);
+    oNormal = mul(normalize(Position.xyz), (float3x3)matWorld);
 #else
     oPosition = mul(Position, matWorldViewProject);
-    oNormal = normalize(mul(Normal, (float3x3)matWorldView));
+    oNormal = mul(Normal, (float3x3)matWorld);
 #endif
     oTexcoord = float3(Texcoord, oPosition.w);
-    oViewdir = mul(CameraPosition - Position.xyz, (float3x3)matWorldView);
+    oWorldPos = mul(Position, matWorld);
 }
 
 GbufferParam MaterialPS(
     in float3 normal   : TEXCOORD0,
     in float3 coord : TEXCOORD1,
-    in float3 viewdir  : TEXCOORD2,
+    in float3 worldPos  : TEXCOORD2,
     uniform bool useTexture)
 {
 #if PARALLAX_MAP_ENABLE
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
-    coord = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, normalize(viewdir), 15, parallaxMapScale);
+    coord = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, normalize(CameraPosition - worldPos), 15, parallaxMapScale);
     #if PARALLAX_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -823,7 +821,7 @@ GbufferParam MaterialPS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(normal), normalize(-viewdir), coord.xy);
+    material.normal = mul(GetNormal(normalize(normal), worldPos, coord.xy), (float3x3)matView);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
@@ -851,9 +849,19 @@ GbufferParam MaterialPS(
 GbufferParam Material2PS(
     in float3 normal   : TEXCOORD0,
     in float3 coord : TEXCOORD1,
-    in float3 viewdir  : TEXCOORD2,
+    in float3 worldPos  : TEXCOORD2,
     uniform bool useTexture)
 {
+#if PARALLAX_MAP_ENABLE
+    #if PARALLAX_MAP_UV_FLIP
+        coord.y = 1 - coord.y;
+    #endif
+    coord = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, normalize(CameraPosition - worldPos), 15, parallaxMapScale);
+    #if PARALLAX_MAP_UV_FLIP
+        coord.y = 1 - coord.y;
+    #endif
+#endif
+
     float alpha = GetAlpha(coord.xy, useTexture);
     clip(alpha - 0.01);
 
@@ -863,7 +871,7 @@ GbufferParam Material2PS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material;
-    material.normal = GetNormal(normalize(normal), normalize(-viewdir), coord.xy);
+    material.normal = mul(GetNormal(normalize(normal), worldPos, coord.xy), (float3x3)matView);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);

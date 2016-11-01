@@ -29,7 +29,6 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_MODE 0 // (0 = smooth lerp, 1 = exact lerp)
 #define NORMAL_MAP_FILE "normal.png"
 
 const float normalMapLoopNum = 1.0;
