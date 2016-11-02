@@ -81,7 +81,8 @@ float ESM(float3 viewPosition)
 #if DIRECTIONLIGHT_OUT_OF_RANGE
         return 1;
 #else
-        float falloff = smoothstep(0.03, 0.0, length(proj.xy - saturate(proj.xy)));
+        float2 v = proj.xy - saturate(proj.xy);
+        float falloff = smoothstep(0.0001, 0.0, dot(v, v));
         return saturate(falloff);
 #endif
     }
@@ -110,7 +111,8 @@ float PCF(float3 viewPosition, int samples)
 #if DIRECTIONLIGHT_OUT_OF_RANGE
         return 1;
 #else
-        float falloff = smoothstep(0.03, 0.0, length(proj.xy - saturate(proj.xy)));
+        float2 v = proj.xy - saturate(proj.xy);
+        float falloff = smoothstep(0.0001, 0.0, dot(v, v));
         return saturate(falloff);
 #endif
     }
