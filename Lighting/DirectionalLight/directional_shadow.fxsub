@@ -3,12 +3,17 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float mIntensityM : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Intensity-"; >;
+float3 mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
 float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
+static float LightRange = 50 + mRange * 100;
+static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mDirection;
+
+static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap : MATERIALTEXTURE;
@@ -31,8 +36,7 @@ void ShadowMapVS(
     out float4 oPosition : POSITION)
 {
     oTexcoord0 = Texcoord;
-    oPosition = mul(Position, GetLightViewMatrix(LightDirection, LightPosition));
-    oPosition = oTexcoord1 = CalcLightProjPos(60, LightPlaneNear, LightPlaneFar, oPosition);
+    oTexcoord1 = oPosition = mul(Position, matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
@@ -46,7 +50,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, 
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return exp(position.z * 0.5);
+    return exp((position.z / position.w) * 200);
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

@@ -13,6 +13,10 @@ static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 LightPosition = mDirection;
 
+static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
@@ -34,8 +38,7 @@ void ShadowMapVS(
     out float4 oPosition : POSITION)
 {
     oTexcoord0 = Texcoord;
-    oPosition = mul(Position, GetLightViewMatrix(LightDirection, LightPosition));
-    oPosition = oTexcoord1 = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, oPosition);
+    oTexcoord1 = oPosition = mul(Position, matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR

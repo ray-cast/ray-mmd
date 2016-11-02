@@ -5,25 +5,6 @@
 
 float3 LightPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 
-float4x4 GetDualViewMatrix(float face)
-{
-    return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,
-                     0.0f, face,   0.0f, 0.0f,
-                     0.0f, 0.0f, face,   0.0f,
-                     -LightPosition.x, -LightPosition.y*face, -LightPosition.z*face, 1.0f );
-};
-
-float4x4 GetDualProjMatrix(float4 P, float face)
-{
-    float L = length(P.xyz);
-    float vL = 1.0f / L;
-    float z = PointLightFar * vL * (L - PointLightNear) / (PointLightFar - PointLightNear);
-    return float4x4( vL, 0.0f, 0.0f,  0.0f,
-                     0.0f,   0.5f*vL, 0.0f,  0.0f,
-                     0.0f,   0.5f*vL*face,  z*vL,  vL,  
-                     0.0f,   0.5f*face,     z,     1.0f );
-}
-
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
@@ -45,8 +26,8 @@ void ShadowMapGenVS(
     uniform float face)
 {
     oTexcoord0 = Texcoord;
-    oTexcoord1 = mul(Position, GetDualViewMatrix(face));
-    oTexcoord2 = oPosition = mul(oTexcoord1, GetDualProjMatrix(oTexcoord1, face));
+    oTexcoord1 = mul(Position, CreateDualViewMatrix(LightPosition, face));
+    oTexcoord2 = oPosition = mul(oTexcoord1, CreateDualProjMatrix(oTexcoord1, PointLightNear, PointLightFar, face));
 }
 
 float4 ShadowMapGenPS(

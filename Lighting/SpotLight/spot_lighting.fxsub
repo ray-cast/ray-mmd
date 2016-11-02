@@ -26,6 +26,11 @@ static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
+static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
+
 #undef SHADOW_MAP_SIZE
 
 #if SHADOW_MAP_ENABLE
@@ -70,10 +75,7 @@ static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_
 
 float ESM(float3 viewPosition) 
 {
-    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-    float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, mDirection));
-    float4 proj = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, shadowPosition);
-    
+    float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);   
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
     proj.z = exp(-proj.z * 0.5);
@@ -84,10 +86,7 @@ float ESM(float3 viewPosition)
 
 float PCF(float3 viewPosition, int samples) 
 {
-    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-    float4 shadowPosition = mul(worldPosition, GetLightViewMatrix(LightDirection, mDirection));
-    float4 proj = CalcLightProjPos(LightSpotAngle, LightPlaneNear, LightPlaneFar, shadowPosition);
-    
+    float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
     proj.z = exp(-proj.z * 0.5);

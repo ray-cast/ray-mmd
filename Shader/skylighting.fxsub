@@ -25,6 +25,7 @@ static float rotateX = mEnvRotateX * PI_2;
 static float rotateY = mEnvRotateY * PI_2;
 static float rotateZ = mEnvRotateZ * PI_2;
 static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
+static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, LightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);

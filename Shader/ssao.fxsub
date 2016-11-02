@@ -99,7 +99,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     return pow(ao,  1 + ao * (mSSAOP * 10 - mSSAOM));
 }
 
-float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : SV_Target
+float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
     float center_d = abs(linearizeDepth(coord));
 

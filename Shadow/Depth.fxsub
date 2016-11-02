@@ -5,7 +5,8 @@
 
 float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
-static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
+static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, LightZMax);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);

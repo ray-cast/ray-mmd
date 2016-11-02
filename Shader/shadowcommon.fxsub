@@ -27,7 +27,7 @@ const float LightPlaneFar = 500.0;
 const float PointLightNear = 1.0;
 const float PointLightFar  = 1000.0;
 
-float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
+float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
 {
    float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
    float3 up;
@@ -53,13 +53,6 @@ float4x4 GetLightViewMatrix(float3 forward, float3 LightPosition)
                    mul(-LightPosition, rotation), 1);
 };
 
-float4 CalcLightProjPos(float fov, float znear, float zfar, float4 P)
-{
-    float h = 1.0 / tan(fov);
-    float zp = zfar * (P.z - znear) / (zfar - znear);
-    return float4(h * P.x, h * P.y, zp, P.z);
-}
-
 float4x4 CreateLightViewMatrix(float3 forward)
 {
     const float3 up1 = float3(0, 0, 1);
@@ -84,14 +77,75 @@ float4x4 CreateLightViewMatrix(float3 forward)
                     mul(-pos, rotation), 1);
 }
 
-static float4x4 matLightProject = {
-    1,  0,  0,  0,
-    0,  1,  0,  0,
-    0,  0,  1.0 / LightZMax,    0,
-    0,  0,  0,  1
+float4x4 CreateOrthoProject(float width, float height, float near, float far)
+{
+    float cx = 2.0f / width;
+    float cy = 2.0f / height;
+    float cz = 1.0f / (far - near);
+    float tz = near / (near - far);
+
+    float4x4 m;
+    m[0] = float4(cx,  0,  0, 0);
+    m[1] = float4( 0, cy,  0, 0);
+    m[2] = float4( 0,  0, cz, 0);
+    m[3] = float4( 0,  0, tz, 1);
+    
+    return m;
+}
+
+float4x4 CreateOrthoProject(float left, float right, float bottom, float top, float near, float far)
+{
+    float tx = -(right + left) / (right - left);
+    float ty = -(top + bottom) / (top - bottom);
+    float tz = -near / (far - near);
+    float cx = 2.0f / (right - left);
+    float cy = 2.0f / (top - bottom);
+    float cz = 1.0f / (far - near);
+    
+    float4x4 m;
+    m[0] = float4(cx,  0,  0, 0);
+    m[1] = float4( 0, cy,  0, 0);
+    m[2] = float4( 0,  0, cz, 0);
+    m[3] = float4(tx, ty, tz, 1);
+
+    return m;
+}
+
+float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far)
+{
+    float h = 1.0f / tan(fov);
+    float w = h / aspect;
+    float q = far / (far - near);
+
+    float4x4 m;
+    m[0] = float4(w,  0,  0, 0);
+    m[1] = float4( 0, h,  0, 0);
+    m[2] = float4( 0,  0, q, 1);
+    m[3] = float4( 0,  0, -near * q, 0);
+    
+    return m;
+}
+
+float4x4 CreateDualViewMatrix(float3 LightPosition, float face)
+{
+    return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,
+                     0.0f, face,   0.0f, 0.0f,
+                     0.0f, 0.0f, face,   0.0f,
+                     -LightPosition.x, -LightPosition.y * face, -LightPosition.z*face, 1.0f);
 };
 
-float CalculateSplitPosition(float i)
+float4x4 CreateDualProjMatrix(float4 P, float near, float far, float face)
+{
+    float L = length(P.xyz);
+    float vL = 1.0f / L;
+    float z = far * vL * (L - near) / (far - near);
+    return float4x4( vL, 0.0f, 0.0f,  0.0f,
+                     0.0f,   0.5f*vL, 0.0f,  0.0f,
+                     0.0f,   0.5f*vL*face,  z*vL,  vL,  
+                     0.0f,   0.5f*face,     z,     1.0f );
+}
+
+float CalcSplitPosition(float i)
 {
     float p0 = CascadeZMin + ((CascadeZMax - CascadeZMin) / CascadeZMin) * (i / 4.0);
     float p1 = CascadeZMin * pow(CascadeZMax / CascadeZMin, i / 4.0);
@@ -147,9 +201,9 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
     float4 frustumInfo = CreateFrustumFromProjection();
 
     float z0 = CascadeZMin;
-    float z1 = CalculateSplitPosition(1.0);
-    float z2 = CalculateSplitPosition(2.0);
-    float z3 = CalculateSplitPosition(3.0);
+    float z1 = CalcSplitPosition(1.0);
+    float z2 = CalcSplitPosition(2.0);
+    float z3 = CalcSplitPosition(3.0);
     float z4 = CascadeZMax;
 
     return float4x4(
@@ -157,65 +211,6 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
         CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
-}
-
-float ShadowSlopeScaledBias(float depth)
-{
-    float dx = abs(ddx(depth));
-    float dy = abs(ddy(depth));
-    float depthSlope = max(dx, dy);
-    return depthSlope;
-}
-
-float2 ComputeMoments(float depth)
-{
-    float dx = ddx(depth);
-    float dy = ddy(depth);
-    
-    float2 moments;
-    moments.x = depth;
-    moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
-    
-    return moments;
-}
-
-float2 GetEVSMExponents()
-{
-    const float positiveExponent = 1.0;
-    const float negativeExponent = 0.5;
-    const float maxExponent = 5.54f;
-    float2 lightSpaceExponents = float2(positiveExponent, negativeExponent);
-    return min(lightSpaceExponents, maxExponent);
-}
-
-float2 WarpDepth(float depth, float2 exponents)
-{
-    depth = 2.0f * depth - 1.0f;
-    float pos =  exp( exponents.x * depth);
-    float neg = -exp(-exponents.y * depth);
-    return float2(pos, neg);
-}
-
-float Linstep(float a, float b, float v)
-{
-    return saturate((v - a) / (b - a));
-}
-
-float ReduceLightBleeding(float max, float amount)
-{
-    return Linstep(amount, 1.0f, max);
-}
-
-float ChebyshevUpperBound(float2 moments, float depth, float minVariance, float lightBleedingReduction)
-{
-    float variance = moments.y - (moments.x * moments.x);
-    variance = max(variance, minVariance);
-
-    float d = depth - moments.x;
-    float d_max = variance / (variance + (d * d));
-
-    d_max = ReduceLightBleeding(d_max, lightBleedingReduction);
-    return (depth <= moments.x ? 1.0f : d_max);
 }
 
 float CalcEdgeFalloff(float2 texCoord)
@@ -234,4 +229,12 @@ float4 CalcCascadePPos(float2 uv, float2 offset, float index)
 float CalcLight(float casterDepth, float receiverDepth, float rate)
 {
     return 1.0 - saturate((receiverDepth - casterDepth) * rate);
+}
+
+float ShadowSlopeScaledBias(float depth)
+{
+    float dx = abs(ddx(depth));
+    float dy = abs(ddy(depth));
+    float depthSlope = max(dx, dy);
+    return depthSlope;
 }

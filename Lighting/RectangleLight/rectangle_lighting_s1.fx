@@ -24,6 +24,6 @@ const float vedioMapLoopNum = 1.0;
 // 阴影
 #define SHADOW_MAP_ENABLE 1
 #define SHADOW_MAP_QUALITY 1 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 1 // (0 ~ 3)
+#define SHADOW_MAP_SOFT_QUALITY 2 // (0 ~ 3)
 
 #include "rectangle_lighting.fxsub"
