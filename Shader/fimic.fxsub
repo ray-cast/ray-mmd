@@ -505,8 +505,8 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
     
 #if HDR_ENABLE && HDR_BLOOM_QUALITY > 0
     float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;
-    color = lerp(color, bloom, 0.33);
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    color = lerp(color, bloom, 0.33);
     color = ColorBalance(color, float4(balance, mColBalance));
     color = ToneMapping(color, 1.5 + mExposure * 10);
 #else

@@ -81,12 +81,20 @@ float ESM(float3 viewPosition)
 #if DIRECTIONLIGHT_OUT_OF_RANGE
         return 1;
 #else
-        return 0;
+        float falloff = smoothstep(0.03, 0.0, length(proj.xy - saturate(proj.xy)));
+        return saturate(falloff);
 #endif
     }
 
-    float shadow = tex2D(ShadowMapSamp, proj.xy).r * proj.z;
-    return saturate(shadow);
+    float angle = dot(viewLightDirection, viewPosition - viewLightPosition);
+    if (angle < 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);    
+    }
 }
 
 float PCF(float3 viewPosition, int samples) 
@@ -102,26 +110,35 @@ float PCF(float3 viewPosition, int samples)
 #if DIRECTIONLIGHT_OUT_OF_RANGE
         return 1;
 #else
-        return 0;
-#endif   
+        float falloff = smoothstep(0.03, 0.0, length(proj.xy - saturate(proj.xy)));
+        return saturate(falloff);
+#endif
     }
 
-    float shadow = 0.0;
-
-    [unroll]
-    for (int x = -samples; x <= samples; x++) 
+    float angle = dot(viewLightDirection, viewPosition - viewLightPosition);
+    if (angle < 0)
     {
-        [unroll]
-        for (int y = -samples; y <= samples; y++)
-        {
-            float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-            shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
-        }
+        return 1;
     }
-    
-    samples = samples * 2 + 1;
-    
-    return saturate(shadow / (samples * samples));
+    else
+    {
+        float shadow = 0.0;
+
+        [unroll]
+        for (int x = -samples; x <= samples; x++) 
+        {
+            [unroll]
+            for (int y = -samples; y <= samples; y++)
+            {
+                float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
+                shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
+            }
+        }
+        
+        samples = samples * 2 + 1;
+        
+        return saturate(shadow / (samples * samples));
+    }
 }
 
 #endif
