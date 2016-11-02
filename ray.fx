@@ -229,7 +229,8 @@ technique DeferredLighting<
 #endif
 ;>
 {
-#if SHADOW_QUALITY && SHADOW_SOFT_ENABLE
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
+    #if SHADOW_SOFT_ENABLE
     pass ShadowBlurPassX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -242,13 +243,14 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-#elif SHADOW_QUALITY
+    #else
     pass ShadowMapNoBlur < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
     }
+    #endif
 #endif
 #if SSAO_QUALITY
     pass SSAO < string Script= "Draw=Buffer;"; > {

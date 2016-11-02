@@ -111,7 +111,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #endif    
 
     float shadow = 1;
-#if SHADOW_QUALITY > 0
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
     shadow = lerp(1, shadowDepth.r, mEnvShadowP);
 #endif
@@ -126,7 +126,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 
     lighting = lerp(lighting, lighting2, materialAlpha.alpha);
 
-#if SHADOW_QUALITY > 0
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     float linearDepth = shadowDepth.g;
 #else
     float linearDepth = material.linearDepth;
