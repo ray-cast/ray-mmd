@@ -145,6 +145,17 @@ float4x4 CreateDualProjMatrix(float4 P, float near, float far, float face)
                      0.0f,   0.5f*face,     z,     1.0f );
 }
 
+float2 CalcDualShadowCoord(float3 L, float height)
+{
+    bool face = (L.z >= 0) ? true : false;
+    if (!face) L.yz = -L.yz;
+    float2 coord = L.xy / (1.0f + L.z);
+    coord.y = -coord.y;
+    coord = (coord + 1.0f) * 0.5f;
+    coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / height;
+    return coord;
+}
+
 float CalcSplitPosition(float i)
 {
     float p0 = CascadeZMin + ((CascadeZMax - CascadeZMin) / CascadeZMin) * (i / 4.0);
