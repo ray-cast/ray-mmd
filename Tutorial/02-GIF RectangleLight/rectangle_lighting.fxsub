@@ -53,18 +53,125 @@ static float2 LightRect = float2(LightWidth, LightHeight);
 #else
         texture = VideoMap;
 #endif
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MipFilter = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #elif VIDEO_MAP_ENABLE
     texture VideoMap: MATERIALTEXTURE;
     sampler VideoMapSamp = sampler_state
     {
         texture = <VideoMap>;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MipFilter = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
     };
 #endif
 
-float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, float sigma)
+#undef SHADOW_MAP_SIZE
+
+#if SHADOW_MAP_ENABLE
+
+#if SHADOW_MAP_QUALITY == 0
+#   define SHADOW_MAP_WIDTH 256
+#   define SHADOW_MAP_HEIGHT 512
+#elif SHADOW_MAP_QUALITY == 1
+#   define SHADOW_MAP_WIDTH 512
+#   define SHADOW_MAP_HEIGHT 1024
+#elif SHADOW_MAP_QUALITY >= 2
+#   define SHADOW_MAP_WIDTH 1024
+#   define SHADOW_MAP_HEIGHT 2048
+#elif SHADOW_MAP_QUALITY >= 3
+#   define SHADOW_MAP_WIDTH 2048
+#   define SHADOW_MAP_HEIGHT 4096
+#else
+#   define SHADOW_MAP_WIDTH 256
+#   define SHADOW_MAP_HEIGHT 512
+#endif
+
+texture ShadowMap: OFFSCREENRENDERTARGET <
+    string Description = "Shadow Rendering for PointLight";
+    int Width = SHADOW_MAP_WIDTH;
+    int Height = SHADOW_MAP_HEIGHT;
+    string Format = "R32F";
+    float4 ClearColor = { 1, 1, 1, 1 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect = 
+        "self = hide;"
+        "ray_controller.pmx=hide;"
+        "*.pmx = rectangle_shadow.fx;"
+        "*.pmd = rectangle_shadow.fx;"
+        "* = hide";
+>;
+sampler ShadowMapSamp = sampler_state {
+    texture = <ShadowMap>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = NONE;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+
+static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
+static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
+
+float2 GetShadowCoord(float3 L)
+{
+    bool face = (L.z >= 0) ? true : false;
+    if ( !face ) L.yz = -L.yz;
+    float2 coord = L.xy / (1.0f + L.z);
+    coord.y = -coord.y;
+    coord = (coord + 1.0f) * 0.5f;
+    coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / SHADOW_MAP_HEIGHT;
+
+    return coord;
+}
+
+float ESM(float3 viewPosition)
+{
+    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
+    float3 L = worldPosition.xyz - LightPosition;
+    
+    float linearDepth = length(L);
+    
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
+    
+    return saturate(depth * exp(tex2D(ShadowMapSamp, GetShadowCoord(L / linearDepth)).r * depthScale));
+}
+
+float PCF(float3 viewPosition, int samples) 
+{
+    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
+    float3 L = worldPosition.xyz - LightPosition;
+    
+    float linearDepth = length(L);
+    
+    float depthScale = 85;
+    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+    depth = exp(depth * -depthScale);
+    
+    float2 coord = GetShadowCoord(L / linearDepth);
+
+    float shadow = 0.0;
+
+    [unroll]
+    for (int x = -samples; x <= samples; x++) 
+    {
+        [unroll]
+        for (int y = -samples; y <= samples; y++)
+        {
+            float2 pos = coord.xy + float2(x, y) * ShadowmapOffset2;
+            shadow += saturate(exp(tex2D(ShadowMapSamp, pos).r * depthScale) * depth);
+        }
+    }
+    
+    samples = samples * 2 + 1;
+    
+    return saturate(shadow / (samples * samples));
+}
+
+#endif
+
+float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, float sigma, float mip)
 {
     float totalWeight = 0.0;
     float4 totalColor = 0.0;
@@ -81,7 +188,7 @@ float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, flo
             float gaussianY = exp(-(j * j) / (2.0 * sigma * sigma));
 
             float offsetY = j * offset.y;
-            float4 color = tex2D(source, (coord + float2(offsetX, offsetY)) * vedioMapLoopNum);
+            float4 color = tex2Dlod(source, float4((coord + float2(offsetX, offsetY)) * vedioMapLoopNum, 0, mip));
 
             totalWeight += gaussianX * gaussianY;
             totalColor += color * gaussianX * gaussianY;
@@ -111,15 +218,23 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 diffuse = material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
     
     #if VIDEO_MAP_ENABLE
-        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10).rgb);
+        float mip = (1 - material.smoothness * material.smoothness) * 6;
+        diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
     #endif
     
     float3 specular = RectangleLightBRDF(material.normal, V, L, viewLightRight, viewLightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
-    
-    coord2 = abs(coord2);
-    
+       
     #if VIDEO_MAP_ENABLE
-        specular *= (coord2.x > 1.0 || coord2.y > 1.0) ? 0.0 : srgb2linear(tex2D(VideoMapSamp, coord2 * vedioMapLoopNum).rgb);
+        if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
+            coord2.x <= 0.0 || coord2.y <= 0.0)
+        {
+            specular *= 0.0;
+        }
+        else
+        {
+            float mip = (1 - material.smoothness * material.smoothness) * 6;
+            specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
+        }
     #endif
     
     float4 lighting = 0;
@@ -131,6 +246,29 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     return lighting;
 }
 
+float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
+{
+    float linearDepth = material.linearDepth;
+    float linearDepth2 = materialAlpha.linearDepth;
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+    
+    float shadow = 1;
+#if SHADOW_MAP_ENABLE
+    float3 P = V * linearDepth / V.z;
+    #if SHADOW_MAP_SOFT_QUALITY == 1
+        shadow *= PCF(P, 1);
+    #elif SHADOW_MAP_SOFT_QUALITY >= 2
+        shadow *= PCF(P, 2);
+    #elif SHADOW_MAP_SOFT_QUALITY >= 3
+        shadow *= PCF(P, 3);
+    #else
+        shadow *= ESM(P);
+    #endif
+#endif
+
+    return shadow;
+}
+
 void LightSourceVS(
     in float4 Position : POSITION,
     in float3 Normal : NORMAL,
@@ -138,9 +276,7 @@ void LightSourceVS(
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
-{
-    Position.xyz = LightPosition + Normal * LightRange;
-    
+{   
     oPosition = float4(CoordToPos(Texcoord), 0, 1);
     oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
     oTexcoord1 = -mul(oPosition, matProjectInverse);
@@ -172,26 +308,71 @@ void LightSourcePS(
     
     oColor0 = ShadingMaterial(material, V);
     oColor1 = ShadingMaterial(materialAlpha, V);
+    
+    float shadow = ShadingShadow(material, materialAlpha, V);
+    oColor0 *= shadow;
+    oColor1 *= shadow;
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-        string Script = \
-            "RenderColorTarget0=;"\
-            "RenderColorTarget1=LightAlphaMap;"\
-            "Pass=DrawObject;"\
-    ;> { \
-        pass DrawObject { \
-            ZEnable = false; ZWriteEnable = false;\
-            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-            SrcBlend = ONE; DestBlend = ONE;\
-            VertexShader = compile vs_3_0 LightSourceVS(); \
-            PixelShader  = compile ps_3_0 LightSourcePS(); \
-        } \
-    }
+void LightSourceShadowlessPS(
+    float2 coord : TEXCOORD0, 
+    float3 viewdir : TEXCOORD1,
+    out float4 oColor0 : COLOR0,
+    out float4 oColor1 : COLOR1)
+{
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
-OBJECT_TEC(MainTec0, "object")
-OBJECT_TEC(MainTecBS0, "object_ss")
+    MaterialParam material;
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+    
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+
+    MaterialParam materialAlpha;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 V = normalize(viewdir);
+    
+    oColor0 = ShadingMaterial(material, V);
+    oColor1 = ShadingMaterial(materialAlpha, V);
+}
+
+technique MainTech0 < string MMDPass = "object";
+    string Script = 
+        "RenderColorTarget0=;"
+        "RenderColorTarget1=LightAlphaMap;"
+        "Pass=DrawObject;"
+;>{
+    pass DrawObject {
+        ZEnable = false; ZWriteEnable = false;
+        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+        SrcBlend = ONE; DestBlend = ONE;
+        CullMode = NONE;
+        VertexShader = compile vs_3_0 LightSourceVS();
+        PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+    }
+}
+
+technique MainTecBS0 < string MMDPass = "object_ss";
+    string Script = 
+        "RenderColorTarget0=;"
+        "RenderColorTarget1=LightAlphaMap;"
+        "Pass=DrawObject;"
+;>{
+    pass DrawObject {
+        ZEnable = false; ZWriteEnable = false;
+        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+        SrcBlend = ONE; DestBlend = ONE;
+        CullMode = NONE;
+        VertexShader = compile vs_3_0 LightSourceVS();
+        PixelShader  = compile ps_3_0 LightSourcePS();
+    }
+}
 
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTech < string MMDPass = "shadow";  > {}
