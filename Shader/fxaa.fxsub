@@ -371,9 +371,9 @@ float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float
                 0.75f,
                 0.166f,
                 0.0833f,
-                8.0f,
-                0.125f,
-                0.05f,
+                0.0f,
+                0.0f,
+                0.0f,
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
             );
     color.rgb = linear2srgb(color.rgb);
