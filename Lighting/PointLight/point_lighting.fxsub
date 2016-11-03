@@ -71,19 +71,7 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
 static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
 
-float2 GetShadowCoord(float3 L)
-{
-    bool face = (L.z >= 0) ? true : false;
-    if ( !face ) L.yz = -L.yz;
-    float2 coord = L.xy / (1.0f + L.z);
-    coord.y = -coord.y;
-    coord = (coord + 1.0f) * 0.5f;
-    coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / SHADOW_MAP_HEIGHT;
-
-    return coord;
-}
-
-float ESM(float3 viewPosition)
+float ShadowPCF(float3 viewPosition, int samples) 
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
     float3 L = worldPosition.xyz - LightPosition;
@@ -93,25 +81,12 @@ float ESM(float3 viewPosition)
     float depthScale = 85;
     float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
     depth = exp(depth * -depthScale);
-  
-    return saturate(depth * exp(tex2D(ShadowMapSamp, GetShadowCoord(L / linearDepth)).r * depthScale));
-}
 
-float PCF(float3 viewPosition, int samples) 
-{
-    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-    float3 L = worldPosition.xyz - LightPosition;
-    
-    float linearDepth = length(L);
-    
-    float depthScale = 85;
-    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
-    depth = exp(depth * -depthScale);
-    
-    float2 coord = GetShadowCoord(L / linearDepth);
+    float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
     float shadow = 0.0;
 
+#if SHADOW_MAP_SOFT_QUALITY > 0
     [unroll]
     for (int x = -samples; x <= samples; x++) 
     {
@@ -126,6 +101,9 @@ float PCF(float3 viewPosition, int samples)
     samples = samples * 2 + 1;
     
     return saturate(shadow / (samples * samples));
+#else
+    return saturate(depth * exp(tex2D(ShadowMapSamp, coord).r * depthScale));
+#endif
 }
 
 #endif
@@ -160,13 +138,13 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
 #if SHADOW_MAP_ENABLE
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
-        shadow *= PCF(P, 1);
+        shadow *= ShadowPCF(P, 1);
     #elif SHADOW_MAP_SOFT_QUALITY >= 2
-        shadow *= PCF(P, 2);
+        shadow *= ShadowPCF(P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
-        shadow *= PCF(P, 3);
+        shadow *= ShadowPCF(P, 3);
     #else
-        shadow *= ESM(P);
+        shadow *= ShadowPCF(P, 0);
     #endif
 #endif
 

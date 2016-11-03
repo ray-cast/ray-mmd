@@ -156,7 +156,7 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
         shadow *= ShadowPCF(P, 3);
     #else
-        shadow *= ShadowPCF(P, 1);
+        shadow *= ShadowPCF(P, 0);
     #endif
 #endif
 
