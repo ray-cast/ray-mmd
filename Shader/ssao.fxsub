@@ -1,3 +1,8 @@
+// Scalable Ambient Obscurance
+// Open Source under the "BSD" license: http://www.opensource.org/licenses/bsd-license.php
+// NVIDIA SAO for Ray-MMD converted and originaly made by Morgan McGuire and Michael Mara
+// COPYRIGHT (C) 2010, 2011 NVIDIA CORPORATION. ALL RIGHTS RESERVED.
+
 #if SSAO_QUALITY == 1
 #   define SSAO_SAMPLER_COUNT 8
 #elif SSAO_QUALITY == 2
