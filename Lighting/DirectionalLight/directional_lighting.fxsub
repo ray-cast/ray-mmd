@@ -68,41 +68,12 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
 static float2 ShadowmapOffset2 = float2(1.5 / SHADOW_MAP_SIZE, 1.5 / SHADOW_MAP_SIZE);
 
-float ESM(float3 viewPosition) 
+float ShadowPCF(float3 viewPosition, int samples) 
 {
     float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
-    proj.z = exp(-(proj.z / proj.w) * 200);
-
-    if (proj.x < 0.0 || proj.x > 1.0 ||
-        proj.y < 0.0 || proj.y > 1.0)
-    {
-#if DIRECTIONLIGHT_OUT_OF_RANGE
-        return 1;
-#else
-        float2 v = proj.xy - saturate(proj.xy);
-        float falloff = smoothstep(0.0001, 0.0, dot(v, v));
-        return saturate(falloff);
-#endif
-    }
-
-    float angle = dot(viewLightDirection, viewPosition - viewLightPosition);
-    if (angle < 0)
-    {
-        return 1;
-    }
-    else
-    {
-        return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);    
-    }
-}
-
-float PCF(float3 viewPosition, int samples) 
-{
-    float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
-    proj.xy = PosToCoord(proj.xy / proj.w);
-    proj.xy += ShadowmapOffset;
+    proj.z -= ShadowSlopeScaledBias(proj.z);
     proj.z = exp(-(proj.z / proj.w) * 200);
 
     if (proj.x <= 0.0 || proj.x >= 1.0 ||
@@ -124,6 +95,7 @@ float PCF(float3 viewPosition, int samples)
     }
     else
     {
+#if SHADOW_MAP_SOFT_QUALITY > 0
         float shadow = 0.0;
 
         [unroll]
@@ -140,6 +112,9 @@ float PCF(float3 viewPosition, int samples)
         samples = samples * 2 + 1;
         
         return saturate(shadow / (samples * samples));
+#else
+        return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z); 
+#endif
     }
 }
 
@@ -175,13 +150,13 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
 #if SHADOW_MAP_ENABLE
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
-        shadow *= PCF(P, 1);
+        shadow *= ShadowPCF(P, 1);
     #elif SHADOW_MAP_SOFT_QUALITY >= 2
-        shadow *= PCF(P, 2);
+        shadow *= ShadowPCF(P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
-        shadow *= PCF(P, 3);
+        shadow *= ShadowPCF(P, 3);
     #else
-        shadow *= ESM(P);
+        shadow *= ShadowPCF(P, 1);
     #endif
 #endif
 
