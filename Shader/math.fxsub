@@ -142,7 +142,7 @@ float BilateralWeight(float r, float depth, float center_d, float sigma, float s
     const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
     float ddiff = (depth - center_d) * sharpness;
-    return exp2(-r * r * blurFalloff - ddiff * ddiff);
+    return exp(-r * r * blurFalloff - ddiff * ddiff);
 }
 
 float SmoothCurve(float x)

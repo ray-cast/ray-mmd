@@ -63,10 +63,17 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 P = mul(float4(-viewdir * material.linearDepth, 1), matViewInverse).xyz;
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
+    
+#if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2D(SSAOMapSamp, coord).r;
+#endif
 
     float3 lighting = 0;
     lighting += tex2D(LightMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
     lighting += ShadingMaterial(N, V, L, coord, material);
+#if SSAO_SAMPLER_COUNT > 0
+    lighting *= ComputeSpecularOcclusion(dot(N, V), ssao, material.smoothness);
+#endif
     
 #if OUTDOORFLOOR_QUALITY > 0
     float floorVisiable = saturate(step(0.9, dot(N, float3(0, 1, 0))));
@@ -85,7 +92,10 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 N2 = mul(materialAlpha.normal, (float3x3)matViewInverse);
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
     lighting2 += tex2D(LightAlphaMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
-    
+#if SSAO_SAMPLER_COUNT > 0
+    lighting2 *= ComputeSpecularOcclusion(dot(N2, V), ssao, material.smoothness);
+#endif
+
 #if IBL_QUALITY > 0   
     float3 diffuse, diffuse2;
     float3 specular, specular2;
@@ -103,7 +113,6 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord).r;
     diffuse *= ssao;
     diffuse2 *= ssao;
     specular *= ComputeSpecularOcclusion(dot(N, V), ssao, material.smoothness);
