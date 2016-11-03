@@ -357,7 +357,7 @@ FxaaFloat4 FxaaPixelShader(
     }
 }
 
-float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : SV_Target
+float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : COLOR
 {
     float4 color = FxaaPixelShader(coord.xy,
                 FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
