@@ -266,3 +266,4 @@ Ray-MMD
 * [RGBM color encoding](http://graphicrants.blogspot.com/2009/04/rgbm-color-encoding.html)
 * [Horizon Occlusion for IBL](http://marmosetco.tumblr.com/post/81245981087)
 * [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)
+* [Parallax Occlusion Map](http://sunandblackcat.com/tipFullView.php?topicid=28)

@@ -304,7 +304,7 @@ float3 rgb2ycbcr(float3 col)
     return half3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
-float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, float3 tangentNormal)
+float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, float3 tangentNormal)
 {
     float3 dp1 = ddx(viewdir);
     float3 dp2 = ddy(viewdir);
@@ -325,6 +325,14 @@ float3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
     tbnTransform[2] = N;
 
     return normalize(mul(tangentNormal, tbnTransform));
+}
+
+float3 ComputeNormalFromHeight(sampler heightMap, float2 coord, float2 offset, float height)
+{
+    float center = tex2D(heightMap, coord).x;
+    float left = tex2D(heightMap, coord + float2(offset.x, 0)).x;
+    float right = tex2D(heightMap, coord + float2(0, offset.y)).x;
+    return normalize(float3(center - left, center - right, height));
 }
 
 float3 ParallaxOcclusionDirection(float3 normal, float3 worldPos, float2 coord)
@@ -649,7 +657,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             tangentNormal = normalize(tangentNormal);
         #endif
         
-        return computeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
+        return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
     #else
         return N;
     #endif
