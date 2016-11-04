@@ -22,10 +22,12 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2016-XX-XX ver 1.1.0
-* 改进了NormalMap
-* 改进了ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
+* 添加DirectionalLight
+* 改进NormalMap
+* 改进ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
 * 改进SSAO近处时出现的白边
-* 纹理LOD采样方式改为各向异性
+* 优化多光源的运算速度
+* 纹理LOD采样方式改为各向异性16x
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
