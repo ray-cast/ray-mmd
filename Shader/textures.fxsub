@@ -148,7 +148,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 >;
 sampler DepthMapSamp = sampler_state {
     texture = <DepthMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE

@@ -114,14 +114,16 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     float2 offset1 = coord + offset;
     float2 offset2 = coord - offset;
     
+    float sharpness = lerp(8, 1, saturate(center_d / 100));
+    
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
     {
         float depth1 = abs(linearizeDepth(offset1));
         float depth2 = abs(linearizeDepth(offset2));
         
-        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, 6);
-        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, 6);
+        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
+        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
         total_c += tex2D(source, offset1).r * bilateralWeight1;
         total_c += tex2D(source, offset2).r * bilateralWeight2;
