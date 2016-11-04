@@ -117,7 +117,7 @@ float HorizonOcclusion(float3 N, float3 R)
 
 float EnvironmentMip(int miplevel, float smoothness)
 {
-    return lerp(miplevel, 0, smoothness);
+    return lerp(miplevel, 0, smoothness * smoothness);
 }
 
 float3 EnvironmentReflect(float3 normal, float3 view)
