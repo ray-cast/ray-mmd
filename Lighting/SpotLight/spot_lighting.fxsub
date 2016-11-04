@@ -118,7 +118,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float4 lighting = 0.0f;
     lighting.rgb = atten1 * material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
     lighting.rgb += atten2 * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * any(material.albedo + material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     
     return lighting;
@@ -191,10 +191,16 @@ void LightSourcePS(
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
+    float3 sum1 = material.albedo + material.specular;
+    float3 sum2 = material.albedo + material.specular;
+    clip(sum(sum1 + sum2 - 1e-5));
+
     float3 V = normalize(viewdir);
     
     oColor0 = ShadingMaterial(material, V);
     oColor1 = ShadingMaterial(materialAlpha, V);
+    
+    clip(sum(oColor0 + oColor1) - 1e-5);
     
     float shadow = ShadingShadow(material, materialAlpha, V);
     oColor0 *= shadow;
@@ -226,6 +232,10 @@ void LightSourceShadowlessPS(
 
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 sum1 = material.albedo + material.specular;
+    float3 sum2 = material.albedo + material.specular;
+    clip(sum(sum1 + sum2 - 1e-5));
     
     float3 V = normalize(viewdir);
     

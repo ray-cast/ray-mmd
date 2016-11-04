@@ -62,6 +62,26 @@ float pow2(float x)
     return x * x;
 }
 
+float sum(float3 v)
+{
+    return v.x + v.y + v.z;
+}
+
+float sum(float4 v)
+{
+    return v.x + v.y + v.z + v.w;
+}
+
+float length2(float3 v)
+{
+    return dot(v, v);
+}
+
+float length2(float4 v)
+{
+    return dot(v, v);
+}
+
 float3 DecodeRGBM(in float4 rgbm)
 {
     return 6 * rgbm.rgb * rgbm.a;
