@@ -51,7 +51,7 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
                    rotation[1], 0,
                    rotation[2], 0,
                    mul(-LightPosition, rotation), 1);
-};
+}
 
 float4x4 CreateLightViewMatrix(float3 forward)
 {
@@ -132,7 +132,7 @@ float4x4 CreateDualViewMatrix(float3 LightPosition, float face)
                      0.0f, face,   0.0f, 0.0f,
                      0.0f, 0.0f, face,   0.0f,
                      -LightPosition.x, -LightPosition.y * face, -LightPosition.z*face, 1.0f);
-};
+}
 
 float4x4 CreateDualProjMatrix(float4 P, float near, float far, float face)
 {
