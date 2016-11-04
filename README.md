@@ -25,7 +25,7 @@ Ray-MMD
 * 添加DirectionalLight
 * 改进NormalMap
 * 改进ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
-* 改进SSAO近处时出现的白边
+* 改进SSAO,以及近处时出现的白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_110.jpg)
 * 优化多光源的运算速度
 * 纹理LOD采样方式改为各向异性16x
 
