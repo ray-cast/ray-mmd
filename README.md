@@ -14,11 +14,14 @@ Ray-MMD
 ```
     http://www.linfo.org/mitlicense.html
 ```
-
 #### HDRI :
 * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
 * [++skies;](https://aokcub.net/cg/incskies/)
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
+
+#### Text editor:
+* [Notepad++](https://notepad-plus-plus.org/)
+* [Visual studio code](http://code.visualstudio.com/Download)
 
 #### 更新内容 :
 ##### 2016-XX-XX ver 1.1.0
@@ -89,15 +92,10 @@ Ray-MMD
 ##### 4.0 材质介绍 :
 　　因为考虑跨地区，文本统一使用了UTF8的编码，使用系统自带记事本的修改保存会导致出错，
 建议下载文本编辑器(notepad++, visual studio code, sublime text3) 编辑器来修改
-* Notepad++[(Link)](https://notepad-plus-plus.org/)
-* Visual studio code[(Link)](http://code.visualstudio.com/Download)
-
-* 启用自定义材质
-    * 编写自定义材质时需要将USE_CUSTOM_MATERIAL设置成 1
-    
 * Albedo(物体的贴图色)
     * Albedo是描述光线与材质的反照率，与DiffuseMap区别在于没有高光和环境光遮蔽
-    * 默认材质是启用贴图的,贴图使用PMX中模型的纹理  
+    * 编写自定义材质时需要将USE_CUSTOM_MATERIAL设置成 1
+    * 默认时材质是启用贴图的,贴图使用PMX中模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
     * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0(既不使用PMX模型中的贴图)
     * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文, 路径分割"\"改为"/")  
