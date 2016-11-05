@@ -89,14 +89,14 @@ Ray-MMD
 ##### 4.0 材质介绍 :
 　　因为考虑跨地区，文本统一使用了UTF8的编码，使用系统自带记事本的修改保存会导致出错，
 建议下载文本编辑器(notepad++, visual studio code, sublime text3) 编辑器来修改
-* Notepad++ [Link](https://notepad-plus-plus.org/)
-* Visual studio code [Link](http://code.visualstudio.com/Download)
+* Notepad++[(Link)](https://notepad-plus-plus.org/)
+* Visual studio code[(Link)](http://code.visualstudio.com/Download)
 
 * 启用自定义材质
     * 编写自定义材质时需要将USE_CUSTOM_MATERIAL设置成 1
     
 * Albedo(物体的贴图色)
-    * Albedo是描述光线与材质的反照率，与(DiffuseMap)区别在于没有高光和环境光遮蔽
+    * Albedo是描述光线与材质的反照率，与DiffuseMap区别在于没有高光和环境光遮蔽
     * 默认材质是启用贴图的,贴图使用PMX中模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
     * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0(既不使用PMX模型中的贴图)
@@ -107,11 +107,11 @@ Ray-MMD
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
     * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上, ALBEDO_MAP_APPLY_DIFFUSE则是PMX文件中的扩散色  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
-    * ALBEDO_MAP_UV_FLIP改为1，可以将纹理水平翻转
-    * albedoLoopNum用于修改贴图密度()
+    * ALBEDO_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * const albedoLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * NormalMap(法线贴图)
-    * 添加物体的法线贴图和添加albedo一样
-    * 将NORMAL_MAP_ENABLE设置1，然后指定NORMAL_MAP_FILE的文件路径  
+    * 添加物体的法线贴图和添加albedo同理
+    * NORMAL_MAP_ENABLE设置1，然后指定NORMAL_MAP_FILE的文件路径  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_0.jpg)](https://github.com/ray-cast/images/raw/master/normal_0.jpg)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
     * const float normalMapSubScale = 1.0; 法线的强度，修改成5以后的效果(贴图凸凹颠时可以设置成 -1.0)  
@@ -119,7 +119,7 @@ Ray-MMD
     * const float normal/normalSub/MapLoopNum = 1.0; 用于修改贴图的密度，修改成2的效果
     [![link text](https://github.com/ray-cast/images/raw/master/normal_3.png)](https://github.com/ray-cast/images/raw/master/normal_3.png)
 * SubNormalMap(多层法线材质)
-    * 子法线是在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔, 使用方法和法线贴图一致
+    * 用于在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔, 使用方法和法线贴图一致
     * NORMAL_MAP_SUB_ENABLE 设置1时启用贴图
     * NORMAL_MAP_SUB_UV_FLIP 设置1时水平翻转纹理坐标
     * NORMAL_MAP_SUB_FILE 启用贴图时使用的贴图路径
@@ -127,18 +127,18 @@ Ray-MMD
     * const float normalMapSubLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Smoothness(光滑度)  
     [![link text](https://github.com/ray-cast/images/raw/master/smoothness.jpg)](https://github.com/ray-cast/images/raw/master/smoothness.jpg)
-    * 用于描述物体在微观表面的光滑程度
+    * 描述物体在微观表面的光滑程度
     * SMOOTHNESS_MAP_ENABLE 设置1时启用贴图
     * SMOOTHNESS_MAP_IN_TOONMAP 设置1时使用PMX中的Toon贴图 (需要先启用SMOOTHNESS_MAP_ENABLE)
     * SMOOTHNESS_MAP_IS_ROUGHNESS 设置1时贴图是粗糙度而不是光滑度
     * SMOOTHNESS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
     * SMOOTHNESS_MAP_SWIZZLE 指定贴图使用的颜色通道 (R = 0, G = 1, B = 2, A = 3, 灰度图不需要指定)
     * SMOOTHNESS_MAP_FILE 启用贴图时使用的贴图路径
-    * const float smoothness = 0.5; 取值范围0 ~ 1，0最粗糙，1最光滑
+    * const float smoothness = 0.0; 取值范围0 ~ 1 (0 = 粗糙，1 = 光滑)
     * const float smoothnessMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)    
 * Metalness(金属程度)  
     [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
-    * metalness描述物体的金属程度是一个在绝缘体，半导体，和导体的插值
+    * 描述物体的金属程度是一个在绝缘体，半导体，和导体的插值
     * METALNESS_MAP_ENABLE 设置1时启用贴图
     * METALNESS_MAP_IN_TOONMAP 设置1时使用PMX中的Toon贴图 (需要先启用METALNESS_MAP_ENABLE)
     * METALNESS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
@@ -147,19 +147,19 @@ Ray-MMD
     * const float metalness = 1.0 取值范围在0 ~ 1，0为绝缘体，1表示导体(金属)
     * const float metalnessMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
     * const float metalnessBaseSpecular = 0.04; 指定物体反射系数 (添加这个值可以增加金属性，0.0时物体不反射IBL的specular)
-* SSS(次表面散射)  
+* Sub Surface Scattering(次表面散射)  
     [![link text](https://github.com/ray-cast/images/raw/master/SSS.png)](https://github.com/ray-cast/images/raw/master/SSS.png)
-    * SSS(Sub Surface Scattering)用于渲染皮肤，玉器时使用的
+    * 描述物体散射色，用于渲染皮肤，玉器时使用的
     * SSS_ENABLE 设置1时启用次表面散射
     * SSS_MAP_ENABLE 设置1时启用贴图
     * SSS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
     * SSS_MAP_APPLY_COLOR 设置1时将const float3 transmittance = 0.0;的颜色乘算到贴图色上
     * SSS_MAP_FILE 启用贴图时使用的贴图路径
     * const float3 transmittance = 0.0; 散射色,皮肤可以使用例如 float3 transmittance = float3(0.1, 0.0, 0.0);
-    * const float transmittanceStrength = 0.0f; 用于指定SSS的强度，0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤
+    * const float transmittanceStrength = 0.0f; 用于指定SSS的强度 (0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤)
     * const float transmittanceMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Melanin(黑色素)
-    * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白, SSS中的截图因为使用了Melain, 所以会看起来像鸡蛋
+    * 可以使物体渲染的更黝黑一些,显得不那么白,SSS中的截图因为使用了Melain, 所以会看起来像鸡蛋
     * MELANIN_MAP_ENABLE 设置1时启用贴图
     * MELANIN_MAP_UV_FLIP 设置1时水平翻转纹理坐标
     * MELANIN_MAP_SWIZZLE 指定贴图使用的颜色通道 (R = 0, G = 1, B = 2, A = 3, 灰度图不需要指定)
@@ -171,7 +171,7 @@ Ray-MMD
     * EMISSIVE_USE_ALBEDO 设置1时使用Albedo的参数代替自发光参数,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
     * EMISSIVE_MAP_ENABLE 设置1时启用贴图
     * EMISSIVE_MAP_IN_TEXTURE 设置1时使用PMX模型中的贴图色
-    * EMISSIVE_MAP_IN_SCREEN_MAP 使用MMD中的屏幕贴图/AVI贴图，需要先载入Extension/DummyScreen/DummyScreen.x
+    * EMISSIVE_MAP_IN_SCREEN_MAP 使用MMD中的屏幕贴图/AVI贴图，需要先载入扩展目录中的DummyScreen.x
     * EMISSIVE_MAP_ANIMATION_ENABLE 设置1时贴图是一个GIF/APNG图片
     * EMISSIVE_MAP_ANIMATION_SPEED GIF/APNG的播放速度
     * EMISSIVE_MAP_UV_FLIP 设置1时水平翻转纹理坐标
