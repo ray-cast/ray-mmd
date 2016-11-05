@@ -141,7 +141,8 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     float2 offset1 = coord + offset;
     float2 offset2 = coord - offset;
     
-    float sharpness = lerp(8, 1, saturate(center_d / 100));
+    float3 N = mul(GetNormal(coord), (float3x3)matView);    
+    float sharpness = lerp(8 * dot(N, float3(0,0,-1)), 1, saturate(center_d / 100));
     
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
