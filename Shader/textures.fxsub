@@ -89,12 +89,12 @@ shared texture EnvLightSpecMap: RENDERCOLORTARGET <
 >;
 sampler EnvLightMapSamp = sampler_state {
     texture = <EnvLightMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler EnvLightSpecMapSamp = sampler_state {
     texture = <EnvLightSpecMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif

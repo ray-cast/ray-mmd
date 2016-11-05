@@ -113,7 +113,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
     float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
-    showTotal += showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showEmissiveAlpha;
+    showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showEmissiveAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
     
     float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
