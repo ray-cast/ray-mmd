@@ -39,8 +39,8 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_UV_FLIP 0
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
-const float normalMapSubLoopNum = 1.0;
 const float normalMapSubScale = 1;
+const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0

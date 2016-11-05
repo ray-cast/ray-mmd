@@ -48,8 +48,9 @@ Ray-MMD
 </a>   
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
 这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
-颜色最大只有255的并不是HDR(High-dynamic-range).  
-　　因此IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，以及HDR那篇教程来制作，这样光照效果会显得更亮，画面也不会灰(以下是没有使用HDR效果):  
+颜色最大只有255(整数时是 0 ~ 255, 浮点时是0.0 ~ 1.0)的并不是HDR(High-dynamic-range).  
+　　因此IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，这样光照效果会显得更亮，立体感更强，
+画面也不会灰,越亮的区域产生的bloom也会越大(以下是没有使用HDR效果):  
 <a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_nohdr.jpg">
     <img src="https://github.com/ray-cast/images/raw/master/IBL2_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
 </a>
@@ -61,18 +62,21 @@ Ray-MMD
 </a>    
 
 ##### 2.0 文件夹介绍 :
-* Lighting : 光源/环境光(IBL)相关特效
+* Extension : 添加一些额外的
+* Lighting : 多光源相关特效
 * Main : 添加物体基本的光照
 * Materials : 用于指定物体材质 (如皮肤，金属，天空盒....)
-* Shadow : 用于渲染物体阴影的特效
+* Shader : ray.x所需要的代码(不要挂载里面的文件)
+* Shadow : 用于渲染物体阴影的特效(注:取消AO可以在DepthMap板块挂depth_nossao.fx)
 * Skybox : 基本的天空盒特效和纹理
-* Tools : 制作天空盒需要用到的文件
+* Tools : 制作天空盒需要用到的工具
+* Tutorial : 一些比较进阶的教程
 * ray.conf : 配置文件(可自行修改)
 * ray.x : 渲染主文件
 * ray_controller.pmx : 调整光强，SSAO，泛光..等效果
 
 ##### 3.0 载入模型 :
-* 将ray.x载入到MMD中, 并且关闭MMD自带的抗锯齿
+* 将ray.x拖拽到MMD中, 并且关闭MMD自带的抗锯齿
 * 添加Skybox/skybox.pmx,检查MaterialMap中是否挂载了material_skybox.fx  
 [![link text](https://github.com/ray-cast/images/raw/master/2.2.png)](https://github.com/ray-cast/images/raw/master/2.2.png)
 * 在EnvLightMap板块中对skybox.pmx赋予天空球目录中的skylighting_hdr.fx
@@ -83,61 +87,117 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/2.5_small.png)](https://github.com/ray-cast/images/raw/master/2.5.png)  
 
 ##### 4.0 材质介绍 :
-　　因为考虑跨地区，文本统一使用了UTF8的编码，所以使用系统自带的修改保存会导致出错，需要下载文本编辑器(notepad++, sublime text3)这类编辑器来修改
+　　因为考虑跨地区，文本统一使用了UTF8的编码，使用系统自带记事本的修改保存会导致出错，
+建议下载文本编辑器(notepad++, visual studio code, sublime text3) 编辑器来修改
+* Notepad++ [Link](https://notepad-plus-plus.org/)
+* Visual studio code [Link](http://code.visualstudio.com/Download)
 
-* Albedo(反照率，物体的贴图色)
-    * Albedo是描述光线与材质的反照率，与贴图(DiffuseMap)区别在Albedo没有类似头发的高光，它属于光滑度/金属产生的效果
-    * 编写自己的材质时需要将USE_CUSTOM_MATERIAL设置成 1
-    * 默认albedo是启用贴图的,且贴图来至PMX模型的纹理  
+* 启用自定义材质
+    * 编写自定义材质时需要将USE_CUSTOM_MATERIAL设置成 1
+    
+* Albedo(物体的贴图色)
+    * Albedo是描述光线与材质的反照率，与(DiffuseMap)区别在于没有高光和环境光遮蔽
+    * 默认材质是启用贴图的,贴图使用PMX中模型的纹理  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_0.png)](https://github.com/ray-cast/images/raw/master/albedo_0.png)
-    * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0
-    * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文)  
+    * 指定自定义纹理需要将ALBEDO_MAP_IN_TEXTURE设置成0(既不使用PMX模型中的贴图)
+    * 然后修改ALBEDO_MAP_FILE的路径，路径可以使用相对/绝对路径 (不要带有中文, 路径分割"\"改为"/")  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)](https://github.com/ray-cast/images/raw/master/albedo_1.jpg)
-    * 如果该图片是一个GIF/APNG需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1 (播放时图片才会动)
-    * 此外ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小倍率为1倍速  
+    * 使用GIF/APNG做为纹理需要将ALBEDO_MAP_ANIMATION_ENABLE设置成1 (播放时图片才会动)
+    * ALBEDO_MAP_ANIMATION_SPEED可以控制播放的速度，但最小播放速度为1倍速  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)](https://github.com/ray-cast/images/raw/master/albedo_2.jpg)
-    * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上，ALBEDO_MAP_APPLY_DIFFUSE 则是PMX文件里的扩散色  
+    * ALBEDO_MAP_APPLY_COLOR设置1可以将自定义颜色乘到贴图上, ALBEDO_MAP_APPLY_DIFFUSE则是PMX文件中的扩散色  
     [![link text](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)](https://github.com/ray-cast/images/raw/master/albedo_apply_color.png)
+    * ALBEDO_MAP_UV_FLIP改为1，可以将纹理水平翻转
+    * albedoLoopNum用于修改贴图密度()
 * NormalMap(法线贴图)
-    * 添加物体的法线贴图和添加albedo一样同理
-    * 将NORMAL_MAP_ENABLE设置1，以及指定NORMAL_MAP_FILE的文件路径  
+    * 添加物体的法线贴图和添加albedo一样
+    * 将NORMAL_MAP_ENABLE设置1，然后指定NORMAL_MAP_FILE的文件路径  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_0.jpg)](https://github.com/ray-cast/images/raw/master/normal_0.jpg)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
-    * 法线的强度可以修改normalMapSubScale数值，修改成5以后的效果  
+    * const float normalMapSubScale = 1.0; 法线的强度，修改成5以后的效果(贴图凸凹颠时可以设置成 -1.0)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_2.png)](https://github.com/ray-cast/images/raw/master/normal_2.png)
-    * 修改贴图的密度，可以使用albedo/normal/MapSubLoopNum等，修改成2的效果
+    * const float normal/normalSub/MapLoopNum = 1.0; 用于修改贴图的密度，修改成2的效果
     [![link text](https://github.com/ray-cast/images/raw/master/normal_3.png)](https://github.com/ray-cast/images/raw/master/normal_3.png)
 * SubNormalMap(多层法线材质)
-    * 子法线是在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔
-    * 使用方法和法线贴图一致，同样可以调节迭代次数，以及强弱
+    * 子法线是在主法线或没有法线的基础上添加一些噪音法线贴图，类似给皮肤加粗糙毛孔, 使用方法和法线贴图一致
+    * NORMAL_MAP_SUB_ENABLE 设置1时启用贴图
+    * NORMAL_MAP_SUB_UV_FLIP 设置1时水平翻转纹理坐标
+    * NORMAL_MAP_SUB_FILE 启用贴图时使用的贴图路径
+    * const float normalMapSubScale = 1.0; 法线的强度(贴图凸凹颠时可以设置成 -1.0)
+    * const float normalMapSubLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Smoothness(光滑度)  
     [![link text](https://github.com/ray-cast/images/raw/master/smoothness.jpg)](https://github.com/ray-cast/images/raw/master/smoothness.jpg)
-    * 用于描述物体在微观表面的光滑程度，取值范围0 ~ 1，0最粗糙，1最光滑 (贴图方式和以上同理)  
-    * 如果需要使用粗糙度而不是光滑度，指定SMOOTHNESS_MAP_IS_ROUGHNESS为1
+    * 用于描述物体在微观表面的光滑程度
+    * SMOOTHNESS_MAP_ENABLE 设置1时启用贴图
+    * SMOOTHNESS_MAP_IN_TOONMAP 设置1时使用PMX中的Toon贴图 (需要先启用SMOOTHNESS_MAP_ENABLE)
+    * SMOOTHNESS_MAP_IS_ROUGHNESS 设置1时贴图是粗糙度而不是光滑度
+    * SMOOTHNESS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * SMOOTHNESS_MAP_SWIZZLE 指定贴图使用的颜色通道 (R = 0, G = 1, B = 2, A = 3, 灰度图不需要指定)
+    * SMOOTHNESS_MAP_FILE 启用贴图时使用的贴图路径
+    * const float smoothness = 0.5; 取值范围0 ~ 1，0最粗糙，1最光滑
+    * const float smoothnessMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)    
 * Metalness(金属程度)  
     [![link text](https://github.com/ray-cast/images/raw/master/metalness.jpg)](https://github.com/ray-cast/images/raw/master/metalness.jpg)
-    * metalness是一个在绝缘体，半导体，和导体的插值，取值范围在0 ~ 1，0为绝缘体，1表示导体(金属) (贴图方式和以上同理)  
-    * metalnessBaseSpecular指定物体最小的反射系数，添加这个值可以增加金属性，0.0时物体不反射IBL的specular
-    * 不同金属材质的反射系数，可以使用如下颜色指定Albedo (RGB中的颜色除以255)，然后metalness指定为1
-    [![link text](https://github.com/ray-cast/images/raw/master/metal.png)](https://github.com/ray-cast/images/raw/master/metal.png)  
-    [![link text](https://github.com/ray-cast/images/raw/master/dielectric.png)](https://github.com/ray-cast/images/raw/master/dielectric.png)
+    * metalness描述物体的金属程度是一个在绝缘体，半导体，和导体的插值
+    * METALNESS_MAP_ENABLE 设置1时启用贴图
+    * METALNESS_MAP_IN_TOONMAP 设置1时使用PMX中的Toon贴图 (需要先启用METALNESS_MAP_ENABLE)
+    * METALNESS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * METALNESS_MAP_SWIZZLE 指定贴图使用的颜色通道 (R = 0, G = 1, B = 2, A = 3, 灰度图不需要指定)
+    * METALNESS_MAP_FILE 启用贴图时使用的贴图路径
+    * const float metalness = 1.0 取值范围在0 ~ 1，0为绝缘体，1表示导体(金属)
+    * const float metalnessMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
+    * const float metalnessBaseSpecular = 0.04; 指定物体反射系数 (添加这个值可以增加金属性，0.0时物体不反射IBL的specular)
 * SSS(次表面散射)  
     [![link text](https://github.com/ray-cast/images/raw/master/SSS.png)](https://github.com/ray-cast/images/raw/master/SSS.png)
-    * SSS用于渲染皮肤，玉器使用的
-    * 使用需要将SSS_ENABLE开启，贴图方式和以上同理
-    * transmittance用于制定内部的散射色，皮肤可以使用例如float3 transmittance = float3(0.1, 0.0, 0.0);
-    * transmittanceStrength用于指定SSS的强度，0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤
+    * SSS(Sub Surface Scattering)用于渲染皮肤，玉器时使用的
+    * SSS_ENABLE 设置1时启用次表面散射
+    * SSS_MAP_ENABLE 设置1时启用贴图
+    * SSS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * SSS_MAP_APPLY_COLOR 设置1时将const float3 transmittance = 0.0;的颜色乘算到贴图色上
+    * SSS_MAP_FILE 启用贴图时使用的贴图路径
+    * const float3 transmittance = 0.0; 散射色,皮肤可以使用例如 float3 transmittance = float3(0.1, 0.0, 0.0);
+    * const float transmittanceStrength = 0.0f; 用于指定SSS的强度，0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤
+    * const float transmittanceMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Melanin(黑色素)
-    * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白，取值范围0 ~ 1
-    * SSS中的截图就调节了Melain的系数, 所以会看起来像鸡蛋
-
+    * 黑色素可以使丝袜，皮肤，头发，这些物体渲染的更黝黑一些,显得不那么白, SSS中的截图因为使用了Melain, 所以会看起来像鸡蛋
+    * MELANIN_MAP_ENABLE 设置1时启用贴图
+    * MELANIN_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * MELANIN_MAP_SWIZZLE 指定贴图使用的颜色通道 (R = 0, G = 1, B = 2, A = 3, 灰度图不需要指定)
+    * MELANIN_MAP_FILE 启用贴图时使用的贴图路径
+    * const float melanin = 0.0; 取值范围0 ~ inf (如果贴图色很白时产生的黑色素会越少)
+    * const float melaninMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
+* Emissive(自发光贴图)
+    * EMISSIVE_ENABLE 设置1时启用自发光
+    * EMISSIVE_USE_ALBEDO 设置1时使用Albedo的参数代替自发光参数,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
+    * EMISSIVE_MAP_ENABLE 设置1时启用贴图
+    * EMISSIVE_MAP_IN_TEXTURE 设置1时使用PMX模型中的贴图色
+    * EMISSIVE_MAP_IN_SCREEN_MAP 使用MMD中的屏幕贴图/AVI贴图，需要先载入Extension/DummyScreen/DummyScreen.x
+    * EMISSIVE_MAP_ANIMATION_ENABLE 设置1时贴图是一个GIF/APNG图片
+    * EMISSIVE_MAP_ANIMATION_SPEED GIF/APNG的播放速度
+    * EMISSIVE_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * EMISSIVE_APPLY_COLOR 设置1时将const float3 emissive = 1.0;乘算到贴图色
+    * EMISSIVE_APPLY_MORPH_COLOR 表情中的颜色(多光源需要用到的参数)
+    * EMISSIVE_APPLY_MORPH_INTENSITY 表情中的颜色强度(多光源需要用到的参数)
+    * EMISSIVE_MAP_FILE 启用贴图时使用的贴图路径
+    * const float3 emissive = 1.0; 自发光的颜色，可以改为 float3 emissive = float3(0.1, 0.0, 0.0);
+    * const float emissiveIntensity = 1.0; 自发光的强度，强度越大Bloom越大
+    * const float emissiveMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
+* Parallax(视差贴图)
+    * 视差贴图可以使物体具备更好的凹凸感
+    * PARALLAX_MAP_ENABLE 设置1时启用贴图
+    * PARALLAX_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * PARALLAX_MAP_SUPPORT_ALPHA 设置1时对Alpha贴图有效
+    * PARALLAX_MAP_FILE 启用贴图时使用的贴图路径
+    * const float parallaxMapScale = 0.01; 高度的缩放强度
+    * const float parallaxMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
+    
 ##### 5.0 自定义天空盒
 * 解压Tools目录中的cmft.rar
 * 选择一张hdr文件, 并改名为skybox.hdr, 然后拖拽到exe上  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_drag.png)](https://github.com/ray-cast/images/raw/master/IBL_drag.png)
 * 如果文件格式是正确的将会进行处理，效果如下  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)](https://github.com/ray-cast/images/raw/master/IBL_cmd.png)
-* 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds  
+* 程序运行完后会多出skydiff_hdr.dds和skyspec_hdr.dds文件  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_output.png)](https://github.com/ray-cast/images/raw/master/IBL_output.png)
 * 最后在Skybox目录，复制出任意一个天空球,将skybox.hdr, skydiff_hdr.dds, skyspec_hdr.dds 覆盖到新目录中的texture目录  
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_final.png)](https://github.com/ray-cast/images/raw/master/IBL_final.png)
