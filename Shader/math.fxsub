@@ -7,7 +7,7 @@
 #define PI 3.141592654f
 #define PI_2 (3.141592654f * 2.0)
 
-#define EPSILON 1e-5
+#define EPSILON 1e-5f
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 

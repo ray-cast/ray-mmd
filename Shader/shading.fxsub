@@ -72,7 +72,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     lighting += tex2D(LightMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
     lighting += ShadingMaterial(N, V, L, coord, material);
 #if SSAO_SAMPLER_COUNT > 0
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)+1e+5), ssao, material.smoothness);
+    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
     
 #if OUTDOORFLOOR_QUALITY > 0
@@ -93,7 +93,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     float3 lighting2 = ShadingMaterial(N2, V, L, coord, materialAlpha);
     lighting2 += tex2D(LightAlphaMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
 #if SSAO_SAMPLER_COUNT > 0
-    lighting2 *= ComputeSpecularOcclusion(abs(dot(N2, V)+1e+5), ssao, material.smoothness);
+    lighting2 *= ComputeSpecularOcclusion(abs(dot(N2, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
 #if IBL_QUALITY > 0   
@@ -115,8 +115,8 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
 #if SSAO_SAMPLER_COUNT > 0
     diffuse *= ssao;
     diffuse2 *= ssao;
-    specular *= ComputeSpecularOcclusion(abs(dot(N, V) + 1e+5), ssao, material.smoothness);
-    specular2 *= ComputeSpecularOcclusion(abs(dot(N2, V) + 1e+5), ssao, materialAlpha.smoothness);
+    specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+    specular2 *= ComputeSpecularOcclusion(abs(dot(N2, V)) + EPSILON, ssao, materialAlpha.smoothness);
 #endif    
 
     float shadow = 1;
