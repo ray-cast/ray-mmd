@@ -218,7 +218,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float4 lighting = 0;
     lighting.rgb += atten1 * diffuse;
     lighting.rgb += atten2 * specular;    
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     
     return lighting;
