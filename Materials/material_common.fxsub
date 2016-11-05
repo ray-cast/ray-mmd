@@ -636,8 +636,12 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             tangentNormal = normalize(tangentNormal);
         #endif
         
+        #if NORMAL_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+        
         #if NORMAL_MAP_ENABLE && NORMAL_MAP_SUB_ENABLE
-            #if NORMAL_MAP_SUB_UV_FLIP && NORMAL_MAP_UV_FLIP == 0
+            #if NORMAL_MAP_SUB_UV_FLIP
                 coord.y = 1 - coord.y;
             #endif
         
@@ -647,6 +651,10 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             
             tangentNormal.rg += tangentSubNormal.rg;
             tangentNormal = normalize(tangentNormal);
+            
+            #if NORMAL_MAP_SUB_UV_FLIP
+                coord.y = 1 - coord.y;
+            #endif
         #endif
         
         return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);

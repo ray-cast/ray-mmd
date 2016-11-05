@@ -31,6 +31,7 @@ Ray-MMD
 * 改进SSAO,以及近处时出现的白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_110.jpg)
 * 优化多光源的运算速度
 * 纹理LOD采样方式改为各向异性16x
+* 修复使用NORMAL_MAP_UV_FLIP时法线计算颠倒
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
