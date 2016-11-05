@@ -25,6 +25,7 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2016-XX-XX ver 1.1.0
+* 注 : 法线贴图效果和SP,3DCOAT,BL保持一致,如果凹凸颠倒设置normalMapScale = -1.0;
 * 添加DirectionalLight
 * 改进NormalMap [(预览)](https://github.com/ray-cast/images/raw/master/normal_110.jpg)
 * 改进ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
