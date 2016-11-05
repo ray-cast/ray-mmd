@@ -74,7 +74,7 @@ float ShadowPCF(float3 viewPosition, int samples)
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
     proj.z -= ShadowSlopeScaledBias(proj.z);
-    proj.z = exp(-(proj.z / proj.w) * 200);
+    proj.z = exp(-proj.z * 200);
 
     if (proj.x <= 0.0 || proj.x >= 1.0 ||
         proj.y <= 0.0 || proj.y >= 1.0)
@@ -151,7 +151,7 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
         shadow *= ShadowPCF(P, 1);
-    #elif SHADOW_MAP_SOFT_QUALITY >= 2
+    #elif SHADOW_MAP_SOFT_QUALITY == 2
         shadow *= ShadowPCF(P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
         shadow *= ShadowPCF(P, 3);

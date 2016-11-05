@@ -50,7 +50,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, 
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return exp((position.z / position.w) * 200);
+    return exp(position.z * 200);
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

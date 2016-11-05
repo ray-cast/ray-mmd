@@ -152,7 +152,7 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
         shadow *= ShadowPCF(P, 1);
-    #elif SHADOW_MAP_SOFT_QUALITY >= 2
+    #elif SHADOW_MAP_SOFT_QUALITY == 2
         shadow *= ShadowPCF(P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
         shadow *= ShadowPCF(P, 3);
