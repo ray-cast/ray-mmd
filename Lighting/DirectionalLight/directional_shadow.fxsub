@@ -7,11 +7,11 @@ float3 mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "R
 float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
-static float LightRange = 50 + mRange * 100;
+static float LightRange = 50 + mRange * 150;
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
-static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightZMin, LightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
@@ -31,12 +31,13 @@ sampler DiffuseMapSamp = sampler_state
 void ShadowMapVS(
     in float4 Position : POSITION,
     in float4 Texcoord : TEXCOORD0,
+    in float4 Normal : NORMAL,
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition : POSITION)
 {
     oTexcoord0 = Texcoord;
-    oTexcoord1 = oPosition = mul(Position, matLightViewProject);
+    oTexcoord1 = oPosition = mul(Position + Normal * 0.005, matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
@@ -50,7 +51,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, 
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return exp(position.z * 200);
+    return position.z;
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

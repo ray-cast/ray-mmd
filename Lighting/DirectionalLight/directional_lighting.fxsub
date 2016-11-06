@@ -18,13 +18,13 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
-static float LightRange = 50 + mRange * 100;
+static float LightRange = 50 + mRange * 150;
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightZMin, LightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
@@ -66,16 +66,20 @@ sampler ShadowMapSamp = sampler_state {
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
-static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
+static float2 ShadowmapOffset2 = float2(1.5 / SHADOW_MAP_SIZE, 1.5 / SHADOW_MAP_SIZE);
 
-float ShadowPCF(float3 viewPosition, int samples) 
+float ShadowPCF(MaterialParam material, float3 viewPosition, int samples) 
 {
+    float3 L = -viewLightDirection;
+    float3 L2 = normalize(L);
+    
+    float bias = saturate(1 - dot(viewLightDirection, normalize(viewPosition - viewLightPosition)));
+    
     float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
-    proj.z -= ShadowSlopeScaledBias(proj.z);
-    proj.z = exp(-proj.z * 200);
-
+    proj.z -= ShadowSlopeScaledBias(proj.z) * bias;
+    
     if (proj.x <= 0.0 || proj.x >= 1.0 ||
         proj.y <= 0.0 || proj.y >= 1.0)
     {
@@ -88,34 +92,29 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
     }
 
-    float angle = dot(viewLightDirection, viewPosition - viewLightPosition);
-    if (angle < 0)
-    {
-        return 1;
-    }
-    else
-    {
 #if SHADOW_MAP_SOFT_QUALITY > 0
-        float shadow = 0.0;
-
+    float sdrate = 30000.0 / 4.0 - 0.05;
+    float shadow = 0.0;
+    
+    [unroll]
+    for (int x = -samples; x <= samples; x++) 
+    {
         [unroll]
-        for (int x = -samples; x <= samples; x++) 
+        for (int y = -samples; y <= samples; y++)
         {
-            [unroll]
-            for (int y = -samples; y <= samples; y++)
-            {
-                float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-                shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
-            }
+            float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
+            shadow += CalcLight(tex2D(ShadowMapSamp, pos).r, proj.z, sdrate);
         }
-        
-        samples = samples * 2 + 1;
-        
-        return saturate(shadow / (samples * samples));
-#else
-        return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z); 
-#endif
     }
+    
+    samples = samples * 2 + 1;
+    
+    shadow = saturate(shadow / (samples * samples));
+    return shadow;
+#else
+    float sdrate = 30000.0 / 4.0 - 0.05;
+    return CalcLight(tex2D(ShadowMapSamp, proj.xy).r, proj.z, sdrate);
+#endif  
 }
 
 #endif
@@ -137,26 +136,23 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     return lighting;
 }
 
-float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
+float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
 {
     float linearDepth = material.linearDepth;
     float linearDepth2 = materialAlpha.linearDepth;
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
     
-    float3 L = -viewLightDirection;
-    float3 L2 = normalize(L);
-
     float shadow = 1;
 #if SHADOW_MAP_ENABLE
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
-        shadow *= ShadowPCF(P, 1);
+        shadow *= ShadowPCF(material, P, 1);
     #elif SHADOW_MAP_SOFT_QUALITY == 2
-        shadow *= ShadowPCF(P, 2);
+        shadow *= ShadowPCF(material, P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
-        shadow *= ShadowPCF(P, 3);
+        shadow *= ShadowPCF(material, P, 3);
     #else
-        shadow *= ShadowPCF(P, 0);
+        shadow *= ShadowPCF(material, P, 0);
     #endif
 #endif
 
@@ -209,7 +205,7 @@ void LightSourcePS(
     
     clip(sum(oColor0 + oColor1) - 1e-5);
     
-    float shadow = ShadingShadow(material, materialAlpha, V);
+    float shadow = ShadingShadow(material, materialAlpha, V);   
     oColor0 *= shadow;
     oColor1 *= shadow;
 }
