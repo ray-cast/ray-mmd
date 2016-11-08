@@ -117,7 +117,7 @@ float4 DeferredShadingPS(in float2 coord: TEXCOORD0, in float3 viewdir: TEXCOORD
     diffuse2 *= ssao;
     specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
     specular2 *= ComputeSpecularOcclusion(abs(dot(N2, V)) + EPSILON, ssao, materialAlpha.smoothness);
-#endif    
+#endif
 
     float shadow = 1;
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0

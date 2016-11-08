@@ -114,6 +114,27 @@ float AdjustRoughness(float roughness, float3 normal)
     return roughness;
 }
 
+float ComputeRoughness(sampler NormalMap, float2 coord, float2 offset, int num, float roughness)
+{
+    float3 avgNormal = 0;
+    
+    [unroll]
+    for (int x = -num; x <= num; x++) 
+    {
+        [unroll]
+        for (int y = -num; y <= num; y++)
+        {
+            float2 pos = coord + float2(x, y) * offset;
+            avgNormal += mul(DecodeGBufferNormal(tex2D(NormalMap, pos)), (float3x3)matViewInverse);
+        }
+    }
+    
+    num = num * 2 + 1;
+    
+    avgNormal = avgNormal / (num * num);
+    return AdjustRoughness(roughness, avgNormal);
+}
+
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
 {
     float3 v = mul(float4(CoordToPos(Tex), 0, 1), matProjectInverse).xyz;

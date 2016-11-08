@@ -30,9 +30,12 @@ static float4x4 matLightView = CreateLightViewMatrix(normalize(LightDirection));
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightParam = CreateLightProjParameters(matLightProjectToCameraView);
+static float3 MirrorPos = float3(0.0, 0.0, 0.0);
+static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
+static float3 WorldMirrorPos = MirrorPos;
+static float3 WorldMirrorNormal = MirrorNormal;
 
-#if IBL_ENABLE
-texture2D IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
+texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
     
@@ -44,7 +47,7 @@ sampler IBLDiffuseSampler = sampler_state {
     ADDRESSV  = CLAMP;
 };
 
-texture2D IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
+texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
 
@@ -55,20 +58,18 @@ sampler IBLSpecularSampler = sampler_state {
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
-#endif
 
 shared texture PSSM : OFFSCREENRENDERTARGET;
-sampler PSSMsamp = sampler_state {
-    texture = <PSSM>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-
 shared texture EnvLightSpecMap : RENDERCOLORTARGET;
 shared texture OutdoorShadingMap : RENDERCOLORTARGET;
 shared texture OutdoorMap : OFFSCREENRENDERTARGET;
 shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET;
 
+sampler PSSMsamp = sampler_state {
+    texture = <PSSM>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 sampler OutdoorMapSamp = sampler_state 
 {
     texture = <OutdoorMap>;
@@ -86,11 +87,6 @@ sampler OutdoorShadingMapSamp = sampler_state {
     MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-
-static float3 MirrorPos = float3(0.0, 0.0, 0.0);
-static float3 MirrorNormal = float3(0.0, 1.0, 0.0);
-static float3 WorldMirrorPos = MirrorPos;
-static float3 WorldMirrorNormal = MirrorNormal;
 
 float IsFace(float4 Pos)
 {
@@ -134,8 +130,6 @@ void DecodeGbuffer(sampler source, float2 coord, float4 screenPosition, float2 o
     normal = DecodePack2Normal(packed.xy);
 }
 
-#if IBL_ENABLE
-
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
     float3 worldView = V;
@@ -173,8 +167,6 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }
 
-#endif
-
 void EnvLightingVS(
     in float4 Position : POSITION,
     in float2 Texcoord : TEXCOORD0,
@@ -193,7 +185,6 @@ void EnvLightingPS(
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
-#if IBL_ENABLE
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
@@ -214,6 +205,28 @@ void EnvLightingPS(
     MaterialParam materialAlpha;    
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
+#if AA_GBUFFER_QUALITY > 0
+    float roughness = SmoothnessToRoughness(material.smoothness);
+#if AA_GBUFFER_QUALITY == 1
+    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 1, roughness);
+#elif AA_GBUFFER_QUALITY == 2
+    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 2, roughness);
+#elif AA_GBUFFER_QUALITY >= 3
+    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 3, roughness);
+#endif
+    
+    float finalSmoothness = RoughnessToSmoothness(roughness);
+    
+    float3 specLumLinear = material.specular * material.specular;
+    if (sum(specLumLinear) < 0.15)
+    {
+        specLumLinear *= ((finalSmoothness + EPSILON) / (material.smoothness + EPSILON));
+        material.specular = sqrt(specLumLinear);
+    }
+    
+    material.smoothness = finalSmoothness;
+#endif
+    
     float3 V = normalize(viewdir);
     
     float3 diffuse, specular;
@@ -222,6 +235,7 @@ void EnvLightingPS(
     float3 diffuse2, specular2;
     ShadingMaterial(V, materialAlpha, diffuse2, specular2);
     
+#if IBL_ENABLE
     oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse2);
     oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
 #else
