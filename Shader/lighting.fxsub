@@ -109,6 +109,22 @@ float3 SpecularBRDF(float3 N, float3 L, float3 V, float gloss, float3 f0)
     return SpecularBRDF_GGX(N, L, V, roughness, f0, 1.0f);
 }
 
+float3 GetDiffuseDominantDir(float3 N, float3 V, float smoothness) 
+{
+    float roughness = SmoothnessToRoughness(smoothness);
+    float a = 1.02341f * roughness - 1.51174f;
+    float b = -0.511705f * roughness + 0.755868f;
+    float factor = saturate((dot(N, V) * a + b) * roughness);
+    return lerp(N, V, factor);
+}
+
+float3 GetSpecularDominantDir(float3 N, float3 R, float smoothness)
+{
+    float roughness = 1 - smoothness;
+    float factor = smoothness * (sqrt(smoothness) + roughness);
+    return lerp(N, R, factor);    
+}
+
 float HorizonOcclusion(float3 N, float3 R)
 {
     float factor = clamp(1.0 + 1.3 * dot(R, N), 0.1, 1.0);

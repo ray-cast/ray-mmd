@@ -205,17 +205,10 @@ void EnvLightingPS(
     MaterialParam materialAlpha;    
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-#if AA_GBUFFER_QUALITY > 0
+#if AA_QUALITY > 1
     float roughness = SmoothnessToRoughness(material.smoothness);
-#if AA_GBUFFER_QUALITY == 1
-    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 1, roughness);
-#elif AA_GBUFFER_QUALITY == 2
-    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 2, roughness);
-#elif AA_GBUFFER_QUALITY >= 3
-    roughness = ComputeRoughness(Gbuffer2Map, coord, ViewportOffset2, 3, roughness);
-#endif
-    
-    float finalSmoothness = RoughnessToSmoothness(roughness);
+    float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2, 1, roughness); 
+    float finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));
     
     float3 specLumLinear = material.specular * material.specular;
     if (sum(specLumLinear) < 0.15)
