@@ -168,15 +168,16 @@ Ray-MMD
     * const float melanin = 0.0; 取值范围0 ~ inf (如果贴图色很白时产生的黑色素会越少)
     * const float melaninMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Emissive(自发光贴图)
-    * EMISSIVE_ENABLE 设置1时启用自发光
+    * 自发光贴图需要把要发光的那部分做成和UV对应的贴图
+    * EMISSIVE_ENABLE 设置1时启用自发光,使用时必须先启用这个
     * EMISSIVE_USE_ALBEDO 设置1时使用Albedo的参数代替自发光参数,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
     * EMISSIVE_MAP_ENABLE 设置1时启用贴图
-    * EMISSIVE_MAP_IN_TEXTURE 设置1时使用PMX模型中的贴图色
+    * EMISSIVE_MAP_IN_TEXTURE 设置1时使用PMX模型中的贴图
     * EMISSIVE_MAP_IN_SCREEN_MAP 使用MMD中的屏幕贴图/AVI贴图，需要先载入扩展目录中的DummyScreen.x
     * EMISSIVE_MAP_ANIMATION_ENABLE 设置1时贴图是一个GIF/APNG图片
-    * EMISSIVE_MAP_ANIMATION_SPEED GIF/APNG的播放速度
+    * EMISSIVE_MAP_ANIMATION_SPEED GIF/APNG的播放速度,最小为1倍速
     * EMISSIVE_MAP_UV_FLIP 设置1时水平翻转纹理坐标
-    * EMISSIVE_APPLY_COLOR 设置1时将const float3 emissive = 1.0;乘算到贴图色
+    * EMISSIVE_APPLY_COLOR 设置1时将const float3 emissive = 1.0;乘算到贴图色,用于修改贴图色
     * EMISSIVE_APPLY_MORPH_COLOR 表情中的颜色(多光源需要用到的参数)
     * EMISSIVE_APPLY_MORPH_INTENSITY 表情中的颜色强度(多光源需要用到的参数)
     * EMISSIVE_MAP_FILE 启用贴图时使用的贴图路径
