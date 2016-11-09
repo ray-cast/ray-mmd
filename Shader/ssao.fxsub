@@ -108,6 +108,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset(int2(coord * ViewportSize));
 
+    [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
     {
         float2 sampleOffset = coord + tapLocation(j, sampleNoise);
