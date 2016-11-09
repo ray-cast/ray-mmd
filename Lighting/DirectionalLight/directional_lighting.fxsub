@@ -68,17 +68,41 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
 static float2 ShadowmapOffset2 = float2(1.5 / SHADOW_MAP_SIZE, 1.5 / SHADOW_MAP_SIZE);
 
+float2 DepthGradient(float2 uv, float z)
+{
+    float2 dz_duv = 0;
+
+    float3 duvdist_dx = ddx(float3(uv,z));
+    float3 duvdist_dy = ddy(float3(uv,z));
+
+    dz_duv.x = duvdist_dy.y * duvdist_dx.z;
+    dz_duv.x -= duvdist_dx.y * duvdist_dy.z;
+
+    dz_duv.y = duvdist_dx.x * duvdist_dy.z;
+    dz_duv.y -= duvdist_dy.x * duvdist_dx.z;
+
+    float det = (duvdist_dx.x * duvdist_dy.y) - (duvdist_dx.y * duvdist_dy.x);
+    dz_duv /= det;
+
+    return dz_duv;
+}
+
+float BiasedZ(float z0, float2 dz_duv, float2 offset)
+{
+    return z0 + dot(dz_duv, offset);
+}
+
 float ShadowPCF(float3 viewPosition, int samples) 
 {
     float3 L = -viewLightDirection;
     float3 L2 = normalize(L);
     
-    float bias = saturate(1 - dot(viewLightDirection, normalize(viewPosition - viewLightPosition)));
-    
     float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
     proj.xy = PosToCoord(proj.xy / proj.w);
     proj.xy += ShadowmapOffset;
-    proj.z -= ShadowSlopeScaledBias(proj.z) * bias * 2;
+    
+    float slopeBias = saturate(1 - dot(viewLightDirection, normalize(viewPosition - viewLightPosition)));
+    float2 bias = DepthGradient(proj.xy, proj.z / LightZMax);
     
     if (proj.x <= 0.0 || proj.x >= 1.0 ||
         proj.y <= 0.0 || proj.y >= 1.0)
@@ -93,8 +117,8 @@ float ShadowPCF(float3 viewPosition, int samples)
     }
 
 #if SHADOW_MAP_SOFT_QUALITY > 0
-    float sdrate = 30000.0 / 4.0 - 0.05;
     float shadow = 0.0;
+    float threshold = (30000.0 / (4 + slopeBias * 20) - 0.05);
     
     [unroll]
     for (int x = -samples; x <= samples; x++) 
@@ -102,8 +126,8 @@ float ShadowPCF(float3 viewPosition, int samples)
         [unroll]
         for (int y = -samples; y <= samples; y++)
         {
-            float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-            shadow += CalcLight(tex2D(ShadowMapSamp, pos).r, proj.z, sdrate);
+            float2 offset = float2(x, y) * ShadowmapOffset2;
+            shadow += CalcLight(BiasedZ(tex2D(ShadowMapSamp, proj.xy + offset).r, bias, offset), proj.z, threshold);
         }
     }
     
