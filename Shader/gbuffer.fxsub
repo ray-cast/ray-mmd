@@ -114,7 +114,7 @@ float AdjustRoughness(float roughness, float3 normal)
     return roughness;
 }
 
-float3 ComputeAvgNormal(sampler NormalMap, float2 coord, float2 offset, int num, float roughness)
+float3 ComputeAvgNormal(sampler NormalMap, float2 coord, float2 offset, int num)
 {
     float3 avgNormal = 0;
     
