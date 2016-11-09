@@ -207,7 +207,7 @@ void EnvLightingPS(
     
 #if AA_QUALITY > 1
     float roughness = SmoothnessToRoughness(material.smoothness);
-    float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2, 1); 
+    float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2); 
     float finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));    
     material.smoothness = finalSmoothness;
 #endif
