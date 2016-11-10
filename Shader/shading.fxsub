@@ -192,10 +192,7 @@ float4 ShadingTransparentPS(
     
 #endif
 
-    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * 0.004325 * material.alpha);
-    prefilteredRefract.g = tex2D(ShadingMapTempSamp, coord + N.xy * 0.00965 * material.alpha).g;
-    prefilteredRefract.b = tex2D(ShadingMapTempSamp, coord + N.xy * 0.01873 * material.alpha).b;
-    
+    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * material.alpha);   
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
