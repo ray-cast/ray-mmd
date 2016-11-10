@@ -134,9 +134,9 @@ technique DeferredLighting<
 #endif
 #endif
 
-    "RenderColorTarget0=ShadingMap;"
     "RenderDepthStencilTarget=;"
-    "Pass=DeferredShading;"
+    "RenderColorTarget0=ShadingMapTemp; Pass=ShadingOpacity;"
+    "RenderColorTarget0=ShadingMap;     Pass=ShadingTransparent;"
     
 #if SSR_QUALITY > 0
     "RenderColorTarget=SSRayTracingMap;"
@@ -264,11 +264,17 @@ technique DeferredLighting<
     }
     #endif
 #endif
-    pass DeferredShading < string Script= "Draw=Buffer;"; > {
+    pass ShadingOpacity < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 DeferredShadingPS();
+        PixelShader  = compile ps_3_0 ShadingOpacityPS();
+    }
+    pass ShadingTransparent < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadingTransparentPS();
     }
 #if SSSS_QUALITY > 0
     pass SSSSStencilTest < string Script= "Draw=Buffer;"; > {
