@@ -26,6 +26,7 @@ Ray-MMD
 #### 更新内容 :
 ##### 2016-XX-XX ver 1.1.0
 * 注 : 法线贴图效果和SP(NormalMap使用OpenGL模式)保持一致,如果凹凸颠倒设置normalMapScale = -1.0;
+* 独立GroundFog, 添加SphereFog [(预览)](https://github.com/ray-cast/images/raw/master/fog_110.jpg)
 * 添加DirectionalLight
 * 添加Gbuffer过滤用于减少IBL的锯齿 [(预览)](https://github.com/ray-cast/images/raw/master/gbuffer_filter_110.jpg)
 * 改进NormalMap [(预览)](https://github.com/ray-cast/images/raw/master/normal_110.jpg)
