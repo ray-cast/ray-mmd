@@ -32,21 +32,6 @@ float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
-#if FOG_ENABLE
-    float mFogR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "R+"; >;
-    float mFogG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "G+"; >;
-    float mFogB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "B+"; >;
-    float mFogDensity :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Density"; >;
-    float mFogHeight :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Height"; >;
-    float mFogRadius :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Radius"; >;
-    float mFogFadeoff :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Fadeoff"; >;
-    float mFogSky :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "Sky"; >;
-    float mFogSkyTwoColor :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyTwoColor"; >;
-    float mFogSkyR :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyR+"; >;
-    float mFogSkyG :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyG+"; >;
-    float mFogSkyB :  CONTROLOBJECT < string name="GroundFogController.pmx"; string item = "SkyB+"; >;
-#endif
-
 float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
 float3 LightDirection : DIRECTION < string Object = "Light"; >;
