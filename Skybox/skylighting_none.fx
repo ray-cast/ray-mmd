@@ -1,5 +1,6 @@
 shared texture LightAlphaMap : RENDERCOLORTARGET;
 shared texture EnvLightSpecMap : RENDERCOLORTARGET;
+shared texture FogAlphaMap : RENDERCOLORTARGET;
 
 const float4 BackColor = float4(0,0,0,0);
 const float4 IBLColor = float4(0,0.5,0,0.5);
@@ -7,8 +8,10 @@ const float4 IBLColor = float4(0,0.5,0,0.5);
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
     string Script = \
-        "RenderColorTarget0=LightAlphaMap;"\
         "ClearSetColor=BackColor;"\
+        "RenderColorTarget0=LightAlphaMap;"\
+        "Clear=Color;"\
+        "RenderColorTarget0=FogAlphaMap;"\
         "Clear=Color;"\
         "RenderColorTarget0=EnvLightSpecMap;" \
         "ClearSetColor=IBLColor;"\

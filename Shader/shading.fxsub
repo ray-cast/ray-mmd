@@ -96,6 +96,9 @@ float4 ShadingOpacityPS(
     
 #endif
 
+    float4 fog = tex2D(FogMapSamp, coord);
+    lighting = lighting * (1 - saturate(fog.a)) + fog.rgb;
+
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     float linearDepth = shadowDepth.g;
 #else
@@ -164,6 +167,9 @@ float4 ShadingTransparentPS(
     }
     
 #endif
+    
+    float4 fog = tex2D(FogAlphaMapSamp, coord);
+    lighting = lighting * (1 - saturate(fog.a)) + fog.rgb;
     
     float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * 0.04325 * (1 - material.alpha) * material.alpha);
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);

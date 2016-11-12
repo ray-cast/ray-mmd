@@ -27,6 +27,35 @@ sampler ScnSamp = sampler_state {
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
+#if FOG_ENABLE
+texture FogMap: OFFSCREENRENDERTARGET <
+    string Description = "Multi volumetirc fog map for ray";
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string DefaultEffect =
+        "* = hide;";
+>;
+shared texture FogAlphaMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0,1.0};
+    int MipLevels = 1;
+    bool AntiAlias = false;
+    string Format = "A16B16G16R16F";
+>;
+sampler FogMapSamp = sampler_state {
+    texture = <FogMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler FogAlphaMapSamp = sampler_state {
+    texture = <FogAlphaMap>;
+    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#endif
 texture LightMap: OFFSCREENRENDERTARGET <
     string Description = "Multi light source map for ray";
     float2 ViewPortRatio = {1.0, 1.0};

@@ -64,6 +64,7 @@ shared texture EnvLightSpecMap : RENDERCOLORTARGET;
 shared texture OutdoorShadingMap : RENDERCOLORTARGET;
 shared texture OutdoorMap : OFFSCREENRENDERTARGET;
 shared texture OutdoorDepthMap : OFFSCREENRENDERTARGET;
+shared texture FogAlphaMap : RENDERCOLORTARGET;
 
 sampler PSSMsamp = sampler_state {
     texture = <PSSM>;
@@ -326,8 +327,10 @@ const float4 BackColor = float4(0,0,0,0);
     #define OBJECT_TEC(name, mmdpass) \
         technique name < string MMDPass = mmdpass;\
         string Script = \
-            "RenderColorTarget0=LightAlphaMap;"\
             "ClearSetColor=BackColor;"\
+            "RenderColorTarget0=LightAlphaMap;"\
+            "Clear=Color;"\
+            "RenderColorTarget0=FogAlphaMap;"\
             "Clear=Color;"\
             "RenderColorTarget0=;" \
             "RenderColorTarget1=EnvLightSpecMap;" \

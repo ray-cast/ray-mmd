@@ -38,7 +38,7 @@ float4 ApplySphereFog(float3 P, float3 V, float distance)
     float l = iv * (atan((distance + b) * iv) - atan(b * iv));
     
     float3 fogColor = float3(mFogR, mFogG, mFogB);
-    return float4(fogColor * l * exp(-distance / LightIntensity), 0);
+    return float4(fogColor * l, 1) * exp(-distance / LightIntensity);
 }
 
 void SphereFogVS(
