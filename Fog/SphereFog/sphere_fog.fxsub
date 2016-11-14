@@ -68,7 +68,8 @@ void SphereFogPS(
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 
-    float3 V = normalize(-mul(float4(position, 1), matView)).xyz;
+    float3 P = mul(float4(position, 1), matView).xyz;
+    float3 V = normalize(-P);
     
     LightParam param;
     param.lightPosition = LightPosition;
@@ -82,7 +83,7 @@ void SphereFogPS(
     float linearDepth2 = materialAlpha.linearDepth;
     linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
     
-    oColor0 = oColor1 = SphereFog(param, V, material.linearDepth, 64);
+    oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
 }
 
 #define OBJECT_TEC(name, mmdpass) \

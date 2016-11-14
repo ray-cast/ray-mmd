@@ -61,7 +61,7 @@ float4 SphereFog(LightParam param, float3 viewdir, float distance, int stepNum)
     for (int i = 0; i < stepNum; i++)
     {
         float atten = GetPhysicalLightAttenuation(stepStart - lightPos, param.lightRange);
-        atten *= ComputePhaseFunctions(dot(viewdir, normalize(stepStart - lightPos)), param.gloss);
+        atten *= ComputePhaseFunctions(dot(-viewdir, normalize(stepStart - lightPos)), param.gloss);
         
         stepStart += step;
         scatteringMie += atten;
