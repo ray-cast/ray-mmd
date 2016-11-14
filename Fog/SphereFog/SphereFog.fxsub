@@ -1,6 +1,8 @@
 #include "../../ray.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/lighting.fxsub"
+#include "../../shader/fog.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
@@ -23,23 +25,6 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float3 LightPosition = mPosition;
-
-float4 ApplySphereFog(float3 P, float3 V, float distance)
-{
-    float3 worldView = normalize(CameraPosition - P);
-    float3 worldPosition = mul(float4(V * distance / V.z, 1), matViewInverse).xyz;
-    
-    float3 L = worldPosition - LightPosition;
-    
-    float b = dot(worldView, L);
-    float c = dot(L, L);
-    
-    float iv = 1.0f / sqrt(c - b * b);
-    float l = iv * (atan((distance + b) * iv) - atan(b * iv));
-    
-    float3 fogColor = float3(mFogR, mFogG, mFogB);
-    return float4(fogColor * l, 1) * exp(-distance / LightIntensity);
-}
 
 void SphereFogVS(
     in float4 Position : POSITION,
@@ -83,8 +68,15 @@ void SphereFogPS(
 
     float3 V = normalize(-mul(float4(position, 1), matView)).xyz;
     
-    oColor0 = ApplySphereFog(position, V, material.linearDepth);
-    oColor1 = ApplySphereFog(position, V, materialAlpha.linearDepth);
+    LightParam param;
+    param.lightPosition = LightPosition;
+    param.lightRange = LightRange;
+    param.lightIntensity = LightIntensity;
+    param.lightColor = float3(mFogR, mFogG, mFogB);
+    param.eye = CameraPosition;
+    
+    oColor0 = SphereFog(param, position, V, material.linearDepth, 32);
+    oColor1 = SphereFog(param, position, V, materialAlpha.linearDepth, 32);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
