@@ -24,7 +24,7 @@ Ray-MMD
 * [Visual studio code](http://code.visualstudio.com/Download)
 
 #### 更新内容 :
-##### 2016-XX-XX ver 1.1.0
+##### 2016-11-15 ver 1.1.0beta
 * 注 : 法线贴图效果和SP(NormalMap使用OpenGL模式)保持一致,如果凹凸颠倒设置normalMapScale = -1.0;
 * 独立GroundFog, 添加SphereFog [(预览)](https://github.com/ray-cast/images/raw/master/fog_110.jpg)
 * 添加DirectionalLight
