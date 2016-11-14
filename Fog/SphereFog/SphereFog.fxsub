@@ -18,6 +18,8 @@ float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float mGlossP : CONTROLOBJECT < string name="(self)"; string item = "Gloss+"; >;
+float mGlossM : CONTROLOBJECT < string name="(self)"; string item = "Gloss-"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
@@ -74,7 +76,7 @@ void SphereFogPS(
     param.lightIntensity = LightIntensity;
     param.lightColor = float3(mFogR, mFogG, mFogB);
     param.eye = CameraPosition;
-    param.gloss = 0.56;
+    param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
     
     float linearDepth = material.linearDepth;
     float linearDepth2 = materialAlpha.linearDepth;
