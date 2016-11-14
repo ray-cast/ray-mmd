@@ -74,9 +74,13 @@ void SphereFogPS(
     param.lightIntensity = LightIntensity;
     param.lightColor = float3(mFogR, mFogG, mFogB);
     param.eye = CameraPosition;
+    param.gloss = 0.56;
     
-    oColor0 = SphereFog(param, position, V, material.linearDepth, 32);
-    oColor1 = SphereFog(param, position, V, materialAlpha.linearDepth, 32);
+    float linearDepth = material.linearDepth;
+    float linearDepth2 = materialAlpha.linearDepth;
+    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+    
+    oColor0 = oColor1 = SphereFog(param, V, material.linearDepth, 64);
 }
 
 #define OBJECT_TEC(name, mmdpass) \

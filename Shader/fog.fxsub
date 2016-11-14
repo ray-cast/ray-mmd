@@ -5,59 +5,70 @@ struct LightParam
     float lightRange;
     float lightIntensity;
     float3 eye;
+    float gloss;
 };
 
-float PhaseFunctions()
+float ComputePhaseFunctions(float cosTheta, float g)
 {
-    return 1 / (4 * PI);
+    float gg = g * g;
+    float g2 = 2 * g;
+    
+    float cosTheta2 = cosTheta * cosTheta;
+    
+    float leftTop = 3 * (1 - gg);
+    float leftBottom = 2 * (2 + gg);
+    float rightTop = 1.0 + cosTheta2;
+    float rightBottom = pow(1.0 + gg - g2 * cosTheta, 1.5);
+    
+    float betaMie = (leftTop / leftBottom) * (rightTop / rightBottom) / (4.0 * PI);
+    return betaMie;
 }
 
-float4 SphereFog(LightParam param, float3 P, float3 V, float distance)
+float4 SphereFog(LightParam param, float3 V, float distance)
 {
-    float3 worldView = normalize(param.eye - P);
-    float3 worldPosition = mul(float4(V * distance / V.z, 1), matViewInverse).xyz;
+    float3 viewPosition = V * distance / V.z;
     
-    float3 L = worldPosition - param.lightPosition;
-    
-    float b = dot(worldView, L);
+    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
+    float3 L = viewPosition - lightPos;
+        
+    float b = dot(V, L);
     float c = dot(L, L);
     
     float iv = 1.0f / sqrt(c - b * b);
     
     float3 scatteringMie = iv * (atan((distance + b) * iv) - atan(b * iv));
     scatteringMie *= param.lightColor * param.lightIntensity;
-    scatteringMie *= PhaseFunctions();
+    scatteringMie *= 1 / (4 * PI);
     
     return float4(scatteringMie, 0);
 }
 
-float4 SphereFog(LightParam param, float3 P, float3 V, float distance, int stepNum)
-{    
-    float3 view = mul(float4(param.eye, 1), matView).xyz;
-    float3 viewPosition = V * distance / V.z;
+float4 SphereFog(LightParam param, float3 viewdir, float distance, int stepNum)
+{
+    float3 viewPosition = viewdir * distance / viewdir.z;
     
-    float stepLength = length(viewPosition - view);
+    float stepLength = length(viewPosition - viewdir);
     float stepSize = stepLength / stepNum;
     
-    float3 stepDir = normalize(viewPosition - view);
+    float3 stepDir = (viewPosition - viewdir) / stepLength;
     float3 step = stepDir * stepSize;
-    float3 stepStart = view + step;
+    float3 stepStart = viewdir + step;
     
-    float3 lightPos = mul(float4(param.lightPosition,1), matView).xyz;
+    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
     
     float scatteringMie = 0;
     
     for (int i = 0; i < stepNum; i++)
     {
         float atten = GetPhysicalLightAttenuation(stepStart - lightPos, param.lightRange);
-
+        atten *= ComputePhaseFunctions(dot(viewdir, normalize(stepStart - lightPos)), param.gloss);
+        
         stepStart += step;
         scatteringMie += atten;
     }
     
     float3 scattering = scatteringMie;
     scattering *= param.lightColor * param.lightIntensity;
-    scattering *= PhaseFunctions();
     
     return float4(scattering, 0);
 }
