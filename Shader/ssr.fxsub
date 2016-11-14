@@ -25,14 +25,16 @@ texture SSRLightMapTemp: RENDERCOLORTARGET <
     float4 ClearColor = { 0, 0, 0, 0};
     string Format = "A2R10G10B10";
 >;
-sampler SSRayTracingSamp = sampler_state {
+sampler SSRayTracingSamp = sampler_state 
+{
     texture = <SSRayTracingMap>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
-sampler SSRLightSamp = sampler_state {
+sampler SSRLightSamp = sampler_state 
+{
     texture = <SSRLightMap>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
@@ -40,7 +42,8 @@ sampler SSRLightSamp = sampler_state {
     AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
-sampler SSRLightSampTemp = sampler_state {
+sampler SSRLightSampTemp = sampler_state 
+{
     texture = <SSRLightMapTemp>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
@@ -48,7 +51,7 @@ sampler SSRLightSampTemp = sampler_state {
     AddressV  = CLAMP;
 };
 
-static float mSSRRangeP = 0;
+static float mSSRRangeP = 0.0;
 static float mSSRRangeM = 0;
 static float mSSRThickness = 0;
 static float mSSRJitter = 0;
@@ -64,40 +67,26 @@ static float fadeEnd = 1.0 - mSSRFadeEnd;
 static float fadeStart = 0.3 + mSSRFadeStart;
 static float fadeDiffRcp = 1.0f / max(0.01, fadeEnd - fadeStart);
 
-bool intersectsDepthBuffer(float z, float minZ, float maxZ)
-{
-     float depthScale = min(1.0f, z * strideZCutoff);
-     z += thickness + lerp(0.0f, 2.0f, depthScale);
-     return (maxZ >= z) && (minZ - thickness <= z);
-}
- 
-void swap(inout float a, inout float b)
-{
-     float t = a;
-     a = b;
-     b = t;
-}
-
-float specularPowerToConeAngle(float specularPower)
+float SpecularPowerToConeAngle(float specularPower)
 {
     const float xi = 0.244f;
     float exponent = 1.0f / (specularPower + 1.0f);
     return acos(pow(xi, exponent));
 }
  
-float isoscelesTriangleOpposite(float adjacentLength, float coneTheta)
+float IsoscelesTriangleOpposite(float adjacentLength, float coneTheta)
 {
     return 2.0f * tan(coneTheta) * adjacentLength;
 }
  
-float isoscelesTriangleInRadius(float a, float h)
+float IsoscelesTriangleInRadius(float a, float h)
 {
     float a2 = a * a;
     float fh2 = 4.0f * h * h;
     return (a * (sqrt(a2 + fh2) - a)) / (4.0f * h);
 }
  
-float isoscelesTriangleNextAdjacent(float adjacentLength, float incircleRadius)
+float IsoscelesTriangleNextAdjacent(float adjacentLength, float incircleRadius)
 {
     return adjacentLength - (incircleRadius * 2.0f);
 }
@@ -140,7 +129,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
-        float depth = tex2D(DepthMapSamp, projPos.xy).a;
+        float depth = tex2D(DepthMapSamp, projPos.xy).g;
         
         if (abs(depth - projPos.z) < intervalSize)
         {
@@ -172,8 +161,9 @@ float4 SSRayTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
     
-    clip(-material.normal.z);
-    
+    float3 test = material.albedo + material.specular;
+    clip(sum(test - 1e-5));
+
     float linearDepth = material.linearDepth;
 
     float3 V = normalize(-viewdir);    
@@ -241,9 +231,8 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     float3 V = normalize(viewdir);
     float3 viewPosition = V * linearDepth / V.z;
     
-    float roughness = SmoothnessToRoughness(material.smoothness);
-    float specularPower = RoughnessToShininess(roughness);
-    float coneTheta = specularPowerToConeAngle(specularPower) * 0.5f;
+    float specularPower = SmoothnessToShininess(material.smoothness);
+    float coneTheta = SpecularPowerToConeAngle(specularPower) * 0.5f;
     
     float2 deltaTexcoord = rayTracing.xy - coord;
     
@@ -260,8 +249,8 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     
     for (int i = 0; i < 14; ++i)
     {
-        float oppositeLength = isoscelesTriangleOpposite(adjacentLength, coneTheta);
-        float incircleSize = isoscelesTriangleInRadius(oppositeLength, adjacentLength);
+        float oppositeLength = IsoscelesTriangleOpposite(adjacentLength, coneTheta);
+        float incircleSize = IsoscelesTriangleInRadius(oppositeLength, adjacentLength);
 
         float2 samplePos = coord + adjacentUnit * (adjacentLength - incircleSize);
         float mipChannel = clamp(log2(incircleSize * ViewportSize.x), 0.0f, maxMipLevel);
@@ -281,7 +270,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
             break;
         }
 
-        adjacentLength = isoscelesTriangleNextAdjacent(adjacentLength, incircleSize);
+        adjacentLength = IsoscelesTriangleNextAdjacent(adjacentLength, incircleSize);
         glossMult *= gloss;
     }
     

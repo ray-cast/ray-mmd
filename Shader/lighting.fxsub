@@ -21,7 +21,7 @@ float RoughnessToShininess(float roughness)
 float SmoothnessToShininess(float smoothness)
 {
     float roughness = SmoothnessToRoughness(smoothness);
-    return RoughnessToSmoothness(roughness);
+    return RoughnessToShininess(roughness);
 }
 
 float fresnelSchlick(float f0, float f9, float LdotH)

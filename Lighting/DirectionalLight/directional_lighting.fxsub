@@ -54,7 +54,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
     int MipLevels = 1;
     string DefaultEffect = 
         "self = hide;"
-        "ray_controller.pmx=hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
         "*.pmx = directional_shadow.fx;"
         "*.pmd = directional_shadow.fx;"
         "* = hide";

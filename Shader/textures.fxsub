@@ -37,6 +37,9 @@ texture FogMap: OFFSCREENRENDERTARGET <
     int Miplevels = 1;
     bool AntiAlias = false;
     string DefaultEffect =
+        "SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
+        "GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
+        "AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
         "* = hide;";
 >;
 shared texture FogAlphaMap : RENDERCOLORTARGET <
@@ -65,17 +68,13 @@ texture LightMap: OFFSCREENRENDERTARGET <
     int Miplevels = 1;
     bool AntiAlias = false;
     string DefaultEffect =
-        "self = hide;"
-        "ray_controller.pmx=hide;"
-        "skybox_hdr.*=hide;"
-        "skybox.*=hide;"
         "AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
         "DirectionalLight*.* =./Lighting/DirectionalLight/directional_lighting.fx;"
         "SpotLight*.* =./Lighting/SpotLight/spot_lighting.fx;"
         "PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
         "SphereLight*.* =./Lighting/SphereLight/sphere_lighting.fx;"
         "TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
-        "LED*.pmx =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
+        "LED*.* =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
         "RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
         "* = hide;";
 >;
@@ -105,7 +104,6 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
     int Miplevels = 1;
     bool AntiAlias = false;
     string DefaultEffect =
-        "self = hide;"
         "skybox_hdr*.*=./Skybox/skylighting_none.fx;"
         "skybox*.*=./Skybox/skylighting_none.fx;"
         "*= hide;";
@@ -137,6 +135,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
     bool AntiAlias = false;
     string DefaultEffect =
         "self = hide;"
+        "*fog.pmx=hide;"
         "*controller.pmx=hide;"
         "skybox*.* = ./materials/material_skybox.fx;"
         "AmbientLight*.* =hide;"
@@ -161,7 +160,8 @@ texture DepthMap : OFFSCREENRENDERTARGET <
     int MipLevels = 1;
     string DefaultEffect =
         "self = hide;"
-        "ray_controller.pmx=hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
         "skybox*.* =shadow/Depth_noalpha.fx;"
         "AmbientLight*.* =hide;"
         "DirectionalLight*.* =shadow/Depth_noalpha.fx;"
@@ -191,7 +191,8 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
     int MipLevels = 1;
     string DefaultEffect =
         "self = hide;"
-        "ray_controller.pmx=hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
         "skybox*.* =shadow/PSSM_noalpha.fx;"
         "AmbientLight*.* =hide;"
         "DirectionalLight*.* =shadow/PSSM_noalpha.fx;"

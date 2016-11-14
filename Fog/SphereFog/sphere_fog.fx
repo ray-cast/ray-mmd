@@ -7,4 +7,4 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 100
 
-#include "SphereFog.fxsub"
+#include "sphere_fog.fxsub"
