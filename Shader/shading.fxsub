@@ -40,7 +40,7 @@ float4 ShadingOpacityPS(
     float3 L = normalize(-LightDirection);
     
     float3 lighting = 0;
-    lighting += tex2D(LightMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
+    lighting += tex2D(LightMapSamp, coord).rgb;
     lighting += ShadingMaterial(N, V, L, coord, material);
     
 #if SSAO_SAMPLER_COUNT > 0
@@ -129,7 +129,7 @@ float4 ShadingTransparentPS(
     float3 L = normalize(-LightDirection);
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
-    lighting += tex2D(LightAlphaMapSamp, coord).rgb * (1 + mMultiLightP * 10 - mMultiLightM);
+    lighting += tex2D(LightAlphaMapSamp, coord).rgb;
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;

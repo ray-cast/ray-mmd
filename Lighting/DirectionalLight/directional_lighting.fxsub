@@ -15,6 +15,8 @@ float mRange : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
+float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
+float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
@@ -157,6 +159,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= atten * float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    lighting *= (1 + mMultiLightP * 10 - mMultiLightM);
     
     return lighting;
 }
