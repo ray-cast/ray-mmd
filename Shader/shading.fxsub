@@ -57,7 +57,7 @@ float4 ShadingOpacityPS(
     float4 floor = tex2Dlod(OutdoorShadingMapSamp, float4(coord, 0, mipLevel));
     floor.rgb *= EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
     floor.rgb *= floorVisiable;
-    lighting += floor;
+    lighting += floor.rgb;
 #endif
     
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
@@ -146,10 +146,6 @@ float4 ShadingTransparentPS(
 #else
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuseAlpha);
     DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specularAlpha);
-#endif
-
-#if OUTDOORFLOOR_QUALITY > 0
-    specular *= (1 - floorVisiable);
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
