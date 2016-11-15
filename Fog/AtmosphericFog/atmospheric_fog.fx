@@ -1,1 +1,1 @@
-#include "AtmosphericFog.fxsub"
+#include "atmospheric_fog.fxsub"
