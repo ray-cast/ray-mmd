@@ -102,6 +102,9 @@ float4 ShadingOpacityPS(
 #endif
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+    #if IBL_QUALITY == 0
+        float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
+    #endif
     float linearDepth = shadowDepth.g;
 #else
     float linearDepth = material.linearDepth;
@@ -175,6 +178,9 @@ float4 ShadingTransparentPS(
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+    #if IBL_QUALITY == 0
+        float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
+    #endif
     float linearDepth = shadowDepth.g;
 #else
     float linearDepth = prefilteredRefract.a;
