@@ -110,8 +110,10 @@ float AdjustRoughness(float roughness, float3 normal)
         float variance = 1.0 / (2.0 * kappa);
         return sqrt(roughness * roughness + variance);
     }
-    
-    return roughness;
+    else
+    {
+        return roughness;
+    }
 }
 
 float3 ComputeAvgNormal(sampler NormalMap, float2 coord, float2 offset)

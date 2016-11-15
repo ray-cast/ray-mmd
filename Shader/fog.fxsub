@@ -43,11 +43,11 @@ float4 SphereFog(LightParam param, float3 V, float distance)
     return float4(scatteringMie, 0);
 }
 
-float4 SphereFog(LightParam param, float3 viewdir, float distance, int stepNum)
+float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
 {
-    float3 viewPosition = viewdir * distance / viewdir.z;
+    float3 viewPosition = viewdir * depth / viewdir.z;
     
-    float stepLength = length(viewPosition - viewdir);
+    float stepLength = distance(viewPosition, viewdir);
     float stepSize = stepLength / stepNum;
     
     float3 stepDir = (viewPosition - viewdir) / stepLength;

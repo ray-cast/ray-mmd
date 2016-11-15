@@ -72,10 +72,6 @@ void SphereFogPS(
     param.eye = CameraPosition;
     param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
     
-    float linearDepth = material.linearDepth;
-    float linearDepth2 = materialAlpha.linearDepth;
-    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-    
     oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
 }
 
