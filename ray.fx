@@ -1,4 +1,5 @@
 #include "ray.conf"
+#include "ray_advanced.conf"
 
 const float4 BackColor = float4(0,0,0,0);
 const float ClearDepth = 1.0;

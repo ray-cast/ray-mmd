@@ -148,12 +148,15 @@ const static float JitterOffsets[16] = {
 float GetJitterOffset(int2 iuv)
 {
     int index = (iuv.x % 4) * 4 + (iuv.y % 4);
-#if 0
-    return JitterOffsets[index];
-#else
     int index2 = ((iuv.x/4) % 4) * 4 + ((iuv.y/4) % 4);
     return (JitterOffsets[index] + JitterOffsets[index2] * 1 / 16.0);
-#endif
+}
+
+float GaussianWeight(int n, float sigma)
+{
+    float sigma2Sq = 2.0 * sigma * sigma;
+    float g = 1.0 / sqrt(PI * sigma2Sq);
+    return (g * exp(-(float(n * n)) / (sigma2Sq)));
 }
 
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)

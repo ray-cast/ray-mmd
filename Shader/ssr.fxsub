@@ -51,16 +51,6 @@ sampler SSRLightSampTemp = sampler_state
     AddressV  = CLAMP;
 };
 
-static float mSSRRangeP = 0.0;
-static float mSSRRangeM = 0;
-static float mSSRThickness = 0;
-static float mSSRJitter = 0;
-static float mSSRStride = 0;
-static float mSSRStrideZCutoff = 0;
-static float mSSRFadeStart = 0.5;
-static float mSSRFadeEnd = 0;
-static float mSSRFadeDistance = 0;
-
 static float thickness = (1.0 + mSSRThickness);
 static float strideZCutoff = 1 / ((1 + mSSRStrideZCutoff * 1000));
 static float fadeEnd = 1.0 - mSSRFadeEnd;

@@ -276,7 +276,7 @@ float4 GlareDetectionPS(
     color = min(color, tex2D(source, coord5));
     
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);   
-    bloom *= lerp(0.1, 20, mBloomIntensity);
+    bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
     float4 MRT3 = tex2D(Gbuffer3Map, coord1);
     float4 MRT4 = tex2D(Gbuffer4Map, coord1);
@@ -347,12 +347,10 @@ float4 StarStreakPS(
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-    float bloomFactors[] = {0.8, 0.6, 0.4, 0.2};
-    
-    float4 bloom1 = BloomFactor(bloomFactors[0]) * tex2D(BloomSamp1st, coord);
-    float4 bloom2 = BloomFactor(bloomFactors[1]) * tex2D(BloomSamp2nd, coord);
-    float4 bloom3 = BloomFactor(bloomFactors[2]) * tex2D(BloomSamp3rd, coord);
-    float4 bloom4 = BloomFactor(bloomFactors[3]) * tex2D(BloomSamp4th, coord);
+    float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2D(BloomSamp1st, coord);
+    float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2D(BloomSamp2nd, coord);
+    float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2D(BloomSamp3rd, coord);
+    float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2D(BloomSamp4th, coord);
     
     float4 bloom = 0.0f;
     bloom += bloom1;
@@ -399,10 +397,11 @@ float4 GhostImagePS(
     uniform sampler source4, 
     uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-    float4 color1 = (tex2D(source1, coord0) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord0) * colorCoeff[0];
-    float4 color2 = (tex2D(source1, coord1) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord1) * colorCoeff[1];
-    float4 color3 = (tex2D(source2, coord2) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord2) * colorCoeff[2];
-    float4 color4 = (tex2D(source3, coord3) - threshold / (1 - threshold + EPSILON) * 10) * tex2D(source4, coord3) * colorCoeff[3];
+    float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
+    float4 color1 = (tex2D(source1, coord0) - ghostThreshold) * tex2D(source4, coord0) * colorCoeff[0];
+    float4 color2 = (tex2D(source1, coord1) - ghostThreshold) * tex2D(source4, coord1) * colorCoeff[1];
+    float4 color3 = (tex2D(source2, coord2) - ghostThreshold) * tex2D(source4, coord2) * colorCoeff[2];
+    float4 color4 = (tex2D(source3, coord3) - ghostThreshold) * tex2D(source4, coord3) * colorCoeff[3];
     return max(0, (color1 + color2 + color3 + color4));
 }
 
@@ -438,32 +437,30 @@ float3 FilmicTonemap(float3 x)
     return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
 }
 
-float3 ToneMapping(float3 color, float exposure)
+float3 ToneMapping(float3 color)
 {
-#if HDR_TONEMAP_OPERATOR == 0
-    return color * exposure;
-#elif HDR_TONEMAP_OPERATOR == 1
-    color = color * exposure;
+#if HDR_TONEMAP_OPERATOR == 1
+    color = color;
     float3 curr = ACESFilmRec709(color);
     return lerp(curr, color, mTonemapping);
 #elif HDR_TONEMAP_OPERATOR == 2
-    color = color * exposure;
+    color = color;
     float3 curr = ACESFilmRec2020(color);
     return lerp(curr, color, mTonemapping);
 #elif HDR_TONEMAP_OPERATOR == 3
-    color = color * exposure;
+    color = color;
     float3 curr = FilmicTonemap(color * 2);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
     return lerp(curr, color, mTonemapping);
 #elif HDR_TONEMAP_OPERATOR == 4
-    color = color * exposure;
+    color = color;
     float3 curr = 2 * FilmicTonemap(color);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
     return lerp(curr, color, mTonemapping);
 #else
-    return color * exposure;
+    return color;
 #endif
 }
 
@@ -505,19 +502,19 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
     
 #if HDR_ENABLE && HDR_BLOOM_QUALITY > 0
     float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;
-    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
-    color = lerp(color, bloom, 0.33);
-    color = ColorBalance(color, float4(balance, mColBalance));
-    color = ToneMapping(color, 1.5 + mExposure * 10);
+    color = lerp(color, bloom, mBloomColorCoeff);
+    color *= mExposureMin + mExposure * mExposureMax + 0.5;
 #else
+    color *= mExposureMin + mExposure * mExposureMax;
+#endif
+
+    color = AppleVignette(color, coord, mVignetteInner - mVignette, mVignetteOuter - mVignette);
+
     float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     color = ColorBalance(color, float4(balance, mColBalance));
-    color = ToneMapping(color, 1 + mExposure * 10);
-#endif
+    color = ToneMapping(color);
     
     color = lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
-    color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);
-    color = saturate(color);
     
 #if AA_QUALITY == 0
     color = linear2srgb(color);

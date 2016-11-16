@@ -32,17 +32,17 @@
 // ==============================================================================
 #if SSAO_QUALITY == 1
 #   define SSAO_SAMPLER_COUNT 8
+#   define SSAO_BLUR_RADIUS 6
 #elif SSAO_QUALITY == 2
 #   define SSAO_SAMPLER_COUNT 12
+#   define SSAO_BLUR_RADIUS 8
 #elif SSAO_QUALITY >= 3
 #   define SSAO_SAMPLER_COUNT 16
+#   define SSAO_BLUR_RADIUS 8
 #else
-#   define SSAO_SAMPLER_COUNT 16
+#   define SSAO_SAMPLER_COUNT 8
+#   define SSAO_BLUR_RADIUS 6
 #endif
-
-#define SSAO_SPACE_RADIUS 5
-#define SSAO_SPACE_RADIUS2 SSAO_SPACE_RADIUS * SSAO_SPACE_RADIUS
-#define SSAO_BLUR_RADIUS 8
 
 shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
@@ -118,7 +118,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
         float sampleLength2 = dot(sampleDirection, sampleDirection);
         float sampleAngle = dot(sampleDirection, viewNormal);
 
-        float f = max(SSAO_SPACE_RADIUS2 - sampleLength2, 0.0f);
+        float f = max((mSSAOSpaceRadius * mSSAOSpaceRadius) - sampleLength2, 0.0f);
         float falloff = f * f * f;
 
         float bias = viewPosition.z * 0.002 + saturate(1 - viewPosition.z / 300) * 0.02;
@@ -129,7 +129,7 @@ float4 SSAO(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  (1 + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * 10);
+    return pow(ao,  (1 + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 }
 
 float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
@@ -143,7 +143,7 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     float2 offset2 = coord - offset;
     
     float3 N = mul(GetNormal(coord), (float3x3)matView);    
-    float sharpness = lerp(8 * dot(N, float3(0,0,-1)), 1, saturate(center_d / 100));
+    float sharpness = lerp(mSSAOSharpnessMax * dot(N, float3(0,0,-1)), 1, saturate(center_d / 100));
     
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
