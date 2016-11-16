@@ -437,45 +437,31 @@ float3 FilmicTonemap(float3 x)
     return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
 }
 
-float3 ToneMapping(float3 color)
+float3 ApplyToneMapping(float3 color)
 {
 #if HDR_TONEMAP_OPERATOR == 1
     color = color;
     float3 curr = ACESFilmRec709(color);
-    return lerp(curr, color, mTonemapping);
+    return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 2
     color = color;
     float3 curr = ACESFilmRec2020(color);
-    return lerp(curr, color, mTonemapping);
+    return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 3
     color = color;
     float3 curr = FilmicTonemap(color * 2);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
-    return lerp(curr, color, mTonemapping);
+    return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 4
     color = color;
     float3 curr = 2 * FilmicTonemap(color);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
-    return lerp(curr, color, mTonemapping);
+    return saturate(lerp(curr, color, mTonemapping));
 #else
-    return color;
+    return saturate(color);
 #endif
-}
-
-float3 ColorBalance(float3 color, float4 balance)
-{
-    float3 lum = luminance(color);
-    color = lerp(lum, color, 1 - balance.a);
-    color *= balance.rgb;
-    return color;
-}
-
-float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
-{
-    float L = length(coord * 2 - 1);
-    return color * smoothstep(outer, inner, L);
 }
 
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
@@ -486,6 +472,25 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
     color.g = tex2D(source, coord - ViewportOffset2 * L * (mDispersion * 8)).g;
     color.b = tex2D(source, coord + ViewportOffset2 * L * (mDispersion * 8)).b;
     return color;
+}
+
+float3 ApplyVignette(float3 color, float2 coord)
+{
+    float L = length(coord * 2 - 1);
+    return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
+}
+
+float3 ApplyColorBalance(float3 color)
+{
+    float3 lum = luminance(color);
+    color = lerp(lum, color, 1 - mColBalance);
+    color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    return color;
+}
+
+float3 ApplyContrast(float3 color)
+{
+    return lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
 }
 
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
@@ -508,13 +513,10 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
     color *= mExposureMin + mExposure * mExposureMax;
 #endif
 
-    color = AppleVignette(color, coord, mVignetteInner - mVignette, mVignetteOuter - mVignette);
-
-    float3 balance = float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
-    color = ColorBalance(color, float4(balance, mColBalance));
-    color = ToneMapping(color);
-    
-    color = lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
+    color = ApplyVignette(color, coord);
+    color = ApplyColorBalance(color);
+    color = ApplyToneMapping(color);
+    color = ApplyContrast(color);
     
 #if AA_QUALITY == 0
     color = linear2srgb(color);
