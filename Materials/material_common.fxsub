@@ -521,8 +521,6 @@ float3 GetAlbedo(float2 uv, bool use_texture)
             {
                 albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
                 albedoColor = lerp(1, albedoColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
-                albedoColor = srgb2linear(albedoColor);
-                
             #if ALBEDO_MAP_APPLY_DIFFUSE
                 albedoColor *= MaterialDiffuse.rgb;
             #endif
@@ -530,12 +528,12 @@ float3 GetAlbedo(float2 uv, bool use_texture)
         #else
             float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
             albedoColor = lerp(1, albedoColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
-            albedoColor = srgb2linear(albedoColor);
-            
             #if ALBEDO_MAP_APPLY_DIFFUSE
                 albedoColor *= MaterialDiffuse.rgb;
             #endif
         #endif
+        
+        albedoColor = srgb2linear(albedoColor);
         
         #if ALBEDO_MAP_APPLY_COLOR
             albedoColor *= albedo.rgb;
@@ -558,11 +556,10 @@ float3 GetAlbedo(float2 uv, bool use_texture)
     {
         float4 TexColor = tex2D(DiffuseMapSamp, uv);
         TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
-        TexColor.rgb = srgb2linear(TexColor.rgb);
         diffuse *= TexColor.rgb;
     }
     
-    return diffuse;
+    return srgb2linear(diffuse);
 #endif
 }
 
