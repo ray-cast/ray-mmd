@@ -26,12 +26,12 @@ float SmoothnessToShininess(float smoothness)
 
 float fresnelSchlick(float f0, float f9, float LdotH)
 {
-    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+    return lerp(f0, f9, pow(1 - LdotH, 5));
 }
 
 float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
 {
-    return lerp(f0, f9, exp2((-5.55473 * LdotH - 6.98316) * LdotH));
+    return lerp(f0, f9, pow(1 - LdotH, 5));
 }
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
@@ -44,6 +44,22 @@ float3 ComputeSpecularMicroOcclusion(float3 f0)
     return saturate(dot(f0, 0.33333h) * 50);
 }
 
+float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
+{ 
+    float sigma2 = roughness * roughness;
+
+    float nl = saturate(dot(N, L));
+    float lv = saturate(dot(L, V));
+    float nv = abs(dot(N, V)) + 1e-5;
+
+    float s = lv - nl * nv;
+    float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
+    float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
+    float B = sigma2 * A;
+
+    return max(0, A + B * (s / t));
+}
+
 float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
 {
     float3 H = normalize(V + L);
@@ -53,7 +69,7 @@ float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
 
     float nl = saturate(dot(N, L));
     float vh = saturate(dot(V, H));
-    float nv = abs(dot(N, V)) + 1e-5h;
+    float nv = max(dot(N, V), 0.1);
 
     float fd90 = energyBias + 2.0 * vh * vh * roughness;
 
