@@ -93,7 +93,6 @@ float4 ShadingOpacityPS(
     {
         lighting += (diffuse + specular) * shadow;
     }
-    
 #endif
 
 #if FOG_ENABLE
@@ -165,8 +164,7 @@ float4 ShadingTransparentPS(
     if (ExistSkybox || ExistSkyboxHDR)
     {
         lighting += (diffuseAlpha + specularAlpha) * shadow;
-    }
-    
+    } 
 #endif
     
 #if FOG_ENABLE

@@ -440,21 +440,17 @@ float3 FilmicTonemap(float3 x)
 float3 ApplyToneMapping(float3 color)
 {
 #if HDR_TONEMAP_OPERATOR == 1
-    color = color;
     float3 curr = ACESFilmRec709(color);
     return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 2
-    color = color;
     float3 curr = ACESFilmRec2020(color);
     return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 3
-    color = color;
     float3 curr = FilmicTonemap(color * 2);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
     return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_TONEMAP_OPERATOR == 4
-    color = color;
     float3 curr = 2 * FilmicTonemap(color);
     float3 whiteScale = 1.0f / FilmicTonemap(11.2);
     curr = curr * whiteScale;
