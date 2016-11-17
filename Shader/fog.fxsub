@@ -24,6 +24,11 @@ float ComputePhaseFunctions(float cosTheta, float g)
     return betaMie;
 }
 
+float ComputeScatteringExtinction(float depth)
+{
+    return (1 - exp(-depth * 0.025));
+}
+
 float4 SphereFog(LightParam param, float3 V, float distance)
 {
     float3 viewPosition = V * distance / V.z;
@@ -86,7 +91,7 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
     
     float threshold = (30000.0 / 4 - 0.05);
-    int samples = 1;
+    /*int samples = 1;
     float shadow = 0;
     
     for (int x = -samples; x <= samples; x++) 
@@ -99,8 +104,13 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     }
     
     samples = samples * 2 + 1;
-    return saturate(shadow / (samples * samples));
+    return saturate(shadow / (samples * samples));*/
+    return tex2D(shadowMap, coord).r < depth ? 0 : 1;
 }
+
+float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
+float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
+float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
 float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 viewdir, float depth, int stepNum)
 {
@@ -116,13 +126,16 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
     float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
     
     float scatteringMie = 0;
+    float stepDepth = stepSize;
     
     for (int i = 0; i < stepNum; i++)
     {
         float atten = GetPhysicalLightAttenuation(stepStart - lightPos, param.lightRange);
-        atten *= ComputePhaseFunctions(dot(-viewdir, normalize(stepStart - lightPos)), param.gloss);
+        atten *= ComputePhaseFunctions(dot(-viewdir, normalize(-LightDirection)), param.gloss);
+        atten *= ComputeScatteringExtinction(stepDepth);
         atten *= ShadowTest(param, shadowMap, shadowSize, stepStart);
-        
+
+        stepDepth += stepSize;
         stepStart += step;
         scatteringMie += atten;
     }
