@@ -88,10 +88,9 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     float threshold = (30000.0 / 4 - 0.05);
     int samples = 1;
     float shadow = 0;
-    [unroll]
+    
     for (int x = -samples; x <= samples; x++) 
     {
-        [unroll]
         for (int y = -samples; y <= samples; y++)
         {
             float2 pos = coord.xy + float2(x, y) * (1.0 / (shadowSize * 0.5), 1.0 / shadowSize);
