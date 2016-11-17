@@ -1,10 +1,11 @@
 #include "../../ray.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
-#include "../../shader/lighting.fxsub"
-#include "../../shader/fog.fxsub"
+#include "../../shader/shadowcommon.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/lighting.fxsub"
+#include "../../shader/fog.fxsub"
 
 float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
@@ -20,6 +21,53 @@ float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position
 static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float3 LightPosition = mPosition;
+
+#undef SHADOW_MAP_SIZE
+
+#if SHADOW_MAP_ENABLE
+
+#if SHADOW_MAP_QUALITY == 0
+#   define SHADOW_MAP_WIDTH 256
+#   define SHADOW_MAP_HEIGHT 512
+#elif SHADOW_MAP_QUALITY == 1
+#   define SHADOW_MAP_WIDTH 512
+#   define SHADOW_MAP_HEIGHT 1024
+#elif SHADOW_MAP_QUALITY >= 2
+#   define SHADOW_MAP_WIDTH 1024
+#   define SHADOW_MAP_HEIGHT 2048
+#elif SHADOW_MAP_QUALITY >= 3
+#   define SHADOW_MAP_WIDTH 2048
+#   define SHADOW_MAP_HEIGHT 4096
+#else
+#   define SHADOW_MAP_WIDTH 256
+#   define SHADOW_MAP_HEIGHT 512
+#endif
+
+texture ShadowMap: OFFSCREENRENDERTARGET <
+    string Description = "Shadow Rendering for PointLight";
+    int Width = SHADOW_MAP_WIDTH;
+    int Height = SHADOW_MAP_HEIGHT;
+    string Format = "R32F";
+    float4 ClearColor = { 1, 1, 1, 1 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect = 
+        "self = hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
+        "*.pmx = sphere_shadow.fx;"
+        "*.pmd = sphere_shadow.fx;"
+        "* = hide";
+>;
+sampler ShadowMapSamp = sampler_state {
+    texture = <ShadowMap>;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+    MipFilter = NONE;
+    AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+#endif
 
 void SphereFogVS(
     in float4 Position : POSITION,
@@ -72,7 +120,7 @@ void SphereFogPS(
     param.eye = CameraPosition;
     param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
     
-    oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
+    oColor0 = oColor1 = SphereFog(param, ShadowMapSamp, SHADOW_MAP_HEIGHT, V, material.linearDepth, 64);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
