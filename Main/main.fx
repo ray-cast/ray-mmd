@@ -1,5 +1,6 @@
 // main.fx 没有载入ray的时候会计算主光源
 // main_ex.fx 用于载入ray的优化(去掉了没有挂ray时计算主光源的代码)
+// main_ex_alpha.fx 使用自定义alpha物体时设置
 // main_ex_mask.fx 对不透明物体优化，但以alpha为mask剔除的(例:树叶，蜘蛛网)
 // main_ex_noalpha.fx 对不透明物体优化
 
