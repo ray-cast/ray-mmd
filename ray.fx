@@ -216,7 +216,6 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAO();
     }
-    #if SSAO_BLUR_RADIUS > 0
     pass SSAOBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -229,7 +228,6 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-    #endif
 #endif
     pass ShadingOpacity < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -317,7 +315,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSRConeTracingPS();
     }
 #endif
-#if HDR_BLOOM_MODE > 0
+#if HDR_ENABLE && HDR_BLOOM_MODE > 0
     pass GlareDetection < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
