@@ -88,8 +88,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 
     float shadow = 0.0;
     
-    float threshold = (30000.0 / 4 - 0.05);
-
 #if SHADOW_MAP_SOFT_QUALITY > 0
     [unroll]
     for (int x = -samples; x <= samples; x++) 
@@ -98,7 +96,7 @@ float ShadowPCF(float3 viewPosition, int samples)
         for (int y = -samples; y <= samples; y++)
         {
             float2 pos = coord.xy + float2(x, y) * ShadowmapOffset2;
-            shadow += CalcLight(tex2D(ShadowMapSamp, pos).r, depth, threshold);
+            shadow += saturate(exp(tex2D(ShadowMapSamp, pos).r * depthScale) * depth);
         }
     }
     
@@ -106,7 +104,7 @@ float ShadowPCF(float3 viewPosition, int samples)
     
     return saturate(shadow / (samples * samples));
 #else
-    return saturate(CalcLight(tex2D(ShadowMapSamp, coord).r, depth, threshold));
+    return saturate(depth * exp(tex2D(ShadowMapSamp, coord).r * depthScale));
 #endif
 }
 
