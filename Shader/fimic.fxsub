@@ -1,5 +1,5 @@
-static float StarScale = 256;
-static float BloomScale = 512;
+const float StarScale = 256;
+const float BloomScale = 512;
 
 static float2 BloomOffset1 = ViewportOffset2 * 2;
 static float2 BloomOffset2 = ViewportOffset2 * 4;
@@ -98,8 +98,8 @@ sampler BloomSamp4th = sampler_state {
     AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 
-#if HDR_FLARE_MODE > 1
-#if HDR_FLARE_MODE == 2
+#if HDR_STAR_MODE > 0
+#if HDR_STAR_MODE == 1
 float4 star_colorCoeff1st[4] = {float4(0.1,0.15,0.475,0.5),float4(0.096,0.144,0.456,0.48),float4(0.04608,0.09216,0.41472,0.4608),float4(0.0884736,0.13271,0.42025,0.442368)};
 float4 star_colorCoeff2nd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0849346,0.127402,0.40344,0.424673),float4(0.0360695,0.072139,0.324625,0.360695),float4(0.061271,0.0919064,0.291037,0.306355)};
 float4 star_colorCoeff3rd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0260201,0.0520403,0.234181,0.260201),float4(0.00270819,0.013541,0.134055,0.13541),float4(0.00140935,0.00704675,0.0697628,0.0704675)};
@@ -165,7 +165,7 @@ sampler StreakSamp4thTemp = sampler_state {
 float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
 float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.77);
 
-#if HDR_FLARE_MODE == 2
+#if HDR_FLARE_MODE == 1
 float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
 float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
 #else
@@ -277,7 +277,7 @@ float4 GlareDetectionPS(
 #if HDR_BLOOM_MODE > 1
     float4 bloom = saturate(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
 #else
-    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
+    float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0) * 0.1;
 #endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
@@ -361,9 +361,9 @@ float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
     bloom += bloom3;
     bloom += bloom4;
     
-#if HDR_FLARE_MODE > 1
+#if HDR_STAR_MODE > 0
     float4 star = max(tex2D(StreakSamp1st, coord), tex2D(StreakSamp2nd, coord));
-    #if HDR_FLARE_MODE > 2
+    #if HDR_STAR_MODE > 1
         star = max(star, max(tex2D(StreakSamp3rd, coord), tex2D(StreakSamp4th, coord)));
     #endif
     bloom += star;
