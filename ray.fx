@@ -50,10 +50,6 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #   include "shader/ssao.fxsub"
 #endif
 
-#if OUTDOORFLOOR_QUALITY > 0
-#   include "shader/OutdoorFloor/OutdoorFloor.fxsub"
-#endif
-
 #if SSSS_QUALITY > 0
 #   include "shader/ssss.fxsub"
 #endif
@@ -144,7 +140,7 @@ technique DeferredLighting<
     "RenderColorTarget0=ShadingMap;     Pass=SSSSBlurY;"
 #endif
 
-#if HDR_BLOOM_QUALITY > 0
+#if HDR_BLOOM_MODE > 0
     "RenderColorTarget0=DownsampleMap1st; Pass=GlareDetection;"
     "RenderColorTarget0=DownsampleMap2nd; Pass=HDRDownsample1st;"
     "RenderColorTarget0=DownsampleMap3rd; Pass=HDRDownsample2nd;"
@@ -159,7 +155,7 @@ technique DeferredLighting<
     "RenderColorTarget0=BloomMap4th;     Pass=BloomDownsampleX4;"
     "RenderColorTarget0=BloomMap4thTemp; Pass=BloomBlurX4;"
     "RenderColorTarget0=BloomMap4th;     Pass=BloomBlurY4;"
-#if HDR_BLOOM_QUALITY == 2
+#if HDR_FLARE_MODE == 2
     "RenderColorTarget0=StreakMap1stTemp; Pass=Star1stStreak1st;"
     "RenderColorTarget0=StreakMap1st;     Pass=Star1stStreak2nd;"
     "RenderColorTarget0=StreakMap1stTemp; Pass=Star1stStreak3rd;"
@@ -168,7 +164,7 @@ technique DeferredLighting<
     "RenderColorTarget0=StreakMap2nd;     Pass=Star2ndStreak2nd;"
     "RenderColorTarget0=StreakMap2ndTemp; Pass=Star2ndStreak3rd;"
     "RenderColorTarget0=StreakMap2nd;     Pass=Star2ndStreak4th;"
-#elif HDR_BLOOM_QUALITY >= 3
+#elif HDR_FLARE_MODE >= 3
     "RenderColorTarget0=StreakMap1st;     Pass=Star1stStreak1st;"
     "RenderColorTarget0=StreakMap1stTemp; Pass=Star1stStreak2nd;"
     "RenderColorTarget0=StreakMap1st;     Pass=Star1stStreak3rd;"
@@ -183,7 +179,7 @@ technique DeferredLighting<
     "RenderColorTarget0=StreakMap4th;     Pass=Star4thStreak3rd;"
 #endif
     "RenderColorTarget0=GlareLightMap;   Pass=GlareLightComp;"
-#if HDR_FLARE_ENABLE > 0
+#if HDR_FLARE_MODE > 0
     "RenderColorTarget0=GhostImageMap;   Pass=GhostImage1st;"
     "RenderColorTarget0=GlareLightMap;   Pass=GhostImage2nd;"
 #endif
@@ -334,7 +330,7 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 SSRConeTracingPS();
     }
 #endif
-#if HDR_BLOOM_QUALITY > 0
+#if HDR_BLOOM_MODE > 0
     pass GlareDetection < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -419,7 +415,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 HDRScreenQuadVS(BloomOffset4);
         PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4thTemp, BloomOffsetY4);
     }
-#if HDR_BLOOM_QUALITY == 2
+#if HDR_FLARE_MODE == 2
     pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -468,7 +464,7 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0), 64);
         PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp2ndTemp, star_colorCoeff4th, 0);
     }
-#elif HDR_BLOOM_QUALITY >= 3
+#elif HDR_FLARE_MODE >= 3
     pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;

@@ -151,6 +151,12 @@ float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 s
     return specular * AB.x + AB.y;
 }
 
+float GetClosestBoundingBox(float intensity, float maxRadius)
+{
+    float E = 1e-2; //intensity / (maxRadius * maxRadius);
+    return min(maxRadius, sqrt(intensity / E));
+}
+
 float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
 {
     const float invRadius = 1 / radius;
