@@ -276,11 +276,11 @@ float4 GlareDetectionPS(
     
 #if HDR_BLOOM_MODE > 1
     float4 bloom = saturate(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
-    bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
 #else
     float4 bloom = max(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON), 0.0);
-    bloom *= lerp(mBloomIntensityMin * 0.1, mBloomIntensityMax, mBloomIntensity);
 #endif
+
+    bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
     float4 MRT3 = tex2D(Gbuffer3Map, coord1);
     float4 MRT4 = tex2D(Gbuffer4Map, coord1);
