@@ -92,12 +92,8 @@ technique DeferredLighting<
     "ClearSetStencil=ClearStencil;"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE    
-    #if SHADOW_SOFT_ENABLE
     "RenderColorTarget0=ShadowmapMapTemp; Pass=ShadowBlurPassX;"
     "RenderColorTarget0=ShadowmapMap;     Pass=ShadowBlurPassY;"
-    #else
-    "RenderColorTarget0=ShadowmapMap; Pass=ShadowMapNoBlur;"
-    #endif
 #endif
 
     "RenderColorTarget0=ScnMap;"
@@ -200,7 +196,6 @@ technique DeferredLighting<
 ;>
 {
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
-    #if SHADOW_SOFT_ENABLE
     pass ShadowBlurPassX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -213,14 +208,6 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
     }
-    #else
-    pass ShadowMapNoBlur < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ShadowMapNoBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
-    }
-    #endif
 #endif
 #if SSAO_QUALITY
     pass SSAO < string Script= "Draw=Buffer;"; > {

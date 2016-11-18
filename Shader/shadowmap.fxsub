@@ -32,8 +32,3 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, unifo
 
     return float4(sum.x / sum.y, center.yzw);
 }
-
-float4 ShadowMapNoBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR
-{
-    return tex2D(source, coord);
-}
