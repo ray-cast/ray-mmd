@@ -48,36 +48,6 @@ float4 SphereFog(LightParam param, float3 V, float distance)
     return float4(scatteringMie, 0);
 }
 
-float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
-{
-    float3 viewPosition = viewdir * depth / viewdir.z;
-    
-    float stepLength = distance(viewPosition, viewdir);
-    float stepSize = stepLength / stepNum;
-    
-    float3 stepDir = (viewPosition - viewdir) / stepLength;
-    float3 step = stepDir * stepSize;
-    float3 stepStart = viewdir + step;
-    
-    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
-    
-    float scatteringMie = 0;
-    
-    for (int i = 0; i < stepNum; i++)
-    {
-        float atten = GetPhysicalLightAttenuation(stepStart - lightPos, param.lightRange);
-        atten *= ComputePhaseFunctions(dot(-viewdir, normalize(stepStart - lightPos)), param.gloss);
-        
-        stepStart += step;
-        scatteringMie += atten;
-    }
-    
-    float3 scattering = scatteringMie;
-    scattering *= param.lightColor * param.lightIntensity;
-    
-    return float4(scattering, 0);
-}
-
 float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 viewPosition)
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
@@ -108,9 +78,35 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     return tex2D(shadowMap, coord).r < depth ? 0 : 1;
 }
 
-float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
-float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
-float3 LightDirection : DIRECTION < string Object = "Light"; >;
+float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
+{
+    float3 viewPosition = viewdir * depth / viewdir.z;
+    
+    float stepLength = distance(viewPosition, viewdir);
+    float stepSize = stepLength / stepNum;
+    
+    float3 stepDir = (viewPosition - viewdir) / stepLength;
+    float3 step = stepDir * stepSize;
+    float3 stepStart = viewdir + step;
+    
+    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
+    
+    float scatteringMie = 0;
+    
+    for (int i = 0; i < stepNum; i++)
+    {
+        float atten = GetPhysicalLightAttenuation(stepStart - lightPos, param.lightRange);
+        atten *= ComputePhaseFunctions(dot(-viewdir, normalize(stepStart - lightPos)), param.gloss);
+        
+        stepStart += step;
+        scatteringMie += atten;
+    }
+    
+    float3 scattering = scatteringMie;
+    scattering *= param.lightColor * param.lightIntensity;
+    
+    return float4(scattering, 0);
+}
 
 float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 viewdir, float depth, int stepNum)
 {
@@ -128,6 +124,7 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
     float scatteringMie = 0;
     float stepDepth = stepSize;
     
+    [loop]
     for (int i = 0; i < stepNum; i++)
     {
         float3 L = stepStart - lightPos;
