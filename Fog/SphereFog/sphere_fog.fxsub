@@ -121,9 +121,9 @@ void SphereFogPS(
     param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
     
 #if SHADOW_MAP_ENABLE
-    oColor0 = oColor1 = SphereFog(param, ShadowMapSamp, SHADOW_MAP_HEIGHT, V, material.linearDepth, 64);
+    oColor0 = oColor1 = SphereFog(param, ShadowMapSamp, SHADOW_MAP_HEIGHT, V, min(P.z, material.linearDepth), 64);
 #else
-    oColor0 = oColor1 = SphereFog(param, V, material.linearDepth, 64);
+    oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
 #endif
 }
 
