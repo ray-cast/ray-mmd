@@ -295,20 +295,6 @@ float4 GlareDetectionPS(
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : COLOR
 {
-#if HDR_BLOOM_MODE == 2
-    float4 color = 0.0f;
-    float weight = 0.0;
-    
-    for (int i = 0; i < n; ++i)
-    {
-        float w = GaussianWeight(i, n);
-        color += tex2D(source, coord + offset * i) * w;
-        color += tex2D(source, coord - offset * i) * w;
-        weight += 2.0 * w;
-    }
-
-    return color / weight;
-#else
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
     
@@ -322,7 +308,6 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, unifor
     }
 
     return color;
-#endif
 }
 
 float BloomFactor(float factor) 
