@@ -274,7 +274,11 @@ float4 GlareDetectionPS(
     color = min(color, tex2D(source, coord4));
     color = min(color, tex2D(source, coord5));
     
+#if HDR_BLOOM_MODE == 1
+    float4 bloom = max(0, color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
+#else
     float4 bloom = saturate(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
+#endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
     float4 MRT3 = tex2D(Gbuffer3Map, coord1);
@@ -290,28 +294,6 @@ float4 GlareDetectionPS(
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
 {
-#if HDR_BLOOM_MODE == 2
-    float weight = GaussianWeight(0, n);
-    float4 color = tex2D(source, coord) * weight;
-    
-    float2 offset0 = coord + offset;
-    float2 offset1 = coord - offset;
-    
-    for (int i = 1; i < n; ++i)
-    {
-        float w = GaussianWeight(i, n);
-        
-        color += tex2D(source, offset0) * w;
-        color += tex2D(source, offset1) * w;
-        
-        offset0 += offset;
-        offset1 -= offset;
-        
-        weight += 2.0 * w;
-    }
-
-    return color / weight;
-#else
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
     
@@ -325,7 +307,6 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform 
     }
 
     return color;
-#endif
 }
 
 float BloomFactor(float factor) 
