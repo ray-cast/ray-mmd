@@ -82,7 +82,7 @@ float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
 float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
 {
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return OrenNayarBRDF(N, L, V, roughness);
+    return BurleyBRDF(N, L, V, roughness);
 }
 
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittanceColor)
