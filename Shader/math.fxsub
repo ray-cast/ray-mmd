@@ -20,7 +20,7 @@ float3 srgb2linear(float3 rgb)
 float3 linear2srgb(float3 srgb)
 {
     const float ALPHA = 0.055f;
-    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(srgb, 1.0f / 2.4f) - ALPHA;
+    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(abs(srgb), 1.0f / 2.4f) - ALPHA;
 }
 
 float4 srgb2linear(float4 c)
@@ -152,18 +152,18 @@ float GetJitterOffset(int2 iuv)
     return (JitterOffsets[index] + JitterOffsets[index2] * 1 / 16.0);
 }
 
-float GaussianWeight(int n, float sigma)
+float GaussianWeight(float n, float sigma)
 {
-    float sigma2Sq = 2.0 * sigma * sigma;
-    float g = 1.0 / sqrt(PI * sigma2Sq);
-    return (g * exp(-(float(n * n)) / (sigma2Sq)));
+    const float blurSigma = sigma * 0.5f;
+    const float blurFalloff = 2.0f * blurSigma * blurSigma;
+    float g = 1.0 / sqrt(PI * blurFalloff);
+    return g * exp(-(n * n) / (blurFalloff));
 }
 
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)
 {
     const float blurSigma = sigma * 0.5f;
     const float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
-
     float ddiff = (depth - center_d) * sharpness;
     return exp(-r * r * blurFalloff - ddiff * ddiff);
 }

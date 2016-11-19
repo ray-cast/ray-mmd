@@ -293,8 +293,30 @@ float4 GlareDetectionPS(
     return bloom;
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset, uniform int n) : COLOR
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
 {
+#if HDR_BLOOM_MODE == 2
+    float weight = GaussianWeight(0, n);
+    float4 color = tex2D(source, coord) * weight;
+    
+    float2 offset0 = coord + offset;
+    float2 offset1 = coord - offset;
+    
+    for (int i = 1; i < n; ++i)
+    {
+        float w = GaussianWeight(i, n);
+        
+        color += tex2D(source, offset0) * w;
+        color += tex2D(source, offset1) * w;
+        
+        offset0 += offset;
+        offset1 -= offset;
+        
+        weight += 2.0 * w;
+    }
+
+    return color / weight;
+#else
     const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
     const float weightSum = 262106.0;
     
@@ -308,6 +330,7 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler2D source, unifor
     }
 
     return color;
+#endif
 }
 
 float BloomFactor(float factor) 
@@ -513,11 +536,12 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
     color = ApplyVignette(color, coord);
     color = ApplyColorBalance(color);
     color = ApplyToneMapping(color * (mExposureMin + mExposure * mExposureMax));
-    color = ApplyContrast(color);
     
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
     color += lerp(0, bloom, mBloomTonemapping);
 #endif
+    
+    color = ApplyContrast(color);
     
 #if AA_QUALITY == 0
     color = linear2srgb(color);
