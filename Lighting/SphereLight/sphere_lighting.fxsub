@@ -160,7 +160,8 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 specular = vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
 #if IBL_ENABLE
     float3 specularDir = mul(SphereLightDirection(material.normal, V, L, LightSize), (float3x3)matViewInverse);
-    specular *= DecodeRGBM(tex2D(IBLSpecularSampler, computeSphereCoord(specularDir)));
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
+    specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(specularDir), 0, mipLayer)));
 #endif
 
     float4 lighting = float4(diffuse + specular, 0);
