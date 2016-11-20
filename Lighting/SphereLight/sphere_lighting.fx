@@ -12,4 +12,10 @@
 #define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
 #define SHADOW_MAP_SOFT_QUALITY 1 // (0 ~ 3)
 
+#define IBL_ENABLE 0
+#define IBL_MIPMAP_LEVEL 7
+
+#define IBLDIFF_MAP_FILE "texture/skydiff_hdr.dds"
+#define IBLSPEC_MAP_FILE "texture/skyspec_hdr.dds"
+
 #include "sphere_lighting.fxsub"

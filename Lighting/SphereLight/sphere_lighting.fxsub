@@ -29,6 +29,32 @@ static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
+#if IBL_ENABLE
+texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
+sampler IBLDiffuseSampler = sampler_state {
+    texture = <IBLDiffuseTexture>;
+    
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = NONE;
+    
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
+};
+
+texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
+sampler IBLSpecularSampler = sampler_state {
+    texture = <IBLSpecularTexture>;
+
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+    
+    ADDRESSU  = CLAMP;
+    ADDRESSV  = CLAMP;
+};
+#endif
+
 #undef SHADOW_MAP_SIZE
 
 #if SHADOW_MAP_ENABLE
@@ -125,9 +151,19 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float atten = GetPhysicalLightAttenuation(L, LightRange);
     float vis = saturate(dot(material.normal, L2)) * atten;
     
-    float4 lighting = 0.0f;
-    lighting.rgb = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);    
-    lighting.rgb += vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+#if IBL_ENABLE
+    float3 diffDir = mul(L2, (float3x3)matViewInverse);
+    diffuse *= DecodeRGBM(tex2D(IBLDiffuseSampler, computeSphereCoord(diffDir)));
+#endif
+
+    float3 specular = vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
+#if IBL_ENABLE
+    float3 specularDir = mul(SphereLightDirection(material.normal, V, L, LightSize), (float3x3)matViewInverse);
+    specular *= DecodeRGBM(tex2D(IBLSpecularSampler, computeSphereCoord(specularDir)));
+#endif
+
+    float4 lighting = float4(diffuse + specular, 0);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (1 + mMultiLightP * 10 - mMultiLightM);
