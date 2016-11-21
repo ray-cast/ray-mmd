@@ -8,20 +8,15 @@ struct LightParam
     float gloss;
 };
 
-float ComputePhaseFunctions(float cosTheta, float g)
+float ComputePhaseFunctions(float theta, float g)
 {
     float gg = g * g;
     float g2 = 2 * g;
     
-    float cosTheta2 = cosTheta * cosTheta;
+    float theta2 = theta * theta;
+    float phase = ((1 - gg) /  pow(1.0 + gg - g2 * theta2, 1.5)) / (4.0 * PI);
     
-    float leftTop = 3 * (1 - gg);
-    float leftBottom = 2 * (2 + gg);
-    float rightTop = 1.0 + cosTheta2;
-    float rightBottom = pow(1.0 + gg - g2 * cosTheta, 1.5);
-    
-    float betaMie = (leftTop / leftBottom) * (rightTop / rightBottom) / (4.0 * PI);
-    return betaMie;
+    return phase;
 }
 
 float ComputeScatteringExtinction(float depth)
