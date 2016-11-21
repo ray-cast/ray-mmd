@@ -10,7 +10,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 
     lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, material.transmittance);
     lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
-    lighting *= LightSpecular * (mMainLightIntensityMin + mDirectionLightP * mMainLightIntensityMax - mDirectionLightM);
+    lighting *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     lighting *= step(0, material.albedo + material.specular - 1e-5);
     
 #if SHADOW_QUALITY > 0
@@ -39,27 +39,14 @@ float4 ShadingOpacityPS(
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
     
-    float3 lighting = 0;
+    float3 lighting = ShadingMaterial(N, V, L, coord, material);
     lighting += tex2D(LightMapSamp, coord).rgb;
-    lighting += ShadingMaterial(N, V, L, coord, material);
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+    lighting *= ssao;
 #endif
-    
-#if OUTDOORFLOOR_QUALITY > 0
-    float floorVisiable = saturate(step(0.9, dot(N, float3(0, 1, 0))));
-    floorVisiable *= abs(P.y) > 1 ? 0 : (1 - abs(P.y));
-    
-    float mipLevel = EnvironmentMip(6, material.smoothness);
-    
-    float4 floor = tex2Dlod(OutdoorShadingMapSamp, float4(coord, 0, mipLevel));
-    floor.rgb *= EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
-    floor.rgb *= floorVisiable;
-    lighting += floor.rgb;
-#endif
-    
+
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
 
 #if IBL_QUALITY > 0   
@@ -72,10 +59,6 @@ float4 ShadingOpacityPS(
 #else
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
     DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
-#endif
-
-#if OUTDOORFLOOR_QUALITY > 0
-    specular *= (1 - floorVisiable);
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
@@ -135,9 +118,9 @@ float4 ShadingTransparentPS(
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+    lighting *= ssao;
 #endif
-
+    
 #if IBL_QUALITY > 0   
     float3 diffuse, diffuseAlpha;
     float3 specular, specularAlpha;

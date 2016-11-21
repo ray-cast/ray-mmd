@@ -1,4 +1,5 @@
 #include "../../ray.conf"
+#include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
@@ -159,7 +160,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
     lighting.rgb *= atten * float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    lighting *= (1 + mMultiLightP * 10 - mMultiLightM);
+    lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;
 }

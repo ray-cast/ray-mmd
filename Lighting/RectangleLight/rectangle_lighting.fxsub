@@ -1,4 +1,5 @@
 #include "../../ray.conf"
+#include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
@@ -25,10 +26,10 @@ float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "Right
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
@@ -223,7 +224,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     lighting.rgb += atten2 * specular;    
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    lighting *= (1 + mMultiLightP * 10 - mMultiLightM);
+    lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;
 }

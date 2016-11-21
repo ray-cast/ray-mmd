@@ -1,4 +1,5 @@
 #include "../../ray.conf"
+#include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
@@ -28,7 +29,7 @@ float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string it
 
 static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
 static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
-static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
 static float3 LightPosition = mPosition;
@@ -140,7 +141,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     lighting.rgb += atten2 * TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    lighting *= (1 + mMultiLightP * 10 - mMultiLightM);
+    lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;
 }

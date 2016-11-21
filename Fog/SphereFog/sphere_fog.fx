@@ -8,8 +8,8 @@
 #define LIGHTSOURCE_MAX_INTENSITY 200
 
 // 阴影
-#define SHADOW_MAP_ENABLE 0
-#define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 0 // (0 ~ 3)
+#define VOLUMETRIC_FOG_ENABLE 0
+#define VOLUMETRIC_FOG_QUALITY 0 // (0 ~ 3)
+#define VOLUMETRIC_FOG_MAP_QUALITY 0 // (0 ~ 3)
 
 #include "sphere_fog.fxsub"

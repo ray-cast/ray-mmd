@@ -1,4 +1,5 @@
 #include "../../ray.conf"
+#include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
@@ -18,35 +19,33 @@ float mGlossM : CONTROLOBJECT < string name="(self)"; string item = "Gloss-"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 
-static float LightRange = 1 + mRangeP * LIGHTSOURCE_MAX_RANGE;
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float3 LightPosition = mPosition;
 
-#undef SHADOW_MAP_SIZE
+#if VOLUMETRIC_FOG_ENABLE
 
-#if SHADOW_MAP_ENABLE
-
-#if SHADOW_MAP_QUALITY == 0
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
-#elif SHADOW_MAP_QUALITY == 1
-#   define SHADOW_MAP_WIDTH 512
-#   define SHADOW_MAP_HEIGHT 1024
-#elif SHADOW_MAP_QUALITY >= 2
-#   define SHADOW_MAP_WIDTH 1024
-#   define SHADOW_MAP_HEIGHT 2048
-#elif SHADOW_MAP_QUALITY >= 3
-#   define SHADOW_MAP_WIDTH 2048
-#   define SHADOW_MAP_HEIGHT 4096
+#if VOLUMETRIC_FOG_QUALITY == 0
+#   define VOLUMETRIC_FOG_WIDTH 256
+#   define VOLUMETRIC_FOG_HEIGHT 512
+#elif VOLUMETRIC_FOG_QUALITY == 1
+#   define VOLUMETRIC_FOG_WIDTH 512
+#   define VOLUMETRIC_FOG_HEIGHT 1024
+#elif VOLUMETRIC_FOG_QUALITY >= 2
+#   define VOLUMETRIC_FOG_WIDTH 1024
+#   define VOLUMETRIC_FOG_HEIGHT 2048
+#elif VOLUMETRIC_FOG_QUALITY >= 3
+#   define VOLUMETRIC_FOG_WIDTH 2048
+#   define VOLUMETRIC_FOG_HEIGHT 4096
 #else
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
+#   define VOLUMETRIC_FOG_WIDTH 256
+#   define VOLUMETRIC_FOG_HEIGHT 512
 #endif
 
-texture ShadowMap: OFFSCREENRENDERTARGET <
-    string Description = "Shadow Rendering for PointLight";
-    int Width = SHADOW_MAP_WIDTH;
-    int Height = SHADOW_MAP_HEIGHT;
+texture VolumetricFog: OFFSCREENRENDERTARGET <
+    string Description = "Volumetric fog Rendering for SphereFog";
+    int Width = VOLUMETRIC_FOG_WIDTH;
+    int Height = VOLUMETRIC_FOG_HEIGHT;
     string Format = "R32F";
     float4 ClearColor = { 1, 1, 1, 1 };
     float ClearDepth = 1.0;
@@ -59,8 +58,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
         "*.pmd = sphere_shadow.fx;"
         "* = hide";
 >;
-sampler ShadowMapSamp = sampler_state {
-    texture = <ShadowMap>;
+sampler VolumetricFogSamp = sampler_state {
+    texture = <VolumetricFog>;
     MinFilter = LINEAR;
     MagFilter = LINEAR;
     MipFilter = NONE;
@@ -120,8 +119,16 @@ void SphereFogPS(
     param.eye = CameraPosition;
     param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
     
-#if SHADOW_MAP_ENABLE
-    oColor0 = oColor1 = SphereFog(param, ShadowMapSamp, SHADOW_MAP_HEIGHT, V, min(P.z, material.linearDepth), 64);
+#if VOLUMETRIC_FOG_ENABLE
+    #if VOLUMETRIC_FOG_QUALITY == 0
+        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 64);
+    #elif VOLUMETRIC_FOG_QUALITY == 1
+        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 100);
+    #elif VOLUMETRIC_FOG_QUALITY == 2
+        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 150);
+    #elif VOLUMETRIC_FOG_QUALITY >= 3
+        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 200);
+    #endif
 #else
     oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
 #endif
