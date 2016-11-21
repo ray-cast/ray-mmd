@@ -1,4 +1,5 @@
 #include "../../ray.conf"
+#include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
@@ -22,11 +23,13 @@ float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 float3 mRightTop : CONTROLOBJECT < string name="(self)"; string item = "RightTop"; >;
 float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "RightBottom"; >;
+float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
+float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
 static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
 static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
@@ -95,7 +98,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
     int MipLevels = 1;
     string DefaultEffect = 
         "self = hide;"
-        "ray_controller.pmx=hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
         "*.pmx = rectangle_shadow.fx;"
         "*.pmd = rectangle_shadow.fx;"
         "* = hide";
@@ -112,19 +116,7 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
 static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
 
-float2 GetShadowCoord(float3 L)
-{
-    bool face = (L.z >= 0) ? true : false;
-    if ( !face ) L.yz = -L.yz;
-    float2 coord = L.xy / (1.0f + L.z);
-    coord.y = -coord.y;
-    coord = (coord + 1.0f) * 0.5f;
-    coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / SHADOW_MAP_HEIGHT;
-
-    return coord;
-}
-
-float ESM(float3 viewPosition)
+float ShadowPCF(float3 viewPosition, int samples) 
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
     float3 L = worldPosition.xyz - LightPosition;
@@ -134,25 +126,12 @@ float ESM(float3 viewPosition)
     float depthScale = 85;
     float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
     depth = exp(depth * -depthScale);
-    
-    return saturate(depth * exp(tex2D(ShadowMapSamp, GetShadowCoord(L / linearDepth)).r * depthScale));
-}
 
-float PCF(float3 viewPosition, int samples) 
-{
-    float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-    float3 L = worldPosition.xyz - LightPosition;
-    
-    float linearDepth = length(L);
-    
-    float depthScale = 85;
-    float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
-    depth = exp(depth * -depthScale);
-    
-    float2 coord = GetShadowCoord(L / linearDepth);
+    float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
     float shadow = 0.0;
 
+#if SHADOW_MAP_SOFT_QUALITY > 0
     [unroll]
     for (int x = -samples; x <= samples; x++) 
     {
@@ -167,6 +146,9 @@ float PCF(float3 viewPosition, int samples)
     samples = samples * 2 + 1;
     
     return saturate(shadow / (samples * samples));
+#else
+    return saturate(depth * exp(tex2D(ShadowMapSamp, coord).r * depthScale));
+#endif
 }
 
 #endif
@@ -240,8 +222,9 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float4 lighting = 0;
     lighting.rgb += atten1 * diffuse;
     lighting.rgb += atten2 * specular;    
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity * step(0, material.albedo + material.specular - 1e-5);
+    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;
 }
@@ -256,13 +239,13 @@ float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3
 #if SHADOW_MAP_ENABLE
     float3 P = V * linearDepth / V.z;
     #if SHADOW_MAP_SOFT_QUALITY == 1
-        shadow *= PCF(P, 1);
-    #elif SHADOW_MAP_SOFT_QUALITY >= 2
-        shadow *= PCF(P, 2);
+        shadow *= ShadowPCF(P, 1);
+    #elif SHADOW_MAP_SOFT_QUALITY == 2
+        shadow *= ShadowPCF(P, 2);
     #elif SHADOW_MAP_SOFT_QUALITY >= 3
-        shadow *= PCF(P, 3);
+        shadow *= ShadowPCF(P, 3);
     #else
-        shadow *= ESM(P);
+        shadow *= ShadowPCF(P, 0);
     #endif
 #endif
 
@@ -304,10 +287,16 @@ void LightSourcePS(
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
+    float3 sum1 = material.albedo + material.specular;
+    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+    clip(sum(sum1 + sum2 - 1e-5));
+
     float3 V = normalize(viewdir);
     
     oColor0 = ShadingMaterial(material, V);
     oColor1 = ShadingMaterial(materialAlpha, V);
+    
+    clip(sum(oColor0 + oColor1) - 1e-5);
     
     float shadow = ShadingShadow(material, materialAlpha, V);
     oColor0 *= shadow;
@@ -335,6 +324,10 @@ void LightSourceShadowlessPS(
 
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    
+    float3 sum1 = material.albedo + material.specular;
+    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+    clip(sum(sum1 + sum2 - 1e-5));
     
     float3 V = normalize(viewdir);
     

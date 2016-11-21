@@ -29,25 +29,6 @@ float ComputeScatteringExtinction(float depth)
     return (1 - exp(-depth * 0.025));
 }
 
-float4 SphereFog(LightParam param, float3 V, float distance)
-{
-    float3 viewPosition = V * distance / V.z;
-    
-    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
-    float3 L = viewPosition - lightPos;
-        
-    float b = dot(V, L);
-    float c = dot(L, L);
-    
-    float iv = 1.0f / sqrt(c - b * b);
-    
-    float3 scatteringMie = iv * (atan((distance + b) * iv) - atan(b * iv));
-    scatteringMie *= param.lightColor * param.lightIntensity;
-    scatteringMie *= 1 / (4 * PI);
-    
-    return float4(scatteringMie, 0);
-}
-
 float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 viewPosition)
 {
     float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
@@ -76,6 +57,25 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     samples = samples * 2 + 1;
     return saturate(shadow / (samples * samples));*/
     return tex2D(shadowMap, coord).r < depth ? 0 : 1;
+}
+
+float4 SphereFog(LightParam param, float3 V, float distance)
+{
+    float3 viewPosition = V * distance / V.z;
+    
+    float3 lightPos = mul(float4(param.lightPosition, 1), matView).xyz;
+    float3 L = viewPosition - lightPos;
+        
+    float b = dot(V, L);
+    float c = dot(L, L);
+    
+    float iv = 1.0f / sqrt(c - b * b);
+    
+    float3 scatteringMie = iv * (atan((distance + b) * iv) - atan(b * iv));
+    scatteringMie *= param.lightColor * param.lightIntensity;
+    scatteringMie *= 1 / (4 * PI);
+    
+    return float4(scatteringMie, 0);
 }
 
 float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
