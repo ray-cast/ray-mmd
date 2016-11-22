@@ -16,6 +16,7 @@ float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mSizeP : CONTROLOBJECT < string name="(self)"; string item = "Size+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float mScattering : CONTROLOBJECT < string name="(self)"; string item = "Scattering"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
@@ -152,7 +153,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float atten = GetPhysicalLightAttenuation(L, LightRange);
     float vis = saturate(dot(material.normal, L2)) * atten;
     
-    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, mScattering, material.transmittance);
 #if IBL_ENABLE
     float3 diffDir = mul(L2, (float3x3)matViewInverse);
     diffuse *= DecodeRGBM(tex2D(IBLDiffuseSampler, computeSphereCoord(diffDir)));

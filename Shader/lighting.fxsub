@@ -44,20 +44,15 @@ float3 ComputeSpecularMicroOcclusion(float3 f0)
     return saturate(dot(f0, 0.33333h) * 50);
 }
 
-float OrenNayarBRDF(float3 N, float3 L, float3 V, float roughness)
-{ 
-    float sigma2 = roughness * roughness;
-
-    float nl = saturate(dot(N, L));
-    float lv = saturate(dot(L, V));
-    float nv = abs(dot(N, V)) + 1e-5;
-
-    float s = lv - nl * nv;
-    float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
-    float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * sigma2);
-    float B = sigma2 * A;
-
-    return max(0, A + B * (s / t));
+float ComputePhaseFunctions(float theta, float g)
+{
+    float gg = g * g;
+    float g2 = 2 * g;
+    
+    float theta2 = theta * theta;
+    float phase = ((1 - gg) /  pow(1.0 + gg - g2 * theta2, 1.5));
+    
+    return phase;
 }
 
 float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
@@ -85,15 +80,40 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
     return BurleyBRDF(N, L, V, roughness);
 }
 
-float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float3 transmittanceColor)
-{
+float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float scatter, float3 transmittanceColor)
+{   
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
+    
+    float3 H = normalize(V + L);
+    
+    float energyBias = 0.5 * roughness;
+    float energyFactor = lerp(1, 1 / 1.51, roughness);
+
     float nl = dot(N, L);
+    float vh = saturate(dot(V, H));
+    float nv = max(dot(N, V), 0.1);
+
+    float fd90 = energyBias + 2.0 * vh * vh * roughness;
+
+    float FL = fresnelSchlick(1, fd90, saturate(nl));
+    float FV = fresnelSchlick(1, fd90, nv);
+
+    float diffuse = FL * FV * energyFactor;
+    
     float w = lerp(0, 0.5, luminance(transmittanceColor));
     float wn = 1.0 / ((1 + w) * (1 + w));
-    float transmittance = saturate((-nl + w) * wn);
-    float diffuse = DiffuseBRDF(N, L, V, gloss);
-    float3 sss = saturate((nl + w) * wn) + transmittanceColor * transmittance;
-    return step(1e-5, w) == 0 ? diffuse * saturate(nl) : sss;
+    float w_nl = saturate((nl + w) * wn);
+    
+    float transmittanceBack = saturate((-nl + w) * wn);
+    float transmittanceFront = (1 - vh);
+    
+    float phase = ComputePhaseFunctions(dot(V, L), scatter);
+    
+    float3 sss = w_nl * diffuse;
+    sss += transmittanceFront * transmittanceColor * w_nl;
+    sss += transmittanceBack * transmittanceColor * phase;
+
+    return sss;
 }
 
 float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
