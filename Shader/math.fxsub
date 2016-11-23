@@ -152,6 +152,11 @@ float GetJitterOffset(int2 iuv)
     return (JitterOffsets[index] + JitterOffsets[index2] * 1 / 16.0);
 }
 
+float GetJitterOffset2(float2 uv)
+{
+    return dot(frac(uv * 0.25), float2(1, 0.25));
+}
+
 float GaussianWeight(float n, float sigma)
 {
     const float blurSigma = sigma * 0.5f;

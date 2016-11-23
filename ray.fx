@@ -76,6 +76,7 @@ void ScreenSpaceQuadVS(
     oViewdir = -mul(Position, matProjectInverse).xyz;
     oTexcoord = Texcoord;
     oTexcoord.xy += ViewportOffset;
+    oTexcoord.zw = oTexcoord.xy * ViewportSize;
 }
 
 float Script : STANDARDSGLOBAL <

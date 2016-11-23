@@ -44,7 +44,7 @@ float4 ShadingOpacityPS(
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
-    lighting *= ssao;
+    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
@@ -118,7 +118,7 @@ float4 ShadingTransparentPS(
     
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
-    lighting *= ssao;
+    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
     
 #if IBL_QUALITY > 0   
