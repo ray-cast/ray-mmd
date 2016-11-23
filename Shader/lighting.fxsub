@@ -71,7 +71,7 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float scatter, flo
 
     float nl = saturate(dot(N, L));
     float vh = saturate(dot(V, H));
-    float nv = max(dot(N, V), 0.1);
+    float nv = max(abs(dot(N, V)), 0.1);
 
     float Fd90 = energyBias + 2.0 * vh * vh * roughness;
 
