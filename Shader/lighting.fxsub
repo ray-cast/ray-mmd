@@ -24,6 +24,11 @@ float SmoothnessToShininess(float smoothness)
     return RoughnessToShininess(roughness);
 }
 
+float fresnelSchlick(float LdotH)
+{
+    return pow(1 - LdotH, 5);
+}
+
 float fresnelSchlick(float f0, float f9, float LdotH)
 {
     return lerp(f0, f9, pow(1 - LdotH, 5));
@@ -55,31 +60,6 @@ float ComputePhaseFunctions(float theta, float g)
     return phase;
 }
 
-float BurleyBRDF(float3 N, float3 L, float3 V, float roughness)
-{
-    float3 H = normalize(V + L);
-
-    float energyBias = 0.5 * roughness;
-    float energyFactor = lerp(1, 1 / 1.51, roughness);
-
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = max(dot(N, V), 0.1);
-
-    float fd90 = energyBias + 2.0 * vh * vh * roughness;
-
-    float FL = fresnelSchlick(1, fd90, nl);
-    float FV = fresnelSchlick(1, fd90, nv);
-
-    return FL * FV * energyFactor;
-}
-
-float DiffuseBRDF(float3 N, float3 L, float3 V, float gloss)
-{
-    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return BurleyBRDF(N, L, V, roughness);
-}
-
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float scatter, float3 transmittanceColor)
 {   
     float roughness = max(SmoothnessToRoughness(gloss), 0.001);
@@ -89,29 +69,27 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, float gloss, float scatter, flo
     float energyBias = 0.5 * roughness;
     float energyFactor = lerp(1, 1 / 1.51, roughness);
 
-    float nl = dot(N, L);
+    float nl = saturate(dot(N, L));
     float vh = saturate(dot(V, H));
     float nv = max(dot(N, V), 0.1);
 
-    float fd90 = energyBias + 2.0 * vh * vh * roughness;
+    float Fd90 = energyBias + 2.0 * vh * vh * roughness;
 
-    float FL = fresnelSchlick(1, fd90, saturate(nl));
-    float FV = fresnelSchlick(1, fd90, nv);
+    float FL = fresnelSchlick(nl);
+    float FV = fresnelSchlick(nv);
+    
+    float Fd = lerp(1, Fd90, FL) * lerp(1, Fd90, FV) * energyFactor;
 
-    float diffuse = FL * FV * energyFactor;
-    
-    float w = lerp(0, 0.5, luminance(transmittanceColor));
-    float wn = 1.0 / ((1 + w) * (1 + w));
-    float w_nl = saturate((nl + w) * wn);
-    
-    float transmittanceBack = saturate((-nl + w) * wn);
-    float transmittanceFront = (1 - vh);
-    
+    float Fss90 = vh * vh * roughness;
+    float Fss = lerp(1, Fss90, FL) * lerp(1, Fss90, FV) * energyFactor;
+    float Fsss = 1.25 * (Fss * (1 / (nl + nv) - 0.5) + 0.5);
+
+    float w = luminance(transmittanceColor);    
+    float transmittance = saturate(Fsss - Fd);
     float phase = ComputePhaseFunctions(dot(V, L), scatter);
     
-    float3 sss = w_nl * diffuse;
-    sss += transmittanceFront * transmittanceColor * w_nl;
-    sss += transmittanceBack * transmittanceColor * phase;
+    float3 sss = lerp(Fd, Fsss, w) * nl;
+    sss += transmittanceColor * transmittance * phase;
 
     return sss;
 }
