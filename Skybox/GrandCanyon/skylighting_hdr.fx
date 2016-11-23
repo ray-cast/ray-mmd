@@ -4,8 +4,8 @@
 #define IBL_HDR_ENABLE 1
 // 环境光贴图的mipmap层数
 #define IBL_MIPMAP_LEVEL 7
-// HDR的最大范围
-#define IBL_HDR_RANGE 8
+// RGBK encode
+#define IBL_RGBK_ENABLE 1
 
 #define IBLDIFF_MAP_FILE "texture/skydiff_hdr.dds"
 #define IBLSPEC_MAP_FILE "texture/skyspec_hdr.dds"

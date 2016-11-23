@@ -82,9 +82,14 @@ float length2(float4 v)
     return dot(v, v);
 }
 
-float3 DecodeRGBM(in float4 rgbm, float range)
+float3 DecodeRGBM(in float4 rgbm)
 {
-    return rgbm.rgb * rgbm.a * range;
+    return rgbm.rgb * rgbm.a * 6;
+}
+
+float3 DecodeRGBK(in float4 rgbk)
+{
+    return rgbk.rgb * rgbk.rgb * rgbk.a * rgbk.a * 32;
 }
 
 float2 PosToCoord(float2 position)
