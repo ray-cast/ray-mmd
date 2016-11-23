@@ -119,21 +119,22 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     
     float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
     
+    float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
+    
     float2 rotatedKernel[8];
-    rotatedKernel[0] = mul(kernel[0].xy, sampleRotMat);
-    rotatedKernel[1] = mul(kernel[1].xy, sampleRotMat);
-    rotatedKernel[2] = mul(kernel[2].xy, sampleRotMat);
-    rotatedKernel[3] = mul(kernel[3].xy, sampleRotMat);
-    rotatedKernel[4] = mul(kernel[4].xy, sampleRotMat);
-    rotatedKernel[5] = mul(kernel[5].xy, sampleRotMat);
-    rotatedKernel[6] = mul(kernel[6].xy, sampleRotMat);
-    rotatedKernel[7] = mul(kernel[7].xy, sampleRotMat);
+    rotatedKernel[0] = mul(kernel[0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+    rotatedKernel[1] = mul(kernel[1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+    rotatedKernel[2] = mul(kernel[2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+    rotatedKernel[3] = mul(kernel[3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+    rotatedKernel[4] = mul(kernel[4].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
+    rotatedKernel[5] = mul(kernel[5].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
+    rotatedKernel[6] = mul(kernel[6].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
+    rotatedKernel[7] = mul(kernel[7].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
 
     [unroll]
-    for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
-    {
-        float2 sampleDiskRadiusAdj = (j < 4) ? sampleDiskRadius : sampleDiskRadius * 0.5;        
-        float2 sampleOffset = coord.xy + rotatedKernel[j] * sampleDiskRadiusAdj;
+    for (int i = 0; i < SSAO_SAMPLER_COUNT; i++)
+    {      
+        float2 sampleOffset = coord.xy + rotatedKernel[i];
         float3 samplePosition = GetPosition(sampleOffset);
         float3 sampleDirection = samplePosition - viewPosition;
 
