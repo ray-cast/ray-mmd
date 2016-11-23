@@ -67,9 +67,15 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
 #endif
 
 #if IBL_HDR_ENABLE
-    prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse);
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr);
-    prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance);
+    #if IBL_HDR_RANGE
+        prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse, IBL_HDR_RANGE);
+        prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, IBL_HDR_RANGE);
+        prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance, IBL_HDR_RANGE);
+    #else
+        prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse, 6);
+        prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
+        prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance, 6);
+    #endif
 #endif
 
     float3 transmittance = prefilteredTransmittance.rgb * material.transmittance;
