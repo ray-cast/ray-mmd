@@ -84,7 +84,7 @@ float length2(float4 v)
 
 float3 DecodeRGBM(in float4 rgbm)
 {
-    return 6 * rgbm.rgb * rgbm.a;
+    return 8 * rgbm.rgb * rgbm.a;
 }
 
 float2 PosToCoord(float2 position)
