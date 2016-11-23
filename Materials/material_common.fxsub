@@ -629,17 +629,23 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 
         #if NORMAL_MAP_IN_SPHEREMAP
             float3 tangentNormal = tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-            tangentNormal.rg *= normalMapScale;
-            tangentNormal = normalize(tangentNormal);
+            #if NORMAL_MAP_IS_COMPRESSED
+                tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+            #endif
         #elif NORMAL_MAP_SUB_ENABLE && !NORMAL_MAP_ENABLE
             float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-            tangentNormal.rg *= normalMapSubScale;
-            tangentNormal = normalize(tangentNormal);            
+            #if NORMAL_MAP_SUB_IS_COMPRESSED
+                tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+            #endif
         #else    
             float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-            tangentNormal.rg *= normalMapScale;
-            tangentNormal = normalize(tangentNormal);
+            #if NORMAL_MAP_IS_COMPRESSED
+                tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+            #endif
         #endif
+        
+        tangentNormal.rg *= normalMapScale;
+        tangentNormal = normalize(tangentNormal);
         
         #if NORMAL_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -650,7 +656,10 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
                 coord.y = 1 - coord.y;
             #endif
         
-            float3 tangentSubNormal = normalize(tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1);
+            float3 tangentSubNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+            #if NORMAL_MAP_SUB_IS_COMPRESSED
+                tangentSubNormal.z = sqrt(1.0 - tangentSubNormal.x * tangentSubNormal.x - tangentSubNormal.y * tangentSubNormal.y);
+            #endif
             tangentSubNormal.rg *= normalMapSubScale;
             tangentSubNormal = normalize(tangentSubNormal);
             

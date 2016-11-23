@@ -28,6 +28,7 @@ const float alphaMapLoopNum = 1.0;
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0
+#define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
@@ -37,6 +38,7 @@ const float normalMapScale = 1.0;
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
 #define NORMAL_MAP_SUB_UV_FLIP 0
+#define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
 const float normalMapSubScale = 1;
