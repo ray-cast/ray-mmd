@@ -27,7 +27,7 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 
-float emissiveIntensityMin = log(100);
+float emissiveIntensityMin = 0;
 float emissiveIntensityMax = log(2100);
 static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif

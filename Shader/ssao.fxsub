@@ -101,7 +101,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  (1 + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+    return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 #else
     static const float2 kernel[8] = {
         float2( -0.14, -0.02 ),
