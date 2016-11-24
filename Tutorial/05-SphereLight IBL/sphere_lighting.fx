@@ -14,6 +14,7 @@
 
 #define IBL_ENABLE 1
 #define IBL_MIPMAP_LEVEL 7
+#define IBL_RGBM_RANGE 6
 
 #define IBLDIFF_MAP_FILE "texture/skydiff_hdr.dds"
 #define IBLSPEC_MAP_FILE "texture/skyspec_hdr.dds"
