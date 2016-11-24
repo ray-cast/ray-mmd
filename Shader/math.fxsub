@@ -82,14 +82,9 @@ float length2(float4 v)
     return dot(v, v);
 }
 
-float3 DecodeRGBM(in float4 rgbm)
+float3 DecodeRGBM(float4 rgbm, float range)
 {
-    return rgbm.rgb * rgbm.a * 6;
-}
-
-float3 DecodeRGBK(in float4 rgbk)
-{
-    return rgbk.rgb * rgbk.rgb * rgbk.a * rgbk.a * 32;
+    return rgbm.rgb * rgbm.a * range;
 }
 
 float2 PosToCoord(float2 position)
@@ -139,7 +134,7 @@ float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
 
 float2 computeSphereCoord(float3 normal)
 {
-    float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+    float2 coord = float2((atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
     return coord;
 }
 
