@@ -155,7 +155,8 @@ float4 ShadingTransparentPS(
     lighting = lighting + fog.rgb;
 #endif
     
-    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * 0.04325 * saturate(1 - material.specular.x / 0.04));
+    float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
+    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * ior);
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0

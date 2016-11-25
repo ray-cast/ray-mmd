@@ -208,9 +208,8 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
     float totalFade = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular * fadeOnRoughness;
 
-    float4 totalColor = tex2D(ShadingMapSamp, hitPixel.xy) * (hitTest ? 1 : 0);
-    
-    return float4(totalColor.rgb, totalFade);
+    float4 totalColor = tex2D(ShadingMapSamp, hitPixel.xy);    
+    return float4(totalColor.rgb, totalFade) * (hitTest ? 1 : 0);
 }
 
 float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
