@@ -157,12 +157,19 @@ float GetJitterOffset2(float2 uv)
     return dot(frac(uv * 0.25), float2(1, 0.25));
 }
 
-float GaussianWeight(float n, float sigma)
+float3 IncrementalGaussianCofficent(float sigma)
 {
-    const float blurSigma = sigma * 0.5f;
-    const float blurFalloff = 2.0f * blurSigma * blurSigma;
-    float g = 1.0 / sqrt(PI * blurFalloff);
-    return g * exp(-(n * n) / (blurFalloff));
+    float3 incrementalGaussian;
+    incrementalGaussian.x = 1.0f / (sqrt(PI_2) * sigma);
+    incrementalGaussian.y = exp(-0.5f / (sigma * sigma));
+    incrementalGaussian.z = incrementalGaussian.y * incrementalGaussian.y;
+    return incrementalGaussian;
+}
+
+float3 IncrementalGaussian(float3 cofficent)
+{
+    cofficent.xy *= cofficent.yz;
+    return cofficent;
 }
 
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)

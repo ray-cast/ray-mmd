@@ -192,17 +192,6 @@ sampler GhostImageMapSamp = sampler_state {
 };
 #endif
 
-void HDRScreenQuadVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD,
-    out float2 oTexcoord : TEXCOORD0,
-    out float4 oPosition : POSITION,
-    uniform float2 offset)
-{
-    oPosition = Position;
-    oTexcoord = Texcoord + offset * 0.5;
-}
-
 void HDRDownsampleVS(
     in float4 Position : POSITION,
     in float2 Texcoord : TEXCOORD,
