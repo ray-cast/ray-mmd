@@ -19,7 +19,6 @@ float mRadiusP : CONTROLOBJECT < string name="(self)"; string item = "Radius+"; 
 float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
-float mScattering : CONTROLOBJECT < string name="(self)"; string item = "Scattering"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
@@ -138,7 +137,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float atten2 = saturate(dot(material.normal, L2)) * atten1;
     
     float4 lighting = 0.0f;    
-    lighting.rgb = atten1 * material.albedo * DiffuseBRDF(material.normal, L2, V, material.smoothness, mScattering, material.transmittance);    
+    lighting.rgb = atten1 * material.albedo * DiffuseBRDF(material.normal, L2, V, material);    
     lighting.rgb += atten2 * TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
     lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));

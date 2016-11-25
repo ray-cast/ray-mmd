@@ -74,7 +74,7 @@ const float metalnessBaseSpecular = 0.04;
 
 // const float3 transmittance = float3(1, 0, 0);
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75); // (0.5 ~ 0.9)
-const float transmittanceStrength = 1.1;
+const float transmittanceStrength = 1.6;
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素

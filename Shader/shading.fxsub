@@ -8,7 +8,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 #if MAIN_LIGHT_ENABLE
     float vis = saturate(dot(N, L));
 
-    lighting = material.albedo * DiffuseBRDF(N, L, V, material.smoothness, 0.5, material.transmittance);
+    lighting = material.albedo * DiffuseBRDF(N, L, V, material);
     lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
     lighting *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     lighting *= step(0, material.albedo + material.specular - 1e-5);
@@ -156,7 +156,7 @@ float4 ShadingTransparentPS(
 #endif
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
-    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord + N.xy * ior);
+    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord);
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
