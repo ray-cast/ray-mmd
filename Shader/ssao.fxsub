@@ -59,11 +59,11 @@ float3 GetNormal(float2 uv)
 
 float2 tapLocation(int index, float noise)
 {
-    float alpha = 2.0 * PI * 7 / SSAO_SAMPLER_COUNT;
+    float alpha = PI_2 * 7 / SSAO_SAMPLER_COUNT;
     float angle = (index + noise) * alpha;
     float radius = (1 + mSSAORadiusM - mSSAORadiusP) * 16;
-    float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) / SSAO_SAMPLER_COUNT;
-    return float2(cos(angle), sin(angle)) * (index * radiusStep + ViewportOffset2);
+    float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) * ((0.5 + index) / SSAO_SAMPLER_COUNT);
+    return float2(cos(angle), sin(angle)) * radiusStep;
 }
 
 float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
@@ -76,12 +76,13 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset2(coord.zw);
     float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
+    float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
     
-#if SSAO_QUALITY > 1
+#if SSAO_QUALITY < 4
     [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
     {
-        float2 sampleOffset = coord.xy + tapLocation(j, sampleNoise);
+        float2 sampleOffset = coord.xy + tapLocation(j, sampleNoise) * sampleScale;
         float3 samplePosition = GetPosition(sampleOffset);
         float3 sampleDirection = samplePosition - viewPosition;
 
@@ -103,15 +104,23 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float ao = saturate(1 - sampleAmbient / sampleWeight);
     return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 #else
-    static const float2 kernel[8] = {
+    static const float2 kernel[16] = {
         float2( -0.14, -0.02 ),
         float2( -0.04, 0.24 ),
         float2( 0.36, 0.08 ),
+        float2(-0.46, -0.08),
         float2( 0.26, -0.4 ),
+        float2(-0.127, -0.347),
         float2( -0.44, -0.34 ),
         float2( -0.52, 0.4 ),
+        float2(-0.226, 0.589),
         float2( 0.3, 0.68 ),
-        float2( 0.84, -0.32 )
+        float2( 0.7, 0.356),
+        float2( 0.47, -0.287),
+        float2( 0.84, -0.32 ),
+        float2( 0.4, -0.74),
+        float2(-0.338, -0.684),
+        float2(-0.622, -0.415)
     };
         
     float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
@@ -121,20 +130,18 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     
     float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
     
-    float2 rotatedKernel[8];
-    rotatedKernel[0] = mul(kernel[0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-    rotatedKernel[1] = mul(kernel[1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-    rotatedKernel[2] = mul(kernel[2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-    rotatedKernel[3] = mul(kernel[3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-    rotatedKernel[4] = mul(kernel[4].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
-    rotatedKernel[5] = mul(kernel[5].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
-    rotatedKernel[6] = mul(kernel[6].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
-    rotatedKernel[7] = mul(kernel[7].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.75;
-
+    float2 rotateKernel[16];
+    
     [unroll]
-    for (int i = 0; i < SSAO_SAMPLER_COUNT; i++)
-    {      
-        float2 sampleOffset = coord.xy + rotatedKernel[i];
+    for (int i = 0; i < 16; i++)
+    {
+        rotateKernel[i] = mul(kernel[i].xy, sampleRotMat) * sampleDiskRadius;
+    }
+    
+    [unroll]
+    for (int i = 0; i < 16; i++)
+    {
+        float2 sampleOffset = coord.xy + rotateKernel[i];
         float3 samplePosition = GetPosition(sampleOffset);
         float3 sampleDirection = samplePosition - viewPosition;
 
@@ -154,7 +161,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
 
     float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  (1 + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+    return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 #endif
 }
 
