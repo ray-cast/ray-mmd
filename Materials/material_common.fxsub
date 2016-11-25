@@ -771,7 +771,7 @@ float GetMetalness(float2 coord)
 float3 GetTransmittance(float2 coord)
 {
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    #if SSS_MAP_ENABLE
+    #if SSS_MAP_ENABLE && !SSS_MAP_IS_CURVATURE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
@@ -791,6 +791,25 @@ float3 GetTransmittance(float2 coord)
     return 0.0f;
 #endif
 }
+
+float3 GetTransmittanceStrength(float2 coord)
+{
+#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+    #if SSS_MAP_ENABLE && SSS_MAP_IS_CURVATURE
+        #if SSS_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+    
+        float curvature = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
+        return curvature + floor(transmittanceStrength);
+    #else
+        return transmittanceStrength;
+    #endif
+#else
+    return 0.0f;
+#endif
+}
+
 
 float GetMelanin(float2 coord)
 {
@@ -872,7 +891,7 @@ GbufferParam MaterialPS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.index = transmittanceStrength;
+    material.index = GetTransmittanceStrength(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.alpha = 1;
@@ -925,7 +944,7 @@ GbufferParam Material2PS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.index = transmittanceStrength;
+    material.index = GetTransmittanceStrength(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;

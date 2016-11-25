@@ -68,12 +68,13 @@ const float metalnessBaseSpecular = 0.04;
 #define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_APPLY_COLOR 0
+#define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
 #define SSS_MAP_FILE "transmittance.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75); // (0.5 ~ 0.9)
-const float transmittanceStrength = 1.99f;
+const float transmittanceStrength = 1.6; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素

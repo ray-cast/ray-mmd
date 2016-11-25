@@ -127,9 +127,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float2 sampleDiskRadius = ((ViewportSize.x / ((1 + mSSAORadiusM - mSSAORadiusP) * 16)) / ViewportSize);
     
     float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
-    
-    float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
-    
+        
     float2 rotateKernel[16];
     
     [unroll]
@@ -147,14 +145,14 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
         float sampleLength2 = dot(sampleDirection, sampleDirection);
         float sampleAngle = dot(sampleDirection, viewNormal);
-        
+    
         float f = max(sampleRadius2 - sampleLength2, 0.0f);
         float falloff = f * f * f;
 
-        float bias = viewPosition.z * mSSAOBiasNear;
-        bias += saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasFar;
+        float bias = viewPosition.z * mSSAOBiasFar;
+        bias += saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
         
-        float occlustion  = max(0.0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
+        float occlustion  = max(0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
 
         sampleWeight += falloff;
         sampleAmbient += occlustion;
@@ -175,7 +173,7 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     float2 offset1 = coord + offset;
     float2 offset2 = coord - offset;
     
-    float angle = dot(mul(GetNormal(coord), (float3x3)matView), float3(0,0,-1));
+    float angle = saturate(dot(mul(GetNormal(coord), (float3x3)matView), float3(0,0,-1)));
     float falloff = saturate(center_d / mSSAOBlurFalloff);
     float sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
     

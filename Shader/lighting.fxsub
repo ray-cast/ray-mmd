@@ -60,15 +60,17 @@ float ComputePhaseFunctions(float theta, float g)
     return phase;
 }
 
-float3 PreIntegratedBRDF(float nl, float curvature)
+float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, float3 L)
 {
-    float curva = (1.0 / mad(curvature, 0.5 - 0.0625, 0.0625) - 2.0) / (16.0 - 2.0);
+    float nl = dot(N, L) * 0.5 + 0.5;
+    float curvature = frac(material.index);
+    float curva = (1.0 / madd(curvature, 0.5 - 0.0625, 0.0625) - 2.0) / (16.0 - 2.0);
     float oneMinusCurva = 1.0 - curva;
 
     float3 rangeMin = float3(0.0, 0.3, 0.3);
     float3 rangeMax = float3(1.0, 0.7, 0.7);
     float3 offset = float3(0.0, 0.06, 0.06);
-    float3 t = saturate(mad(nl, 1.0 / (rangeMax - rangeMin), (offset + rangeMin) / (rangeMin - rangeMax) ));
+    float3 t = saturate(madd(nl, 1.0 / (rangeMax - rangeMin), (offset + rangeMin) / (rangeMin - rangeMax) ));
     float3 lowerLine = (t * t) * float3(0.65, 0.5, 0.9);
     lowerLine.r += 0.045;
     lowerLine.b *= t.b;
@@ -78,18 +80,26 @@ float3 PreIntegratedBRDF(float nl, float curvature)
     
     float3 lerpMin = float3(0.0, 0.35, 0.35);
     float3 lerpMax = float3(1.0, 0.7 , 0.6 );
-    float3 lerpT = saturate(mad(nl, 1.0 / (lerpMax - lerpMin), lerpMin / (lerpMin - lerpMax)));
+    float3 lerpT = saturate(madd(nl, 1.0 / (lerpMax - lerpMin), lerpMin / (lerpMin - lerpMax)));
 
-    float3 upperLine1 = saturate(mad(nl, m1, float3(0.99, 0.99, 0.99) -m1));
-    float3 upperLine2 = saturate(mad(nl, m2, float3(0.99, 0.99, 1.0) - m2));
+    float3 upperLine1 = saturate(madd(nl, m1, float3(0.99, 0.99, 0.99) -m1));
+    float3 upperLine2 = saturate(madd(nl, m2, float3(0.99, 0.99, 1.0) - m2));
     
     float3 curve1 = lerp(lowerLine, upperLine1, lerpT * lerpT);
     float3 curve2 = upperLine2;
     
     float oneMinusCurva2 = oneMinusCurva * oneMinusCurva;
     
-    float3 brdf = lerp(curve1, curve2, mad(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
-    return brdf;
+    float3 brdf = lerp(curve1, curve2, madd(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
+    return brdf * material.transmittance;
+}
+
+float3 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, float3 V)
+{
+    float w = 0.5;
+    float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
+    float phase = ComputePhaseFunctions(dot(V, L), 1 - frac(material.index));
+    return material.transmittance * nl * phase;
 }
 
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
@@ -112,24 +122,22 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
     
     float Fd = lerp(1, Fd90, FL) * lerp(1, Fd90, FV) * energyFactor;
 
-    float Fss90 = vh * vh * roughness;
-    float Fss = lerp(1, Fss90, FL) * lerp(1, Fss90, FV) * energyFactor;
-    float Fsss = 1.25 * (Fss * (1 / (nl + nv) - 0.5) + 0.5);
-
     float profileIndex = floor(material.index);
     float sssAmount = frac(material.index);
-    float sssStrength = (profileIndex == SUBSURFACESCATTERING_SKIN) ? 1 : 0;
    
-    float3 lighting = lerp(Fd, Fsss, sssAmount) * nl;
+    float3 lighting = Fd * nl;
     
 #if LIGHTMODE_BRDF >= 1
-    lighting += material.transmittance * PreIntegratedBRDF(dot(N, L) * 0.5 + 0.5, sssAmount) * sssStrength;
-#endif
-
+    if (profileIndex == SUBSURFACESCATTERING_SKIN)
+    {
+        lighting += SubsurfaceShadingPreIntegratedSkin(material, N, L);
+    }
 #if LIGHTMODE_BRDF >= 2
-    float transmittance = saturate(Fsss - Fd);
-    float phase = ComputePhaseFunctions(dot(V, L), 1 - sssAmount);
-    lighting += material.transmittance * transmittance * phase * (1 - sssStrength);
+    else
+    {
+        lighting += SubsurfaceShadingTwoSide(material, N, L, V);
+    }
+#endif
 #endif
 
     return lighting;

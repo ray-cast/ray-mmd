@@ -68,7 +68,8 @@ const float metalnessBaseSpecular = 0.0;
 #define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_APPLY_COLOR 0
+#define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
 #define SSS_MAP_FILE "transmittance.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 

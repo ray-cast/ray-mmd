@@ -70,11 +70,12 @@ const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 #define SSS_ENABLE 0
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_APPLY_COLOR 0 // using a thickness map, enable it
+#define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
 #define SSS_MAP_FILE "transmittance.png"
 
 const float3 transmittance = 0.0;
-const float transmittanceStrength = 0.0f;
+const float transmittanceStrength = 0.0f; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素

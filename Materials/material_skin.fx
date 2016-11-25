@@ -50,7 +50,7 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.6;
+const float smoothness = 0.55;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -68,13 +68,14 @@ const float metalnessBaseSpecular = 0.04;
 #define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_APPLY_COLOR 0
+#define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
 #define SSS_MAP_FILE "transmittance.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
 // const float3 transmittance = float3(1, 0, 0);
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75); // (0.5 ~ 0.9)
-const float transmittanceStrength = 1.6;
+const float transmittanceStrength = 1.6; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素
