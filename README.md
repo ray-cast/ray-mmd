@@ -29,7 +29,7 @@ Ray-MMD
 * 改进了SSR
 * 添加压缩法线的支持 (RG Normal Map)
 * 添加曲率贴图 (Curvature Map)
-* 添加了SphereFog的VolumetricShadow
+* 添加了Sphere Fog的Volumetric Shadow [(预览)](https://github.com/ray-cast/images/raw/master/volumetric_110.jpg)
 * 添加了新的皮肤材质 [(预览)](https://github.com/ray-cast/images/raw/master/skin_110.jpg)
 
 #### 项目主页 :
