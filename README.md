@@ -24,17 +24,10 @@ Ray-MMD
 * [Visual studio code](http://code.visualstudio.com/Download)
 
 #### 更新内容 :
-##### 2016-11-15 ver 1.1.0beta
-* 注 : 法线贴图效果和SP(NormalMap使用OpenGL模式)保持一致,如果凹凸颠倒设置normalMapScale = -1.0;
-* 独立GroundFog, 添加SphereFog [(预览)](https://github.com/ray-cast/images/raw/master/fog_110.jpg)
-* 添加DirectionalLight
-* 添加Gbuffer过滤用于减少IBL的锯齿 [(预览)](https://github.com/ray-cast/images/raw/master/gbuffer_filter_110.jpg)
-* 改进NormalMap [(预览)](https://github.com/ray-cast/images/raw/master/normal_110.jpg)
-* 改进ParallaxMap [(预览)](https://github.com/ray-cast/images/raw/master/ParallaxMap.jpg)
-* 改进SSAO,以及近处时出现的白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_110.jpg)
-* 优化多光源的运算速度
-* 纹理LOD采样方式改为各向异性16x
-* 修复使用NORMAL_MAP_UV_FLIP时法线凹凸颠倒
+##### 2016-11-26 ver 1.1.0
+* __改进了cmft__  [(预览)](https://github.com/ray-cast/images/raw/master/cmft_110.jpg)
+* 改进了SSR
+* 添加了新的皮肤材质 [(预览)](https://github.com/ray-cast/images/raw/master/skin_110.jpg)
 
 #### 项目主页 :
 * [Github](https://github.com/ray-cast/ray-mmd)
