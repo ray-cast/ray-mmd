@@ -72,7 +72,7 @@ float sum(float4 v)
     return v.x + v.y + v.z + v.w;
 }
 
-float madd(float3 v, float3 t1, float3 t2)
+float3 madd(float3 v, float3 t1, float3 t2)
 {
     return v * t1 + t2;
 }
