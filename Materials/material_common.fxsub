@@ -27,7 +27,7 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 
-float emissiveIntensityMin = 0;
+float emissiveIntensityMin = log(50);
 float emissiveIntensityMax = log(2100);
 static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
@@ -520,14 +520,14 @@ float3 GetAlbedo(float2 uv, bool use_texture)
             if (use_texture)
             {
                 albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
-                albedoColor = lerp(1, albedoColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
+                albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
             #if ALBEDO_MAP_APPLY_DIFFUSE
                 albedoColor *= MaterialDiffuse.rgb;
             #endif
             }
         #else
             float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
-            albedoColor = lerp(1, albedoColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
+            albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
             #if ALBEDO_MAP_APPLY_DIFFUSE
                 albedoColor *= MaterialDiffuse.rgb;
             #endif
@@ -644,7 +644,10 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
             #endif
         #endif
         
-        tangentNormal.rg *= normalMapScale;
+        #if NORMAL_MAP_ENABLE
+            tangentNormal.rg *= normalMapScale;
+        #endif
+        
         tangentNormal = normalize(tangentNormal);
         
         #if NORMAL_MAP_UV_FLIP
@@ -809,7 +812,6 @@ float3 GetTransmittanceStrength(float2 coord)
     return 0.0f;
 #endif
 }
-
 
 float GetMelanin(float2 coord)
 {

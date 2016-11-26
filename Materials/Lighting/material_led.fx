@@ -112,4 +112,4 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-#include "material_common.fxsub"
+#include "../material_common.fxsub"

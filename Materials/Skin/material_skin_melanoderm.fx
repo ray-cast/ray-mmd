@@ -50,7 +50,7 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.55;
+const float smoothness = 0.4;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -73,7 +73,6 @@ const float metalnessBaseSpecular = 0.04;
 #define SSS_MAP_FILE "transmittance.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-// const float3 transmittance = float3(1, 0, 0);
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75); // (0.5 ~ 0.9)
 const float transmittanceStrength = 1.6; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
@@ -84,7 +83,7 @@ const float transmittanceMapLoopNum = 1.0;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 0.2;
+const float melanin = 0.6;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
@@ -113,4 +112,4 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-#include "material_common.fxsub"
+#include "../material_common.fxsub"
