@@ -7,7 +7,7 @@
 #define ALBEDO_MAP_FILE "albedo.png"
 
 const float albedoMapLoopNum = 1.0;
-const float3 albedo = float3(247, 199, 149) / 255;
+const float3 albedo = float3(247, 199, 149) / 256;
 
 #define ALPHA_MAP_ENABLE 0
 #define ALPHA_MAP_IN_TEXTURE 0
