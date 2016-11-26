@@ -80,6 +80,7 @@ const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
+#define MELANIN_MAP_IN_TOONMAP 0
 #define MELANIN_MAP_UV_FLIP 0
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
