@@ -25,8 +25,11 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2016-11-26 ver 1.1.0
-* __改进了cmft__  [(预览)](https://github.com/ray-cast/images/raw/master/cmft_110.jpg)
+* __修改了cmft的输出编码，用于支持更大范围的亮度  [(预览)](https://github.com/ray-cast/images/raw/master/cmft_110.jpg)__
 * 改进了SSR
+* 添加压缩法线的支持 (RG Normal Map)
+* 添加曲率贴图 (Curvature Map)
+* 添加了SphereFog的VolumetricShadow
 * 添加了新的皮肤材质 [(预览)](https://github.com/ray-cast/images/raw/master/skin_110.jpg)
 
 #### 项目主页 :
