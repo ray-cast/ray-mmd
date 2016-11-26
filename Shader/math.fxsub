@@ -92,6 +92,12 @@ float3 DecodeRGBM(float4 rgbm, float range)
     return rgbm.rgb * rgbm.a * range;
 }
 
+float3 DecodeRGBT(float4 rgbt, float range)
+{
+    rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+    return rgbt.rgb * rgbt.a;
+}
+
 float2 PosToCoord(float2 position)
 {
     position = position * 0.5 + 0.5;
