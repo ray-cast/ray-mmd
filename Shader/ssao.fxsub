@@ -56,13 +56,8 @@ float3 GetPosition(float2 uv)
 
 float3 GetNormal(float2 uv)
 {
-    float4 MRT2 = tex2D(Gbuffer2Map, uv);
     float4 MRT6 = tex2D(Gbuffer6Map, uv);
-    
-    float linearDepth = tex2D(Gbuffer4Map, uv).r;
-    float linearDepth2 = tex2D(Gbuffer8Map, uv).r;
-    float4 MRT = linearDepth2 > 1.0 ? (linearDepth < linearDepth2 ? MRT2 : MRT6) : MRT2;
-    return DecodeGBufferNormal(MRT);
+    return DecodeGBufferNormal(MRT6);
 }
 
 float2 tapLocation(int index, float noise)
@@ -150,7 +145,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 #endif
 }
 
-float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
+float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, uniform sampler source, uniform float2 offset) : COLOR
 {
     float center_d = abs(linearizeDepth(coord));
 
@@ -160,7 +155,9 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
     float2 offset1 = coord + offset;
     float2 offset2 = coord - offset;
     
-    float angle = saturate(dot(mul(GetNormal(coord), (float3x3)matView), float3(0,0,-1)));
+    float3 normal = GetNormal(coord);
+    
+    float angle = pow2(saturate(dot(normal, normalize(viewdir))));
     float falloff = saturate(center_d / mSSAOBlurFalloff);
     float sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
     
@@ -170,8 +167,14 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
         float depth1 = abs(linearizeDepth(offset1));
         float depth2 = abs(linearizeDepth(offset2));
         
+        float3 normal1 = GetNormal(offset1);
+        float3 normal2 = GetNormal(offset2);
+        
         float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
         float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
+
+        bilateralWeight1 *= saturate(dot(normal1, normal));
+        bilateralWeight2 *= saturate(dot(normal2, normal));
 
         total_c += tex2D(source, offset1) * bilateralWeight1;
         total_c += tex2D(source, offset2) * bilateralWeight2;
