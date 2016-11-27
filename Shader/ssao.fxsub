@@ -16,13 +16,21 @@ shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int Miplevels = 1;
     bool AntiAlias = false;
+#if SSAO_QUALITY > 3
+    string Format = "A8R8G8B8";
+#else
     string Format = "L8";
+#endif
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int Miplevels = 1;
     bool AntiAlias = false;
+#if SSAO_QUALITY > 3
+    string Format = "A8R8G8B8";
+#else
     string Format = "L8";
+#endif
 >;
 sampler SSAOMapSamp = sampler_state {
     texture = <SSAOMap>;
@@ -73,93 +81,72 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float3 viewPosition = -viewdir * depth;
        
     float sampleWeight = 0.0f;
-    float sampleAmbient = 0.0f;
+    float4 sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset2(coord.zw);
     float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
     float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
+    float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
     
-#if SSAO_QUALITY < 4
     [unroll]
-    for (int j = 0; j < SSAO_SAMPLER_COUNT; j++)
+    for (int j = 0; j < SSAO_SAMPLER_COUNT; j += 4)
     {
-        float2 sampleOffset = coord.xy + tapLocation(j, sampleNoise) * sampleScale;
-        float3 samplePosition = GetPosition(sampleOffset);
-        float3 sampleDirection = samplePosition - viewPosition;
-
-        float sampleLength2 = dot(sampleDirection, sampleDirection);
-        float sampleAngle = dot(sampleDirection, viewNormal);
+        float2 sampleOffset[4];
+        sampleOffset[0] = coord.xy + tapLocation(j, sampleNoise) * sampleScale;
+        sampleOffset[1] = coord.xy + tapLocation(j + 1, sampleNoise) * sampleScale;
+        sampleOffset[2] = coord.xy + tapLocation(j + 2, sampleNoise) * sampleScale;
+        sampleOffset[3] = coord.xy + tapLocation(j + 3, sampleNoise) * sampleScale;
         
-        float f = max(sampleRadius2 - sampleLength2, 0.0f);
-        float falloff = f * f * f;
-
-        float bias = viewPosition.z * mSSAOBiasFar;
-        bias += saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
+        float3 samplePosition[4];
+        samplePosition[0] = GetPosition(sampleOffset[0]);
+        samplePosition[1] = GetPosition(sampleOffset[1]);
+        samplePosition[2] = GetPosition(sampleOffset[2]);
+        samplePosition[3] = GetPosition(sampleOffset[3]);
         
-        float occlustion  = max(0.0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
+        float3 sampleDirection[4];
+        sampleDirection[0] = samplePosition[0] - viewPosition;
+        sampleDirection[1] = samplePosition[1] - viewPosition;
+        sampleDirection[2] = samplePosition[2] - viewPosition;
+        sampleDirection[3] = samplePosition[3] - viewPosition;
 
-        sampleWeight += falloff;
-        sampleAmbient += occlustion;
-    }
+        float4 sampleLength2 = float4(
+            dot(sampleDirection[0], sampleDirection[0]),
+            dot(sampleDirection[1], sampleDirection[1]),
+            dot(sampleDirection[2], sampleDirection[2]),
+            dot(sampleDirection[3], sampleDirection[3]));
+               
+        float4 sampleAngle = float4(
+            dot(sampleDirection[0], viewNormal),
+            dot(sampleDirection[1], viewNormal),
+            dot(sampleDirection[2], viewNormal),
+            dot(sampleDirection[3], viewNormal));
+        
+        float4 sampleLength = rsqrt(sampleLength2);
+        
+        float4 f = max(0.0, sampleRadius2 - sampleLength2);       
+        float4 falloff = f * f * f;
+        float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
-    float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+        sampleWeight += dot(falloff, 1);
+        
+#if SSAO_QUALITY > 3
+        sampleAmbient.rgb += occlustion[0] * (sampleDirection[0] * sampleLength[0]);
+        sampleAmbient.rgb += occlustion[1] * (sampleDirection[1] * sampleLength[1]);
+        sampleAmbient.rgb += occlustion[2] * (sampleDirection[2] * sampleLength[2]);
+        sampleAmbient.rgb += occlustion[3] * (sampleDirection[3] * sampleLength[3]);
+        sampleAmbient.a += dot(occlustion, 1);
 #else
-    static const float2 kernel[16] = {
-        float2( -0.14, -0.02 ),
-        float2( -0.04, 0.24 ),
-        float2( 0.36, 0.08 ),
-        float2(-0.46, -0.08),
-        float2( 0.26, -0.4 ),
-        float2(-0.127, -0.347),
-        float2( -0.44, -0.34 ),
-        float2( -0.52, 0.4 ),
-        float2(-0.226, 0.589),
-        float2( 0.3, 0.68 ),
-        float2( 0.7, 0.356),
-        float2( 0.47, -0.287),
-        float2( 0.84, -0.32 ),
-        float2( 0.4, -0.74),
-        float2(-0.338, -0.684),
-        float2(-0.622, -0.415)
-    };
-        
-    float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-    float2 sampleDiskRadius = ((ViewportSize.x / ((1 + mSSAORadiusM - mSSAORadiusP) * 16)) / ViewportSize);
-    
-    float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
-        
-    float2 rotateKernel[16];
-    
-    [unroll]
-    for (int i = 0; i < 16; i++)
-    {
-        rotateKernel[i] = mul(kernel[i].xy, sampleRotMat) * sampleDiskRadius;
-    }
-    
-    [unroll]
-    for (int i = 0; i < 16; i++)
-    {
-        float2 sampleOffset = coord.xy + rotateKernel[i];
-        float3 samplePosition = GetPosition(sampleOffset);
-        float3 sampleDirection = samplePosition - viewPosition;
-
-        float sampleLength2 = dot(sampleDirection, sampleDirection);
-        float sampleAngle = dot(sampleDirection, viewNormal);
-    
-        float f = max(sampleRadius2 - sampleLength2, 0.0f);
-        float falloff = f * f * f;
-
-        float bias = viewPosition.z * mSSAOBiasFar;
-        bias += saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
-        
-        float occlustion  = max(0, falloff * (sampleAngle - bias) * rsqrt(sampleLength2));
-
-        sampleWeight += falloff;
-        sampleAmbient += occlustion;
+        sampleAmbient += dot(occlustion, 1);   
+#endif
     }
 
-    float ao = saturate(1 - sampleAmbient / sampleWeight);
-    return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+    sampleAmbient /= sampleWeight;
+    float ao = saturate(1 - sampleAmbient.a);
+    ao = pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+
+#if SSAO_QUALITY > 3   
+    return float4(sampleAmbient.rgb, ao);
+#else
+    return ao;
 #endif
 }
 
@@ -167,7 +154,7 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
 {
     float center_d = abs(linearizeDepth(coord));
 
-    float total_c = tex2D(source, coord).r;
+    float4 total_c = tex2D(source, coord);
     float total_w = 1.0f;
     
     float2 offset1 = coord + offset;
@@ -186,8 +173,8 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, uniform sampler source, uniform flo
         float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
         float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
-        total_c += tex2D(source, offset1).r * bilateralWeight1;
-        total_c += tex2D(source, offset2).r * bilateralWeight2;
+        total_c += tex2D(source, offset1) * bilateralWeight1;
+        total_c += tex2D(source, offset2) * bilateralWeight2;
         
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
