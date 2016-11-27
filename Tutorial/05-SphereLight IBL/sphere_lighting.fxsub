@@ -152,7 +152,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float atten = GetPhysicalLightAttenuation(L, LightRange);
     float vis = saturate(dot(material.normal, L2)) * atten;
     
-    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material.smoothness, material.transmittance);
+    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material);
 #if IBL_ENABLE
     float3 diffDir = mul(L2, (float3x3)matViewInverse);
     diffuse *= DecodeRGBM(tex2D(IBLDiffuseSampler, computeSphereCoord(diffDir)), IBL_RGBM_RANGE);
