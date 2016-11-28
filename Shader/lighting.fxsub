@@ -41,7 +41,7 @@ float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
 {
-    return saturate(pow(nv + ao, smoothness) - 1 + ao);
+    return saturate(pow(abs(nv + ao), smoothness) - 1 + ao);
 }
 
 float3 ComputeSpecularMicroOcclusion(float3 f0)
@@ -55,7 +55,7 @@ float ComputePhaseFunctions(float theta, float g)
     float g2 = 2 * g;
     
     float theta2 = theta * theta;
-    float phase = ((1 - gg) /  pow(1.0 + gg - g2 * theta2, 1.5));
+    float phase = ((1 - gg) /  pow(abs(1.0 + gg - g2 * theta2), 1.5));
     
     return phase;
 }

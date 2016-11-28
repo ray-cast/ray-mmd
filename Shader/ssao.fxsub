@@ -117,7 +117,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
         
         float4 sampleLength = rsqrt(sampleLength2);
         
-        float4 f = max(0.0, sampleRadius2 - sampleLength2);       
+        float4 f = max(0.0, sampleRadius2 - sampleLength2);
         float4 falloff = f * f * f;
         float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
@@ -149,7 +149,12 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
 {
     float center_d = abs(linearizeDepth(coord));
 
+#if SSAO_QUALITY > 3
     float4 total_c = tex2D(source, coord);
+#else
+    float total_c = tex2D(source, coord).r;
+#endif
+
     float total_w = 1.0f;
     
     float2 offset1 = coord + offset;
@@ -166,19 +171,21 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
     {
         float depth1 = abs(linearizeDepth(offset1));
         float depth2 = abs(linearizeDepth(offset2));
-        
-        float3 normal1 = GetNormal(offset1);
-        float3 normal2 = GetNormal(offset2);
-        
+
         float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
         float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
-        bilateralWeight1 *= saturate(dot(normal1, normal));
-        bilateralWeight2 *= saturate(dot(normal2, normal));
+        bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
+        bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
+#if SSAO_QUALITY > 3
         total_c += tex2D(source, offset1) * bilateralWeight1;
         total_c += tex2D(source, offset2) * bilateralWeight2;
-        
+#else
+        total_c += tex2D(source, offset1).r * bilateralWeight1;
+        total_c += tex2D(source, offset2).r * bilateralWeight2;
+#endif
+
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
         
