@@ -125,7 +125,7 @@ technique DeferredLighting<
 
     "RenderDepthStencilTarget=;"
     "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacity;"   
-    "RenderColorTarget=ShadingMap; Pass=ShadingTransparent;"
+    "RenderColorTarget=ShadingMap;     Pass=ShadingTransparent;"
     
 #if SSSS_QUALITY > 0
     "RenderDepthStencilTarget=DepthBuffer;"
@@ -292,7 +292,7 @@ technique DeferredLighting<
         StencilRef = 1;
         StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapSamp, float2(1, 0.0f));
+        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapSamp, float2(1.0, 0.0));
     }
     pass SSSSBlurY < string Script= "Draw=Buffer;"; > {
          AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -302,7 +302,7 @@ technique DeferredLighting<
         StencilRef = 1;
         StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapTempSamp, ShadingMapSamp,float2(0.0f, 1));
+        PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapTempSamp, ShadingMapSamp,float2(0.0, 1.0));
     }
 #endif
 #if SSR_QUALITY > 0

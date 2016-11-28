@@ -74,8 +74,15 @@ const float metalnessBaseSpecular = 0.04;
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75); // (0.5 ~ 0.9)
-const float transmittanceStrength = 1.6; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
+
+// Subsurface Curvature
+#define CURVATURE_MAP_ENABLE 0
+#define CURVATURE_MAP_UV_FLIP 0
+#define CURVATURE_MAP_FILE "curvature.jpg"
+
+const float curvature = 1.6; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
+const float curvatureMapLoopNum = 1.0;
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0

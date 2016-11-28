@@ -66,7 +66,7 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
-// Subsurface Scattering
+// Subsurface Scattering Color
 #define SSS_ENABLE 0
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
@@ -78,7 +78,7 @@ const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75);
 const float transmittanceMapLoopNum = 1.0;
 
-// Subsurface Scattering
+// Subsurface Curvature
 #define CURVATURE_MAP_ENABLE 0
 #define CURVATURE_MAP_UV_FLIP 0
 #define CURVATURE_MAP_FILE "curvature.jpg"

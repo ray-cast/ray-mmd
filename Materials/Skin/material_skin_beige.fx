@@ -23,7 +23,7 @@ const float normalMapSubScale = 1;
 const float normalMapSubLoopNum = 80.0;
 
 #define SSS_ENABLE 1
-const float transmittanceStrength = 1.6;
+const float curvature = 1.6;
 const float3 transmittance = float3(238, 104, 94) / 255;
 
 const float melanin = 0.2;

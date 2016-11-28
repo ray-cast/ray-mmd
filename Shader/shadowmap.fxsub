@@ -1,4 +1,3 @@
-// 软阴影模糊次数
 #define SHADOW_BLUR_COUNT 6
 
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR

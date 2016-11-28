@@ -124,6 +124,10 @@ float4 ShadingOpacitySpecularPS(
     float3 L = normalize(-LightDirection);
     
     float3 specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
+    specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+#if SHADOW_QUALITY > 0
+    specular *= tex2D(ShadowmapSamp, coord).r;
+#endif
 
     float3 iblSpecular, iblSpecular2;
     DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, iblSpecular, iblSpecular2);

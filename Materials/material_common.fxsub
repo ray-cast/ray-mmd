@@ -156,7 +156,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE && SSS_ENABLE
     texture2D TransmittanceMap<string ResourceName = SSS_MAP_FILE;>; 
     sampler TransmittanceMapSamp = sampler_state
     {
@@ -167,7 +167,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
+#if USE_CUSTOM_MATERIAL && CURVATURE_MAP_ENABLE && SSS_ENABLE
     texture2D CurvatureMap<string ResourceName = CURVATURE_MAP_FILE;>; 
     sampler CurvatureMapSamp = sampler_state
     {
