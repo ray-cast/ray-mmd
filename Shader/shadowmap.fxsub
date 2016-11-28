@@ -12,7 +12,7 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, unifo
 
     [unroll]
     for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
-    {        
+    {
         float2 shadow1 = tex2D(source, offset1).xy;
         float2 shadow2 = tex2D(source, offset2).xy;
         

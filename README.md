@@ -109,7 +109,11 @@ Ray-MMD
     * const albedoLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * NormalMap(法线贴图)
     * 添加物体的法线贴图和添加albedo同理
-    * NORMAL_MAP_ENABLE设置1，然后指定NORMAL_MAP_FILE的文件路径  
+    * NORMAL_MAP_ENABLE 设置1时，启用法线贴图
+    * NORMAL_MAP_IN_SPHEREMAP 设置1时，使用PMX中的sph贴图
+    * NORMAL_MAP_IS_COMPRESSED 设置1时，代表法线贴图是RG颜色的压缩法线
+    * NORMAL_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * 使用时设置 NORMAL_MAP_ENABLE = 1，然后指定NORMAL_MAP_FILE的文件路径 (不要带有中文, 路径分割"\"改为"/")  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_0.jpg)](https://github.com/ray-cast/images/raw/master/normal_0.jpg)  
     [![link text](https://github.com/ray-cast/images/raw/master/normal_1.png)](https://github.com/ray-cast/images/raw/master/normal_1.png)
     * const float normalMapSubScale = 1.0; 法线的强度，修改成5以后的效果(贴图凸凹颠时可以设置成 -1.0)  
@@ -145,17 +149,24 @@ Ray-MMD
     * const float metalness = 1.0 取值范围在0 ~ 1，0为绝缘体，1表示导体(金属)
     * const float metalnessMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
     * const float metalnessBaseSpecular = 0.04; 指定物体反射系数 (添加这个值可以增加金属性，0.0时物体不反射IBL的specular)
-* Sub Surface Scattering(次表面散射)  
+* Surface Scattering(表面散射色)  
     [![link text](https://github.com/ray-cast/images/raw/master/SSS.png)](https://github.com/ray-cast/images/raw/master/SSS.png)
-    * 描述物体散射色，用于渲染皮肤，玉器时使用的
+    * 描述物体散射色，用于渲染皮肤，玉器时使用的, 皮肤必须设置const float curvature = 1.0f;
     * SSS_ENABLE 设置1时启用次表面散射
     * SSS_MAP_ENABLE 设置1时启用贴图
     * SSS_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * SSS_MAP_IS_THICKNESS 设置1时贴图是一个灰度的厚度贴图
     * SSS_MAP_APPLY_COLOR 设置1时将const float3 transmittance = 0.0;的颜色乘算到贴图色上
     * SSS_MAP_FILE 启用贴图时使用的贴图路径
     * const float3 transmittance = 0.0; 散射色,皮肤可以使用例如 float3 transmittance = float3(0.1, 0.0, 0.0);
-    * const float transmittanceStrength = 0.0f; 用于指定SSS的强度 (0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤)
     * const float transmittanceMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
+* Surface Curvature (表面曲率)
+    * 描述物体的弯曲程度，用于渲染更真实的皮肤使用, 皮肤必须设置const float curvature = 1.0f;
+    * CURVATURE_MAP_ENABLE 设置1时启用贴图
+    * CURVATURE_MAP_UV_FLIP 设置1时水平翻转纹理坐标
+    * CURVATURE_MAP_FILE 启用贴图时使用的贴图路径
+    * const float curvature = 0.0f; 用于指定曲率弯曲强度 (0 ~ 0.9999 代表玉器，1.0 ~ 1.999代表皮肤)
+    * const float curvatureMapLoopNum = 1.0; 贴图的迭代次数 (参见法线贴图)
 * Melanin(黑色素)
     * 可以使物体渲染的更黝黑一些,显得不那么白,SSS中的截图因为使用了Melain, 所以会看起来像鸡蛋
     * MELANIN_MAP_ENABLE 设置1时启用贴图
@@ -202,7 +213,7 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/IBL_final.png)](https://github.com/ray-cast/images/raw/master/IBL_final.png)
 
 ##### 6.0 多光源
-* 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源，但目前不会产生阴影
+* 内置的光源有点光源、聚光灯、球形光源、方形区域光 以及 管状光源
 * 以最基本的点光源介绍，首先载入ray、skybox，以及一个地面模型  
 [![link text](https://github.com/ray-cast/images/raw/master/floor.png)](https://github.com/ray-cast/images/raw/master/floor.png)
 * 在Lighting目录中拖拽一个PointLight.pmx至窗口中  
@@ -213,7 +224,7 @@ Ray-MMD
 * 光源需要阴影可以在LightMap中选择point_lighting_s0.fx(s代表阴影，0代表质量)
 * 其它光源操作方式和点光源差不多，一些宽度、高度、范围、半径、都在表情右下角
 * 光源自发光，可以在MME的MaterialMap选择一个material_lighting.fx 给 PointLight.pmx
-* 需要更多的光源只需要将PointLight.pmx复制一份即可，其它光源同理  
+* 需要更多的光源可以将PointLight.pmx复制一份，或者重复载入，其它光源同理  
 [![link text](https://github.com/ray-cast/images/raw/master/point_light3_small.png)](https://github.com/ray-cast/images/raw/master/point_light3.png)
 * 接着说下如何使用纹理的方形区域光
 * 首先在Lighting目录中拖拽一个RectangleLight.pmx至窗口  
