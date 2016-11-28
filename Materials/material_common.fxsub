@@ -167,6 +167,17 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
+#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
+    texture2D CurvatureMap<string ResourceName = CURVATURE_MAP_FILE;>; 
+    sampler CurvatureMapSamp = sampler_state
+    {
+        texture = CurvatureMap;
+        MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+        MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+        ADDRESSU = WRAP; ADDRESSV = WRAP;
+    };
+#endif
+
 #if USE_CUSTOM_MATERIAL && MELANIN_MAP_ENABLE
     texture2D MelaninMap<string ResourceName = MELANIN_MAP_FILE;>; 
     sampler MelaninMapSamp = sampler_state
@@ -250,7 +261,7 @@ struct MaterialParam
     float3 emissive;
     float emissiveIntensity;
     float smoothness;
-    float index;
+    float curvature;
     float alpha;
     int lightModel;
 };
@@ -428,8 +439,8 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
-        float scatteringAmount = frac(material.index);
-        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.index / TWO_BITS_EXTRACTION_FACTOR : 0;
+        float scatteringAmount = frac(material.curvature);
+        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.curvature / TWO_BITS_EXTRACTION_FACTOR : 0;
         
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
@@ -766,14 +777,18 @@ float GetMetalness(float2 coord)
 float3 GetTransmittance(float2 coord)
 {
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    #if SSS_MAP_ENABLE && !SSS_MAP_IS_CURVATURE
+    #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
-    
-        float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
-        transmittanceMapColor = srgb2linear(transmittanceMapColor);
-        
+
+        #if SSS_MAP_IS_THICKNESS
+            float3 transmittanceMapColor = 1 - tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum);
+        #else
+            float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
+            transmittanceMapColor = srgb2linear(transmittanceMapColor);
+        #endif
+
         #if SSS_MAP_APPLY_COLOR
             transmittanceMapColor *= transmittance;
         #endif
@@ -787,18 +802,18 @@ float3 GetTransmittance(float2 coord)
 #endif
 }
 
-float3 GetTransmittanceStrength(float2 coord)
+float3 GetCurvature(float2 coord)
 {
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    #if SSS_MAP_ENABLE && SSS_MAP_IS_CURVATURE
-        #if SSS_MAP_UV_FLIP
+    #if CURVATURE_MAP_ENABLE
+        #if CURVATURE_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
     
-        float curvature = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
-        return curvature + floor(transmittanceStrength);
+        float transmittanceStrength = tex2D(CurvatureMapSamp, coord * curvatureMapLoopNum).r;
+        return floor(curvature) + transmittanceStrength;
     #else
-        return transmittanceStrength;
+        return curvature;
     #endif
 #else
     return 0.0f;
@@ -899,7 +914,7 @@ GbufferParam MaterialPS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.index = GetTransmittanceStrength(coord.xy);
+    material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.alpha = 1;
@@ -952,7 +967,7 @@ GbufferParam Material2PS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.index = GetTransmittanceStrength(coord.xy);
+    material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;

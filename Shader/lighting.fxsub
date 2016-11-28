@@ -103,7 +103,7 @@ float3 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 }
 
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
-{   
+{
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
     float3 H = normalize(V + L);

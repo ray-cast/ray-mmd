@@ -8,8 +8,13 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 #if MAIN_LIGHT_ENABLE
     float vis = saturate(dot(N, L));
 
+#if SSSS_QUALITY > 1
+    lighting = DiffuseBRDF(N, L, V, material);
+#else
     lighting = material.albedo * DiffuseBRDF(N, L, V, material);
     lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
+#endif
+
     lighting *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     lighting *= step(0, material.albedo + material.specular - 1e-5);
     
@@ -74,7 +79,11 @@ float4 ShadingOpacityPS(
 
     if (ExistSkybox || ExistSkyboxHDR)
     {
+#if SSSS_QUALITY > 1
+        lighting += diffuse * shadow;
+#else
         lighting += (diffuse + specular) * shadow;
+#endif
     }
 #endif
 
@@ -93,6 +102,31 @@ float4 ShadingOpacityPS(
 #endif
     
     return float4(lighting, linearDepth);
+}
+
+float4 ShadingOpacitySpecularPS(
+    in float2 coord: TEXCOORD0, 
+    in float3 viewdir: TEXCOORD1, 
+    in float4 screenPosition : SV_Position) : COLOR
+{
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
+    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+
+    MaterialParam material;
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+            
+    float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
+    float3 P = mul(float4(-viewdir * material.linearDepth, 1), matViewInverse).xyz;
+    float3 N = mul(material.normal, (float3x3)matViewInverse);
+    float3 L = normalize(-LightDirection);
+    
+    float3 specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
+
+    float3 iblSpecular, iblSpecular2;
+    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, iblSpecular, iblSpecular2);
+    return float4(specular + iblSpecular, 0);
 }
 
 float4 ShadingTransparentPS(

@@ -10,6 +10,7 @@ float showNormal : CONTROLOBJECT < string name="(self)"; string item = "Normal";
 float showSpecular : CONTROLOBJECT < string name="(self)"; string item = "Specular"; >;
 float showSmoothness : CONTROLOBJECT < string name="(self)"; string item = "Smoothness"; >;
 float showTransmittance : CONTROLOBJECT < string name="(self)"; string item = "Transmittance"; >;
+float showCurvature : CONTROLOBJECT < string name="(self)"; string item = "Curvature"; >;
 float showEmissive : CONTROLOBJECT < string name="(self)"; string item = "Emissive"; >;
 float showDepth : CONTROLOBJECT < string name="(self)"; string item = "Depth"; >;
 
@@ -19,6 +20,7 @@ float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "Nor
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
 float showTransmittanceAlpha : CONTROLOBJECT < string name="(self)"; string item = "TransmittanceAlpha"; >;
+float showCurvatureAlpha : CONTROLOBJECT < string name="(self)"; string item = "CurvatureAlpha"; >;
 float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "EmissiveAlpha"; >;
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
@@ -112,8 +114,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-    float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showEmissive;
-    showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showEmissiveAlpha;
+    float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showCurvature + showEmissive;
+    showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showCurvatureAlpha + showEmissiveAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
     
     float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
@@ -122,6 +124,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += material.specular * showSpecular;
     result += material.smoothness * showSmoothness;
     result += material.transmittance * showTransmittance;
+    result += frac(material.index) * showCurvature;
     result += material.emissive * showEmissive;
     
     result += materialAlpha.albedo * showAlbedoAlpha;
@@ -129,6 +132,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
     result += materialAlpha.transmittance * showTransmittanceAlpha;
+    result += frac(material.index) * showCurvatureAlpha;
     result += materialAlpha.transmittance * showEmissiveAlpha;
 
     result = linear2srgb(result);

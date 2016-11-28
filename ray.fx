@@ -104,7 +104,7 @@ technique DeferredLighting<
     "ClearSetDepth=ClearDepth;"
     "ClearSetStencil=ClearStencil;"
 
-#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE    
+#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
     "RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurPassX;"
     "RenderColorTarget=ShadowmapMap;     Pass=ShadowBlurPassY;"
 #endif
@@ -124,8 +124,8 @@ technique DeferredLighting<
 #endif
 
     "RenderDepthStencilTarget=;"
-    "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacity;"
-    "RenderColorTarget=ShadingMap;     Pass=ShadingTransparent;"
+    "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacity;"   
+    "RenderColorTarget=ShadingMap; Pass=ShadingTransparent;"
     
 #if SSSS_QUALITY > 0
     "RenderDepthStencilTarget=DepthBuffer;"
@@ -133,6 +133,9 @@ technique DeferredLighting<
     "Pass=SSSSStencilTest;"
     "RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurX;"
     "RenderColorTarget=ShadingMap;     Pass=SSSSBlurY;"
+#if SSSS_QUALITY > 1
+    "RenderColorTarget=ShadingMap;     Pass=ShadingOpacitySpecular;"
+#endif
 #endif
     
 #if SSR_QUALITY > 0
@@ -252,6 +255,13 @@ technique DeferredLighting<
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadingOpacityPS();
+    }
+    pass ShadingOpacitySpecular < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = true; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        SrcBlend = ONE; DestBlend = ONE;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
     }
     pass ShadingTransparent < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;

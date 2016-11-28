@@ -76,11 +76,12 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float3 viewPosition = -viewdir * depth;
        
     float sampleWeight = 0.0f;
-    float4 sampleAmbient = 0.0f;
     float sampleNoise = GetJitterOffset2(coord.zw);
     float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
     float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
     float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
+    
+    float4 sampleAmbient = 0.0f;
     
     [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j += 4)

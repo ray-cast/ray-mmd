@@ -1,5 +1,3 @@
-#define DEPTH_LENGTH (1.0 / 20)
-
 float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 {
     float4 MRT0 = tex2D(Gbuffer1Map, coord);
@@ -62,7 +60,7 @@ float4 SSSGuassBlurPS(
     float4 colorM = tex2D(source, coord.xy);
     
     float3 V = normalize(viewdir);
-    float3 P = V * colorM.a / V.z * DEPTH_LENGTH;
+    float3 P = V * colorM.a / V.z;
 
     float3 normal = cross(ddy(P), ddx(P));
     float perspectiveScaleX = dot(normalize(normal.xz), normalize(-P.xz));
@@ -74,7 +72,7 @@ float4 SSSGuassBlurPS(
     float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount : 1.0;
     float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
     
-    float2 finalStep = direction * perspectiveScale * radius / (colorM.a * DEPTH_LENGTH);
+    float2 finalStep = direction * perspectiveScale * radius / (colorM.a * mSSSSWidth);
 
     float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
 
@@ -90,8 +88,8 @@ float4 SSSGuassBlurPS(
         float4 sampleColor1 = tex2D(source, offset1);
         float4 sampleColor2 = tex2D(source, offset2);
 
-        float depthDiff1 = (sampleColor1.a - colorM.a) * 1000 * DEPTH_LENGTH;
-        float depthDiff2 = (sampleColor2.a - colorM.a) * 1000 * DEPTH_LENGTH;
+        float depthDiff1 = (sampleColor1.a - colorM.a) * 1000 * mSSSSWidth;
+        float depthDiff2 = (sampleColor2.a - colorM.a) * 1000 * mSSSSWidth;
 
         float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
         float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
@@ -108,6 +106,9 @@ float4 SSSGuassBlurPS(
     if (direction.y > 0.001)
     {
         totalColor = lerp(totalColor, tex2D(original, coord.xy).rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
+#if SSSS_QUALITY > 1
+        totalColor *= material.albedo;
+#endif
     }
     
     return float4(totalColor, colorM.a);
