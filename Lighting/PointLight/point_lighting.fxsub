@@ -104,7 +104,7 @@ float ShadowPCF(float3 viewPosition, int samples)
     
     samples = samples * 2 + 1;
     
-    return saturate(shadow / (samples * samples));
+    return saturate(shadow / (samples * samples) * 2 - 1);
 #else
     return saturate(depth * exp(tex2D(ShadowMapSamp, coord).r * depthScale));
 #endif
