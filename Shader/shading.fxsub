@@ -10,6 +10,12 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 
 #if SSSS_QUALITY > 1
     lighting = DiffuseBRDF(N, L, V, material);
+    
+    float profileIndex = floor(material.index);
+    if (profileIndex != SUBSURFACESCATTERING_SKIN)
+    {
+        lighting *= material.albedo;
+    }
 #else
     lighting = material.albedo * DiffuseBRDF(N, L, V, material);
     lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
