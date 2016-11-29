@@ -1,3 +1,4 @@
+bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
 bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
 
 float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
@@ -58,9 +59,9 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSSS_QUALITY > 0
-    lighting += ExistSkyboxHDR ? diffuse * shadow : 0;
+    lighting += (ExistSkybox || ExistSkyboxHDR) ? diffuse * shadow : 0;
 #else
-    lighting += ExistSkyboxHDR ? (diffuse + specular) * shadow : 0;
+    lighting += (ExistSkybox || ExistSkyboxHDR) ? (diffuse + specular) * shadow : 0;
 #endif
 #endif
 

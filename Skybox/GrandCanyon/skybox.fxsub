@@ -88,6 +88,13 @@ float mScale : CONTROLOBJECT < string name="(self)"; string item = "Scale+"; >;
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
 float EnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
+float mColBalanceRP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR+"; >;
+float mColBalanceGP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG+"; >;
+float mColBalanceBP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB+"; >;
+float mColBalanceRM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR-"; >;
+float mColBalanceGM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG-"; >;
+float mColBalanceBM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB-"; >;
+float mColBalance  :  CONTROLOBJECT < string name="(self)"; string item = "BalanceGray+"; >;
 
 static float rotateX = EnvRotateX * PI_2;
 static float rotateY = EnvRotateY * PI_2;
@@ -108,6 +115,20 @@ sampler decalMap = sampler_state
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
+
+float luminance(float3 rgb)
+{
+    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+    return dot(rgb, lumfact);
+}
+
+float3 ApplyColorBalance(float3 color)
+{
+    float3 lum = luminance(color);
+    color = lerp(lum, color, 1 - mColBalance);
+    color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    return color;
+}
 
 void SkyboxVS(
     in float4 Position : POSITION,
@@ -137,6 +158,8 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
         color *= lerp(1, tex2D(ShadowmapSamp, float2(screenPosition.xy) / ViewportSize + ViewportOffset).r, 0.5);
     }
 #endif
+    
+    color.rgb = ApplyColorBalance(color.rgb);
     
 #if SKYBOX_HDR_ENABLE
     return float4(linear2srgb(color.rgb), 1);
