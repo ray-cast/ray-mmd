@@ -20,7 +20,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_FILE "NormalMap/skin.png"
 
 const float normalMapSubScale = 1.5;
-const float normalMapSubLoopNum = 80.0;
+const float normalMapSubLoopNum = 30.0;
 
 #define SSS_ENABLE 1
 const float curvature = 1.6;

@@ -3,11 +3,11 @@
 #define ALBEDO_MAP_ENABLE 1
 #define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_APPLY_COLOR 1
-#define ALBEDO_MAP_APPLY_DIFFUSE 1
+#define ALBEDO_MAP_APPLY_DIFFUSE 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
 const float albedoMapLoopNum = 1.0;
-const float3 albedo = float3(247, 199, 149) / 255;
+const float3 albedo = float3(247, 199, 149) / 256;
 
 #define ALPHA_MAP_ENABLE 0
 #define ALPHA_MAP_IN_TEXTURE 0
@@ -20,13 +20,13 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_FILE "NormalMap/skin.png"
 
 const float normalMapSubScale = 1.5;
-const float normalMapSubLoopNum = 80.0;
+const float normalMapSubLoopNum = 30.0;
 
 #define SSS_ENABLE 1
 const float curvature = 1.6;
-const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
+const float3 transmittance = float3(238, 104, 94) / 255;
 
-const float melanin = 0.0;
+const float melanin = 0.2;
 
 const float smoothness = 0.55;
 
