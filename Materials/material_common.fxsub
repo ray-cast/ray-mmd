@@ -811,7 +811,7 @@ float3 GetCurvature(float2 coord)
         #endif
     
         float transmittanceStrength = tex2D(CurvatureMapSamp, coord * curvatureMapLoopNum).r;
-        return min(1.999, floor(curvature) + transmittanceStrength);
+        return floor(curvature), lerp(frac(curvature), 0.999, transmittanceStrength);
     #else
         return curvature;
     #endif

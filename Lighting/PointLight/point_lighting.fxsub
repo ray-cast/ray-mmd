@@ -82,9 +82,10 @@ float ShadowPCF(float3 viewPosition, int samples)
     
     float linearDepth = length(L);
     
+    float depthBias = 0.01;
     float depthScale = 85;
     float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
-    depth = exp(-depth * depthScale);
+    depth = exp(-(depth - depthBias) * depthScale);
     
     float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
@@ -124,10 +125,18 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
    
     float4 lighting = 0.0f;
 
+#if SSSS_QUALITY > 1
+    lighting.rgb = atten * float3(mR, mG, mB) * DiffuseBRDF(material.normal, L, V, material);
+    lighting.rgb *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+    lighting.a = luminance(float3(mR, mG, mB) * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular));
+    lighting.a *= atten2;
+#else
     lighting.rgb = atten * material.albedo * DiffuseBRDF(material.normal, L2, V, material);
     lighting.rgb += atten2 * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
-    lighting.rgb *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    lighting.rgb *= float3(mR, mG, mB);
+#endif
+
+    lighting *= LightIntensity * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;

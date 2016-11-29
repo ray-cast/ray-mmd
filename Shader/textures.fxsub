@@ -42,20 +42,9 @@ texture FogMap: OFFSCREENRENDERTARGET <
         "AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
         "* = hide;";
 >;
-shared texture FogAlphaMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0,1.0};
-    int MipLevels = 1;
-    bool AntiAlias = false;
-    string Format = "A16B16G16R16F";
->;
 sampler FogMapSamp = sampler_state {
     texture = <FogMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
-sampler FogAlphaMapSamp = sampler_state {
-    texture = <FogAlphaMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
