@@ -1,4 +1,3 @@
-bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
 bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
 
 float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
@@ -8,7 +7,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
 #if MAIN_LIGHT_ENABLE
     float vis = saturate(dot(N, L));
 
-#if SSSS_QUALITY > 1
+#if SSSS_QUALITY > 0
     lighting = DiffuseBRDF(N, L, V, material);
     lighting *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
 #else
@@ -27,6 +26,47 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     return lighting;
 }
 
+float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V, bool alpha)
+{
+    float3 lighting = 0;
+    
+#if IBL_QUALITY > 0   
+    float3 diffuse, specular;
+    
+#if IBL_QUALITY > 1
+    DecodeYcbcrWithEdgeFilter(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
+#else
+    DecodeYcbcrBilinearFilter(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
+#endif
+
+#if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2D(SSAOMapSamp, coord).r;
+    diffuse *= ssao;
+    specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+#endif
+
+#if SSSS_QUALITY > 0
+    diffuse *= (!alpha && material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+#else
+    diffuse *= material.albedo;
+#endif
+
+    float shadow = 1;
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+    float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
+    shadow = lerp(1, shadowDepth.r, mEnvShadowP);
+#endif
+
+#if SSSS_QUALITY > 0
+    lighting += ExistSkyboxHDR ? diffuse * shadow : 0;
+#else
+    lighting += ExistSkyboxHDR ? (diffuse + specular) * shadow : 0;
+#endif
+#endif
+
+    return lighting;
+}
+
 float4 ShadingOpacityPS(
     in float2 coord: TEXCOORD0, 
     in float3 viewdir: TEXCOORD1, 
@@ -40,64 +80,16 @@ float4 ShadingOpacityPS(
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
             
-    float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
-    float3 P = mul(float4(-viewdir * material.linearDepth, 1), matViewInverse).xyz;
-    float3 N = mul(material.normal, (float3x3)matViewInverse);
-    float3 L = normalize(-LightDirection);
+    float3 N = material.normal;
+    float3 V = normalize(viewdir);
+    float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
     lighting += tex2D(LightMapSamp, coord).rgb;
-    
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-
     lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
+    lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, 0);
 
-#if IBL_QUALITY > 0   
-    float3 diffuse, diffuse2;
-    float3 specular, specular2;
-    
-#if IBL_QUALITY > 1
-    DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
-    DecodeYcbcrWithEdgeFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
-#else
-    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuse2);
-    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specular2);
-#endif
-
-#if SSAO_SAMPLER_COUNT > 0
-    diffuse *= ssao;
-    specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-
-    float shadow = 1;
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-    float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
-    shadow = lerp(1, shadowDepth.r, mEnvShadowP);
-#endif
-
-    if (ExistSkybox || ExistSkyboxHDR)
-    {
-#if SSSS_QUALITY > 1
-        lighting += diffuse * shadow;
-#else
-        lighting += (diffuse + specular) * shadow;
-#endif
-    }
-#endif
-
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-    #if IBL_QUALITY == 0
-        float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
-    #endif
-    float linearDepth = shadowDepth.g;
-#else
-    float linearDepth = material.linearDepth;
-#endif
-    
-    return float4(lighting, linearDepth);
+    return float4(lighting, material.linearDepth);
 }
 
 float4 ShadingOpacitySpecularPS(
@@ -118,21 +110,23 @@ float4 ShadingOpacitySpecularPS(
     float3 N = mul(material.normal, (float3x3)matViewInverse);
     float3 L = normalize(-LightDirection);
     
-    float3 specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
-    specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+    float3 specular = 0;
+    
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+    specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
+    specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     specular *= tex2D(ShadowmapSamp, coord).r;
 #endif
 
-    float3 iblSpecular, iblSpecular2;
-    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, iblSpecular, iblSpecular2);
+    float3 iblDiffuse, iblSpecular;
+    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
     specular += tex2D(LightMapSamp, coord).a;
     specular += iblSpecular;
     
 #if FOG_ENABLE
     float4 fog = tex2D(FogMapSamp, coord);
-    specular = specular + fog.rgb;
+    specular += fog.rgb;
 #endif
     
     return float4(specular, 0);
@@ -151,59 +145,22 @@ float4 ShadingTransparentPS(
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
         
-    float3 V = mul(normalize(viewdir), (float3x3)matViewInverse);
-    float3 P = mul(float4(-viewdir * material.linearDepth, 1), matViewInverse).xyz;
-    float3 N = mul(material.normal, (float3x3)matViewInverse);
-    float3 L = normalize(-LightDirection);
+    float3 N = material.normal;
+    float3 V = normalize(viewdir);
+    float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
     lighting += tex2D(LightAlphaMapSamp, coord).rgb;
-    
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2D(SSAOMapSamp, coord).r;
     lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
-    
-#if IBL_QUALITY > 0   
-    float3 diffuse, diffuseAlpha;
-    float3 specular, specularAlpha;
-    
-#if IBL_QUALITY > 1
-    DecodeYcbcrWithEdgeFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuseAlpha);
-    DecodeYcbcrWithEdgeFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specularAlpha);
-#else
-    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, diffuse, diffuseAlpha);
-    DecodeYcbcrBilinearFilter(EnvLightSpecMapSamp, coord, screenPosition, ViewportOffset2, specular, specularAlpha);
-#endif
 
-#if SSAO_SAMPLER_COUNT > 0
-    diffuseAlpha *= ssao;
-    specularAlpha *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-
-    float shadow = 1;
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-    float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
-    shadow = lerp(1, shadowDepth.r, mEnvShadowP);
-#endif
-   
-    if (ExistSkybox || ExistSkyboxHDR)
-    {
-        lighting += (diffuseAlpha + specularAlpha) * shadow;
-    } 
-#endif
-    
+    lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, 1);
+        
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
     float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord);
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
-
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0 && IBL_QUALITY > 0
-    float linearDepth = shadowDepth.g;
-#else
-    float linearDepth = prefilteredRefract.a;
-    float linearDepth2 = material.linearDepth;
-    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-#endif
     
-    return float4(lighting, linearDepth);
+    return float4(lighting, material.linearDepth);
 }

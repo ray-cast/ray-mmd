@@ -87,7 +87,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     scattering *= material.transmittance * dependentSplit;
     scattering *= (1 + mEnvSSSLightP * 5 - mEnvSSSLightM);
     
-    diffuse = prefilteredDiffuse.rgb * material.albedo;
+    diffuse = prefilteredDiffuse.rgb;
     diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
     diffuse += scattering;
     
@@ -151,8 +151,8 @@ void EnvLightingPS(
     ShadingMaterial(V, materialAlpha, diffuse2, specular2);
     
 #if IBL_ENABLE
-    oColor0 = EncodeYcbcr(screenPosition, diffuse, diffuse2);
-    oColor1 = EncodeYcbcr(screenPosition, specular, specular2);
+    oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
+    oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 #else
     oColor0 = EncodeYcbcr(screenPosition, 0, 0);
     oColor1 = EncodeYcbcr(screenPosition, 0, 0);
@@ -161,8 +161,7 @@ void EnvLightingPS(
 
 const float4 BackColor = float4(0,0,0,0);
 
-shared texture EnvLightSpecMap : RENDERCOLORTARGET;
-shared texture FogAlphaMap : RENDERCOLORTARGET;
+shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
 #define OBJECT_TEC(name, mmdpass) \
     technique name < string MMDPass = mmdpass;\
@@ -170,10 +169,8 @@ shared texture FogAlphaMap : RENDERCOLORTARGET;
         "ClearSetColor=BackColor;"\
         "RenderColorTarget0=LightAlphaMap;"\
         "Clear=Color;"\
-        "RenderColorTarget0=FogAlphaMap;"\
-        "Clear=Color;"\
         "RenderColorTarget0=;" \
-        "RenderColorTarget1=EnvLightSpecMap;" \
+        "RenderColorTarget1=EnvLightAlphaMap;" \
         "Pass=DrawObject;" \
     ;> { \
         pass DrawObject { \

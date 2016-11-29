@@ -106,7 +106,7 @@ float4 SSSGuassBlurPS(
     if (direction.y > 0.01)
     {
         totalColor = lerp(totalColor, tex2D(original, coord.xy).rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
-#if SSSS_QUALITY > 1
+#if SSSS_QUALITY > 0
         totalColor *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? material.albedo : 1;
 #endif
     }

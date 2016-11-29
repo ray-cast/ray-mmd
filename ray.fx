@@ -128,9 +128,7 @@ technique DeferredLighting<
     "Pass=SSSSStencilTest;"
     "RenderColorTarget=ShadingMap;     Pass=SSSSBlurX;"
     "RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-#if SSSS_QUALITY > 1
     "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
-#endif
 #endif
 
     "RenderColorTarget=ShadingMap;     Pass=ShadingTransparent;"
