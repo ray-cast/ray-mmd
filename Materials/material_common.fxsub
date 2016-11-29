@@ -263,6 +263,7 @@ struct MaterialParam
     float smoothness;
     float curvature;
     float alpha;
+    float visibility;
     int lightModel;
 };
 
@@ -440,7 +441,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
         float scatteringAmount = frac(material.curvature);
-        gbuffer.buffer2.w = scatteringAmount > 0.01 ? material.curvature / TWO_BITS_EXTRACTION_FACTOR : 0;
+        gbuffer.buffer2.w = scatteringAmount > 1e-5 ? material.curvature / TWO_BITS_EXTRACTION_FACTOR : 0;
         
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
@@ -454,7 +455,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, linearDepth, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.visibility, material.alpha);
     
     return gbuffer;
 }
@@ -693,7 +694,7 @@ float GetSmoothness(float2 coord)
             coord.y = 1 - coord.y;
         #endif
     
-        #if SMOOTHNESS_MAP_IN_TOONMAP || SMOOTHNESS_MAP_IN_TONEMAP
+        #if SMOOTHNESS_MAP_IN_TOONMAP
             #if SMOOTHNESS_MAP_SWIZZLE == 0
                 float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
             #elif SMOOTHNESS_MAP_SWIZZLE == 1
@@ -740,7 +741,7 @@ float GetMetalness(float2 coord)
             coord.y = 1 - coord.y;
         #endif
         
-        #if METALNESS_MAP_IN_TONEMAP || METALNESS_MAP_IN_TOONMAP
+        #if METALNESS_MAP_IN_TOONMAP
             #if METALNESS_MAP_SWIZZLE == 0
                 return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
             #elif METALNESS_MAP_SWIZZLE == 1
@@ -773,9 +774,50 @@ float GetMetalness(float2 coord)
 #endif
 }
 
+float GetAmbientOcclusion(float2 coord)
+{
+#if USE_CUSTOM_MATERIAL
+    #if OCCLUSION_MAP_ENABLE
+        #if OCCLUSION_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+        
+        #if OCCLUSION_MAP_IN_TOONMAP
+            #if OCCLUSION_MAP_SWIZZLE == 0
+                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).r;
+            #elif OCCLUSION_MAP_SWIZZLE == 1
+                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).g;
+            #elif OCCLUSION_MAP_SWIZZLE == 2
+                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).b;
+            #elif OCCLUSION_MAP_SWIZZLE == 3
+                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).a;
+            #else
+                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).r;
+            #endif
+        #else
+            #if OCCLUSION_MAP_SWIZZLE == 0
+                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).r;
+            #elif OCCLUSION_MAP_SWIZZLE == 1
+                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).g;
+            #elif OCCLUSION_MAP_SWIZZLE == 2
+                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).b;
+            #elif OCCLUSION_MAP_SWIZZLE == 3
+                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).a;
+            #else
+                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).r;
+            #endif
+        #endif
+    #else
+        return saturate(1.0 - occlusion);
+    #endif
+#else
+    return 1.0;
+#endif
+}
+
 float3 GetTransmittance(float2 coord)
 {
-#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+#if USE_CUSTOM_MATERIAL && SSS_ENABLE
     #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -803,7 +845,7 @@ float3 GetTransmittance(float2 coord)
 
 float3 GetCurvature(float2 coord)
 {
-#if SSS_ENABLE && USE_CUSTOM_MATERIAL
+#if USE_CUSTOM_MATERIAL && SSS_ENABLE
     #if CURVATURE_MAP_ENABLE
         #if CURVATURE_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -916,6 +958,7 @@ GbufferParam MaterialPS(
     material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
+    material.visibility = GetAmbientOcclusion(coord.xy);
     material.alpha = 1;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
@@ -969,6 +1012,7 @@ GbufferParam Material2PS(
     material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
+    material.visibility = GetAmbientOcclusion(coord.xy);
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL

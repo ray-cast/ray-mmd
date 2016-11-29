@@ -119,4 +119,14 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
+// Sky Occlusion
+#define OCCLUSION_MAP_ENABLE 0
+#define OCCLUSION_MAP_IN_TOONMAP 0
+#define OCCLUSION_MAP_UV_FLIP 0
+#define OCCLUSION_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define OCCLUSION_MAP_FILE "occlusion.png"
+
+const float occlusion = 0.0;
+const float occlusionMapLoopNum = 1.0;
+
 #include "../material_common.fxsub"
