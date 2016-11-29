@@ -627,8 +627,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 {
 #if SKYBOX_ENABLE
     return -N;
-#endif
-#if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
+#elif USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
     #if NORMAL_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -811,7 +810,7 @@ float3 GetCurvature(float2 coord)
         #endif
     
         float transmittanceStrength = tex2D(CurvatureMapSamp, coord * curvatureMapLoopNum).r;
-        return floor(curvature), lerp(frac(curvature), 0.999, transmittanceStrength);
+        return floor(curvature) + lerp(frac(curvature), 0.999, transmittanceStrength);
     #else
         return curvature;
     #endif
