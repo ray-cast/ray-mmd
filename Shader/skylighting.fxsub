@@ -31,31 +31,21 @@ static float3x3 rotate = makeRotate(rotateX, rotateY, rotateZ);
 texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
-    
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MIPFILTER = NONE;
-    
-    ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;    
+    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
-
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MIPFILTER = LINEAR;
-    
-    ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;    
+    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 float3 ColorBalance(float3 color)
 {
     float3 lum = luminance(color);
-    color = lerp(lum, color, 1 - mColBalance);
+    color = lerp(color, lum, mColBalance);
     color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
     return color;
 }
