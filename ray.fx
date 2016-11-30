@@ -67,7 +67,13 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
+
+#ifdef MIKUMIKUMOVING
+#include "shader/textures_m.fxsub"
+#else
 #include "shader/textures.fxsub"
+#endif
+
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
 #include "shader/fimic.fxsub"
