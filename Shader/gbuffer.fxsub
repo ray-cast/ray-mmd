@@ -68,7 +68,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.emissiveIntensity = 0;
     
     material.linearDepth = buffer4.x;
-    material.visibility = 1;
+    material.visibility = saturate(buffer4.z);
     material.alpha = buffer4.w;
     
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
