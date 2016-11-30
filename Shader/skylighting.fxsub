@@ -15,6 +15,13 @@ float mEnvSpecLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mEnvSpecLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
 float mEnvSSSLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
 float mEnvSSSLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
+float mColBalanceRP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR+"; >;
+float mColBalanceGP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG+"; >;
+float mColBalanceBP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB+"; >;
+float mColBalanceRM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR-"; >;
+float mColBalanceGM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG-"; >;
+float mColBalanceBM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB-"; >;
+float mColBalance  :  CONTROLOBJECT < string name="(self)"; string item = "BalanceGray+"; >;
 
 static float rotateX = mEnvRotateX * PI_2;
 static float rotateY = mEnvRotateY * PI_2;
@@ -44,6 +51,14 @@ sampler IBLSpecularSampler = sampler_state {
     ADDRESSU  = CLAMP;
     ADDRESSV  = CLAMP;
 };
+
+float3 ColorBalance(float3 color)
+{
+    float3 lum = luminance(color);
+    color = lerp(lum, color, 1 - mColBalance);
+    color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+    return color;
+}
 
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
 {
@@ -81,6 +96,10 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
         prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance, 6);
     #endif
 #endif
+
+    prefilteredDiffuse.rgb = ColorBalance(prefilteredDiffuse.rgb);
+    prefilteredSpeculr.rgb = ColorBalance(prefilteredSpeculr.rgb);
+    prefilteredTransmittance.rgb = ColorBalance(prefilteredTransmittance.rgb);
 
     float3 dependentSplit = 0.5;
     float3 scattering = (prefilteredDiffuse.rgb + prefilteredTransmittance.rgb);

@@ -1,5 +1,5 @@
 shared texture LightAlphaMap : RENDERCOLORTARGET;
-shared texture EnvLightSpecMap : RENDERCOLORTARGET;
+shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 shared texture FogAlphaMap : RENDERCOLORTARGET;
 
 const float4 BackColor = float4(0,0,0,0);
@@ -11,9 +11,7 @@ const float4 IBLColor = float4(0,0.5,0,0.5);
         "ClearSetColor=BackColor;"\
         "RenderColorTarget0=LightAlphaMap;"\
         "Clear=Color;"\
-        "RenderColorTarget0=FogAlphaMap;"\
-        "Clear=Color;"\
-        "RenderColorTarget0=EnvLightSpecMap;" \
+        "RenderColorTarget0=EnvLightAlphaMap;" \
         "ClearSetColor=IBLColor;"\
         "Clear=Color;"\
     ;> { \

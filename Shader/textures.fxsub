@@ -93,7 +93,6 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
     int Miplevels = 1;
     bool AntiAlias = false;
     string DefaultEffect =
-        "skybox_hdr*.*=./Skybox/skylighting_none.fx;"
         "skybox*.*=./Skybox/skylighting_none.fx;"
         "*= hide;";
 >;
