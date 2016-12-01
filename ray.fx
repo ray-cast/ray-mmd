@@ -1,11 +1,11 @@
 #include "ray.conf"
 #include "ray_advanced.conf"
 
-const float4 BackColor = float4(0,0,0,0);
+const float4 BackColor = 0.0;
+const float4 WhiteColor = 1.0;
 const float ClearDepth = 1.0;
 const int ClearStencil = 0;
 
-#ifndef MIKUMIKUMOVING
 float mDirectionLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectionLight+"; >;
 float mDirectionLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectionLight-"; >;
 float mEnvShadowP  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;
@@ -32,34 +32,6 @@ float mColBalanceRM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
-#else
-float mDirectionLightP<string UIName="DirectionLight+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mDirectionLightM<string UIName="DirectionLight-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mEnvShadowP <string UIName="EnvShadow+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mSSAOP<string UIName="SSAO+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mSSAOM<string UIName="SSAO-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mSSAORadiusP<string UIName="SSAORadius-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mSSAORadiusM<string UIName="SSAORadius-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mExposure<string UIName="Exposure"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mVignette<string UIName="Vignette"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mDispersion<string UIName="Dispersion"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mDispersionRadius<string UIName="DispersionRadius"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mBloomThreshold<string UIName="BloomThreshold"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mBloomRadius<string UIName="BloomRadius"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mBloomIntensity<string UIName="BloomIntensity"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mBloomStarFade<string UIName="BloomStarFade"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mBloomTonemapping<string UIName="BloomTonemapping"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mTonemapping<string UIName="Tonemapping"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mContrastP<string UIName="Contrast+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mContrastM<string UIName="Contrast-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceRP <string UIName="ColBalanceR+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceGP <string UIName="ColBalanceG+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceBP <string UIName="ColBalanceB+"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceRM <string UIName="ColBalanceR-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceGM <string UIName="ColBalanceG-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalanceBM <string UIName="ColBalanceB-"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-float mColBalance  <string UIName="ColBalance"; string UIWidget="Slider"; bool UIVisible=true; float UIMin=0.0; float UIMax=1.0;>;
-#endif
 
 float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
@@ -67,18 +39,13 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
-
-#ifdef MIKUMIKUMOVING
-#include "shader/textures_m.fxsub"
-#else
 #include "shader/textures.fxsub"
-#endif
-
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
 #include "shader/fimic.fxsub"
 
 #if SHADOW_QUALITY > 0
+#   include "shader/shadowcommon.fxsub"
 #   include "shader/shadowmap.fxsub"
 #endif
 
@@ -134,12 +101,8 @@ float Script : STANDARDSGLOBAL <
 technique DeferredLighting<
 	string Script =
     "RenderColorTarget=ScnMap;"
-#ifndef MIKUMIKUMOVING
     "RenderDepthStencilTarget=DepthBuffer;"
     "ClearSetStencil=ClearStencil;"
-#else
-    "RenderDepthTarget=DepthBuffer;"
-#endif
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
     "Clear=Color;"
@@ -147,8 +110,13 @@ technique DeferredLighting<
     "ScriptExternal=Color;"
     
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
-    "RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurPassX;"
-    "RenderColorTarget=ShadowmapMap;     Pass=ShadowBlurPassY;"
+    "RenderColorTarget=ShadowmapMap;"
+    "ClearSetColor=WhiteColor;"
+    "Clear=Color;"
+    "Pass=ShadowMapGen;"
+    "RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurX;"
+    "RenderColorTarget=ShadowmapMap;     Pass=ShadowBlurY;"
+    "ClearSetColor=BackColor;"
 #endif
 
 #if SSAO_QUALITY > 0
@@ -162,11 +130,9 @@ technique DeferredLighting<
     "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacity;"   
     
 #if SSSS_QUALITY > 0
-#ifndef MIKUMIKUMOVING
     "RenderDepthStencilTarget=DepthBuffer;"
     "Clear=Depth;"
     "Pass=SSSSStencilTest;"
-#endif
     "RenderColorTarget=ShadingMap;     Pass=SSSSBlurX;"
     "RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
     "RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
@@ -253,13 +219,19 @@ technique DeferredLighting<
 ;>
 {
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
-    pass ShadowBlurPassX < string Script= "Draw=Buffer;"; > {
+    pass ShadowMapGen < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ShadowMapBlurPS(DepthMapSamp, float2(ViewportOffset2.x, 0.0f));
+        PixelShader  = compile ps_3_0 ShadowMapGenPS();
     }
-    pass ShadowBlurPassY < string Script= "Draw=Buffer;"; > {
+    pass ShadowBlurX < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSamp, float2(ViewportOffset2.x, 0.0f));
+    }
+    pass ShadowBlurY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
@@ -306,7 +278,6 @@ technique DeferredLighting<
         PixelShader  = compile ps_3_0 ShadingTransparentPS();
     }
 #if SSSS_QUALITY > 0
-#ifndef MIKUMIKUMOVING
     pass SSSSStencilTest < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -321,28 +292,23 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSSStencilTestPS();
     }
-#endif
     pass SSSSBlurX < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-#ifndef MIKUMIKUMOVING
         StencilEnable = true;
         StencilFunc = EQUAL;
         StencilRef = 1;
         StencilWriteMask = 0;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapTempSamp, ShadingMapTempSamp, float2(1.0, 0.0));
     }
     pass SSSSBlurY < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
-#ifndef MIKUMIKUMOVING
         StencilEnable = true;
         StencilFunc = EQUAL;
         StencilRef = 1;
         StencilWriteMask = 0;
-#endif
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapTempSamp,float2(0.0, 1.0));
     }

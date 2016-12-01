@@ -1,6 +1,92 @@
 #define SHADOW_BLUR_COUNT 6
 
-float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR
+static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, LightZMax);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
+static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView);
+
+float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
+{
+    float shadow = 0.0;
+    float s = 1.5 / SHADOW_MAP_SIZE;
+
+    [unroll]
+    for (int x = -samples; x <= samples; x++) 
+    {
+        [unroll]
+        for (int y = -samples; y <= samples; y++)
+        {
+            float2 pos = coord + float2(x, y) * s;
+            shadow += CalcLight(tex2D(PSSMsamp, pos).x, receiverDepth, sdrate);
+        }
+    }
+    
+    samples = samples * 2 + 1;
+    
+    return saturate(shadow / (samples * samples));
+}
+
+float4 ShadowMapGenPS(
+    in float2 coord : TEXCOORD0,
+    in float3 viewdir  : TEXCOORD1) : COLOR
+{
+    float4 MRT5 = tex2D(Gbuffer5Map, coord);
+    float4 MRT6 = tex2D(Gbuffer6Map, coord);
+    float4 MRT7 = tex2D(Gbuffer7Map, coord);
+    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    
+    MaterialParam material;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+
+    clip(material.albedo + material.specular - 1e-5);
+
+    float3 V = normalize(viewdir);
+    float4 viewPosition = float4(V * material.linearDepth / V.z, 1);
+    
+    float4 proj = mul(viewPosition, matLightProjectFromCameraView);
+    proj.xy /= proj.w;
+
+    const float2 scale = float2(0.25, -0.25);
+    
+    float4 LightPPos01, LightPPos23;
+    LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
+    LightPPos01.zw = (proj.xy * lightParam[1].xy + lightParam[1].zw);
+    LightPPos23.xy = (proj.xy * lightParam[2].xy + lightParam[2].zw);
+    LightPPos23.zw = (proj.xy * lightParam[3].xy + lightParam[3].zw);
+    LightPPos01 *= scale.xyxy;
+    LightPPos23 *= scale.xyxy;
+    
+    float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
+    float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
+    float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
+    float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
+
+    float4 texCoord0 = lightPPos3;
+    float4 texCoord1 = 0;
+    if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
+    if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
+    if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+    
+    float casterDepth0 = tex2D(PSSMsamp, texCoord0.xy).x;
+    float casterDepth1 = tex2D(PSSMsamp, texCoord1.xy).x;
+    float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
+    float receiverDepth = proj.z;
+
+    clip(casterDepth1 + casterDepth0 - 1e-5);
+    
+    float depthSlope = ShadowSlopeScaledBias(receiverDepth);
+    receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.005;
+
+    float sdrate = 30000.0 / 4.0 - 0.05;
+    float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
+    
+    shadow = min(shadow, saturate(dot(material.normal, -mul(LightDirection, (float3x3)matView))));
+    return shadow;
+}
+
+float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
     float4 center = tex2D(source, coord);
     center.y = abs(center.y);

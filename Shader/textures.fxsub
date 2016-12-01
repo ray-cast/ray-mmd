@@ -194,14 +194,19 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
         "*.pmd=shadow/PSSM.fx;"
         "*.x=hide;";
 >;
-shared texture2D ShadowmapMap : RENDERCOLORTARGET <
+shared texture ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
-texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
+texture ShadowmapMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
+sampler PSSMsamp = sampler_state {
+    texture = <PSSM>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
@@ -295,13 +300,13 @@ sampler Gbuffer8Map = sampler_state {
     MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-texture2D ShadingMap : RENDERCOLORTARGET <
+texture ShadingMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
     int Miplevels = 1;
     bool AntiAlias = false;
 >;
-texture2D ShadingMapTemp : RENDERCOLORTARGET <
+texture ShadingMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A16B16G16R16F";
     int Miplevels = 1;
