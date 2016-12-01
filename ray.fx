@@ -134,12 +134,14 @@ float Script : STANDARDSGLOBAL <
 technique DeferredLighting<
 	string Script =
     "RenderColorTarget=ScnMap;"
+#ifndef MIKUMIKUMOVING
     "RenderDepthStencilTarget=DepthBuffer;"
+    "ClearSetStencil=ClearStencil;"
+#else
+    "RenderDepthTarget=DepthBuffer;"
+#endif
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
-#ifndef MIKUMIKUMOVING
-    "ClearSetStencil=ClearStencil;"
-#endif
     "Clear=Color;"
     "Clear=Depth;"
     "ScriptExternal=Color;"

@@ -10,11 +10,11 @@
 #   define SHADOW_MAP_SIZE 16384
 #endif
 
-texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
+texture2D DepthBuffer : RENDERDEPTHTARGET <
     float2 ViewPortRatio = {1.0,1.0};
     int MipLevels = 1;
     bool AntiAlias = false;
-    string Format = "D24S8";
+    string Format = "D24";
 >;
 texture2D ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
@@ -95,6 +95,40 @@ sampler DepthMapSamp = sampler_state {
     MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
+#if MAIN_LIGHT_ENABLE
+shared texture PSSM : OFFSCREENRENDERTARGET <
+    string Description = "Cascade shadow map for ray";
+    int Width = SHADOW_MAP_SIZE;
+    int Height = SHADOW_MAP_SIZE;
+    string Format = "A16B16G16R16F";
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    int MipLevels = 1;
+    string DefaultEffect =
+        "self = hide;"
+        "*.pmx=shadow/PSSM.fx;"
+        "*.pmd=shadow/PSSM.fx;"
+        "*.x=hide;";
+>;
+shared texture2D ShadowmapMap : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+>;
+texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
+    float2 ViewPortRatio = {1.0, 1.0};
+    string Format = "A16B16G16R16F";
+>;
+sampler ShadowmapSamp = sampler_state {
+    texture = <ShadowmapMap>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler ShadowmapSampTemp = sampler_state {
+    texture = <ShadowmapMapTemp>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP;  AddressV = CLAMP;
+};
+#endif
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "A8R8G8B8" ;
