@@ -27,32 +27,6 @@ sampler ScnSamp = sampler_state {
     MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
-shared texture MaterialMap: OFFSCREENRENDERTARGET <
-    string Description = "Material cache map for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
-    string DefaultEffect =
-        "self = hide;"
-        "*fog.pmx=hide;"
-        "*controller.pmx=hide;"
-        "skybox*.* = ./materials/material_skybox.fx;"
-        "AmbientLight*.* =hide;"
-        "LED*.pmx =./materials/lighting/material_led.fx;"
-        "DirectionalLight*.* =./materials/lighting/material_lighting.fx;"
-        "SpotLight*.* =./materials/lighting/material_lighting.fx;"
-        "PointLight*.* =./materials/lighting/material_lighting.fx;"
-        "SphereLight*.* =./materials/lighting/material_lighting.fx;"
-        "TubeLight*.* =./materials/lighting/material_lighting.fx;"
-        "RectangleLight*.* =./materials/lighting/material_lighting.fx;"
-        "*.pmd = ./materials/material.fx;"
-        "*.pmx = ./materials/material.fx;"
-        "*.x = hide;"
-        "* = hide;";
->;
 #if FOG_ENABLE
 texture FogMap: OFFSCREENRENDERTARGET <
     string Description = "Multi volumetirc fog map for ray";
@@ -139,6 +113,32 @@ sampler EnvLightAlphaMapSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
+shared texture MaterialMap: OFFSCREENRENDERTARGET <
+    string Description = "Material cache map for ray";
+    float2 ViewPortRatio = {1.0, 1.0};
+    float4 ClearColor = { 0, 0, 0, 0 };
+    float ClearDepth = 1.0;
+    string Format = "A8R8G8B8";
+    int Miplevels = 1;
+    bool AntiAlias = false;
+    string DefaultEffect =
+        "self = hide;"
+        "*fog.pmx=hide;"
+        "*controller.pmx=hide;"
+        "skybox*.* = ./materials/material_skybox.fx;"
+        "AmbientLight*.* =hide;"
+        "LED*.pmx =./materials/lighting/material_led.fx;"
+        "DirectionalLight*.* =./materials/lighting/material_lighting.fx;"
+        "SpotLight*.* =./materials/lighting/material_lighting.fx;"
+        "PointLight*.* =./materials/lighting/material_lighting.fx;"
+        "SphereLight*.* =./materials/lighting/material_lighting.fx;"
+        "TubeLight*.* =./materials/lighting/material_lighting.fx;"
+        "RectangleLight*.* =./materials/lighting/material_lighting.fx;"
+        "*.pmd = ./materials/material.fx;"
+        "*.pmx = ./materials/material.fx;"
+        "*.x = hide;"
+        "* = hide;";
+>;
 texture DepthMap : OFFSCREENRENDERTARGET <
     string Description = "SSAO and shadow rendering for ray";
     float2 ViewPortRatio = {1.0, 1.0};

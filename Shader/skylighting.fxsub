@@ -38,7 +38,7 @@ sampler IBLDiffuseSampler = sampler_state {
 texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
 sampler IBLSpecularSampler = sampler_state {
     texture = <IBLSpecularTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;    
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;    
     ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
