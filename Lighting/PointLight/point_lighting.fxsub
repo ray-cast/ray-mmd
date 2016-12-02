@@ -125,9 +125,13 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
    
     float4 lighting = 0.0f;
 
-#if SSSS_QUALITY > 1
+#if SSSS_QUALITY > 0
     lighting.rgb = atten * float3(mR, mG, mB) * DiffuseBRDF(material.normal, L, V, material);
+#if SSSS_QUALITY > 1
     lighting.rgb *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+#else
+    lighting.rgb *= material.albedo;
+#endif
     lighting.a = luminance(float3(mR, mG, mB) * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular));
     lighting.a *= atten2;
 #else

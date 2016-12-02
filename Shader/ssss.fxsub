@@ -1,23 +1,14 @@
 float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
-{
-    float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-    float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-    float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
-    MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT4, material);
-    
+{   
     float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
     float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
     float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
     float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
     
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    MaterialParam material;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && 
-        materialAlpha.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
     {
         clip(-1);
     }
@@ -50,13 +41,13 @@ float4 SSSGuassBlurPS(
         float4(1.0, 1.0, 1.0, 1.0)
     };
 
-    float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
     
     float4 colorM = tex2Dlod(source, float4(coord, 0, 0));
     
@@ -107,7 +98,7 @@ float4 SSSGuassBlurPS(
     if (direction.y > 0.01)
     {
         totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
-#if SSSS_QUALITY > 0
+#if SSSS_QUALITY > 1
         totalColor *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? material.albedo : 1;
 #endif
     }
