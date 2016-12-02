@@ -86,9 +86,7 @@ float4 ShadingOpacityPS(
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
-#if MULTILIGHT_ENABLE
     lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
-#endif
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
     lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V);
 
@@ -124,9 +122,7 @@ float4 ShadingOpacitySpecularPS(
     float3 iblDiffuse, iblSpecular;
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
-#if MULTILIGHT_ENABLE
     specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
-#endif
     specular += iblSpecular;
        
     return float4(specular, 0);
@@ -150,9 +146,7 @@ float4 ShadingTransparentPS(
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
-#if MULTILIGHT_ENABLE
     lighting += tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
-#endif
 
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
