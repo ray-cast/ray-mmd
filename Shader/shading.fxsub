@@ -27,7 +27,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     return lighting;
 }
 
-float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V, bool alpha)
+float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V)
 {
     float3 lighting = 0;
     
@@ -47,7 +47,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSSS_QUALITY > 0
-    diffuse *= (!alpha && material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+    diffuse *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
 #else
     diffuse *= material.albedo;
 #endif
@@ -90,7 +90,7 @@ float4 ShadingOpacityPS(
     lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 #endif
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
-    lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, 0);
+    lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V);
 
     return float4(lighting, material.linearDepth);
 }
@@ -128,12 +128,7 @@ float4 ShadingOpacitySpecularPS(
     specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
 #endif
     specular += iblSpecular;
-    
-#if FOG_ENABLE
-    float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
-    specular += fog.rgb;
-#endif
-    
+       
     return float4(specular, 0);
 }
 
@@ -164,11 +159,17 @@ float4 ShadingTransparentPS(
     lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
-    lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, 1);
-        
+    lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V);
+    lighting *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? material.albedo : 1;
+    
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
     float4 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0));
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
+
+#if FOG_ENABLE
+    float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
+    lighting += fog.rgb;
+#endif
     
     return float4(lighting, material.linearDepth);
 }

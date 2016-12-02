@@ -16,7 +16,8 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && materialAlpha.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE && 
+        materialAlpha.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
     {
         clip(-1);
     }
@@ -60,7 +61,7 @@ float4 SSSGuassBlurPS(
     float4 colorM = tex2Dlod(source, float4(coord, 0, 0));
     
     float3 V = normalize(viewdir);
-    float3 P = V * colorM.a / V.z;
+    float3 P = V * material.linearDepth / V.z;
 
     float3 normal = cross(ddy(P), ddx(P));
     float perspectiveScaleX = dot(normalize(normal.xz), normalize(-P.xz));
@@ -72,7 +73,7 @@ float4 SSSGuassBlurPS(
     float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount : 1.0;
     float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
     
-    float2 finalStep = direction * perspectiveScale * radius / (colorM.a * mSSSSWidth);
+    float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
 
     float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
 
@@ -88,8 +89,8 @@ float4 SSSGuassBlurPS(
         float4 sampleColor1 = tex2Dlod(source, float4(offset1, 0, 0));
         float4 sampleColor2 = tex2Dlod(source, float4(offset2, 0, 0));
 
-        float depthDiff1 = (sampleColor1.a - colorM.a) * 1000 * mSSSSWidth;
-        float depthDiff2 = (sampleColor2.a - colorM.a) * 1000 * mSSSSWidth;
+        float depthDiff1 = (sampleColor1.a - material.linearDepth) * 1000 * mSSSSWidth;
+        float depthDiff2 = (sampleColor2.a - material.linearDepth) * 1000 * mSSSSWidth;
 
         float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
         float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
