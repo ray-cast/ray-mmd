@@ -19,7 +19,7 @@ float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples)
         for (int y = -samples; y <= samples; y++)
         {
             float2 pos = coord + float2(x, y) * s;
-            shadow += CalcLight(tex2D(PSSMsamp, pos).x, receiverDepth, sdrate);
+            shadow += CalcLight(tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x, receiverDepth, sdrate);
         }
     }
     
@@ -32,10 +32,10 @@ float4 ShadowMapGenPS(
     in float2 coord : TEXCOORD0,
     in float3 viewdir  : TEXCOORD1) : COLOR
 {
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
     
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
@@ -69,8 +69,8 @@ float4 ShadowMapGenPS(
     if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
     if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
     
-    float casterDepth0 = tex2D(PSSMsamp, texCoord0.xy).x;
-    float casterDepth1 = tex2D(PSSMsamp, texCoord1.xy).x;
+    float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).x;
+    float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).x;
     float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
     float receiverDepth = proj.z;
 
@@ -88,7 +88,7 @@ float4 ShadowMapGenPS(
 
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-    float4 center = tex2D(source, coord);
+    float4 center = tex2Dlod(source, float4(coord, 0, 0));
     center.y = abs(center.y);
 
     float2 sum = float2(center.x, 1);
@@ -102,8 +102,8 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
     [unroll]
     for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
     {
-        float2 shadow1 = tex2D(source, offset1).xy;
-        float2 shadow2 = tex2D(source, offset2).xy;
+        float2 shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).xy;
+        float2 shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).xy;
         
         float bilateralWeight1 = BilateralWeight(r, abs(shadow1.y), center.y, SHADOW_BLUR_COUNT, sharpness);
         float bilateralWeight2 = BilateralWeight(r, abs(shadow2.y), center.y, SHADOW_BLUR_COUNT, sharpness);

@@ -207,18 +207,18 @@ void LightSourcePS(
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
-    float4 MRT1 = tex2D(Gbuffer1Map, coord);
-    float4 MRT2 = tex2D(Gbuffer2Map, coord);
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
     
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
@@ -245,18 +245,18 @@ void LightSourceShadowlessPS(
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
-    float4 MRT1 = tex2D(Gbuffer1Map, coord);
-    float4 MRT2 = tex2D(Gbuffer2Map, coord);
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
     
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);

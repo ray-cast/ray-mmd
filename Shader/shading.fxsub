@@ -41,7 +41,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord).r;
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     diffuse *= ssao;
     specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
@@ -54,7 +54,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 
     float shadow = 1;
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-    float2 shadowDepth = tex2D(ShadowmapSamp, coord).rg;
+    float2 shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
     shadow = lerp(1, shadowDepth.r, mEnvShadowP);
 #endif
 
@@ -73,10 +73,10 @@ float4 ShadingOpacityPS(
     in float3 viewdir: TEXCOORD1, 
     in float4 screenPosition : SV_Position) : COLOR
 {
-    float4 MRT1 = tex2D(Gbuffer1Map, coord);
-    float4 MRT2 = tex2D(Gbuffer2Map, coord);
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
@@ -87,9 +87,9 @@ float4 ShadingOpacityPS(
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
 #if MULTILIGHT_ENABLE
-    lighting += tex2D(LightMapSamp, coord).rgb;
+    lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 #endif
-    lighting += srgb2linear(tex2D(ScnSamp, coord).rgb);
+    lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
     lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, 0);
 
     return float4(lighting, material.linearDepth);
@@ -100,10 +100,10 @@ float4 ShadingOpacitySpecularPS(
     in float3 viewdir: TEXCOORD1, 
     in float4 screenPosition : SV_Position) : COLOR
 {
-    float4 MRT1 = tex2D(Gbuffer1Map, coord);
-    float4 MRT2 = tex2D(Gbuffer2Map, coord);
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
+    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
@@ -118,19 +118,19 @@ float4 ShadingOpacitySpecularPS(
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
     specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
-    specular *= tex2D(ShadowmapSamp, coord).r;
+    specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif
 
     float3 iblDiffuse, iblSpecular;
     DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
 #if MULTILIGHT_ENABLE
-    specular += tex2D(LightMapSamp, coord).a;
+    specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
 #endif
     specular += iblSpecular;
     
 #if FOG_ENABLE
-    float4 fog = tex2D(FogMapSamp, coord);
+    float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
     specular += fog.rgb;
 #endif
     
@@ -142,10 +142,10 @@ float4 ShadingTransparentPS(
     in float3 viewdir: TEXCOORD1, 
     in float4 screenPosition : SV_Position) : COLOR
 {
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
     
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
@@ -156,18 +156,18 @@ float4 ShadingTransparentPS(
     
     float3 lighting = ShadingMaterial(N, V, L, coord, material);
 #if MULTILIGHT_ENABLE
-    lighting += tex2D(LightAlphaMapSamp, coord).rgb;
+    lighting += tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 #endif
 
 #if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2D(SSAOMapSamp, coord).r;
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
     lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, 1);
         
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
-    float4 prefilteredRefract = tex2D(ShadingMapTempSamp, coord);
+    float4 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0));
     lighting = lerp(prefilteredRefract.rgb, lighting, material.alpha);
     
     return float4(lighting, material.linearDepth);

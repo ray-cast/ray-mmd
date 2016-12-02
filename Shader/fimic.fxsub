@@ -216,16 +216,16 @@ float4 HDRDownsample4XPS(
     in float2 coord4 : TEXCOORD3,
     uniform sampler source) : COLOR
 {
-    float4 color = tex2D(source, coord1);
-    color += tex2D(source, coord2);
-    color += tex2D(source, coord3);
-    color += tex2D(source, coord4);
+    float4 color = tex2Dlod(source, float4(coord1, 0, 0));
+    color += tex2Dlod(source, float4(coord2, 0, 0));
+    color += tex2Dlod(source, float4(coord3, 0, 0));
+    color += tex2Dlod(source, float4(coord4, 0, 0));
     return color / 4;
 }
 
 float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
-    return tex2D(source, coord);
+    return tex2Dlod(source, float4(coord, 0, 0));
 }
 
 void GlareDetectionVS(
@@ -257,11 +257,11 @@ float4 GlareDetectionPS(
     in float2 coord5 : TEXCOORD4,
     uniform sampler source) : COLOR
 {   
-    float4 color = tex2D(source, coord1);
-    color = min(color, tex2D(source, coord2));
-    color = min(color, tex2D(source, coord3));
-    color = min(color, tex2D(source, coord4));
-    color = min(color, tex2D(source, coord5));
+    float4 color = tex2Dlod(source, float4(coord1, 0, 0));
+    color = min(color, tex2Dlod(source, float4(coord2, 0, 0)));
+    color = min(color, tex2Dlod(source, float4(coord3, 0, 0)));
+    color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
+    color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
     
 #if HDR_BLOOM_MODE == 1
     float4 bloom = max(0, color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
@@ -272,10 +272,10 @@ float4 GlareDetectionPS(
 #endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
-    float4 MRT3 = tex2D(Gbuffer3Map, coord1);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord1);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord1);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord1);
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
     
     bloom.rgb += DecodeGBufferEmissive(MRT3, MRT4);
     bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
@@ -293,7 +293,7 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform 
     
     for (int i = 0; i < 15; ++i)
     {
-        color += tex2D(source, coords) * (weights[i] / weightSum);
+        color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
         coords += offset;
     }
 
@@ -332,19 +332,19 @@ float4 StarStreakPS(
     in float2 coord3 : TEXCOORD3,
     uniform sampler source, uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-    float4 color0 = tex2D(source, coord0) * colorCoeff[0];
-    float4 color1 = tex2D(source, coord1) * colorCoeff[1];
-    float4 color2 = tex2D(source, coord2) * colorCoeff[2];
-    float4 color3 = tex2D(source, coord3) * colorCoeff[3];
+    float4 color0 = tex2Dlod(source, float4(coord0, 0, 0)) * colorCoeff[0];
+    float4 color1 = tex2Dlod(source, float4(coord1, 0, 0)) * colorCoeff[1];
+    float4 color2 = tex2Dlod(source, float4(coord2, 0, 0)) * colorCoeff[2];
+    float4 color3 = tex2Dlod(source, float4(coord3, 0, 0)) * colorCoeff[3];
     return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold + EPSILON) * 10);
 }
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-    float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2D(BloomSamp1st, coord);
-    float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2D(BloomSamp2nd, coord);
-    float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2D(BloomSamp3rd, coord);
-    float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2D(BloomSamp4th, coord);
+    float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2Dlod(BloomSamp1st, float4(coord, 0, 0));
+    float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2Dlod(BloomSamp2nd, float4(coord, 0, 0));
+    float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2Dlod(BloomSamp3rd, float4(coord, 0, 0));
+    float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2Dlod(BloomSamp4th, float4(coord, 0, 0));
     
     float4 bloom = 0.0f;
     bloom += bloom1;
@@ -353,9 +353,9 @@ float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
     bloom += bloom4;
     
 #if HDR_STAR_MODE > 0
-    float4 star = max(tex2D(StreakSamp1st, coord), tex2D(StreakSamp2nd, coord));
+    float4 star = max(tex2Dlod(StreakSamp1st, float4(coord, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord, 0, 0)));
     #if HDR_STAR_MODE > 1
-        star = max(star, max(tex2D(StreakSamp3rd, coord), tex2D(StreakSamp4th, coord)));
+        star = max(star, max(tex2Dlod(StreakSamp3rd, float4(coord, 0, 0)), tex2Dlod(StreakSamp4th, float4(coord, 0, 0))));
     #endif
     bloom += star;
 #endif
@@ -392,10 +392,10 @@ float4 GhostImagePS(
     uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
     float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
-    float4 color1 = (tex2D(source1, coord0) - ghostThreshold) * tex2D(source4, coord0) * colorCoeff[0];
-    float4 color2 = (tex2D(source1, coord1) - ghostThreshold) * tex2D(source4, coord1) * colorCoeff[1];
-    float4 color3 = (tex2D(source2, coord2) - ghostThreshold) * tex2D(source4, coord2) * colorCoeff[2];
-    float4 color4 = (tex2D(source3, coord3) - ghostThreshold) * tex2D(source4, coord3) * colorCoeff[3];
+    float4 color1 = (tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord0, 0, 0)) * colorCoeff[0];
+    float4 color2 = (tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord1, 0, 0)) * colorCoeff[1];
+    float4 color3 = (tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord2, 0, 0)) * colorCoeff[2];
+    float4 color4 = (tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord3, 0, 0)) * colorCoeff[3];
     return max(0, (color1 + color2 + color3 + color4));
 }
 
@@ -403,9 +403,9 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
     L = 1 - smoothstep(outer, inner, L);
-    float3 color = tex2D(source, coord).rgb;
-    color.g = tex2D(source, coord - ViewportOffset2 * L * (mDispersion * 8)).g;
-    color.b = tex2D(source, coord + ViewportOffset2 * L * (mDispersion * 8)).b;
+    float3 color = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+    color.g = tex2Dlod(source, float4(coord - ViewportOffset2 * L * (mDispersion * 8), 0, 0)).g;
+    color.b = tex2Dlod(source, float4(coord + ViewportOffset2 * L * (mDispersion * 8), 0, 0)).b;
     return color;
 }
 
@@ -432,16 +432,16 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
 
-    float4 MRT3 = tex2D(Gbuffer3Map, coord);
-    float4 MRT4 = tex2D(Gbuffer4Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
     
     color += DecodeGBufferEmissive(MRT3, MRT4);
     color += DecodeGBufferEmissive(MRT7, MRT8);
     
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
-    float3 bloom = tex2D(GlareLightMapSamp, coord).rgb;
+    float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
     color += lerp(bloom, 0, mBloomTonemapping);
 #endif
     

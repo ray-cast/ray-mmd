@@ -45,7 +45,7 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 uv)
 {
-    return tex2D(DepthMapSamp, uv).g;
+    return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
 }
 
 float3 GetPosition(float2 uv)
@@ -56,7 +56,7 @@ float3 GetPosition(float2 uv)
 
 float3 GetNormal(float2 uv)
 {
-    float4 MRT6 = tex2D(Gbuffer6Map, uv);
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
     return DecodeGBufferNormal(MRT6);
 }
 
@@ -76,7 +76,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float3 viewPosition = -viewdir * depth;
        
     float sampleWeight = 0.0f;
-    float sampleNoise = GetJitterOffset2(coord.zw);
+    float sampleNoise = GetJitterOffset(coord.zw);
     float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
     float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
     float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
@@ -151,9 +151,9 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
     float center_d = abs(linearizeDepth(coord));
 
 #if SSAO_QUALITY > 3
-    float4 total_c = tex2D(source, coord);
+    float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
 #else
-    float total_c = tex2D(source, coord).r;
+    float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
 #endif
 
     float total_w = 1.0f;
@@ -180,11 +180,11 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
         bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
 #if SSAO_QUALITY > 3
-        total_c += tex2D(source, offset1) * bilateralWeight1;
-        total_c += tex2D(source, offset2) * bilateralWeight2;
+        total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
+        total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
 #else
-        total_c += tex2D(source, offset1).r * bilateralWeight1;
-        total_c += tex2D(source, offset2).r * bilateralWeight2;
+        total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
+        total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
 #endif
 
         total_w += bilateralWeight1;

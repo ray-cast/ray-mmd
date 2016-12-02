@@ -1,3 +1,14 @@
+float3 linear2rec709(float3 c) 
+{
+    c = max(6.10352e-5, c);
+    return min(c * 4.5, pow(max(c, 0.018), 0.45) * 1.099 - 0.099);
+}
+
+float4 linear2rec709(float4 c)
+{
+    return float4(linear2rec709(c.rgb), c.a);
+}
+
 float3 ACESFilmRec709(float3 x)
 {
     const float A = 2.51f;

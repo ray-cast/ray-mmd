@@ -137,7 +137,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
         float4 projPos = startScreenPos + deltaScreenPos * len;
         projPos.xy /= projPos.w;
         
-        float depth = tex2D(DepthMapSamp, projPos.xy).g;
+        float depth = tex2Dlod(DepthMapSamp, float4(projPos.xy, 0, 0)).g;
         
         if (abs(depth - projPos.z) < intervalSize)
         {
@@ -161,10 +161,10 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
 float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
 {
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+    float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
@@ -201,14 +201,14 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
     fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
     
-    float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2D(DepthMapSamp, hitPixel.xy).g);
+    float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).g);
     
     float fadeOnPerpendicular = saturate(atten * 2);
     float fadeOnRoughness = material.smoothness;
     float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
     float totalFade = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular * fadeOnRoughness;
 
-    float4 totalColor = tex2D(ShadingMapSamp, hitPixel.xy);    
+    float4 totalColor = tex2Dlod(ShadingMapSamp, float4(hitPixel.xy, 0, 0));    
     return float4(totalColor.rgb, totalFade) * (hitTest ? 1 : 0);
 }
 
@@ -217,7 +217,7 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
     float3 incrementalGaussian = IncrementalGaussianCofficent(4);
     
     float weight = incrementalGaussian.x;
-    float4 color = tex2D(source, coord.xy) * weight;
+    float4 color = tex2Dlod(source, float4(coord.xy, 0, 0)) * weight;
     
     float2 offset0 = coord.xy + offset;
     float2 offset1 = coord.xy - offset;
@@ -227,8 +227,8 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
     {
         incrementalGaussian = IncrementalGaussian(incrementalGaussian);
         
-        color += tex2D(source, offset0) * incrementalGaussian.x;
-        color += tex2D(source, offset1) * incrementalGaussian.x;
+        color += tex2Dlod(source, float4(offset0, 0, 0)) * incrementalGaussian.x;
+        color += tex2Dlod(source, float4(offset1, 0, 0)) * incrementalGaussian.x;
         
         offset0 += offset;
         offset1 -= offset;
@@ -239,12 +239,12 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
     return color / weight;
 }
 
-float4 SSRFinalCombiePS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
+float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
-    float4 MRT0 = tex2D(Gbuffer1Map, coord.xy);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord.xy);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord.xy);
-    float4 MRT3 = tex2D(Gbuffer3Map, coord.xy);
+    float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+    float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+    float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
     
     MaterialParam material;
     DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
@@ -254,10 +254,10 @@ float4 SSRFinalCombiePS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
     float weight = frac(min(gloss, 0.9999) * 3);
 
-    float4 refl0 = tex2D(SSRLightX1Samp, coord.xy);
-    float4 refl1 = tex2D(SSRLightX2Samp, coord.xy);
-    float4 refl2 = tex2D(SSRLightX3Samp, coord.xy);
-    float4 refl3 = tex2D(SSRLightX4Samp, coord.xy);
+    float4 refl0 = tex2Dlod(SSRLightX1Samp, float4(coord, 0, 0));
+    float4 refl1 = tex2Dlod(SSRLightX2Samp, float4(coord, 0, 0));
+    float4 refl2 = tex2Dlod(SSRLightX3Samp, float4(coord, 0, 0));
+    float4 refl3 = tex2Dlod(SSRLightX4Samp, float4(coord, 0, 0));
     
     float4 color = 0;
     if (gloss > 2.0 / 3.0)

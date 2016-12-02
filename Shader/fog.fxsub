@@ -29,7 +29,7 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
     float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
 
     float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
-    return tex2D(shadowMap, coord).r < depth ? 0 : 1;
+    return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
 }
 
 float4 SphereFog(LightParam param, float3 V, float distance)
