@@ -99,13 +99,11 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     diffuse = prefilteredDiffuse.rgb;
     diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
     diffuse += scattering;
-    diffuse *= material.visibility;
     
     specular = prefilteredSpeculr.rgb * HorizonOcclusion(worldNormal, worldReflect);
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
     specular *= step(0, material.specular - 1e-5);
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
-    specular *= material.visibility;
 }
 
 void EnvLightingVS(

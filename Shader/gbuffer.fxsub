@@ -19,7 +19,7 @@ struct MaterialParam
     float smoothness;
     float index;
     float alpha;
-    float visibility;
+    float customData;
     float linearDepth;
     int lightModel;
 };
@@ -68,7 +68,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.emissiveIntensity = 0;
     
     material.linearDepth = buffer4.x;
-    material.visibility = saturate(buffer4.z);
+    material.customData = saturate(buffer4.z);
     material.alpha = buffer4.w;
     
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
@@ -210,11 +210,4 @@ void DecodeYcbcrBilinearFilter(sampler source, float2 coord, float4 screenPositi
 float3 noise3(float2 seed)
 {
     return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
-}
-
-float3 ApplyDithering(float3 color, float2 uv)
-{
-    float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
-    color += noise / 255.0;
-    return color;
 }

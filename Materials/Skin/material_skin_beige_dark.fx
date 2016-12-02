@@ -27,7 +27,6 @@ const float curvature = 1.6;
 const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
 
 const float melanin = 0.0;
-const float occlusion = 0.0;
 const float smoothness = 0.55;
 
 const float metalness = 0.0;

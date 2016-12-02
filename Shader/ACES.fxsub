@@ -1,0 +1,74 @@
+float3 ACESFilmRec709(float3 x)
+{
+    const float A = 2.51f;
+    const float B = 0.03f;
+    const float C = 2.43f;
+    const float D = 0.59f;
+    const float E = 0.14f;
+    return (x * (A * x + B)) / (x * (C * x + D) + E);   
+}
+
+float3 ACESFilmRec2020(float3 x)
+{
+    float a = 15.8f;
+    float b = 2.12f;
+    float c = 1.2f;
+    float d = 5.92f;
+    float e = 1.9f;
+    return (x * (a * x + b)) / (x * (c * x + d) + e);
+}
+
+float3 FilmicTonemap(float3 x) 
+{
+    float A = 0.22;
+    float B = 0.30;
+    float C = 0.10;
+    float D = 0.20;
+    float E = 0.01;
+    float F = 0.30;
+    float W = 11.2;
+    return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
+float3 ACESToneMapping(float3 color)
+{
+#if HDR_TONEMAP_OPERATOR == 1
+    float3 curr = ACESFilmRec709(color);
+    return saturate(lerp(curr, color, mTonemapping));
+#elif HDR_TONEMAP_OPERATOR == 2
+    float3 curr = ACESFilmRec709(color);
+    return saturate(lerp(curr, color, mTonemapping));
+#elif HDR_TONEMAP_OPERATOR == 3
+    float3 curr = ACESFilmRec2020(color);
+    return lerp(curr, color, mTonemapping);
+#elif HDR_TONEMAP_OPERATOR == 4
+    float3 curr = FilmicTonemap(color * 2);
+    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
+    curr = curr * whiteScale;
+    return saturate(lerp(curr, color, mTonemapping));
+#elif HDR_TONEMAP_OPERATOR == 5
+    float3 curr = 2 * FilmicTonemap(color);
+    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
+    curr = curr * whiteScale;
+    return saturate(lerp(curr, color, mTonemapping));
+#else
+    return saturate(color);
+#endif
+}
+
+float3 ACESOutputDevice(float3 color)
+{
+#if HDR_TONEMAP_OPERATOR == 1
+    return linear2srgb(color);
+#elif HDR_TONEMAP_OPERATOR == 2
+    return linear2rec709(color);
+#elif HDR_TONEMAP_OPERATOR == 3
+    return color;
+#elif HDR_TONEMAP_OPERATOR == 4
+    return linear2srgb(color);
+#elif HDR_TONEMAP_OPERATOR == 5
+    return linear2srgb(color);
+#else
+    return linear2srgb(color);
+#endif
+}

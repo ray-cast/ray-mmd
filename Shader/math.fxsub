@@ -13,14 +13,8 @@
 
 float3 srgb2linear(float3 rgb)
 {
-    const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((abs(rgb) + ALPHA) / (1 + ALPHA), 2.4f);
-}
-
-float3 linear2srgb(float3 srgb)
-{
-    const float ALPHA = 0.055f;
-    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(abs(srgb), 1.0f / 2.4f) - ALPHA;
+    rgb = max(6.10352e-5, rgb);
+    return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
 }
 
 float4 srgb2linear(float4 c)
@@ -28,9 +22,26 @@ float4 srgb2linear(float4 c)
     return float4(srgb2linear(c.rgb), c.a);
 }
 
+float3 linear2srgb(float3 srgb)
+{
+    srgb = max(6.10352e-5, srgb);
+    return min(srgb * 12.92, pow(max(srgb, 0.00313067), 1.0/2.4) * 1.055 - 0.055);
+}
+
 float4 linear2srgb(float4 c)
 {
     return float4(linear2srgb(c.rgb), c.a);
+}
+
+float3 linear2rec709(float3 c) 
+{
+    c = max(6.10352e-5, c);
+    return min(c * 4.5, pow(max(c, 0.018), 0.45) * 1.099 - 0.099);
+}
+
+float4 linear2rec709(float4 c)
+{
+    return float4(linear2rec709(c.rgb), c.a);
 }
 
 float3 rgb2ycbcr(float3 col)

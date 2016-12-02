@@ -265,8 +265,10 @@ float4 GlareDetectionPS(
     
 #if HDR_BLOOM_MODE == 1
     float4 bloom = max(0, color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
-#else
+#elif HDR_BLOOM_MODE == 2
     float4 bloom = saturate(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
+#else
+    float4 bloom = saturate(color * (luminance(color) - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON)));
 #endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
@@ -397,61 +399,6 @@ float4 GhostImagePS(
     return max(0, (color1 + color2 + color3 + color4));
 }
 
-float3 ACESFilmRec709(float3 x)
-{
-    const float A = 2.51f;
-    const float B = 0.03f;
-    const float C = 2.43f;
-    const float D = 0.59f;
-    const float E = 0.14f;
-    return (x * (A * x + B)) / (x * (C * x + D) + E);   
-}
-
-float3 ACESFilmRec2020(float3 x)
-{
-    float a = 15.8f;
-    float b = 2.12f;
-    float c = 1.2f;
-    float d = 5.92f;
-    float e = 1.9f;
-    return (x * (a * x + b)) / (x * (c * x + d) + e);
-}
-
-float3 FilmicTonemap(float3 x) 
-{
-    float A = 0.22;
-    float B = 0.30;
-    float C = 0.10;
-    float D = 0.20;
-    float E = 0.01;
-    float F = 0.30;
-    float W = 11.2;
-    return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
-}
-
-float3 ApplyToneMapping(float3 color)
-{
-#if HDR_TONEMAP_OPERATOR == 1
-    float3 curr = ACESFilmRec709(color);
-    return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 2
-    float3 curr = ACESFilmRec2020(color);
-    return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 3
-    float3 curr = FilmicTonemap(color * 2);
-    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
-    curr = curr * whiteScale;
-    return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 4
-    float3 curr = 2 * FilmicTonemap(color);
-    float3 whiteScale = 1.0f / FilmicTonemap(11.2);
-    curr = curr * whiteScale;
-    return saturate(lerp(curr, color, mTonemapping));
-#else
-    return saturate(color);
-#endif
-}
-
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
@@ -499,8 +446,8 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #endif
     
     color = ApplyVignette(color, coord);
-    color = ApplyColorBalance(color);
-    color = ApplyToneMapping(color * (mExposureMin + mExposure * mExposureMax));
+    color = ApplyColorBalance(color);    
+    color = ACESToneMapping(color * (mExposureMin + mExposure * mExposureMax));
     
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
     color += lerp(0, bloom, mBloomTonemapping);
@@ -508,11 +455,9 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
     
     color = ApplyContrast(color);
     
-#if AA_QUALITY == 0
-    color = linear2srgb(color);
-    color = ApplyDithering(color, coord);
-    return float4(color, 1);
-#else
+#if AA_QUALITY > 0
     return float4(color, luminance(color));
+#else
+    return float4(ACESOutputDevice(color.rgb), 1);
 #endif
 }

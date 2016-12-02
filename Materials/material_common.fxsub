@@ -10,6 +10,14 @@ float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 
+#define SHADINGMODELID_DEFAULT              0
+#define SHADINGMODELID_PREINTEGRATED_SKIN   1
+#define SHADINGMODELID_HAIR                 2
+#define SHADINGMODELID_EYE                  3
+#define SHADINGMODELID_CLOTH                4
+#define SHADINGMODELID_CLEAR_COAT           5
+#define SHADINGMODELID_MASK                 0xF     
+
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
@@ -263,7 +271,7 @@ struct MaterialParam
     float smoothness;
     float curvature;
     float alpha;
-    float visibility;
+    float customData;
     int lightModel;
 };
 
@@ -292,8 +300,8 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-    const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((abs(rgb) + ALPHA) / (1 + ALPHA), 2.4f);
+    rgb = max(6.10352e-5, rgb);
+    return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
 }
 
 float4 srgb2linear(float4 c)
@@ -455,7 +463,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.visibility, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.customData, material.alpha);
     
     return gbuffer;
 }
@@ -774,47 +782,6 @@ float GetMetalness(float2 coord)
 #endif
 }
 
-float GetAmbientOcclusion(float2 coord)
-{
-#if USE_CUSTOM_MATERIAL
-    #if OCCLUSION_MAP_ENABLE
-        #if OCCLUSION_MAP_UV_FLIP
-            coord.y = 1 - coord.y;
-        #endif
-        
-        #if OCCLUSION_MAP_IN_TOONMAP
-            #if OCCLUSION_MAP_SWIZZLE == 0
-                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).r;
-            #elif OCCLUSION_MAP_SWIZZLE == 1
-                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).g;
-            #elif OCCLUSION_MAP_SWIZZLE == 2
-                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).b;
-            #elif OCCLUSION_MAP_SWIZZLE == 3
-                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).a;
-            #else
-                return tex2D(ToonMapSamp, coord * occlusionMapLoopNum).r;
-            #endif
-        #else
-            #if OCCLUSION_MAP_SWIZZLE == 0
-                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).r;
-            #elif OCCLUSION_MAP_SWIZZLE == 1
-                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).g;
-            #elif OCCLUSION_MAP_SWIZZLE == 2
-                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).b;
-            #elif OCCLUSION_MAP_SWIZZLE == 3
-                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).a;
-            #else
-                return tex2D(occlusionMapSamp, coord * occlusionMapLoopNum).r;
-            #endif
-        #endif
-    #else
-        return saturate(1.0 - occlusion);
-    #endif
-#else
-    return 1.0;
-#endif
-}
-
 float3 GetTransmittance(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL && SSS_ENABLE
@@ -958,7 +925,7 @@ GbufferParam MaterialPS(
     material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.visibility = GetAmbientOcclusion(coord.xy);
+    material.customData = 0;
     material.alpha = 1;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
@@ -1012,7 +979,7 @@ GbufferParam Material2PS(
     material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.visibility = GetAmbientOcclusion(coord.xy);
+    material.customData = 0;
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
