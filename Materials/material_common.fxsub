@@ -867,12 +867,28 @@ float3 GetCustomData(float2 coord)
 #endif
 }
 
-float GetLightMode()
+float GetLightMode(MaterialParam material)
 {
 #if CUSTOM_ENABLE
-    return CUSTOM_ENABLE;
+    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
+        return LIGHTINGMODEL_TRANSMITTANCE;
+    #elif CUSTOM_ENABLE == SHADINGMODELID_MARBLE
+        return LIGHTINGMODEL_TRANSMITTANCE;
+    #else
+        return LIGHTINGMODEL_NORMAL;
+    #endif
 #else
-    return 0;
+    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
+        #if EMISSIVE_ENABLE
+            return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
+        #else
+            return LIGHTINGMODEL_TRANSMITTANCE;
+        #endif
+    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+        return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+    #else
+        return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+    #endif
 #endif
 }
 
@@ -964,7 +980,7 @@ GbufferParam MaterialPS(
     
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
-    MaterialParam material;
+    MaterialParam material = (MaterialParam)0;
     material.normal = GetNormal(normal, worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
@@ -973,20 +989,8 @@ GbufferParam MaterialPS(
     material.customData = GetCustomData(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.lightModel = GetLightMode();
+    material.lightModel = GetLightMode(material);
     material.alpha = 1;
-
-#if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    #if EMISSIVE_ENABLE
-        material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
-    #else
-        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #endif
-#elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-#else
-    material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-#endif
 
     return EncodeGbuffer(material, coord.z);
 }
@@ -1018,7 +1022,7 @@ GbufferParam Material2PS(
    
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
-    MaterialParam material;
+    MaterialParam material = (MaterialParam)0;
     material.normal = GetNormal(normal, worldPos, coord.xy);
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
@@ -1027,20 +1031,8 @@ GbufferParam Material2PS(
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.customData = GetCustomData(coord.xy);
-    material.lightModel = GetLightMode();
+    material.lightModel = GetLightMode(material);
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
-
-#if SSS_ENABLE && USE_CUSTOM_MATERIAL
-    #if EMISSIVE_ENABLE
-        material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
-    #else
-        material.lightModel = LIGHTINGMODEL_TRANSMITTANCE;
-    #endif
-#elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-    material.lightModel = any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-#else
-    material.lightModel = (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-#endif
 
     return EncodeGbuffer(material, coord.z);
 }
