@@ -1,70 +1,6 @@
-#define PI_2 (3.141592654f * 2.0)
-#define InvPIE 0.318309886142f
-
-float4x4 matViewProject : VIEWPROJECTION;
-float2 ViewportSize : VIEWPORTPIXELSIZE;
-static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
-
-float3 srgb2linear(float3 rgb)
-{
-    const float ALPHA = 0.055f;
-    return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
-}
-
-float3 linear2srgb(float3 srgb)
-{
-    const float ALPHA = 0.055f;
-    return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(srgb, 1.0f / 2.4f) - ALPHA;
-}
-
-float4 srgb2linear(float4 c)
-{
-    return float4(srgb2linear(c.rgb), c.a);
-}
-
-float4 linear2srgb(float4 c)
-{
-    return float4(linear2srgb(c.rgb), c.a);
-}
-
-float2 computeSphereCoord(float3 normal)
-{
-    float2 coord = float2((atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
-    return coord;
-}
-
-float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
-{
-    float sj, cj, si, ci, sh, ch;
-
-    sincos(eulerX, si, ci);
-    sincos(eulerY, sj, cj);
-    sincos(eulerZ, sh, ch);
-
-    float cc = ci * ch;
-    float cs = ci * sh;
-    float sc = si * ch;
-    float ss = si * sh;
-
-    float a1 = cj * ch;
-    float a2 = sj * sc - cs;
-    float a3 = sj * cc + ss;
-
-    float b1 = cj * sh;
-    float b2 = sj * ss + cc;
-    float b3 = sj * cs - sc;
-
-    float c1 = -sj;
-    float c2 = cj * si;
-    float c3 = cj * ci;
-    
-    float3x3 rotate;
-    rotate[0] = float3(a1, a2, a3);
-    rotate[1] = float3(b1, b2, b3);
-    rotate[2] = float3(c1, c2, c3);
-    
-    return rotate;
-}
+#include "../../ray.conf"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
@@ -74,7 +10,6 @@ sampler ShadowmapSamp = sampler_state {
 };
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
-float mScale : CONTROLOBJECT < string name="(self)"; string item = "Scale+"; >;
 
 float EnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float EnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
@@ -107,12 +42,6 @@ sampler decalMap = sampler_state
     ADDRESSV  = CLAMP;
 };
 
-float luminance(float3 rgb)
-{
-    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-    return dot(rgb, lumfact);
-}
-
 float3 ApplyColorBalance(float3 color)
 {
     float3 lum = luminance(color);
@@ -142,7 +71,7 @@ float4 SkyboxPS(in float4 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 {
     float3 N = normalize(mul(rotate, normal.xyz));
     
-    float4 color = tex2D(decalMap, computeSphereCoord(N));
+    float4 color = tex2D(decalMap, ComputeSphereCoord(N));
 #if SKYDOME_ENABLE
     if (ExistRay)
     {

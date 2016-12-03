@@ -37,12 +37,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
     
 #if IBL_QUALITY > 0   
     float3 diffuse, specular;
-    
-#if IBL_QUALITY > 1
-    DecodeYcbcrWithEdgeFilter(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
-#else
-    DecodeYcbcrBilinearFilter(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
-#endif
+    DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
 #if SSAO_SAMPLER_COUNT > 0
     float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
