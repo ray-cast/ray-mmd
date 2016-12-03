@@ -65,7 +65,6 @@ const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
 
 // 次表面散射
-#define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
 #define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it
@@ -111,14 +110,15 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-#define CUSTOM_ENABLE 0
+#define CUSTOM_ENABLE 1
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
 #define CUSTOM_MAP_UV_FLIP 0
+#define CUSTOM_MAP_COLOR_FLIP 0
 #define CUSTOM_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_MAP_FILE "custom.png"
 
-const float custom = 0.0;
+const float custom = 0.6;
 const float customMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

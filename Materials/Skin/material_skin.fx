@@ -65,7 +65,6 @@ const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
 
 // 次表面散射
-#define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
 #define SSS_MAP_IS_CURVATURE 0  // using a curvature map, enable it

@@ -165,7 +165,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE && SSS_ENABLE
+#if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
     texture2D TransmittanceMap<string ResourceName = SSS_MAP_FILE;>; 
     sampler TransmittanceMapSamp = sampler_state
     {
@@ -784,7 +784,7 @@ float GetMetalness(float2 coord)
 
 float3 GetTransmittance(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL && SSS_ENABLE
+#if USE_CUSTOM_MATERIAL
     #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -806,7 +806,7 @@ float3 GetTransmittance(float2 coord)
         return transmittance;
     #endif
 #else
-    return 0.0f;
+    return 0.0;
 #endif
 }
 
@@ -869,26 +869,28 @@ float3 GetCustomData(float2 coord)
 
 float GetLightMode(MaterialParam material)
 {
-#if CUSTOM_ENABLE
-    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
-        return LIGHTINGMODEL_TRANSMITTANCE;
-    #elif CUSTOM_ENABLE == SHADINGMODELID_MARBLE
-        return LIGHTINGMODEL_TRANSMITTANCE;
+#if USE_CUSTOM_MATERIAL
+    #if CUSTOM_ENABLE
+        #if (CUSTOM_ENABLE == SHADINGMODELID_SKIN) || (CUSTOM_ENABLE == SHADINGMODELID_MARBLE)
+            return LIGHTINGMODEL_TRANSMITTANCE;
+        #else
+            return LIGHTINGMODEL_NORMAL;
+        #endif
     #else
-        return LIGHTINGMODEL_NORMAL;
+        #if SSS_ENABLE
+            #if EMISSIVE_ENABLE
+                return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
+            #else
+                return LIGHTINGMODEL_TRANSMITTANCE;
+            #endif
+        #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
+            return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+        #else
+            return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+        #endif
     #endif
 #else
-    #if SSS_ENABLE && USE_CUSTOM_MATERIAL
-        #if EMISSIVE_ENABLE
-            return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
-        #else
-            return LIGHTINGMODEL_TRANSMITTANCE;
-        #endif
-    #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-        return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-    #else
-        return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
-    #endif
+    return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
 #endif
 }
 

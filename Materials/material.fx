@@ -66,18 +66,6 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
-// Subsurface Scattering Color
-#define SSS_ENABLE 0
-#define SSS_MAP_ENABLE 0
-#define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_IS_THICKNESS 0
-#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
-#define SSS_MAP_FILE "transmittance.png"
-#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
-
-const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75);
-const float transmittanceMapLoopNum = 1.0;
-
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
@@ -121,7 +109,7 @@ const float parallaxMapLoopNum = 1.0;
 // 2 : Hair
 // 3 : Eye
 // 4 : Cloth      // sheen map
-// 5 : Clear Coat // roughness map
+// 5 : Clear Coat // smoothness/roughness map
 // 6 : Marble     // curvature/opacity map
 #define CUSTOM_ENABLE 0  // ID
 #define CUSTOM_MAP_ENABLE 0
@@ -133,5 +121,16 @@ const float parallaxMapLoopNum = 1.0;
 
 const float custom = 0.0;
 const float customMapLoopNum = 1.0;
+
+// Subsurface Scattering Color
+#define SSS_MAP_ENABLE 0
+#define SSS_MAP_UV_FLIP 0
+#define SSS_MAP_IS_THICKNESS 0
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
+#define SSS_MAP_FILE "transmittance.png"
+#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
+
+const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75);
+const float transmittanceMapLoopNum = 1.0;
 
 #include "material_common.fxsub"

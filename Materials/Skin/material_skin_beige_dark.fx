@@ -22,7 +22,6 @@ const float alphaMapLoopNum = 1.0;
 const float normalMapSubScale = 1.5;
 const float normalMapSubLoopNum = 80.0;
 
-#define SSS_ENABLE 1
 const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
 
 const float melanin = 0.0;
