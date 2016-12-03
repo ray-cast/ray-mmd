@@ -127,12 +127,12 @@ float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
    
     float3 lighting = Fd * nl;
     
-#if LIGHTMODE_BRDF >= 1
+#if SHADER_QUALITY >= 1
     if (profileIndex == SUBSURFACESCATTERING_SKIN)
     {
         lighting += SubsurfaceShadingPreIntegratedSkin(material, N, L);
     }
-#if LIGHTMODE_BRDF >= 2
+#if SHADER_QUALITY >= 2
     else
     {
         lighting += SubsurfaceShadingTwoSide(material, N, L, V);

@@ -23,7 +23,6 @@ const float normalMapSubScale = 1.5;
 const float normalMapSubLoopNum = 40.0;
 
 #define SSS_ENABLE 1
-const float curvature = 1.6;
 const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
 
 const float melanin = 0.0;
@@ -32,5 +31,9 @@ const float smoothness = 0.55;
 
 const float metalness = 0.0;
 const float metalnessBaseSpecular = 0.04;
+
+#define CUSTOM_ENABLE 1
+const float custom = 0.6;
+const float customMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

@@ -10,13 +10,14 @@ float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 
-#define SHADINGMODELID_DEFAULT              0
-#define SHADINGMODELID_PREINTEGRATED_SKIN   1
-#define SHADINGMODELID_HAIR                 2
-#define SHADINGMODELID_EYE                  3
-#define SHADINGMODELID_CLOTH                4
-#define SHADINGMODELID_CLEAR_COAT           5
-#define SHADINGMODELID_MASK                 0xF     
+#define SHADINGMODELID_DEFAULT      0
+#define SHADINGMODELID_SKIN         1
+#define SHADINGMODELID_HAIR         2
+#define SHADINGMODELID_EYE          3
+#define SHADINGMODELID_CLOTH        4
+#define SHADINGMODELID_CLEAR_COAT   5
+#define SHADINGMODELID_MARBLE       6
+#define SHADINGMODELID_MASK         0xF
 
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
@@ -175,11 +176,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && CURVATURE_MAP_ENABLE && SSS_ENABLE
-    texture2D CurvatureMap<string ResourceName = CURVATURE_MAP_FILE;>; 
-    sampler CurvatureMapSamp = sampler_state
+#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_MAP_ENABLE
+    texture2D CustomMap<string ResourceName = CURVATURE_MAP_FILE;>; 
+    sampler CustomMapSamp = sampler_state
     {
-        texture = CurvatureMap;
+        texture = CustomMap;
         MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
         MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
         ADDRESSU = WRAP; ADDRESSV = WRAP;
@@ -269,7 +270,6 @@ struct MaterialParam
     float3 emissive;
     float emissiveIntensity;
     float smoothness;
-    float curvature;
     float alpha;
     float customData;
     int lightModel;
@@ -448,8 +448,8 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 
     if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
     {
-        float scatteringAmount = frac(material.curvature);
-        gbuffer.buffer2.w = scatteringAmount > 1e-5 ? material.curvature / TWO_BITS_EXTRACTION_FACTOR : 0;
+        float scatteringAmount = frac(material.customData);
+        gbuffer.buffer2.w = scatteringAmount > 1e-5 ? material.customData / TWO_BITS_EXTRACTION_FACTOR : 0;
         
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
@@ -463,7 +463,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.customData, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);
     
     return gbuffer;
 }
@@ -810,21 +810,69 @@ float3 GetTransmittance(float2 coord)
 #endif
 }
 
-float3 GetCurvature(float2 coord)
+float3 GetCustomData(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL && SSS_ENABLE
-    #if CURVATURE_MAP_ENABLE
-        #if CURVATURE_MAP_UV_FLIP
+#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
+    #if CUSTOM_MAP_ENABLE
+        #if CUSTOM_MAP_UV_FLIP
             coord.y = 1 - coord.y;
         #endif
     
-        float transmittanceStrength = tex2D(CurvatureMapSamp, coord * curvatureMapLoopNum).r;
-        return floor(curvature) + lerp(frac(curvature), 0.999, transmittanceStrength);
+        #if CUSTOM_MAP_IN_TOONMAP
+            #if CUSTOM_MAP_SWIZZLE == 0
+                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
+            #elif CUSTOM_MAP_SWIZZLE == 1
+                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).g;
+            #elif CUSTOM_MAP_SWIZZLE == 2
+                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).b;
+            #elif CUSTOM_MAP_SWIZZLE == 3
+                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).a;
+            #else
+                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
+            #endif
+        #else
+            #if CUSTOM_MAP_SWIZZLE == 0
+                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
+            #elif CUSTOM_MAP_SWIZZLE == 1
+                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).g;
+            #elif CUSTOM_MAP_SWIZZLE == 2
+                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).b;
+            #elif CUSTOM_MAP_SWIZZLE == 3
+                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).a;
+            #else
+                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
+            #endif
+        #endif
+        
+        #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
+            #if CUSTOM_MAP_COLOR_FLIP
+                return 1 + lerp(0, 0.999, customData);
+            #else
+                return 1 + lerp(0.999, 0, customData);
+            #endif
+        #elif CUSTOM_ENABLE == SHADINGMODELID_MARBLE
+            #if CUSTOM_MAP_COLOR_FLIP
+                return lerp(0, 0.999, customData);
+            #else
+                return lerp(0.999, 0, customData);
+            #endif
+        #else
+            return 0.0;
+        #endif
     #else
-        return curvature;
+        return custom;
     #endif
 #else
     return 0.0f;
+#endif
+}
+
+float GetLightMode()
+{
+#if CUSTOM_ENABLE
+    return CUSTOM_ENABLE;
+#else
+    return 0;
 #endif
 }
 
@@ -922,10 +970,10 @@ GbufferParam MaterialPS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.curvature = GetCurvature(coord.xy);
+    material.customData = GetCustomData(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.customData = 0;
+    material.lightModel = GetLightMode();
     material.alpha = 1;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL
@@ -976,10 +1024,10 @@ GbufferParam Material2PS(
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.transmittance = GetTransmittance(coord.xy) * (1.0 - MaterialMetalness);
-    material.curvature = GetCurvature(coord.xy);
     material.emissive = GetEmissiveColor(coord.xy, useTexture);
     material.emissiveIntensity = GetEmissiveIntensity();
-    material.customData = 0;
+    material.customData = GetCustomData(coord.xy);
+    material.lightModel = GetLightMode();
     material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
 
 #if SSS_ENABLE && USE_CUSTOM_MATERIAL

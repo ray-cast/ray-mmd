@@ -78,14 +78,6 @@ const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75);
 const float transmittanceMapLoopNum = 1.0;
 
-// Subsurface Curvature
-#define CURVATURE_MAP_ENABLE 0
-#define CURVATURE_MAP_UV_FLIP 0
-#define CURVATURE_MAP_FILE "curvature.jpg"
-
-const float curvature = 1.0; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
-const float curvatureMapLoopNum = 1.0;
-
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
@@ -123,17 +115,21 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-// 0 : default
-// 1 : skin
-// 2 : hair
-// 3 : eye
-// 4 : cloth
-// 5 : clear coat
-#define CUSTOM_DATA 0 
-#define CUSTOM_DATA_IN_TOONMAP 0
-#define CUSTOM_DATA_UV_FLIP 0
-#define CUSTOM_DATA_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_DATA_FILE "custom.png"
+// Shading Material ID
+// 0 : Default
+// 1 : PreIntegrated Skin // curvature/opacity map
+// 2 : Hair
+// 3 : Eye
+// 4 : Cloth      // sheen map
+// 5 : Clear Coat // roughness map
+// 6 : Marble     // curvature/opacity map
+#define CUSTOM_ENABLE 0  // ID
+#define CUSTOM_MAP_ENABLE 0
+#define CUSTOM_MAP_IN_TOONMAP 0
+#define CUSTOM_MAP_UV_FLIP 0
+#define CUSTOM_MAP_COLOR_FLIP 0
+#define CUSTOM_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define CUSTOM_MAP_FILE "custom.png"
 
 const float custom = 0.0;
 const float customMapLoopNum = 1.0;
