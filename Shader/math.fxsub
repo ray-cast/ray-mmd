@@ -150,7 +150,7 @@ float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
 
 float2 computeSphereCoord(float3 normal)
 {
-    float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+    float2 coord = float2((atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
     return coord;
 }
 
