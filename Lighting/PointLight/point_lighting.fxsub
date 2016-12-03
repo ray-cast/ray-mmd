@@ -126,7 +126,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float4 lighting = 0.0f;
 
 #if SSSS_QUALITY > 0
-    lighting.rgb = atten * float3(mR, mG, mB) * DiffuseBRDF(material.normal, L, V, material);
+    lighting.rgb = atten * float3(mR, mG, mB) * DiffuseBRDF(material.normal, L2, V, material);
 #if SSSS_QUALITY > 1
     lighting.rgb *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
 #else
