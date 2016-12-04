@@ -9,14 +9,14 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     float vis = saturate(dot(N, L));
 
 #if SSSS_QUALITY > 0
-    lighting = DiffuseBRDF(N, L, V, material);
+    lighting = SurfaceShading(material, N, L, V) + SubsurfaceShading(material, N, L, V);
 #if SSSS_QUALITY > 1
-    lighting *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+    lighting *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
 #else
     lighting *= material.albedo;
 #endif
 #else
-    lighting = material.albedo * DiffuseBRDF(N, L, V, material);
+    lighting = material.albedo * SurfaceShading(material, N, L, V);
     lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
 #endif
 
@@ -46,7 +46,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSSS_QUALITY > 1
-    diffuse *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? 1 : material.albedo;
+    diffuse *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
 #else
     diffuse *= material.albedo;
 #endif
@@ -154,7 +154,7 @@ float4 ShadingTransparentPS(
 
     lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V);
 #if SSSS_QUALITY > 1
-    lighting *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? material.albedo : 1;
+    lighting *= (material.lightModel == SHADINGMODELID_SKIN) ? material.albedo : 1;
 #endif
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;

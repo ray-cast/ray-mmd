@@ -124,7 +124,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += material.specular * showSpecular;
     result += material.smoothness * showSmoothness;
     result += material.transmittance * showTransmittance;
-    result += frac(material.index) * showCurvature;
+    result += material.customData * showCurvature;
     result += material.emissive * showEmissive;
     
     result += materialAlpha.albedo * showAlbedoAlpha;
@@ -132,7 +132,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
     result += materialAlpha.transmittance * showTransmittanceAlpha;
-    result += frac(material.index) * showCurvatureAlpha;
+    result += material.customData * showCurvatureAlpha;
     result += materialAlpha.transmittance * showEmissiveAlpha;
 
     result = linear2srgb(result);

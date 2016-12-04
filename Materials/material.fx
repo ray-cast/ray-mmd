@@ -66,16 +66,6 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
-// 黑色素
-#define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_IN_TOONMAP 0
-#define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define MELANIN_MAP_FILE "melanin.png"
-
-const float melanin = 0.0;
-const float melaninMapLoopNum = 1.0;
-
 // 发光贴图
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
@@ -94,6 +84,16 @@ const float3 emissive = 1.0;
 const float emissiveIntensity = 1.0;
 const float emissiveMapLoopNum = 1.0;
 
+// 黑色素
+#define MELANIN_MAP_ENABLE 0
+#define MELANIN_MAP_IN_TOONMAP 0
+#define MELANIN_MAP_UV_FLIP 0
+#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define MELANIN_MAP_FILE "melanin.png"
+
+const float melanin = 0.0;
+const float melaninMapLoopNum = 1.0;
+
 // 视差贴图
 #define PARALLAX_MAP_ENABLE 0
 #define PARALLAX_MAP_UV_FLIP 0
@@ -106,11 +106,12 @@ const float parallaxMapLoopNum = 1.0;
 // Shading Material ID
 // 0 : Default
 // 1 : PreIntegrated Skin // curvature/opacity map
-// 2 : Hair
-// 3 : Eye
-// 4 : Cloth      // sheen map
-// 5 : Clear Coat // smoothness/roughness map
-// 6 : Marble     // curvature/opacity map
+// 2 : Reserved
+// 3 : Hair
+// 4 : Eye
+// 5 : Cloth      // sheen map
+// 6 : Clear Coat // smoothness/roughness map
+// 7 : Subsurface // curvature/opacity map
 #define CUSTOM_ENABLE 0  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0

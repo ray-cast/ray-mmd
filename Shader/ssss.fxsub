@@ -8,7 +8,7 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
     
-    if (material.lightModel != LIGHTINGMODEL_TRANSMITTANCE)
+    if (material.lightModel != SHADINGMODELID_SKIN)
     {
         clip(-1);
     }
@@ -59,14 +59,14 @@ float4 SSSGuassBlurPS(
     float perspectiveScaleY = dot(normalize(normal.yz), normalize(-P.yz));
     float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
-    float profileIndex = floor(material.index);
-    float sssAmount = frac(material.index);
-    float sssStrength = (profileIndex != SUBSURFACESCATTERING_SKIN) ? sssAmount : 1.0;
-    float radius = 0.0055 * profileSpikeRadArr[profileIndex].w * sssStrength;
+    float sssAmount = material.customData;
+    float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
+    float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1.0;
+    float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
     
     float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
 
-    float3 blurFalloff = -1.0f / (2 * profileVarArr[profileIndex]);
+    float3 blurFalloff = -1.0f / (2 * profileVarArr[sssIndex]);
 
     float3 totalWeight = 1;
     float3 totalColor = colorM.rgb;
@@ -97,9 +97,9 @@ float4 SSSGuassBlurPS(
     
     if (direction.y > 0.01)
     {
-        totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[profileIndex].xyz * (1 - sssAmount));
+        totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
 #if SSSS_QUALITY > 1
-        totalColor *= (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE) ? material.albedo : 1;
+        totalColor *= (material.lightModel == SHADINGMODELID_SKIN) ? material.albedo : 1;
 #endif
     }
     

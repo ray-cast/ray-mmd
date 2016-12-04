@@ -10,15 +10,6 @@ float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 
-#define SHADINGMODELID_DEFAULT      0
-#define SHADINGMODELID_SKIN         1
-#define SHADINGMODELID_HAIR         2
-#define SHADINGMODELID_EYE          3
-#define SHADINGMODELID_CLOTH        4
-#define SHADINGMODELID_CLEAR_COAT   5
-#define SHADINGMODELID_MARBLE       6
-#define SHADINGMODELID_MASK         0xF
-
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
@@ -29,47 +20,24 @@ float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 
-float emissiveIntensityMin = log(50);
-float emissiveIntensityMax = log(2100);
+static float emissiveIntensityMin = log(50);
+static float emissiveIntensityMax = log(2100);
 static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
 
-#define TEXTURE_USE_LINEAR 0
-#define TEXTURE_USE_NEAREST 0
-#define TEXTURE_USE_ANISOTROPY 1
-#define TEXTURE_USE_MIP_NONE 0
-#define TEXTURE_USE_MIP_LINEAR 0
-#define TEXTURE_USE_MIP_NEAREST 0
-#define TEXTURE_USE_MIP_ANISOTROPIC 1
+#define TEXTURE_FILTER ANISOTROPIC
+#define TEXTURE_MIP_FILTER ANISOTROPIC
 #define TEXTURE_ANISOTROPY_LEVEL 16
 
-#if TEXTURE_USE_LINEAR
-#   define TEXTURE_FILTER LINEAR
-#elif TEXTURE_USE_NEAREST
-#   define TEXTURE_FILTER POINT
-#elif TEXTURE_USE_ANISOTROPY
-#   define TEXTURE_FILTER ANISOTROPIC
-#else
-#   define TEXTURE_FILTER POINT
-#endif
-
-#if TEXTURE_USE_MIP_LINEAR
-#   define TEXTURE_MIP_FILTER LINEAR
-#elif TEXTURE_USE_MIP_NEAREST
-#   define TEXTURE_MIP_FILTER POINT
-#elif TEXTURE_USE_MIP_ANISOTROPIC
-#   define TEXTURE_MIP_FILTER ANISOTROPIC
-#elif TEXTURE_USE_MIP_NONE
-#   define TEXTURE_MIP_FILTER NONE
-#else
-#   define TEXTURE_MIP_FILTER POINT
-#endif
-
-#define PI 3.141592654f
-
-#define LIGHTINGMODEL_NORMAL         0
-#define LIGHTINGMODEL_TRANSMITTANCE  1
-#define LIGHTINGMODEL_EMISSIVE       2
+#define SHADINGMODELID_DEFAULT      0
+#define SHADINGMODELID_SKIN         1
+#define SHADINGMODELID_EMISSIVE     2
+#define SHADINGMODELID_HAIR         3
+#define SHADINGMODELID_EYE          4
+#define SHADINGMODELID_CLOTH        5
+#define SHADINGMODELID_CLEAR_COAT   6
+#define SHADINGMODELID_SUBSURFACE       7
+#define SHADINGMODELID_MASK         0xF
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
@@ -441,21 +409,18 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     material.normal = normalize(material.normal);
     
     gbuffer.buffer2.xyz = EncodeNormal(material.normal);
-    gbuffer.buffer2.w = 0;
+    gbuffer.buffer2.w = material.customData;
 
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
-    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
-    {
-        float scatteringAmount = frac(material.customData);
-        gbuffer.buffer2.w = scatteringAmount > 1e-5 ? material.customData / TWO_BITS_EXTRACTION_FACTOR : 0;
-        
+    if (material.lightModel == SHADINGMODELID_SKIN)
+    {       
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
         gbuffer.buffer3.w = material.transmittance.r * MAX_FRACTIONAL_8_BIT;
     }
-    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    else if (material.lightModel == SHADINGMODELID_EMISSIVE)
     {
         material.emissive = rgb2ycbcr(material.emissive);
         gbuffer.buffer3.yz = material.emissive.gb;
@@ -476,9 +441,7 @@ float3 ColorSynthesis(float3 diffuse, float m)
 
 float GetAlpha(float2 coord, bool use_texture)
 {
-#if SKYBOX_ENABLE
-    return 1;
-#elif USE_CUSTOM_MATERIAL
+#if USE_CUSTOM_MATERIAL
     #if ALPHA_MAP_ENABLE
         #if ALPHA_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -634,9 +597,7 @@ float GetEmissiveIntensity()
 
 float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 {
-#if SKYBOX_ENABLE
-    return -N;
-#elif USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
+#if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
     #if NORMAL_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
@@ -784,7 +745,7 @@ float GetMetalness(float2 coord)
 
 float3 GetTransmittance(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL
+#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
     #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -850,7 +811,7 @@ float3 GetCustomData(float2 coord)
             #else
                 return 1 + lerp(0.999, 0, customData);
             #endif
-        #elif CUSTOM_ENABLE == SHADINGMODELID_MARBLE
+        #elif CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
             #if CUSTOM_MAP_COLOR_FLIP
                 return lerp(0, 0.999, customData);
             #else
@@ -871,26 +832,28 @@ float GetLightMode(MaterialParam material)
 {
 #if USE_CUSTOM_MATERIAL
     #if CUSTOM_ENABLE
-        #if (CUSTOM_ENABLE == SHADINGMODELID_SKIN) || (CUSTOM_ENABLE == SHADINGMODELID_MARBLE)
-            return LIGHTINGMODEL_TRANSMITTANCE;
+        #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
+            return SHADINGMODELID_SKIN;
+        #elif CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
+            return SHADINGMODELID_DEFAULT;
         #else
-            return LIGHTINGMODEL_NORMAL;
+            return SHADINGMODELID_DEFAULT;
         #endif
     #else
         #if SSS_ENABLE
             #if EMISSIVE_ENABLE
-                return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_TRANSMITTANCE;
+                return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_SKIN;
             #else
-                return LIGHTINGMODEL_TRANSMITTANCE;
+                return SHADINGMODELID_SKIN;
             #endif
         #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-            return any(material.emissive) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+            return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
         #else
-            return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+            return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
         #endif
     #endif
 #else
-    return (material.emissiveIntensity > 0) ? LIGHTINGMODEL_EMISSIVE : LIGHTINGMODEL_NORMAL;
+    return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #endif
 }
 
@@ -944,15 +907,10 @@ void MaterialVS(
     out float4 oWorldPos : TEXCOORD2,
     out float4 oPosition : POSITION)
 {
-#if SKYBOX_ENABLE
-    oPosition = mul(Position, matWorldViewProject);
-    oNormal = normalize(Position.xyz);
-#else
-    oPosition = mul(Position, matWorldViewProject);
     oNormal = Normal;
-#endif
-    oTexcoord = float3(Texcoord, oPosition.w);
     oWorldPos = Position;
+    oPosition = mul(Position, matWorldViewProject);
+    oTexcoord = float3(Texcoord, oPosition.w);
 }
 
 GbufferParam MaterialPS(

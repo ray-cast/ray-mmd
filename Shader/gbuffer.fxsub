@@ -1,9 +1,12 @@
-#define LIGHTINGMODEL_NORMAL         0
-#define LIGHTINGMODEL_TRANSMITTANCE  1
-#define LIGHTINGMODEL_EMISSIVE       2
-
-#define SUBSURFACESCATTERING_MARBLE 0
-#define SUBSURFACESCATTERING_SKIN   1
+#define SHADINGMODELID_DEFAULT      0
+#define SHADINGMODELID_SKIN         1
+#define SHADINGMODELID_EMISSIVE     2
+#define SHADINGMODELID_HAIR         3
+#define SHADINGMODELID_EYE          4
+#define SHADINGMODELID_CLOTH        5
+#define SHADINGMODELID_CLEAR_COAT   6
+#define SHADINGMODELID_SUBSURFACE   7
+#define SHADINGMODELID_MASK         16
 
 #define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
@@ -17,7 +20,6 @@ struct MaterialParam
     float3 emissive;
     float emissiveIntensity;
     float smoothness;
-    float index;
     float alpha;
     float customData;
     float linearDepth;
@@ -62,21 +64,25 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.smoothness = buffer1.w;
 
     material.normal = DecodeNormal(buffer2.xyz);
-    material.index = buffer2.w * TWO_BITS_EXTRACTION_FACTOR;
     material.transmittance = 0;
     material.emissive = 0;
     material.emissiveIntensity = 0;
     
     material.linearDepth = buffer4.x;
-    material.customData = saturate(buffer4.z);
+    material.customData = buffer2.w;
     material.alpha = buffer4.w;
     
-    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+    if (buffer4.z < SHADINGMODELID_MASK)
+    {
+        material.lightModel = buffer4.z;
+    }
+    
+    if (material.lightModel == SHADINGMODELID_SKIN)
     {
         material.specular = buffer3.xxx;
         material.transmittance = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
     }
-    else if (material.lightModel == LIGHTINGMODEL_EMISSIVE)
+    else if (material.lightModel == SHADINGMODELID_EMISSIVE)
     {
         material.specular = buffer3.xxx;
         material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
@@ -96,7 +102,7 @@ float3 DecodeGBufferNormal(float4 buffer2)
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
     int lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-    if (lightModel == LIGHTINGMODEL_EMISSIVE)
+    if (lightModel == SHADINGMODELID_EMISSIVE)
         return max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y);
     else
         return 0;
