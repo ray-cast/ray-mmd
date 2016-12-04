@@ -215,7 +215,7 @@ void DecodeYcbcrBilinearFilter(sampler source, float2 coord, float4 screenPositi
 
 void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
 {
-    DecodeYcbcrBilinearFilter(source, coord, screenPosition, offset, color1, color2);
+    DecodeYcbcrWithEdgeFilter(source, coord, screenPosition, offset, color1, color2);
 }
 
 float3 noise3(float2 seed)

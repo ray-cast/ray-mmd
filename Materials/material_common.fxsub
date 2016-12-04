@@ -774,6 +774,8 @@ float3 GetTransmittance(float2 coord)
 float3 GetCustomData(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
+    float customData = custom;
+    
     #if CUSTOM_MAP_ENABLE
         #if CUSTOM_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -781,47 +783,45 @@ float3 GetCustomData(float2 coord)
     
         #if CUSTOM_MAP_IN_TOONMAP
             #if CUSTOM_MAP_SWIZZLE == 0
-                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
+                customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
             #elif CUSTOM_MAP_SWIZZLE == 1
-                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).g;
+                customData = tex2D(ToonMapSamp, coord * customMapLoopNum).g;
             #elif CUSTOM_MAP_SWIZZLE == 2
-                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).b;
+                customData = tex2D(ToonMapSamp, coord * customMapLoopNum).b;
             #elif CUSTOM_MAP_SWIZZLE == 3
-                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).a;
+                customData = tex2D(ToonMapSamp, coord * customMapLoopNum).a;
             #else
-                float customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
+                customData = tex2D(ToonMapSamp, coord * customMapLoopNum).r;
             #endif
         #else
             #if CUSTOM_MAP_SWIZZLE == 0
-                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
+                customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
             #elif CUSTOM_MAP_SWIZZLE == 1
-                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).g;
+                customData = tex2D(CustomMapSamp, coord * customMapLoopNum).g;
             #elif CUSTOM_MAP_SWIZZLE == 2
-                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).b;
+                customData = tex2D(CustomMapSamp, coord * customMapLoopNum).b;
             #elif CUSTOM_MAP_SWIZZLE == 3
-                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).a;
+                customData = tex2D(CustomMapSamp, coord * customMapLoopNum).a;
             #else
-                float customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
+                customData = tex2D(CustomMapSamp, coord * customMapLoopNum).r;
             #endif
         #endif
-        
-        #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
-            #if CUSTOM_MAP_COLOR_FLIP
-                return 1 + lerp(0, 0.999, customData);
-            #else
-                return 1 + lerp(0.999, 0, customData);
-            #endif
-        #elif CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
-            #if CUSTOM_MAP_COLOR_FLIP
-                return lerp(0, 0.999, customData);
-            #else
-                return lerp(0.999, 0, customData);
-            #endif
+    #endif
+
+    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN || CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
+        #if CUSTOM_MAP_COLOR_FLIP
+            return customData;
         #else
-            return 0.0;
+            return 1 - customData;
+        #endif
+    #elif CUSTOM_ENABLE == SHADINGMODELID_CLEAR_COAT
+        #if CUSTOM_MAP_COLOR_FLIP
+            return customData;
+        #else
+            return SmoothnessToRoughness(customData);
         #endif
     #else
-        return custom;
+        return customData;
     #endif
 #else
     return 0.0f;
@@ -832,13 +832,7 @@ float GetLightMode(MaterialParam material)
 {
 #if USE_CUSTOM_MATERIAL
     #if CUSTOM_ENABLE
-        #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
-            return SHADINGMODELID_SKIN;
-        #elif CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
-            return SHADINGMODELID_DEFAULT;
-        #else
-            return SHADINGMODELID_DEFAULT;
-        #endif
+        return CUSTOM_ENABLE;
     #else
         #if SSS_ENABLE
             #if EMISSIVE_ENABLE
