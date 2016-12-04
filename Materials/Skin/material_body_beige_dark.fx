@@ -20,7 +20,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_FILE "NormalMap/skin.png"
 
 const float normalMapSubScale = 1.5;
-const float normalMapSubLoopNum = 40.0;
+const float normalMapSubLoopNum = 50.0;
 
 const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
 

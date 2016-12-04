@@ -322,12 +322,18 @@ float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float L
 
 float3 StandardShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
-    return DiffuseBRDF(N, L, V, material);
+    float3 diffuse = DiffuseBRDF(N, L, V, material);
+#if SSSS_QUALITY > 1
+    diffuse *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
+#else
+    diffuse *= material.albedo;
+#endif
+    return diffuse;
 }
 
 float3 ClothShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
-    return DiffuseBRDF(N, L, V, material);
+    return material.albedo * DiffuseBRDF(N, L, V, material);
 }
 
 float3 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V)
@@ -337,7 +343,6 @@ float3 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V)
     float nh = saturate(dot(N, H));
     float nl = saturate(dot(N, L));
     float vh = saturate(dot(V, H));
-    float nv = abs(dot(N, V)) + 1e-5h;
     
     float m2 = material.customData * material.customData;
     float spec = (nh * m2 - nh) * nh + 1;
@@ -349,9 +354,8 @@ float3 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V)
     float f0 = 0.04;
     float fresnel = fresnelSchlick(f0, 1, vh);
 
-    float diffuse = dot(N, L) / PI;
-    
-    return diffuse + fresnel * spec; //SpecularBRDF_GGX(N, L, V, material.customData, 0.04, 1);
+    float3 diffuse = material.albedo * DiffuseBRDF(N, L, V, material);    
+    return diffuse + fresnel * spec * nl;
 }
 
 float3 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)

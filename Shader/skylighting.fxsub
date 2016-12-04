@@ -57,6 +57,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
     
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
+    float mipLayer2 = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, RoughnessToSmoothness(material.customData));
 
     float3 R = mul(rotate, worldReflect);
     float3 N = mul(rotate, worldNormal);
@@ -99,9 +100,28 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     diffuse = prefilteredDiffuse.rgb;
     diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
     diffuse += scattering;
-    
+       
     specular = prefilteredSpeculr.rgb * HorizonOcclusion(worldNormal, worldReflect);
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    
+    /*if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+    {
+        float smoothness = RoughnessToSmoothness(material.customData);
+        float4 prefilteredSpeculr2 = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer2));
+        
+    #if IBL_RGBT_RANGE
+        prefilteredSpeculr2.rgb = DecodeRGBT(prefilteredSpeculr2, IBL_RGBT_RANGE);
+    #elif IBL_RGBM_RANGE
+        prefilteredSpeculr2.rgb = DecodeRGBM(prefilteredSpeculr2, IBL_RGBM_RANGE);
+    #else
+        prefilteredSpeculr2.rgb = DecodeRGBM(prefilteredSpeculr2, 6);
+    #endif
+       
+        float3 clearCoat = EnvironmentSpecularUnreal4(worldNormal, worldView, smoothness , 0.04);
+        
+        specular += prefilteredSpeculr2.rgb * clearCoat;
+    }*/
+    
     specular *= step(0, material.specular - 1e-5);
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }

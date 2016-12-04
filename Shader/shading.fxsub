@@ -1,7 +1,4 @@
-bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
-bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
-
-float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam material)
+float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord)
 {
     float3 lighting = 0;
 
@@ -24,7 +21,7 @@ float3 ShadingMaterial(float3 N, float3 V, float3 L, float2 coord, MaterialParam
     lighting *= step(0, material.albedo + material.specular - 1e-5);
     
 #if SHADOW_QUALITY > 0
-    lighting *= tex2D(ShadowmapSamp, coord).r;
+    lighting *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif
 #endif
     
@@ -58,9 +55,9 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSSS_QUALITY > 0
-    lighting += (ExistSkybox || ExistSkyboxHDR) ? diffuse * shadow : 0;
+    lighting += diffuse * shadow;
 #else
-    lighting += (ExistSkybox || ExistSkyboxHDR) ? (diffuse + specular) * shadow : 0;
+    lighting += (diffuse + specular) * shadow;
 #endif
 #endif
 
@@ -84,7 +81,7 @@ float4 ShadingOpacityPS(
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
-    float3 lighting = ShadingMaterial(N, V, L, coord, material);
+    float3 lighting = ShadingMaterial(material, N, V, L, coord);
     lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
     lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V);
@@ -119,7 +116,7 @@ float4 ShadingOpacitySpecularPS(
 #endif
 
     float3 iblDiffuse, iblSpecular;
-    DecodeYcbcrBilinearFilter(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
+    DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
     specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
     specular += iblSpecular;
@@ -144,7 +141,7 @@ float4 ShadingTransparentPS(
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
-    float3 lighting = ShadingMaterial(N, V, L, coord, material);
+    float3 lighting = ShadingMaterial(material, N, V, L, coord);
     lighting += tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 
 #if SSAO_SAMPLER_COUNT > 0
