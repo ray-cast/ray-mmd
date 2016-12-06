@@ -60,7 +60,7 @@ float ComputePhaseFunctions(float theta, float g)
     return phase;
 }
 
-float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, float3 L)
+float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, float3 L)
 {
     float nl = dot(N, L) * 0.5 + 0.5;
     float curvature = material.customData;
@@ -91,15 +91,15 @@ float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
     float oneMinusCurva2 = oneMinusCurva * oneMinusCurva;
     
     float3 brdf = lerp(curve1, curve2, madd(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
-    return brdf * material.transmittance;
+    return float4(material.albedo * material.transmittance * brdf, 0);
 }
 
-float3 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, float3 V)
+float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, float3 V)
 {
     float w = 0.5;
     float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
     float phase = ComputePhaseFunctions(dot(V, L), 1 - material.customData);
-    return material.transmittance * nl * phase;
+    return float4(material.albedo * material.transmittance * nl * phase, 0);
 }
 
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
@@ -359,23 +359,17 @@ float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float L
     return SpecularBRDF_GGX(N, L2, V, roughness, f0, normalizeFactor);
 }
 
-float3 StandardShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 StandardShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
 {
-    float3 lighting = DiffuseBRDF(N, L, V, material);
-#if SSSS_QUALITY > 0
-    #if SSSS_QUALITY > 1
-        lighting *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
-    #else
-        lighting *= material.albedo;
-    #endif
-#else
+    float3 lighting = material.albedo * DiffuseBRDF(N, L, V, material);
+#if SSSS_QUALITY == 0
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     lighting += SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
 #endif
-    return lighting;
+    return float4(lighting, 0);
 }
 
-float3 ClothShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 ClothShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
 {
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
@@ -383,20 +377,20 @@ float3 ClothShading(MaterialParam material, float3 N, float3 L, float3 V, float 
     float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
     float3 spec2 = SpecularBRDF_Cloth(N, L, V, roughness, material.specular, normalizeFactor);
     float3 cloth = lerp(spec1, spec2, material.customData);    
-    return material.albedo * diffuse + cloth;
+    return float4(material.albedo * diffuse + cloth, 0);
 }
 
-float3 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
 {
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
     float3 diffuse = DiffuseBRDF(N, L, V, material);    
     float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
     float4 spec2 = SpecularBRDF_ClearCoat(N, L, V, material.customData, material.specular, normalizeFactor);    
-    return (material.albedo * diffuse + spec1) * spec2.a + spec2.rgb;
+    return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
 }
 
-float3 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
 {
     if (material.lightModel == SHADINGMODELID_CLOTH)
     {
@@ -412,7 +406,7 @@ float3 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V, floa
     }
 }
 
-float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
+float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
     if (material.lightModel == SHADINGMODELID_SKIN)
     {

@@ -1,18 +1,19 @@
 float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord)
 {
-    float3 lighting = 0;
+    float4 lighting = 0;
 
 #if MAIN_LIGHT_ENABLE
     lighting = SurfaceShading(material, N, L, V, 1.0) + SubsurfaceShading(material, N, L, V);
-    lighting *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
-    lighting *= step(0, material.albedo + material.specular - 1e-5);
+    lighting *= float4(LightSpecular, 1);
+    lighting *= (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+    lighting *= step(0, sum(material.albedo + material.specular) - 1e-5);
     
 #if SHADOW_QUALITY > 0
     lighting *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif
 #endif
     
-    return lighting;
+    return lighting.rgb;
 }
 
 float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V, bool alpha)

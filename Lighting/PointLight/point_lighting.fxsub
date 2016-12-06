@@ -124,26 +124,10 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float atten2 = saturate(dot(material.normal, L2)) * atten;
    
     float4 lighting = 0.0f;
-
-#if SSSS_QUALITY > 0
-    lighting.rgb = SurfaceShading(material, material.normal, L2, V);
-    lighting.rgb += SubsurfaceShading(material, material.normal, L2, V);
-    lighting.rgb *= atten * float3(mR, mG, mB);
-    
-#if SSSS_QUALITY > 1
-    lighting.rgb *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
-#else
-    lighting.rgb *= material.albedo;
-#endif
-    lighting.a = luminance(float3(mR, mG, mB) * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular));
-    lighting.a *= atten2;
-#else
-    lighting.rgb = atten * material.albedo * DiffuseBRDF(material.normal, L2, V, material);
-    lighting.rgb += atten2 * SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB);
-#endif
-
-    lighting *= LightIntensity * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+    lighting = SurfaceShading(material, material.normal, L2, V, 1.0);
+    lighting += SubsurfaceShading(material, material.normal, L2, V);
+    lighting *= float4(mR, mG, mB, 1) * atten * LightIntensity;
+    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
     return lighting;

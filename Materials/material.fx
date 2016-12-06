@@ -108,7 +108,7 @@ const float parallaxMapLoopNum = 1.0;
 // 1 : PreIntegrated Skin // curvature/opacity map
 // 2 : Reserved
 // 3 : Hair
-// 4 : Eye
+// 4 : Reserved
 // 5 : Cloth      // sheen map
 // 6 : Clear Coat // smoothness/roughness map
 // 7 : Subsurface // curvature/opacity map
