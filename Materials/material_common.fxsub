@@ -145,7 +145,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_MAP_ENABLE
-    texture2D CustomMap<string ResourceName = CURVATURE_MAP_FILE;>; 
+    texture2D CustomMap<string ResourceName = CUSTOM_MAP_FILE;>; 
     sampler CustomMapSamp = sampler_state
     {
         texture = CustomMap;
