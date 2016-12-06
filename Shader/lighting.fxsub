@@ -393,7 +393,7 @@ float3 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V, fl
     float3 diffuse = DiffuseBRDF(N, L, V, material);    
     float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
     float4 spec2 = SpecularBRDF_ClearCoat(N, L, V, material.customData, material.specular, normalizeFactor);    
-    return (material.albedo * diffuse + spec1) * spec2.a + spec2;
+    return (material.albedo * diffuse + spec1) * spec2.a + spec2.rgb;
 }
 
 float3 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
