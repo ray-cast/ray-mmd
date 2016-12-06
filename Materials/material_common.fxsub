@@ -36,7 +36,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define SHADINGMODELID_EYE          4
 #define SHADINGMODELID_CLOTH        5
 #define SHADINGMODELID_CLEAR_COAT   6
-#define SHADINGMODELID_SUBSURFACE       7
+#define SHADINGMODELID_SUBSURFACE   7
 #define SHADINGMODELID_MASK         0xF
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
@@ -414,7 +414,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
     gbuffer.buffer3.w = 0;
 
-    if (material.lightModel == SHADINGMODELID_SKIN)
+    if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
     {       
         material.transmittance = rgb2ycbcr(material.transmittance);
         gbuffer.buffer3.yz = material.transmittance.gb;
@@ -427,7 +427,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
         gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
     }
 
-    gbuffer.buffer3.w = ((float)material.lightModel + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
+    gbuffer.buffer3.w = ((float)min(material.lightModel, 2) + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
     gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);
     
     return gbuffer;
@@ -808,7 +808,7 @@ float3 GetCustomData(float2 coord)
         #endif
     #endif
 
-    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN || CUSTOM_ENABLE == SHADINGMODELID_SUBSURFACE
+    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
         #if CUSTOM_MAP_COLOR_FLIP
             return customData;
         #else

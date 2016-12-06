@@ -263,12 +263,14 @@ float4 GlareDetectionPS(
     color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
     color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
     
+    float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);
+    
 #if HDR_BLOOM_MODE == 1
-    float4 bloom = max(0, color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
+    float4 bloom = max(0, color - threshold);
 #elif HDR_BLOOM_MODE == 2
-    float4 bloom = saturate(color - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON));
+    float4 bloom = saturate(color - threshold);
 #else
-    float4 bloom = saturate(color * (luminance(color) - (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON)));
+    float4 bloom = saturate(color * (luminance(color) - threshold));
 #endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
     
