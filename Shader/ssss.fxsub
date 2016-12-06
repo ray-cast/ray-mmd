@@ -8,7 +8,8 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
     
-    if (material.lightModel != SHADINGMODELID_SKIN)
+    if (material.lightModel != SHADINGMODELID_SKIN &&
+        material.lightModel != SHADINGMODELID_SUBSURFACE)
     {
         clip(-1);
     }
@@ -99,7 +100,7 @@ float4 SSSGuassBlurPS(
     {
         totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
 #if SSSS_QUALITY > 1
-        totalColor *= (material.lightModel == SHADINGMODELID_SKIN) ? material.albedo : 1;
+        totalColor *= material.albedo;
 #endif
     }
     

@@ -64,12 +64,12 @@ float pow2(float x)
 
 float sum(float3 v)
 {
-    return v.x + v.y + v.z;
+    return dot(v, 1.0);
 }
 
 float sum(float4 v)
 {
-    return v.x + v.y + v.z + v.w;
+    return dot(v, 1.0);
 }
 
 float madd(float v, float t1, float t2)

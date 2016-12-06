@@ -821,7 +821,11 @@ float3 GetCustomData(float2 coord)
             return SmoothnessToRoughness(customData);
         #endif
     #else
-        return customData;
+        #if CUSTOM_MAP_COLOR_FLIP
+            return 1 - customData;
+        #else
+            return customData;
+        #endif
     #endif
 #else
     return 0.0f;

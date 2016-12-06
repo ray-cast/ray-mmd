@@ -30,7 +30,7 @@ float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples)
 
 float4 ShadowMapGenPS(
     in float2 coord : TEXCOORD0,
-    in float3 viewdir  : TEXCOORD1) : COLOR
+    in float3 viewdir : TEXCOORD1) : COLOR
 {
     float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
     float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));

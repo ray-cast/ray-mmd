@@ -3,20 +3,7 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
     float3 lighting = 0;
 
 #if MAIN_LIGHT_ENABLE
-    float vis = saturate(dot(N, L));
-
-#if SSSS_QUALITY > 0
-    lighting = SurfaceShading(material, N, L, V) + SubsurfaceShading(material, N, L, V);
-#if SSSS_QUALITY > 1
-    lighting *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
-#else
-    lighting *= material.albedo;
-#endif
-#else
-    lighting = material.albedo * SurfaceShading(material, N, L, V);
-    lighting += SpecularBRDF(N, L, V, material.smoothness, material.specular) * vis;
-#endif
-
+    lighting = SurfaceShading(material, N, L, V, 1.0) + SubsurfaceShading(material, N, L, V);
     lighting *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     lighting *= step(0, material.albedo + material.specular - 1e-5);
     
@@ -28,7 +15,7 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
     return lighting;
 }
 
-float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V)
+float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V, bool alpha)
 {
     float3 lighting = 0;
     
@@ -43,7 +30,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 #endif
 
 #if SSSS_QUALITY > 1
-    diffuse *= (material.lightModel == SHADINGMODELID_SKIN) ? 1 : material.albedo;
+    diffuse *= (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE) ? 1 : material.albedo;
 #else
     diffuse *= material.albedo;
 #endif
@@ -56,8 +43,9 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
 
 #if SSSS_QUALITY > 0
     lighting += diffuse * shadow;
+    lighting += alpha ? specular * shadow : 0;
 #else
-    lighting += (diffuse + specular) * shadow;
+    lighting += (diffuse * material.albedo + specular) * shadow;
 #endif
 #endif
 
@@ -84,7 +72,7 @@ float4 ShadingOpacityPS(
     float3 lighting = ShadingMaterial(material, N, V, L, coord);
     lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
-    lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V);
+    lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, false);
 
     return float4(lighting, material.linearDepth);
 }
@@ -109,14 +97,23 @@ float4 ShadingOpacitySpecularPS(
     
     float3 specular = 0;
     
+#if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
+#endif
+    
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-    specular = SpecularBRDF(N, L, V, material.smoothness, material.specular) * saturate(dot(N, L));
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, 1.0);
     specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif
 
     float3 iblDiffuse, iblSpecular;
     DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
+    
+#if SSAO_SAMPLER_COUNT > 0
+    iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+#endif
     
     specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
     specular += iblSpecular;
@@ -141,18 +138,13 @@ float4 ShadingTransparentPS(
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
-    float3 lighting = ShadingMaterial(material, N, V, L, coord);
-    lighting += tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
-
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-
-    lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V);
+    float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 #if SSSS_QUALITY > 1
-    lighting *= (material.lightModel == SHADINGMODELID_SKIN) ? material.albedo : 1;
+    lighting *= (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE) ? material.albedo : 1;
 #endif
+    
+    lighting += ShadingMaterial(material, N, V, L, coord);
+    lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
     float4 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0));
