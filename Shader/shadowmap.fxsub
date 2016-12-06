@@ -94,11 +94,11 @@ float3 ShadowMapGetNormal(float2 uv)
 
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-    float2 totalColor = tex2Dlod(source, float4(coord, 0, 0)).rg;
-    float totalWeight = 1;
-
     float2 offset1 = coord + offset;
     float2 offset2 = coord - offset;
+    
+    float totalWeight = 1;
+    float2 totalColor = tex2Dlod(source, float4(coord, 0, 0)).rg;
     
     float center_d = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
     float falloff = saturate(center_d / mSSAOBlurFalloff);
