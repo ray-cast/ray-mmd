@@ -382,11 +382,12 @@ float4 ClothShading(MaterialParam material, float3 N, float3 L, float3 V, float 
 
 float4 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
 {
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    float roughness1 = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    float roughness2 = max(SmoothnessToRoughness(material.customData), 0.001);
     
     float3 diffuse = DiffuseBRDF(N, L, V, material);    
-    float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
-    float4 spec2 = SpecularBRDF_ClearCoat(N, L, V, material.customData, material.specular, normalizeFactor);    
+    float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness1, material.specular, normalizeFactor);
+    float4 spec2 = SpecularBRDF_ClearCoat(N, L, V, roughness2, material.specular, normalizeFactor);    
     return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
 }
 

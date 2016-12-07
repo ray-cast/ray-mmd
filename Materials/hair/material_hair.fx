@@ -62,7 +62,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.0;
+const float metalnessBaseSpecular = 0.04;
 
 // Subsurface Scattering Color
 #define SSS_ENABLE 0
@@ -128,7 +128,7 @@ const float parallaxMapLoopNum = 1.0;
 // 5 : Cloth      // sheen map
 // 6 : Clear Coat // smoothness/roughness map
 // 7 : Subsurface // curvature/opacity map
-#define CUSTOM_ENABLE 0  // ID
+#define CUSTOM_ENABLE 3  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
 #define CUSTOM_MAP_UV_FLIP 0
@@ -139,4 +139,4 @@ const float parallaxMapLoopNum = 1.0;
 const float custom = 0.0;
 const float customMapLoopNum = 1.0;
 
-#include "material_common.fxsub"
+#include "../material_common.fxsub"

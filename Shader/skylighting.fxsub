@@ -50,11 +50,9 @@ float3 ColorBalance(float3 color)
     return color;
 }
 
-float3 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 R)
-{
-    float smoothness = RoughnessToSmoothness(material.customData);
-    
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, smoothness);
+float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 R)
+{   
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));
     
 #if IBL_RGBT_RANGE
@@ -65,9 +63,32 @@ float3 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, floa
     prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
 #endif
    
-    float3 clearCoat = EnvironmentSpecularUnreal4(N, V, smoothness , 0.04);
+    float f0 = 0.04;
+    float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
+   
+    return float4(prefilteredSpeculr.rgb, 1.0) * fresnel;
+}
+
+float4 ImageBasedLightHair(MaterialParam material, float3 N, float3 V, float3 R)
+{
+    float3 FakeNormal = normalize(V - N * dot(V, N));
+    FakeNormal = -normalize(FakeNormal);
+        
+    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
+    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(FakeNormal), 0, mipLayer));
     
-    return prefilteredSpeculr.rgb * clearCoat;
+#if IBL_RGBT_RANGE
+    prefilteredSpeculr.rgb = DecodeRGBT(prefilteredSpeculr, IBL_RGBT_RANGE);
+#elif IBL_RGBM_RANGE
+    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, IBL_RGBM_RANGE);
+#else
+    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
+#endif
+   
+    float f0 = 0.04;
+    float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
+   
+    return float4(prefilteredSpeculr.rgb, 1.0) * fresnel;
 }
 
 void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
@@ -125,7 +146,15 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     
     /*if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
     {
-        specular += ImageBasedLightClearCost(material, worldNormal, worldView, R);
+        float4 specular2 = ImageBasedLightClearCost(material, worldNormal, worldView, R);
+        specular *= (1 - specular2.a);
+        specular += specular2.rgb;
+    }
+    else if (material.lightModel == SHADINGMODELID_HAIR)
+    {
+        float4 specular2 = ImageBasedLightHair(material, worldNormal, worldView, R);
+        specular *= (1 - specular2.a);
+        specular += specular2.rgb;
     }*/
     
     specular *= step(0, material.specular - 1e-5);
