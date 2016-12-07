@@ -188,7 +188,7 @@ float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, flo
     spec /= G;
        
     float fresnel = fresnelSchlick(0.04, 1, vh);
-    spec *= fresnel;
+    spec *= fresnel * nl;
     
     return float4(spec, spec, spec, 1 - fresnel);
 }

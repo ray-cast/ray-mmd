@@ -981,7 +981,11 @@ GbufferParam Material2PS(
     float3 MaterialMetalness = GetMetalness(coord.xy);
 
     MaterialParam material = (MaterialParam)0;
+#if CUSTOM_ENABLE == SHADINGMODELID_CLEAR_COAT
+    material.normal = normal;
+#else
     material.normal = GetNormal(normal, worldPos, coord.xy);
+#endif
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);

@@ -50,19 +50,30 @@ float3 ColorBalance(float3 color)
     return color;
 }
 
-float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 R)
-{   
+float3 DecodeHDR(float4 rgbx)
+{
+#if IBL_HDR_ENABLE
+    #if IBL_RGBT_RANGE
+        return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
+    #elif IBL_RGBM_RANGE
+        return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
+    #else
+        return DecodeRGBM(rgbx, 6);
+    #endif
+#else
+    return rgbx.rgb;
+#endif
+}
+
+float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V)
+{
+    float3 R = mul(rotate, EnvironmentReflect(N, V));
+    
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));
     
-#if IBL_RGBT_RANGE
-    prefilteredSpeculr.rgb = DecodeRGBT(prefilteredSpeculr, IBL_RGBT_RANGE);
-#elif IBL_RGBM_RANGE
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, IBL_RGBM_RANGE);
-#else
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
-#endif
-   
+    prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);
+    
     float f0 = 0.04;
     float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
    
@@ -76,22 +87,15 @@ float4 ImageBasedLightHair(MaterialParam material, float3 N, float3 V, float3 R)
         
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(FakeNormal), 0, mipLayer));
-    
-#if IBL_RGBT_RANGE
-    prefilteredSpeculr.rgb = DecodeRGBT(prefilteredSpeculr, IBL_RGBT_RANGE);
-#elif IBL_RGBM_RANGE
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, IBL_RGBM_RANGE);
-#else
-    prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
-#endif
-   
+    prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);
+        
     float f0 = 0.04;
     float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
    
     return float4(prefilteredSpeculr.rgb, 1.0) * fresnel;
 }
 
-void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out float3 diffuse, out float3 specular)
 {
     float3 worldView = V;
     float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
@@ -112,21 +116,9 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
 #endif
 
-#if IBL_HDR_ENABLE
-    #if IBL_RGBT_RANGE
-        prefilteredDiffuse.rgb = DecodeRGBT(prefilteredDiffuse, IBL_RGBT_RANGE);
-        prefilteredSpeculr.rgb = DecodeRGBT(prefilteredSpeculr, IBL_RGBT_RANGE);
-        prefilteredTransmittance.rgb = DecodeRGBT(prefilteredTransmittance, IBL_RGBT_RANGE);
-    #elif IBL_RGBM_RANGE
-        prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse, IBL_RGBM_RANGE);
-        prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, IBL_RGBM_RANGE);
-        prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance, IBL_RGBM_RANGE);
-    #else
-        prefilteredDiffuse.rgb = DecodeRGBM(prefilteredDiffuse, 6);
-        prefilteredSpeculr.rgb = DecodeRGBM(prefilteredSpeculr, 6);
-        prefilteredTransmittance.rgb = DecodeRGBM(prefilteredTransmittance, 6);
-    #endif
-#endif
+    prefilteredDiffuse.rgb = DecodeHDR(prefilteredDiffuse);
+    prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);
+    prefilteredTransmittance.rgb = DecodeHDR(prefilteredTransmittance);
 
     prefilteredDiffuse.rgb = ColorBalance(prefilteredDiffuse.rgb);
     prefilteredSpeculr.rgb = ColorBalance(prefilteredSpeculr.rgb);
@@ -144,9 +136,9 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
     specular = prefilteredSpeculr.rgb * HorizonOcclusion(worldNormal, worldReflect);
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
     
-    /*if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+    if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
     {
-        float4 specular2 = ImageBasedLightClearCost(material, worldNormal, worldView, R);
+        float4 specular2 = ImageBasedLightClearCost(material, mul(FlatNormal, (float3x3)matViewInverse), worldView);
         specular *= (1 - specular2.a);
         specular += specular2.rgb;
     }
@@ -155,7 +147,7 @@ void ShadingMaterial(float3 V, MaterialParam material, out float3 diffuse, out f
         float4 specular2 = ImageBasedLightHair(material, worldNormal, worldView, R);
         specular *= (1 - specular2.a);
         specular += specular2.rgb;
-    }*/
+    }
     
     specular *= step(0, material.specular - 1e-5);
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
@@ -209,10 +201,10 @@ void EnvLightingPS(
     float3 V = normalize(viewdir);
     
     float3 diffuse, specular;
-    ShadingMaterial(V, material, diffuse, specular);
+    ShadingMaterial(material, materialAlpha.normal, V, diffuse, specular);
     
     float3 diffuse2, specular2;
-    ShadingMaterial(V, materialAlpha, diffuse2, specular2);
+    ShadingMaterial(materialAlpha, materialAlpha.normal, V, diffuse2, specular2);
     
 #if IBL_ENABLE
     oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
