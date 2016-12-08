@@ -67,32 +67,18 @@ float3 DecodeHDR(float4 rgbx)
 
 float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V)
 {
-    float3 R = mul(rotate, EnvironmentReflect(N, V));
-    
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
-    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));
-    
-    prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);
-    
-    float f0 = 0.04;
-    float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
-   
-    return float4(prefilteredSpeculr.rgb, 1.0) * fresnel;
+    float3 R = mul(rotate, EnvironmentReflect(N, V));
+    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));    
+    return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customData);
 }
 
 float4 ImageBasedLightHair(MaterialParam material, float3 N, float3 V, float3 R)
 {
-    float3 FakeNormal = normalize(V - N * dot(V, N));
-    FakeNormal = -normalize(FakeNormal);
-        
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customData);
+    float3 FakeNormal = -normalize(V - N * dot(V, N));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(FakeNormal), 0, mipLayer));
-    prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);
-        
-    float f0 = 0.04;
-    float fresnel = fresnelSchlick(f0, 1.0, dot(N, V)) * material.customData;
-   
-    return float4(prefilteredSpeculr.rgb, 1.0) * fresnel;
+    return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customData);
 }
 
 void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out float3 diffuse, out float3 specular)
@@ -109,12 +95,6 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     float4 prefilteredDiffuse = tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0));
     float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));
     float4 prefilteredTransmittance = tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0));
-
-#if IBL_GAMMA_CORRECTION_ENABLE
-    prefilteredDiffuse.rgb = srgb2linear(prefilteredDiffuse.rgb);
-    prefilteredSpeculr.rgb = srgb2linear(prefilteredSpeculr.rgb);
-    prefilteredTransmittance.rgb = srgb2linear(prefilteredTransmittance.rgb);
-#endif
 
     prefilteredDiffuse.rgb = DecodeHDR(prefilteredDiffuse);
     prefilteredSpeculr.rgb = DecodeHDR(prefilteredSpeculr);

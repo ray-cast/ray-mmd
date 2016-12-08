@@ -100,14 +100,14 @@ sampler BloomSamp4th = sampler_state {
 
 #if HDR_STAR_MODE > 0
 #if HDR_STAR_MODE == 1
-float4 star_colorCoeff1st[4] = {float4(0.1,0.15,0.475,0.5),float4(0.096,0.144,0.456,0.48),float4(0.04608,0.09216,0.41472,0.4608),float4(0.0884736,0.13271,0.42025,0.442368)};
-float4 star_colorCoeff2nd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0849346,0.127402,0.40344,0.424673),float4(0.0360695,0.072139,0.324625,0.360695),float4(0.061271,0.0919064,0.291037,0.306355)};
-float4 star_colorCoeff3rd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0260201,0.0520403,0.234181,0.260201),float4(0.00270819,0.013541,0.134055,0.13541),float4(0.00140935,0.00704675,0.0697628,0.0704675)};
-float4 star_colorCoeff4th[4] = {float4(0.5,0.5,0.5,0.5),float4(0.0366715,0.0366715,0.0366715,0.0366715),float4(0.00268959,0.00268959,0.00268959,0.00268959),float4(0.000197263,0.000197263,0.000197263,0.000197263)};
+static float4 star_colorCoeff1st[4] = {float4(0.1,0.15,0.475,0.5),float4(0.096,0.144,0.456,0.48),float4(0.04608,0.09216,0.41472,0.4608),float4(0.0884736,0.13271,0.42025,0.442368)};
+static float4 star_colorCoeff2nd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0849346,0.127402,0.40344,0.424673),float4(0.0360695,0.072139,0.324625,0.360695),float4(0.061271,0.0919064,0.291037,0.306355)};
+static float4 star_colorCoeff3rd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0260201,0.0520403,0.234181,0.260201),float4(0.00270819,0.013541,0.134055,0.13541),float4(0.00140935,0.00704675,0.0697628,0.0704675)};
+static float4 star_colorCoeff4th[4] = {float4(0.5,0.5,0.5,0.5),float4(0.0366715,0.0366715,0.0366715,0.0366715),float4(0.00268959,0.00268959,0.00268959,0.00268959),float4(0.000197263,0.000197263,0.000197263,0.000197263)};
 #else
-float4 star_colorCoeff1st[4] = {float4(0.25,0.2375,0.225,0.25),float4(0.18,0.18,0.162,0.225),float4(0.18225,0.164025,0.18225,0.2025),float4(0.164025,0.164025,0.147622,0.18225)};
-float4 star_colorCoeff2nd[4] = {float4(0.25,0.225,0.2,0.25),float4(0.164025,0.098415,0.0820125,0.164025),float4(0.0538084,0.0538084,0.032285,0.107617),float4(0.0423644,0.0169458,0.0423644,0.0706074)};
-float4 star_colorCoeff3rd[4] = {float4(0.25,0.25,0.25,0.25),float4(0.0463255,0.0277953,0.0277953,0.0463255),float4(0.00515052,0.00515052,0.00309031,0.0085842),float4(0.000954402,0.000572641,0.000954402,0.00159067)};
+static float4 star_colorCoeff1st[4] = {float4(0.25,0.2375,0.225,0.25),float4(0.18,0.18,0.162,0.225),float4(0.18225,0.164025,0.18225,0.2025),float4(0.164025,0.164025,0.147622,0.18225)};
+static float4 star_colorCoeff2nd[4] = {float4(0.25,0.225,0.2,0.25),float4(0.164025,0.098415,0.0820125,0.164025),float4(0.0538084,0.0538084,0.032285,0.107617),float4(0.0423644,0.0169458,0.0423644,0.0706074)};
+static float4 star_colorCoeff3rd[4] = {float4(0.25,0.25,0.25,0.25),float4(0.0463255,0.0277953,0.0277953,0.0463255),float4(0.00515052,0.00515052,0.00309031,0.0085842),float4(0.000954402,0.000572641,0.000954402,0.00159067)};
 #endif
 
 texture StreakMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
@@ -162,15 +162,15 @@ sampler StreakSamp4thTemp = sampler_state {
 #endif
 
 #if HDR_FLARE_MODE > 0
-float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
-float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.77);
+static float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
+static float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.77);
 
 #if HDR_FLARE_MODE == 1
-float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
-float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
+static float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
+static float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
 #else
-float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(0.50, 0.50, 0.30, 1.0)};
-float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
+static float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(0.50, 0.50, 0.30, 1.0)};
+static float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
 #endif
 
 texture GhostMaskMap<string ResourceName = "shader/textures/mask.png";>; 
@@ -287,8 +287,8 @@ float4 GlareDetectionPS(
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
 {
-    const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
-    const float weightSum = 262106.0;
+    static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
+    static const float weightSum = 262106.0;
     
     float4 color = 0;
     float2 coords = coord - offset * 7.0;
