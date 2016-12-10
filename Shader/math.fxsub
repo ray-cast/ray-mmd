@@ -115,13 +115,13 @@ float2 CoordToPos(float2 coord)
     return coord * 2 - 1;
 }
 
-float3x3 makeRotate(float eulerX, float eulerY, float eulerZ)
+float3x3 CreateRotate(float3 euler)
 {
     float sj, cj, si, ci, sh, ch;
 
-    sincos(eulerX, si, ci);
-    sincos(eulerY, sj, cj);
-    sincos(eulerZ, sh, ch);
+    sincos(euler.x, si, ci);
+    sincos(euler.y, sj, cj);
+    sincos(euler.z, sh, ch);
 
     float cc = ci * ch;
     float cs = ci * sh;
