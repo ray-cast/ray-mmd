@@ -160,6 +160,17 @@ float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
     return result;   
 }
 
+float EdgeFilter(float2 center, float2 a0, float2 a1, float2 a2, float2 a3)
+{
+    const float THRESH = 30./255.;
+    float4 lum = float4(a0.x, a1.x , a2.x, a3.x);
+    float4 w = 1.0 - step(THRESH, abs(lum - center.x));
+    float W = w.x + w.y + w.z + w.w;
+    w.x = (W == 0.0) ? 1.0 : w.x;
+    W   = (W == 0.0) ? 1.0 : W;
+    return (w.x * a0.y + w.y * a1.y + w.z * a2.y + w.w * a3.y) / W;
+}
+
 void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
 {
     float4 packed = tex2D(source, coord);
@@ -169,8 +180,8 @@ void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 off
     float4 env4 = tex2D(source, coord + float2(0.0, offset.y));
     float4 env5 = tex2D(source, coord - float2(0.0, offset.y));
     
-    env2.rg = (env2.rg + env3.rg + env4.rg + env5.rg) * 0.25;
-    env2.ba = (env2.ba + env3.ba + env4.ba + env5.ba) * 0.25;
+    env2.rg = EdgeFilter(packed.rg, env2.rg, env3.rg, env4.rg, env5.rg);
+    env2.ba = EdgeFilter(packed.ba, env2.ba, env3.ba, env4.ba, env5.ba);
 
     bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
     

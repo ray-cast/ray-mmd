@@ -50,7 +50,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
     lighting += diffuse * shadow;
     lighting += alpha ? specular * shadow : 0;
 #else
-    lighting += (diffuse * material.albedo + specular) * shadow;
+    lighting += (diffuse + specular) * shadow;
 #endif
 #endif
 

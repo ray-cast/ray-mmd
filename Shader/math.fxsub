@@ -158,6 +158,15 @@ float2 ComputeSphereCoord(float3 normal)
     return coord;
 }
 
+float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
+{
+    float3 normal;
+    normal.x = -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
+    normal.y =  cos(thetaStart + coord.y * thetaLength);
+    normal.z =  sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
+    return normal;
+}
+
 float GetJitterOffset(float2 uv)
 {
     return dot(frac(uv * 0.25), float2(1, 0.25));
