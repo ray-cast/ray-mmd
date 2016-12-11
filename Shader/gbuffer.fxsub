@@ -72,9 +72,9 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.customData = buffer2.w;
     material.alpha = buffer4.w;
     
-    if (buffer4.z < SHADINGMODELID_MASK)
+    if (buffer4.z <= 1e-5)
     {
-        material.lightModel = buffer4.z;
+        material.lightModel = floor(abs(buffer4.z));
     }
     
     if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)

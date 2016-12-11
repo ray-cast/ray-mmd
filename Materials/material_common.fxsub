@@ -428,7 +428,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     }
 
     gbuffer.buffer3.w = ((float)min(material.lightModel, 2) + gbuffer.buffer3.w) / TWO_BITS_EXTRACTION_FACTOR;
-    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);
+    gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, -material.lightModel, material.alpha);
     
     return gbuffer;
 }
