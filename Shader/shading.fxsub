@@ -76,6 +76,12 @@ float4 ShadingOpacityPS(
     
     float3 lighting = ShadingMaterial(material, N, V, L, coord);
     lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
+    
+#if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
+    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+#endif
+    
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
     lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, false);
 
@@ -143,12 +149,16 @@ float4 ShadingTransparentPS(
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
-    float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
-#if SSSS_QUALITY > 1
-    lighting *= (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE) ? material.albedo : 1;
-#endif
+    float4 lightingAlpha = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0));
     
+    float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
     lighting += ShadingMaterial(material, N, V, L, coord);
+    
+#if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
+    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+#endif
+
     lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;

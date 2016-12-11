@@ -807,14 +807,8 @@ float3 GetCustomData(float2 coord)
             #endif
         #endif
     #endif
-
-    #if CUSTOM_ENABLE == SHADINGMODELID_SKIN
-        #if CUSTOM_MAP_COLOR_FLIP
-            return customData;
-        #else
-            return 1 - customData;
-        #endif
-    #elif CUSTOM_ENABLE == SHADINGMODELID_CLEAR_COAT || CUSTOM_ENABLE == SHADINGMODELID_HAIR
+    
+    #if CUSTOM_ENABLE == SHADINGMODELID_CLEAR_COAT || CUSTOM_ENABLE == SHADINGMODELID_HAIR
         #if CUSTOM_MAP_COLOR_FLIP
             return RoughnessToSmoothness(customData);
         #else
