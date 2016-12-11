@@ -45,14 +45,14 @@ const float normalMapSubScale = 1;
 const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
-#define SMOOTHNESS_MAP_ENABLE 1
+#define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 1
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "../_NormalMap/leather_01_g.png"
 
-const float smoothness = 0.0;
+const float smoothness = 0.35;
 const float smoothnessMapLoopNum = 20.0;
 
 // 金属程度
