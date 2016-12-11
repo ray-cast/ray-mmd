@@ -10,7 +10,7 @@
 #define ALBEDO_MAP_APPLY_COLOR 1
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "../_NormalMap/leather_01_a.png"
+#define ALBEDO_MAP_FILE "../_MaterialMap/leather_01_a.png"
 
 const float3 albedo = 1.0;
 const float albedoMapLoopNum = 20.0;
@@ -30,7 +30,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_IN_SPHEREMAP 0
 #define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_FILE "../_NormalMap/leather_01_n.png"
+#define NORMAL_MAP_FILE "../_MaterialMap/leather_01_n.png"
 
 const float normalMapLoopNum = 20.0;
 const float normalMapScale = -1.0;
@@ -50,7 +50,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define SMOOTHNESS_MAP_FILE "../_NormalMap/leather_01_g.png"
+#define SMOOTHNESS_MAP_FILE "../_MaterialMap/leather_01_g.png"
 
 const float smoothness = 0.0;
 const float smoothnessMapLoopNum = 20.0;

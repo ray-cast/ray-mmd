@@ -17,7 +17,7 @@ const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
 #define NORMAL_MAP_SUB_ENABLE 1
-#define NORMAL_MAP_SUB_FILE "../_NormalMap/skin.png"
+#define NORMAL_MAP_SUB_FILE "../_MaterialMap/skin.png"
 
 const float normalMapSubScale = 1.5;
 const float normalMapSubLoopNum = 50.0;
