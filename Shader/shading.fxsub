@@ -6,10 +6,10 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 
 #if SHADOW_QUALITY > 0
     float2 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-    lighting = SurfaceShading(material, N, L, V, 1.0) * shadow.r;
+    lighting = SurfaceShading(material, N, L, L, V, 1.0) * shadow.r;
     lighting += SubsurfaceShading(material, N, L, V) * shadow.g;
 #else
-    lighting = SurfaceShading(material, N, L, V, 1.0) + SubsurfaceShading(material, N, L, V);
+    lighting = SurfaceShading(material, N, L, L, V, 1.0) + SubsurfaceShading(material, N, L, V);
 #endif
     lighting *= float4(LightSpecular, 1);
     lighting *= (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);

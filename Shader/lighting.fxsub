@@ -372,11 +372,11 @@ float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float L
     return SpecularBRDF_GGX(N, L2, V, roughness, f0, normalizeFactor);
 }
 
-float4 StandardShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    float3 specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
-    float3 diffuse = DiffuseBRDF(N, L, V, material);
+    float3 diffuse = DiffuseBRDF(N, Ld, V, material);
+    float3 specular = SpecularBRDF_GGX(N, Ls, V, roughness, material.specular, normalizeFactor);
     
 #if SSSS_QUALITY > 1
     if (material.lightModel != SHADINGMODELID_SUBSURFACE &&
@@ -395,41 +395,41 @@ float4 StandardShading(MaterialParam material, float3 N, float3 L, float3 V, flo
 #endif
 }
 
-float4 ClothShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
-    float3 diffuse = DiffuseBRDF(N, L, V, material);
-    float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness, material.specular, normalizeFactor);
-    float3 spec2 = SpecularBRDF_Cloth(N, L, V, roughness, material.specular, normalizeFactor);
+    float3 diffuse = DiffuseBRDF(N, Ld, V, material);
+    float3 spec1 = SpecularBRDF_GGX(N, Ls, V, roughness, material.specular, normalizeFactor);
+    float3 spec2 = SpecularBRDF_Cloth(N, Ls, V, roughness, material.specular, normalizeFactor);
     float3 cloth = lerp(spec1, spec2, material.customData);    
     return float4(material.albedo * diffuse + cloth, 0);
 }
 
-float4 ClearCoatShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
     float roughness1 = max(SmoothnessToRoughness(material.smoothness), 0.001);
     float roughness2 = max(SmoothnessToRoughness(material.customData), 0.001);
     
-    float3 diffuse = DiffuseBRDF(N, L, V, material);    
-    float3 spec1 = SpecularBRDF_GGX(N, L, V, roughness1, material.specular, normalizeFactor);
-    float4 spec2 = SpecularBRDF_ClearCoat(N, L, V, roughness2, material.specular, normalizeFactor);    
+    float3 diffuse = DiffuseBRDF(N, Ld, V, material);    
+    float3 spec1 = SpecularBRDF_GGX(N, Ls, V, roughness1, material.specular, normalizeFactor);
+    float4 spec2 = SpecularBRDF_ClearCoat(N, Ls, V, roughness2, material.specular, normalizeFactor);    
     return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
 }
 
-float4 SurfaceShading(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 SurfaceShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
     if (material.lightModel == SHADINGMODELID_CLOTH)
     {
-        return ClothShading(material, N, L, V, normalizeFactor);
+        return ClothShading(material, N, Ld, Ls, V, normalizeFactor);
     }
     else if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
     {
-        return ClearCoatShading(material, N, L, V, normalizeFactor);
+        return ClearCoatShading(material, N, Ld, Ls, V, normalizeFactor);
     }
     else
     {
-        return StandardShading(material, N, L, V, normalizeFactor);
+        return StandardShading(material, N, Ld, Ls, V, normalizeFactor);
     }
 }
 
