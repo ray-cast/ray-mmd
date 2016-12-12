@@ -163,7 +163,6 @@ float4 ShadingTransparentPS(
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
     float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0)).rgb;
-    material.alpha = material.alpha >= 1.0 ? 0 : material.alpha;
     lighting = lerp(prefilteredRefract, lighting, material.alpha);
 
 #if FOG_ENABLE

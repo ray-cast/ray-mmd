@@ -992,7 +992,7 @@ GbufferParam Material2PS(
     material.emissiveIntensity = GetEmissiveIntensity();
     material.customData = GetCustomData(coord.xy);
     material.lightModel = GetLightMode(material);
-    material.alpha = alpha;
+    material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
 
     return EncodeGbuffer(material, coord.z);
 }

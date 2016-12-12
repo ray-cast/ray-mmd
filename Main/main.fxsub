@@ -76,7 +76,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, floa
         #endif
     #endif
         clip(alpha - DiscardAlphaThreshold);
-        clip(material.alpha - DiscardAlphaThreshold);
+        if (material.alpha != 0.0) clip(material.alpha - DiscardAlphaThreshold);
         clip(sum(material.albedo + material.specular) - 1e-5);
     #endif
         return 0;
