@@ -930,7 +930,10 @@ GbufferParam MaterialPS(
 
     float alpha = GetAlpha(coord.xy, useTexture);
     clip(alpha - ALPHA_THRESHOLD);
-    
+#if ALPHA_MAP_ANIMATION_ENABLE
+    clip(-1);
+#endif
+
     float3 albedoColor = GetAlbedo(coord.xy, useTexture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(coord.xy));
     
@@ -992,8 +995,11 @@ GbufferParam Material2PS(
     material.emissiveIntensity = GetEmissiveIntensity();
     material.customData = GetCustomData(coord.xy);
     material.lightModel = GetLightMode(material);
+#if ALPHA_MAP_ANIMATION_ENABLE
+    material.alpha = alpha;
+#else
     material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
-
+#endif
     return EncodeGbuffer(material, coord.z);
 }
 
