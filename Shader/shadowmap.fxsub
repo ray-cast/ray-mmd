@@ -100,11 +100,8 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
     float totalWeight = 1;
     float2 totalColor = tex2Dlod(source, float4(coord, 0, 0)).rg;
     
-    float center_d = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
-    float falloff = saturate(center_d / mSSAOBlurFalloff);
-    float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, falloff);
-
-    float3 normal = ShadowMapGetNormal(coord);
+    float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
+    float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, saturate(center_d / mSSAOBlurFalloff));
 
     [unroll]
     for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
@@ -112,15 +109,12 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
         float2 shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).xy;
         float2 shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).xy;
         
-        float depth1 = abs(tex2Dlod(DepthMapSamp, float4(offset1, 0, 0)).r);
-        float depth2 = abs(tex2Dlod(DepthMapSamp, float4(offset2, 0, 0)).r);
+        float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
+        float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
         
         float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, sharpness);
         float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, sharpness);
-        
-        bilateralWeight1 *= saturate(dot(ShadowMapGetNormal(offset1), normal));
-        bilateralWeight2 *= saturate(dot(ShadowMapGetNormal(offset2), normal));
-        
+
         totalColor += shadow1 * bilateralWeight1;
         totalColor += shadow2 * bilateralWeight2;
 

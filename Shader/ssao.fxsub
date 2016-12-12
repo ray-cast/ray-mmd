@@ -45,7 +45,14 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 uv)
 {
-    return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
+    float depth1 = tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
+    float depth2 = tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
+    return depth2 < depth1 ? depth1 : depth2;
+}
+
+float linearizeDepth2(float2 uv)
+{
+    return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
 }
 
 float3 GetPosition(float2 uv)
@@ -148,7 +155,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
 float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, uniform sampler source, uniform float2 offset) : COLOR
 {
-    float center_d = abs(linearizeDepth(coord));
+    float center_d = linearizeDepth2(coord);
 
 #if SSAO_QUALITY > 3
     float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
@@ -170,8 +177,8 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
     [unroll]
     for (int r = 1; r < SSAO_BLUR_RADIUS; r++)
     {
-        float depth1 = abs(linearizeDepth(offset1));
-        float depth2 = abs(linearizeDepth(offset2));
+        float depth1 = linearizeDepth2(offset1);
+        float depth2 = linearizeDepth2(offset2);
 
         float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
         float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
