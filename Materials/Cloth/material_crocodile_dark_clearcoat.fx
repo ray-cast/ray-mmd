@@ -45,9 +45,9 @@ const float normalMapSubScale = 1;
 const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
-#define SMOOTHNESS_MAP_ENABLE 0
+#define SMOOTHNESS_MAP_ENABLE 1
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
-#define SMOOTHNESS_MAP_IS_ROUGHNESS 1
+#define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "../_MaterialMap/leather_01_g.png"
@@ -113,14 +113,14 @@ const float parallaxMapLoopNum = 1.0;
 // 6 : Clear Coat // smoothness/roughness map
 // 7 : Subsurface // curvature/opacity map
 #define CUSTOM_ENABLE 6  // ID
-#define CUSTOM_MAP_ENABLE 1
+#define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
 #define CUSTOM_MAP_UV_FLIP 0
 #define CUSTOM_MAP_COLOR_FLIP 0
 #define CUSTOM_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_MAP_FILE "../_MaterialMap/leather_01_g.png"
+#define CUSTOM_MAP_FILE "custom.png"
 
-const float custom = 0.0;
+const float custom = 0.8;
 const float customMapLoopNum = 20.0;
 
 // Subsurface Scattering Color

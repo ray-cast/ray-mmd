@@ -177,7 +177,7 @@ float3 SpecularBRDF_Cloth(float3 N, float3 L, float3 V, float roughness, float3 
     return fresnel * spec * nl;
 }
 
-float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
+float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, float specular, float NormalizationFactor)
 {
     float3 H = normalize(V + L);
 
@@ -192,7 +192,7 @@ float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, flo
     float G = (4 * vh * vh + 1e-5);
     spec /= G;
        
-    float fresnel = fresnelSchlick(0.04, 1, vh);
+    float fresnel = fresnelSchlick(specular, 1, vh);
     spec *= fresnel * nl;
     
     return float4(spec, spec, spec, 1 - fresnel);
@@ -413,7 +413,7 @@ float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, 
     
     float3 diffuse = DiffuseBRDF(N, Ld, V, material);    
     float3 spec1 = SpecularBRDF_GGX(N, Ls, V, roughness1, material.specular, normalizeFactor);
-    float4 spec2 = SpecularBRDF_ClearCoat(N, Ls, V, roughness2, material.specular, normalizeFactor);    
+    float4 spec2 = SpecularBRDF_ClearCoat(N, Ls, V, roughness2, 0.04, normalizeFactor);    
     return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
 }
 
