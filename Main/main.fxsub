@@ -42,23 +42,42 @@ void DrawObjectVS(
     out float4 oTexcoord  : TEXCOORD0,
     out float3 oNormal    : TEXCOORD1,
     out float3 oViewdir   : TEXCOORD2,
+    out float4 oTexcoord2 : TEXCOORD3,
     out float4 oPosition  : SV_Position)
 {
     oNormal = Normal;
     oTexcoord = Texcoord;
     oViewdir = CameraPosition - Position.xyz;
-    oPosition = mul(Position, matViewProject);
+    oTexcoord2 = oPosition = mul(Position, matViewProject);
 }
 
-float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
+float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2, float4 screenPos : TEXCOORD3) : SV_Target
 {
 #if EXIST_RAY
+    float2 coord = screenPos.xy / screenPos.w;
+    coord = PosToCoord(coord);
+    coord += ViewportOffset;
+    
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+    
+    MaterialParam material;
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+    
     #if DISCARD_ALPHA_ENABLE
         float alpha = MaterialDiffuse.a;
     #if DISCARD_ALPHA_MAP_ENABLE
-        if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
+        #if ALPHA_MAP_ENABLE
+            alpha *= tex2D(AlphaMapSamp, texcoord.xy).a;
+        #else
+            if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
+        #endif
     #endif
         clip(alpha - DiscardAlphaThreshold);
+        clip(material.alpha - DiscardAlphaThreshold);
+        clip(sum(material.albedo + material.specular) - 1e-5);
     #endif
         return 0;
 #else

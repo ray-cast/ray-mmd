@@ -79,7 +79,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
-    texture2D AlphaMap<string ResourceName = ALPHA_MAP_FILE;>; 
+    #if ALPHA_MAP_ANIMATION_ENABLE == 0
+        texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
+    #else
+        texture AlphaMap : ANIMATEDTEXTURE <string ResourceName = ALPHA_MAP_FILE; float speed=ALPHA_MAP_ANIMATION_ENABLE;>;
+    #endif
     sampler AlphaMapSamp = sampler_state
     {
         texture = AlphaMap;
@@ -988,7 +992,7 @@ GbufferParam Material2PS(
     material.emissiveIntensity = GetEmissiveIntensity();
     material.customData = GetCustomData(coord.xy);
     material.lightModel = GetLightMode(material);
-    material.alpha = alpha < ALPHA_THRESHOLD ? alpha : 0;
+    material.alpha = alpha;
 
     return EncodeGbuffer(material, coord.z);
 }

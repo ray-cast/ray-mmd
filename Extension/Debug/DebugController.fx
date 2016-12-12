@@ -132,7 +132,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
     result += materialAlpha.transmittance * showTransmittanceAlpha;
-    result += material.customData * showCurvatureAlpha;
+    result += materialAlpha.customData * showCurvatureAlpha;
     result += materialAlpha.transmittance * showEmissiveAlpha;
 
     result = linear2srgb(result);
