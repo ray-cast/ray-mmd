@@ -153,12 +153,10 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 L = -viewLightDirection;
     float3 L2 = normalize(L);
     
-    float atten = saturate(dot(material.normal, L2));
-    
     float4 lighting = 0.0f;
-    lighting.rgb = material.albedo * DiffuseBRDF(material.normal, L2, V, material);
-    lighting.rgb += SpecularBRDF(material.normal, L2, V, material.smoothness, material.specular);
-    lighting.rgb *= atten * float3(mR, mG, mB) * LightIntensity;
+    lighting = SurfaceShading(material, material.normal, L2, L2, V, 1.0);
+    lighting += SubsurfaceShading(material, material.normal, L2, V);
+    lighting *= float4(mR, mG, mB, 1) * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     

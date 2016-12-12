@@ -50,7 +50,7 @@ const float normalMapSubScale = 1;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.5;
+const float smoothness = 0.1;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
