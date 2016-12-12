@@ -47,7 +47,7 @@ float linearizeDepth(float2 uv)
 {
     float depth1 = tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
     float depth2 = tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
-    return depth2 < depth1 ? depth1 : depth2;
+    return depth2 < abs(depth1) ? depth1 : depth2;
 }
 
 float linearizeDepth2(float2 uv)
