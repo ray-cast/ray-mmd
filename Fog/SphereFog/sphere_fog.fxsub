@@ -6,6 +6,7 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/lighting.fxsub"
+#include "../../shader/arealight.fxsub"
 #include "../../shader/fog.fxsub"
 
 float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
@@ -82,31 +83,19 @@ void SphereFogVS(
     oTexcoord1 = Position;
 }
 
-void SphereFogPS(
-    float4 texcoord : TEXCOORD0, 
-    float3 position : TEXCOORD1,
-    out float4 oColor0 : COLOR0,
-    out float4 oColor1 : COLOR1)
+float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
 {
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
-    
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+       
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
-    
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
-
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
     float3 P = mul(float4(position, 1), matView).xyz;
     float3 V = normalize(-P);
@@ -121,26 +110,21 @@ void SphereFogPS(
     
 #if VOLUMETRIC_FOG_ENABLE
     #if VOLUMETRIC_FOG_QUALITY == 0
-        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 64);
+        return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 64);
     #elif VOLUMETRIC_FOG_QUALITY == 1
-        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 100);
+        return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 100);
     #elif VOLUMETRIC_FOG_QUALITY == 2
-        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 150);
+        return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 150);
     #elif VOLUMETRIC_FOG_QUALITY >= 3
-        oColor0 = oColor1 = SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 200);
+        return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 200);
     #endif
 #else
-    oColor0 = oColor1 = SphereFog(param, V, min(P.z, material.linearDepth), 64);
+    return SphereFog(param, V, min(P.z, material.linearDepth), 64);
 #endif
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-        string Script = \
-            "RenderColorTarget0=;"\
-            "RenderColorTarget1=LightAlphaMap;"\
-            "Pass=DrawObject;"\
-    ;>{\
+    technique name < string MMDPass = mmdpass;>{\
         pass DrawObject {\
             ZEnable = false; ZWriteEnable = false;\
             AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\

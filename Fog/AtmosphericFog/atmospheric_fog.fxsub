@@ -108,65 +108,34 @@ void GroundFogVS(
     oTexcoord1 = -mul(oPosition, matProjectInverse);
 }
 
-void GroundFogPS(
-    float2 coord : TEXCOORD0, 
-    float3 viewdir : TEXCOORD1,
-    out float4 oColor0 : COLOR0,
-    out float4 oColor1 : COLOR1)
-{
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
-    float4 MRT3 = tex2D(Gbuffer4Map, coord);
+float4 GroundFogPS(float2 coord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+{   
+    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
-    
-    float4 MRT5 = tex2D(Gbuffer5Map, coord);
-    float4 MRT6 = tex2D(Gbuffer6Map, coord);
-    float4 MRT7 = tex2D(Gbuffer7Map, coord);
-    float4 MRT8 = tex2D(Gbuffer8Map, coord);
+    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-
-    float3 V = normalize(viewdir);
-    
-    oColor0 = ApplySkyFog(material.linearDepth, V);
-    oColor1 = ApplySkyFog(materialAlpha.linearDepth, V);
+    float3 V = normalize(viewdir);    
+    return ApplySkyFog(material.linearDepth, V);
 }
 
-technique MainTech0 < string MMDPass = "object";
-    string Script = 
-        "RenderColorTarget0=;"
-        "RenderColorTarget1=LightAlphaMap;"
-        "Pass=DrawObject;"
-;>{
-    pass DrawObject {
-        ZEnable = false; ZWriteEnable = false;
-        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
-        SrcBlend = ONE; DestBlend = ONE;
-        CullMode = NONE;
-        VertexShader = compile vs_3_0 GroundFogVS();
-        PixelShader  = compile ps_3_0 GroundFogPS();
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass;>{\
+        pass DrawObject {\
+            ZEnable = false; ZWriteEnable = false;\
+            AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+            SrcBlend = ONE; DestBlend = ONE;\
+            CullMode = NONE;\
+            VertexShader = compile vs_3_0 GroundFogVS();\
+            PixelShader  = compile ps_3_0 GroundFogPS();\
+        }\
     }
-}
 
-technique MainTecBS0 < string MMDPass = "object_ss";
-    string Script = 
-        "RenderColorTarget0=;"
-        "RenderColorTarget1=LightAlphaMap;"
-        "Pass=DrawObject;"
-;>{
-    pass DrawObject {
-        ZEnable = false; ZWriteEnable = false;
-        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
-        SrcBlend = ONE; DestBlend = ONE;
-        CullMode = NONE;
-        VertexShader = compile vs_3_0 GroundFogVS();
-        PixelShader  = compile ps_3_0 GroundFogPS();
-    }
-}
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
     
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTech < string MMDPass = "shadow";  > {}
