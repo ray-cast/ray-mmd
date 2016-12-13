@@ -16,7 +16,6 @@ float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensi
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
@@ -24,7 +23,6 @@ static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuat
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 
 static float3 LightPosition = mPosition;
-static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
 #undef SHADOW_MAP_SIZE

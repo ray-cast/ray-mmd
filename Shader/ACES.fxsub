@@ -16,7 +16,7 @@ float3 ACESFilmRec709(float3 x)
     const float C = 2.43f;
     const float D = 0.59f;
     const float E = 0.14f;
-    return (x * (A * x + B)) / (x * (C * x + D) + E);   
+    return (x * (A * x + B)) / (x * (C * x + D) + E);
 }
 
 float3 ACESFilmRec2020(float3 x)
