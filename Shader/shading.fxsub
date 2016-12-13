@@ -75,13 +75,7 @@ float4 ShadingOpacityPS(
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
     
     float3 lighting = ShadingMaterial(material, N, V, L, coord);
-    lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
-    
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-    
+    lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;    
     lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
     lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, false);
 
@@ -108,10 +102,6 @@ float4 ShadingOpacitySpecularPS(
     
     float3 specular = 0;
     
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
-#endif
-    
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     specular = SpecularBRDF(roughness, N, L, V, material.specular, 1.0);
@@ -119,15 +109,18 @@ float4 ShadingOpacitySpecularPS(
     specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif
 
+#if IBL_QUALITY > 0
     float3 iblDiffuse, iblSpecular;
     DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
 #if SSAO_SAMPLER_COUNT > 0
+    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
-    
-    specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
     specular += iblSpecular;
+#endif
+
+    specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
        
     return float4(specular, 0);
 }
@@ -153,12 +146,6 @@ float4 ShadingTransparentPS(
     
     float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
     lighting += ShadingMaterial(material, N, V, L, coord);
-    
-#if SSAO_SAMPLER_COUNT > 0
-    float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
-    lighting *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
-#endif
-
     lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
     
     float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
