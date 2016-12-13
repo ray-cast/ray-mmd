@@ -27,7 +27,7 @@ static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEn
 texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
 sampler IBLDiffuseSampler = sampler_state {
     texture = <IBLDiffuseTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;    
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
     ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
