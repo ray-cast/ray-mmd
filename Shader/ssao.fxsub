@@ -68,6 +68,26 @@ float2 tapLocation(int index, float noise)
 
 float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
+    const float2 kernel[16] = 
+    {
+        float2( -0.14, -0.02 ),
+        float2( -0.04, 0.24 ),
+        float2( 0.36, 0.08 ),
+        float2(-0.46, -0.08),
+        float2( 0.26, -0.4 ),
+        float2(-0.127, -0.347),
+        float2( -0.44, -0.34 ),
+        float2( -0.52, 0.4 ),
+        float2(-0.226, 0.589),
+        float2( 0.3, 0.68 ),
+        float2( 0.7, 0.356),
+        float2( 0.47, -0.287),
+        float2( 0.84, -0.32 ),
+        float2( 0.4, -0.74),
+        float2(-0.338, -0.684),
+        float2(-0.622, -0.415)
+    };
+    
     float depth = linearizeDepth(coord.xy);
     float3 viewNormal = GetNormal(coord.xy);
     float3 viewPosition = -viewdir * abs(depth);
@@ -78,6 +98,21 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
     float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
     float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
+    
+    float2 rotateKernel[16];
+    float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
+    float2 sampleDiskRadius = ((ViewportSize.x / ((1 + mSSAORadiusM - mSSAORadiusP) * 16)) / ViewportSize);
+    
+    float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
+    
+    [unroll]
+    for (int i = 0; i < SSAO_SAMPLER_COUNT; i+=4)
+    {
+        rotateKernel[i + 0] = mul(kernel[i + 0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+        rotateKernel[i + 1] = mul(kernel[i + 1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+        rotateKernel[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+        rotateKernel[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+    }
     
     [unroll]
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j += 4)
