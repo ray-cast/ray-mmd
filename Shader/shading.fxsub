@@ -114,7 +114,7 @@ float4 ShadingOpacitySpecularPS(
     
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, 1.0);
+    specular = SpecularBRDF(roughness, N, L, V, material.specular, 1.0);
     specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
     specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 #endif

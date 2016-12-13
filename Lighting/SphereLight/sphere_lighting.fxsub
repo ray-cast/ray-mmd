@@ -6,6 +6,7 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/lighting.fxsub"
 #include "../../shader/shadowcommon.fxsub"
+#include "../../shader/arealight.fxsub"
 
 #define SPHERELIGHT_MAX_SIZE 25
 

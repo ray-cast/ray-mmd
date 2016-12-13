@@ -1,0 +1,157 @@
+float GetClosestBoundingBox(float intensity, float maxRadius)
+{
+    float E = 1e-2; //intensity / (maxRadius * maxRadius);
+    return min(maxRadius, sqrt(intensity / E));
+}
+
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+{
+    const float invRadius = 1 / radius;
+    float d = length(L);
+    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
+    d = max(d - attenuationBulbSize, 0);
+    float denom = 1 + d / attenuationBulbSize;
+    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
+    return saturate(attenuation);
+}
+
+float GetPhysicalLightAttenuation(float3 L, float radius)
+{
+    return GetPhysicalLightAttenuation(L, radius, mLightAttenuationBlub);
+}
+
+float GetSpotLightAttenuation(float3 L, float3 lightDirection, float cosAngle, float scale)
+{   
+    float spotAngle = dot(L, -lightDirection);
+    float lightAngleScale = 1.0f / max(0.001f, cosAngle);
+    float lightAngleOffset = cosAngle * scale;
+    float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset);
+    return attenuation;
+}
+
+float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
+{
+    float3 R = reflect(V, N);
+    float3 centerToRay = dot(L, R) * R - L;
+    float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
+    return closestPoint;
+}
+
+float SphereNormalization(float3 L, float radius, float gloss)
+{
+    float len = max(length(L),  1e-6);
+    float dist = saturate(radius / len);
+    float normFactor = gloss / saturate(gloss + 0.5 * dist);
+    return normFactor * normFactor;
+}
+
+float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float gloss, float3 f0)
+{
+    float3 Lw = SphereLightDirection(N, V, L, radius);
+    float3 L2 = normalize(Lw);
+    float3 H = normalize(V + L2);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L2));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
+    return SpecularBRDF_GGX(roughness, nh, nl, vh, nv, f0, SphereNormalization(Lw, radius, roughness));
+}
+
+float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+{
+    float3 I = dot(Ln, L) * Ln - L;
+    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
+    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
+    coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
+    return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
+}
+
+float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
+{
+    float RdotN = dot(Ln, R) + 1e-6;
+    float intersectLen = dot(Ln, L) / RdotN;
+    float3 I = R * intersectLen - L;
+
+    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
+    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
+
+    return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
+}
+
+float3 RectangleLightWithUV(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+{
+    float RdotN = dot(Ln, R) + 1e-6;
+    float intersectLen = dot(Ln, L) / RdotN;
+    float3 I = R * intersectLen - L;
+
+    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
+    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
+    coord = lightClamp2D / Lwh * 0.5 + 0.5;
+    return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
+}
+
+float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float radius)
+{
+    float3 v = normalize(-L);
+    float rectangleAngle = max(0, dot(v, lightDirection));   
+    return rectangleAngle;
+}
+
+float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float gloss, float3 f0, out float2 coord)
+{
+    float3 R = reflect(V, N);
+    float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
+    
+    float3 L2 = normalize(Lw);
+    float3 H = normalize(V + L2);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L2));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness = max(SmoothnessToRoughness(gloss), 0.001);    
+    return SpecularBRDF_GGX(roughness, nh, nl, vh, nv, f0, SphereNormalization(Lw, Lwh.y, roughness));
+}
+
+float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
+{   
+    float3 Ld = L1 - L0;
+    float t = dot(-L0, Ld) / dot(Ld, Ld);
+    float3 d = (L0 + Ld * saturate(t));
+    return d - normalize(d) * radius;
+}
+
+float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
+{      
+    float3 Ld = L1 - L0;
+    float3 R = reflect(V, N);
+    
+    float rl0 = dot(R, L0);
+    float rld = dot(R, Ld);
+    float T = (rl0 * rld - dot(L0, Ld)) / (dot(Ld, Ld) - rld * rld);
+    
+    float3 closestPoint = L0 + Ld * saturate(T);
+    float3 centerToRay = dot(closestPoint, R) * R - closestPoint;
+    
+    return closestPoint + centerToRay * saturate(radius / length(centerToRay));
+}
+
+float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 f0)
+{
+    float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
+    float3 L2 = normalize(Lw);
+    
+    float3 H = normalize(V + L2);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L2));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness = max(SmoothnessToRoughness(smoothness), 0.001);
+    return SpecularBRDF_GGX(roughness, nh, nl, vh, nv, f0, SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness));
+}

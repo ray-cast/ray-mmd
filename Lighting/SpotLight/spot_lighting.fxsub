@@ -6,6 +6,7 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/lighting.fxsub"
 #include "../../shader/shadowcommon.fxsub"
+#include "../../shader/arealight.fxsub"
 
 float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;

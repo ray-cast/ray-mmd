@@ -24,11 +24,6 @@ float SmoothnessToShininess(float smoothness)
     return RoughnessToShininess(roughness);
 }
 
-float fresnelSchlick(float LdotH)
-{
-    return pow(1 - LdotH, 5);
-}
-
 float fresnelSchlick(float f0, float f9, float LdotH)
 {
     return lerp(f0, f9, pow(1 - LdotH, 5));
@@ -107,37 +102,27 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
     return float4(material.albedo * material.transmittance * nl * phase, 0);
 }
 
-float3 DiffuseBRDF(float3 N, float3 L, float3 V, MaterialParam material)
+float Diffuse_Burley(float roughness, float nv, float nl, float vh)
 {
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    
-    float3 H = normalize(V + L);
-    
     float energyBias = 0.5 * roughness;
     float energyFactor = lerp(1, 1 / 1.51, roughness);
+    float Fd90 = energyBias + 2.0 * vh * vh * roughness;
+    float FdV = 1 + (Fd90 - 1) * pow5(1 - nv);
+    float FdL = 1 + (Fd90 - 1) * pow5(1 - nl);
+    return FdV * FdL * energyFactor;
+}
 
+float3 DiffuseBRDF(float roughness, float3 N, float3 L, float3 V)
+{
+    float3 H = normalize(V + L);
     float nl = saturate(dot(N, L));
     float vh = saturate(dot(V, H));
     float nv = max(abs(dot(N, V)), 0.1);
-
-    float Fd90 = energyBias + 2.0 * vh * vh * roughness;
-
-    float FL = fresnelSchlick(nl);
-    float FV = fresnelSchlick(nv);
-    
-    float Fd = lerp(1, Fd90, FL) * lerp(1, Fd90, FV) * energyFactor;
-    return Fd * nl;
+    return Diffuse_Burley(roughness, nv, nl, vh) * nl;
 }
 
-float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
+float3 SpecularBRDF_GGX(float roughness, float nh, float nl, float vh, float nv, float3 specular, float NormalizationFactor)
 {
-    float3 H = normalize(V + L);
-
-    float nh = saturate(dot(N, H));
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = abs(dot(N, V)) + 1e-5h;
-
     float m2 = roughness * roughness;
     float spec = (nh * m2 - nh) * nh + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
@@ -153,15 +138,8 @@ float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 sp
     return fresnel * spec * nl;
 }
 
-float3 SpecularBRDF_Cloth(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
-{
-    float3 H = normalize(V + L);
-
-    float nh = saturate(dot(N, H));
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = saturate(dot(N, V));
-    
+float3 SpecularBRDF_Cloth(float roughness, float nh, float nl, float vh, float nv, float3 specular, float NormalizationFactor)
+{   
     float m = roughness * roughness;
     float m2 = m * m;
     float A = 4;
@@ -177,14 +155,8 @@ float3 SpecularBRDF_Cloth(float3 N, float3 L, float3 V, float roughness, float3 
     return fresnel * spec * nl;
 }
 
-float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, float specular, float NormalizationFactor)
-{
-    float3 H = normalize(V + L);
-
-    float nh = saturate(dot(N, H));
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    
+float4 SpecularBRDF_ClearCoat(float roughness, float nh, float nl, float vh, float nv, float specular, float NormalizationFactor)
+{    
     float m2 = roughness * roughness;
     float spec = (nh * m2 - nh) * nh + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
@@ -196,6 +168,117 @@ float4 SpecularBRDF_ClearCoat(float3 N, float3 L, float3 V, float roughness, flo
     spec *= fresnel * nl;
     
     return float4(spec, spec, spec, 1 - fresnel);
+}
+
+float3 SpecularBRDF(float roughness, float3 N, float3 L, float3 V, float3 specular, float NormalizationFactor)
+{   
+    float3 H = normalize(V + L);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, L));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    return SpecularBRDF_GGX(roughness, nh, nl, vh, nv, specular, NormalizationFactor);
+}
+
+float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+{
+    float3 H = normalize(V + Ls);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, Ls));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    
+    float3 diffuse = DiffuseBRDF(roughness, N, Ld, V);
+    float3 specular = SpecularBRDF_GGX(roughness, nh, nl, vh, nv, material.specular, normalizeFactor);
+    
+#if SSSS_QUALITY > 1
+    if (material.lightModel != SHADINGMODELID_SUBSURFACE &&
+        material.lightModel != SHADINGMODELID_SKIN)
+    {
+        diffuse *=  material.albedo;
+    }
+#else
+    diffuse *= material.albedo;
+#endif
+
+#if SSSS_QUALITY > 1
+    return float4(diffuse, luminance(specular));
+#else
+    return float4(diffuse + specular, 0);
+#endif
+}
+
+float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+{
+    float3 H = normalize(V + Ls);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, Ls));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    
+    float3 diffuse = DiffuseBRDF(roughness, N, Ld, V);
+    float3 spec1 = SpecularBRDF_GGX(roughness, nh, nl, vh, nv, material.specular, normalizeFactor);
+    float3 spec2 = SpecularBRDF_Cloth(roughness, nh, nl, vh, nv, material.specular, normalizeFactor);
+    float3 cloth = lerp(spec1, spec2, material.customData);    
+    return float4(material.albedo * diffuse + cloth, 0);
+}
+
+float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+{
+    float3 H = normalize(V + Ls);
+
+    float nh = saturate(dot(N, H));
+    float nl = saturate(dot(N, Ls));
+    float vh = saturate(dot(V, H));
+    float nv = abs(dot(N, V)) + 1e-5h;
+    
+    float roughness1 = max(SmoothnessToRoughness(material.smoothness), 0.001);
+    float roughness2 = max(SmoothnessToRoughness(material.customData), 0.001);
+    
+    float3 diffuse = DiffuseBRDF(roughness1, N, Ld, V);
+    float3 spec1 = SpecularBRDF_GGX(roughness1, nh, nl, vh, nv, material.specular, normalizeFactor);
+    float4 spec2 = SpecularBRDF_ClearCoat(roughness2, nh, nl, vh, nv, 0.04, normalizeFactor);    
+    return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
+}
+
+float4 SurfaceShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+{
+    if (material.lightModel == SHADINGMODELID_CLOTH)
+    {
+        return ClothShading(material, N, Ld, Ls, V, normalizeFactor);
+    }
+    else if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+    {
+        return ClearCoatShading(material, N, Ld, Ls, V, normalizeFactor);
+    }
+    else
+    {
+        return StandardShading(material, N, Ld, Ls, V, normalizeFactor);
+    }
+}
+
+float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
+{
+    if (material.lightModel == SHADINGMODELID_SKIN)
+    {
+        return SubsurfaceShadingPreIntegratedSkin(material, N, L);
+    }
+    else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
+    {
+        return SubsurfaceShadingTwoSide(material, N, L, V);        
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 float HorizonOcclusion(float3 N, float3 R)
@@ -230,221 +313,4 @@ float EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness)
     const float2 c1 = float2(1, 0.0425);
     float2 r = SmoothnessToRoughness(smoothness) * c0 + c1;
     return min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
-}
-
-float GetClosestBoundingBox(float intensity, float maxRadius)
-{
-    float E = 1e-2; //intensity / (maxRadius * maxRadius);
-    return min(maxRadius, sqrt(intensity / E));
-}
-
-float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
-{
-    const float invRadius = 1 / radius;
-    float d = length(L);
-    float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
-    d = max(d - attenuationBulbSize, 0);
-    float denom = 1 + d / attenuationBulbSize;
-    float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
-    return saturate(attenuation);
-}
-
-float GetPhysicalLightAttenuation(float3 L, float radius)
-{
-    return GetPhysicalLightAttenuation(L, radius, mLightAttenuationBlub);
-}
-
-float GetSpotLightAttenuation(float3 L, float3 lightDirection, float cosAngle, float scale)
-{   
-    float spotAngle = dot(L, -lightDirection);
-    float lightAngleScale = 1.0f / max(0.001f, cosAngle);
-    float lightAngleOffset = cosAngle * scale;
-    float attenuation = saturate(spotAngle * lightAngleScale - lightAngleOffset);
-    return attenuation;
-}
-
-float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
-{
-    float3 R = reflect(V, N);
-    float3 centerToRay = dot(L, R) * R - L;
-    float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
-    return normalize(closestPoint);
-}
-
-float SphereNormalization(float len, float radius, float gloss)
-{
-    float dist = saturate(radius / len);
-    float normFactor = gloss / saturate(gloss + 0.5 * dist);
-    return normFactor * normFactor;
-}
-
-float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float gloss, float3 f0)
-{
-    float len = max(length(L),  1e-6);
-    float3 L2 = SphereLightDirection(N, V, L, radius);
-    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF_GGX(N, V, L2, roughness, f0, SphereNormalization(len, radius, roughness));
-}
-
-float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
-{
-    float3 I = dot(Ln, L) * Ln - L;
-    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-    coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
-    return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
-}
-
-float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
-{
-    float RdotN = dot(Ln, R) + 1e-6;
-    float intersectLen = dot(Ln, L) / RdotN;
-    float3 I = R * intersectLen - L;
-
-    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-
-    return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
-}
-
-float3 RectangleLightWithUV(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
-{
-    float RdotN = dot(Ln, R) + 1e-6;
-    float intersectLen = dot(Ln, L) / RdotN;
-    float3 I = R * intersectLen - L;
-
-    float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-    float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-    coord = lightClamp2D / Lwh * 0.5 + 0.5;
-    return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
-}
-
-float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float radius)
-{
-    float3 v = normalize(-L);
-    float rectangleAngle = max(0, dot(v, lightDirection));   
-    return rectangleAngle;
-}
-
-float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float gloss, float3 f0, out float2 coord)
-{
-    float3 R = reflect(V, N);
-    float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
-    float len = max(length(Lw), 1e-6);
-    float3 L2 = Lw / len;
-    float roughness = max(SmoothnessToRoughness(gloss), 0.001);
-    return SpecularBRDF_GGX(N, L2, V, roughness, f0, SphereNormalization(len, Lwh.y, roughness));
-}
-
-float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{   
-    float3 Ld = L1 - L0;
-    float t = dot(-L0, Ld) / dot(Ld, Ld);
-    float3 d = (L0 + Ld * saturate(t));
-    return d - normalize(d) * radius;
-}
-
-float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{      
-    float3 Ld = L1 - L0;
-    float3 R = reflect(V, N);
-    
-    float RoL0 = dot(R, L0);
-    float RoLd = dot(R, Ld);
-    float L0oLd = dot(L0, Ld);
-    float T = (RoL0 * RoLd - L0oLd) / (dot(Ld, Ld) - RoLd * RoLd);
-    
-    float3 closestPoint = L0 + Ld * saturate(T);
-    float3 centerToRay = dot(closestPoint, R) * R - closestPoint;
-    
-    return closestPoint + centerToRay * saturate(radius / length(centerToRay));
-}
-
-float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float smoothness, float3 f0)
-{
-    float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
-    
-    float len = length(Lw);
-    float3 L2 = Lw / len;
-    
-    float roughness = max(SmoothnessToRoughness(smoothness), 0.001);
-    float normalizeFactor = SphereNormalization(len, length(float2(LightWidth, LightRadius)), roughness);
-    return SpecularBRDF_GGX(N, L2, V, roughness, f0, normalizeFactor);
-}
-
-float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
-{
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    float3 diffuse = DiffuseBRDF(N, Ld, V, material);
-    float3 specular = SpecularBRDF_GGX(N, Ls, V, roughness, material.specular, normalizeFactor);
-    
-#if SSSS_QUALITY > 1
-    if (material.lightModel != SHADINGMODELID_SUBSURFACE &&
-        material.lightModel != SHADINGMODELID_SKIN)
-    {
-        diffuse *=  material.albedo;
-    }
-#else
-    diffuse *= material.albedo;
-#endif
-
-#if SSSS_QUALITY > 1
-    return float4(diffuse, luminance(specular));
-#else
-    return float4(diffuse + specular, 0);
-#endif
-}
-
-float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
-{
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    
-    float3 diffuse = DiffuseBRDF(N, Ld, V, material);
-    float3 spec1 = SpecularBRDF_GGX(N, Ls, V, roughness, material.specular, normalizeFactor);
-    float3 spec2 = SpecularBRDF_Cloth(N, Ls, V, roughness, material.specular, normalizeFactor);
-    float3 cloth = lerp(spec1, spec2, material.customData);    
-    return float4(material.albedo * diffuse + cloth, 0);
-}
-
-float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
-{
-    float roughness1 = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    float roughness2 = max(SmoothnessToRoughness(material.customData), 0.001);
-    
-    float3 diffuse = DiffuseBRDF(N, Ld, V, material);    
-    float3 spec1 = SpecularBRDF_GGX(N, Ls, V, roughness1, material.specular, normalizeFactor);
-    float4 spec2 = SpecularBRDF_ClearCoat(N, Ls, V, roughness2, 0.04, normalizeFactor);    
-    return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
-}
-
-float4 SurfaceShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
-{
-    if (material.lightModel == SHADINGMODELID_CLOTH)
-    {
-        return ClothShading(material, N, Ld, Ls, V, normalizeFactor);
-    }
-    else if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
-    {
-        return ClearCoatShading(material, N, Ld, Ls, V, normalizeFactor);
-    }
-    else
-    {
-        return StandardShading(material, N, Ld, Ls, V, normalizeFactor);
-    }
-}
-
-float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
-{
-    if (material.lightModel == SHADINGMODELID_SKIN)
-    {
-        return SubsurfaceShadingPreIntegratedSkin(material, N, L);
-    }
-    else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-    {
-        return SubsurfaceShadingTwoSide(material, N, L, V);        
-    }
-    else
-    {
-        return 0;
-    }
 }

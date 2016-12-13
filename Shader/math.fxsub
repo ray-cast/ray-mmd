@@ -62,6 +62,12 @@ float pow2(float x)
     return x * x;
 }
 
+float pow5(float x)
+{
+    float xx = x * x;
+    return xx * xx * x;
+}
+
 float sum(float3 v)
 {
     return dot(v, 1.0);
