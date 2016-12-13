@@ -44,7 +44,7 @@ texture FogMap: OFFSCREENRENDERTARGET <
 >;
 sampler FogMapSamp = sampler_state {
     texture = <FogMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
@@ -202,11 +202,6 @@ texture ShadowmapMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
-sampler PSSMsamp = sampler_state {
-    texture = <PSSM>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
-};
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
