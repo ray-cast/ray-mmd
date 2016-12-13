@@ -448,7 +448,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #endif
     
     color = ApplyVignette(color, coord);
-    color = ApplyColorBalance(color);    
+    color = ApplyColorBalance(color);
     color = ACESToneMapping(color * (mExposureMin + mExposure * mExposureMax));
     
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
