@@ -69,8 +69,8 @@ float4 ShadowMapGenPS(
     if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
     if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
     
-    float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).x;
-    float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).x;
+    float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
+    float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
     float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
     float receiverDepth = proj.z;
 

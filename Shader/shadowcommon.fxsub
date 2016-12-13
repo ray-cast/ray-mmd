@@ -246,6 +246,6 @@ float ShadowSlopeScaledBias(float depth)
 {
     float dx = abs(ddx(depth));
     float dy = abs(ddy(depth));
-    float depthSlope = max(dx, dy);
+    float depthSlope = min(dx, dy);
     return depthSlope;
 }
