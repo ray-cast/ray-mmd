@@ -149,12 +149,7 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
 {
     float center_d = linearizeDepth2(coord);
 
-#if SSAO_QUALITY > 3
-    float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
-#else
     float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
-#endif
-
     float total_w = 1.0f;
     
     float2 offset1 = coord + offset;
@@ -178,13 +173,8 @@ float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, unif
         bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
         bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
-#if SSAO_QUALITY > 3
-        total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
-        total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
-#else
         total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
         total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
-#endif
 
         total_w += bilateralWeight1;
         total_w += bilateralWeight2;
