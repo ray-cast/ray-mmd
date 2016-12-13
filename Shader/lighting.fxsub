@@ -382,7 +382,7 @@ float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, f
     if (material.lightModel != SHADINGMODELID_SUBSURFACE &&
         material.lightModel != SHADINGMODELID_SKIN)
     {
-        diffuse =  material.albedo;
+        diffuse *=  material.albedo;
     }
 #else
     diffuse *= material.albedo;
