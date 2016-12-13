@@ -86,12 +86,6 @@ float4 ShadowMapGenPS(
     return float4(shadow2, shadow, 0, 0);
 }
 
-float3 ShadowMapGetNormal(float2 uv)
-{
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
-    return DecodeGBufferNormal(MRT6);
-}
-
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
     float2 offset1 = coord + offset;
