@@ -19,7 +19,7 @@ static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEn
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
