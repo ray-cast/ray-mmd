@@ -198,10 +198,10 @@ technique DeferredLighting<
     "RenderColorTarget=StreakMap4thTemp; Pass=Star4thStreak2nd;"
     "RenderColorTarget=StreakMap4th;     Pass=Star4thStreak3rd;"
 #endif
-    "RenderColorTarget=GlareLightMap;   Pass=GlareLightComp;"
+    "RenderColorTarget=GlareLightMap; Pass=GlareLightComp;"
 #if HDR_FLARE_MODE > 0
-    "RenderColorTarget=GhostImageMap;   Pass=GhostImage1st;"
-    "RenderColorTarget=GlareLightMap;   Pass=GhostImage2nd;"
+    "RenderColorTarget=GhostImageMap; Pass=GhostImage1st;"
+    "RenderColorTarget=GlareLightMap; Pass=GhostImage2nd;"
 #endif
 #endif
 
