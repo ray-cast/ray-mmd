@@ -57,15 +57,6 @@ float3 GetNormal(float2 uv)
     return DecodeGBufferNormal(MRT6);
 }
 
-float2 tapLocation(int index, float noise)
-{
-    float alpha = PI_2 * 7 / SSAO_SAMPLER_COUNT;
-    float angle = (index + noise) * alpha;
-    float radius = (1 + mSSAORadiusM - mSSAORadiusP) * 16;
-    float2 radiusStep = ((ViewportSize.x / radius) / ViewportSize) * ((0.5 + index) / SSAO_SAMPLER_COUNT);
-    return float2(cos(angle), sin(angle)) * radiusStep;
-}
-
 float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
     const float2 kernel[16] = 
