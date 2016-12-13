@@ -16,7 +16,7 @@ float mColBalanceBM :  CONTROLOBJECT < string name="(self)"; string item = "Bala
 float mColBalance  :  CONTROLOBJECT < string name="(self)"; string item = "BalanceGray+"; >;
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-shared texture2D ShadowmapMap : RENDERCOLORTARGET;
+shared texture ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
     MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
