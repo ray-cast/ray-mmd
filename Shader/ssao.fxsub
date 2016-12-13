@@ -115,7 +115,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     }
     
     [unroll]
-    for (int j = 0; j < SSAO_SAMPLER_COUNT; j += 4)
+    for (int j = 0; j < SSAO_SAMPLER_COUNT; j+=4)
     {
         float2 sampleOffset[4];
         sampleOffset[0] = coord.xy + tapLocation(j, sampleNoise) * sampleScale;
