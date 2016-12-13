@@ -118,10 +118,10 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     for (int j = 0; j < SSAO_SAMPLER_COUNT; j+=4)
     {
         float2 sampleOffset[4];
-        sampleOffset[0] = coord.xy + tapLocation(j, sampleNoise) * sampleScale;
-        sampleOffset[1] = coord.xy + tapLocation(j + 1, sampleNoise) * sampleScale;
-        sampleOffset[2] = coord.xy + tapLocation(j + 2, sampleNoise) * sampleScale;
-        sampleOffset[3] = coord.xy + tapLocation(j + 3, sampleNoise) * sampleScale;
+        sampleOffset[0] = coord.xy + rotateKernel[j + 0];
+        sampleOffset[1] = coord.xy + rotateKernel[j + 1];
+        sampleOffset[2] = coord.xy + rotateKernel[j + 2];
+        sampleOffset[3] = coord.xy + rotateKernel[j + 3];
         
         float3 samplePosition[4];
         samplePosition[0] = GetPosition(sampleOffset[0]);
