@@ -16,21 +16,13 @@ shared texture SSAOMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int Miplevels = 1;
     bool AntiAlias = false;
-#if SSAO_QUALITY > 3
-    string Format = "A8R8G8B8";
-#else
     string Format = "L8";
-#endif
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     int Miplevels = 1;
     bool AntiAlias = false;
-#if SSAO_QUALITY > 3
-    string Format = "A8R8G8B8";
-#else
     string Format = "L8";
-#endif
 >;
 sampler SSAOMapSamp = sampler_state {
     texture = <SSAOMap>;
@@ -45,8 +37,7 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 uv)
 {
-    float depth = tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
-    return depth;
+    return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
 }
 
 float linearizeDepth2(float2 uv)
