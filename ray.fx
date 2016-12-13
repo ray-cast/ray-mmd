@@ -109,7 +109,7 @@ technique DeferredLighting<
     "Clear=Color;"
     "Clear=Depth;"
     "ScriptExternal=Color;"
-    
+
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
     "RenderColorTarget=ShadowmapMap;"
     "ClearSetColor=WhiteColor;"
