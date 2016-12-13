@@ -1,6 +1,5 @@
 shared texture LightAlphaMap : RENDERCOLORTARGET;
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
-shared texture FogAlphaMap : RENDERCOLORTARGET;
 
 const float4 BackColor = float4(0,0,0,0);
 const float4 IBLColor = float4(0,0.5,0,0.5);
