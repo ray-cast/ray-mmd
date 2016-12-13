@@ -72,7 +72,6 @@ float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
         float3 L = stepStart - lightPos;
         float atten = GetPhysicalLightAttenuation(L, param.lightRange);
         atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
-        atten *= ComputeOpticalDepth(length(L));
         atten *= ComputeScatteringExtinction(stepDepth);
 
         stepDepth += stepSize;
@@ -107,7 +106,6 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
         float3 L = stepStart - lightPos;
         float atten = GetPhysicalLightAttenuation(L, param.lightRange);
         atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
-        atten *= ComputeOpticalDepth(length(L));
         atten *= ComputeScatteringExtinction(stepDepth);
         atten *= ShadowTest(param, shadowMap, shadowSize, stepStart);
 
