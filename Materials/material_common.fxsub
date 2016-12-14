@@ -875,22 +875,20 @@ float3 GetCustomData(float2 coord)
 
 float GetLightMode(MaterialParam material)
 {
-#if USE_CUSTOM_MATERIAL
-    #if CUSTOM_ENABLE
-        return CUSTOM_ENABLE;
+#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
+    #if EMISSIVE_ENABLE
+        return any(material.emissive) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
     #else
-        #if SSS_ENABLE
-            float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
-            #if EMISSIVE_ENABLE
-                return any(material.emissive) ? SHADINGMODELID_EMISSIVE : profile;
-            #endif
-            return profile;
-        #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
-            return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
-        #else
-            return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
-        #endif
+        return CUSTOM_ENABLE;
     #endif
+#elif USE_CUSTOM_MATERIAL && SSS_ENABLE
+    float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
+    #if EMISSIVE_ENABLE
+        return any(material.emissive) ? SHADINGMODELID_EMISSIVE : profile;
+    #endif
+    return profile;
+#elif USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
+    return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #else
     return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #endif
