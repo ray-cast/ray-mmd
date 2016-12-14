@@ -170,7 +170,7 @@ float4 SpecularBRDF_ClearCoat(float roughness, float nh, float nl, float vh, flo
     return float4(spec, spec, spec, 1 - fresnel);
 }
 
-float3 SpecularBRDF(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
+float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
 {   
     float3 H = normalize(V + L);
 
