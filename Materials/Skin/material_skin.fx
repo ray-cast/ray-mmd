@@ -43,8 +43,8 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "../_MaterialMap/skin.png"
 
-const float normalMapSubScale = 80.0;
-const float normalMapSubLoopNum = 1.0;
+const float normalMapSubScale = 1.0;
+const float normalMapSubLoopNum = 80.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
