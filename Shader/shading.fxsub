@@ -128,6 +128,7 @@ float4 ShadingOpacitySpecularPS(
     float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
+
     specular += iblSpecular;
 #endif
 
