@@ -43,7 +43,7 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
-const float normalMapSubScale = 1;
+const float normalMapSubScale = 1.0;
 const float normalMapSubLoopNum = 1.0;
 
 // 光滑度

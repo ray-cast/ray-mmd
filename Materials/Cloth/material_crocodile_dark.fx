@@ -115,6 +115,14 @@ const float melaninMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
+// Shading Material ID
+// 0 : Default
+// 1 : PreIntegrated Skin // curvature/opacity
+// 2 : Reserved
+// 3 : Reserved
+// 4 : Reserved
+// 5 : Cloth      // sheen
+// 6 : Clear Coat // smoothness
 #define CUSTOM_ENABLE 0  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0

@@ -18,6 +18,8 @@ const float albedoMapLoopNum = 20.0;
 // 透明通道
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
+#define ALPHA_MAP_ANIMATION_ENABLE 0
+#define ALPHA_MAP_ANIMATION_SPEED 0
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3 // (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
@@ -115,6 +117,14 @@ const float melaninMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
+// Shading Material ID
+// 0 : Default
+// 1 : PreIntegrated Skin // curvature/opacity
+// 2 : Reserved
+// 3 : Reserved
+// 4 : Reserved
+// 5 : Cloth      // sheen
+// 6 : Clear Coat // smoothness
 #define CUSTOM_ENABLE 6  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
