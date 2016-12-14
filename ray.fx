@@ -265,13 +265,6 @@ technique DeferredLighting<
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 ShadingOpacityPS();
     }
-    pass ShadingOpacitySpecular < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = true; AlphaTestEnable = false;
-        ZEnable = false; ZWriteEnable = false;
-        SrcBlend = ONE; DestBlend = ONE;
-        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-        PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
-    }
     pass ShadingTransparent < string Script= "Draw=Buffer;"; > {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         ZEnable = false; ZWriteEnable = false;
@@ -312,6 +305,13 @@ technique DeferredLighting<
         StencilWriteMask = 0;
         VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
         PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapTempSamp,float2(0.0, 1.0));
+    }
+    pass ShadingOpacitySpecular < string Script= "Draw=Buffer;"; > {
+        AlphaBlendEnable = true; AlphaTestEnable = false;
+        ZEnable = false; ZWriteEnable = false;
+        SrcBlend = ONE; DestBlend = ONE;
+        VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+        PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
     }
 #endif
 #if SSR_QUALITY > 0

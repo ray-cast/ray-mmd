@@ -69,7 +69,7 @@ float4 ShadingOpacityPS(
 
     MaterialParam material;
     DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-            
+
     float3 N = material.normal;
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
@@ -102,12 +102,16 @@ float4 ShadingOpacitySpecularPS(
     float3 specular = 0;
     
 #if MAIN_LIGHT_ENABLE
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    specular = SpecularBRDF(roughness, N, L, V, material.specular, 1.0);
-    specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
-#if SHADOW_QUALITY > 0
-    specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-#endif
+    if (material.lightModel == SHADINGMODELID_SKIN ||
+        material.lightModel == SHADINGMODELID_SUBSURFACE)
+    {
+        float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+        specular = SpecularBRDF(roughness, N, L, V, material.specular, 1.0);
+        specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+    #if SHADOW_QUALITY > 0
+        specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+    #endif
+    }
 #endif
 
 #if IBL_QUALITY > 0
