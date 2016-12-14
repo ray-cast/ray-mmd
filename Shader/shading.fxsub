@@ -167,6 +167,6 @@ float4 ShadingTransparentPS(
     float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
     lighting += fog.rgb;
 #endif
-    
+
     return float4(lighting, material.linearDepth);
 }
