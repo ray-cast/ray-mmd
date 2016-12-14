@@ -43,7 +43,7 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
-const float normalMapSubScale = 1;
+const float normalMapSubScale = 1.0;
 const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
@@ -69,7 +69,7 @@ const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
 // Subsurface Scattering Color
-#define SSS_ENABLE 0
+#define SSS_ENABLE 1
 #define SSS_MAP_ENABLE 0
 #define SSS_MAP_UV_FLIP 0
 #define SSS_MAP_IS_THICKNESS 0
@@ -80,6 +80,16 @@ const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 const float3 transmittance = SSS_TRANSMITTANCE(0.75);
 const float transmittanceStrength = 0.8f; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
 const float transmittanceMapLoopNum = 1.0;
+
+// 黑色素
+#define MELANIN_MAP_ENABLE 0
+#define MELANIN_MAP_IN_TOONMAP 0
+#define MELANIN_MAP_UV_FLIP 0
+#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define MELANIN_MAP_FILE "melanin.png"
+
+const float melanin = 0.0;
+const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0
@@ -98,16 +108,6 @@ const float transmittanceMapLoopNum = 1.0;
 const float3 emissive = 1.0;
 const float emissiveIntensity = 1.0;
 const float emissiveMapLoopNum = 1.0;
-
-// 黑色素
-#define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_IN_TOONMAP 0
-#define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define MELANIN_MAP_FILE "melanin.png"
-
-const float melanin = 0.0;
-const float melaninMapLoopNum = 1.0;
 
 // 视差贴图
 #define PARALLAX_MAP_ENABLE 0
