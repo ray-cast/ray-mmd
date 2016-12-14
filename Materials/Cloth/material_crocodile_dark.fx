@@ -66,6 +66,18 @@ const float metalness = 0.1;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
+// Subsurface Scattering Color
+#define SSS_ENABLE 0
+#define SSS_MAP_ENABLE 0
+#define SSS_MAP_UV_FLIP 0
+#define SSS_MAP_IS_THICKNESS 0
+#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
+#define SSS_MAP_FILE "transmittance.png"
+
+const float3 transmittance = 0.0;
+const float transmittanceStrength = 0.0f;
+const float transmittanceMapLoopNum = 1.0;
+
 // 发光贴图
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
@@ -103,16 +115,7 @@ const float melaninMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-// Shading Material ID
-// 0 : Default
-// 1 : PreIntegrated Skin // curvature/opacity map
-// 2 : Reserved
-// 3 : Hair
-// 4 : Reserved
-// 5 : Cloth      // sheen map
-// 6 : Clear Coat // smoothness/roughness map
-// 7 : Subsurface // curvature/opacity map
-#define CUSTOM_ENABLE 5  // ID
+#define CUSTOM_ENABLE 0
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
 #define CUSTOM_MAP_UV_FLIP 0
@@ -120,18 +123,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_MAP_FILE "custom.png"
 
-const float custom = 0.9;
+const float custom = 0.0;
 const float customMapLoopNum = 1.0;
-
-// Subsurface Scattering Color
-#define SSS_MAP_ENABLE 0
-#define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_IS_THICKNESS 0
-#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
-#define SSS_MAP_FILE "transmittance.png"
-#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
-
-const float3 transmittance = SSS_SKIN_TRANSMITTANCE(0.75);
-const float transmittanceMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
