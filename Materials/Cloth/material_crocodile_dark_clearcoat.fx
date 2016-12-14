@@ -52,7 +52,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "../_MaterialMap/leather_01_g.png"
 
-const float smoothness = 0.35;
+const float smoothness = 0.0;
 const float smoothnessMapLoopNum = 20.0;
 
 // 金属程度
@@ -124,6 +124,6 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_MAP_FILE "custom.png"
 
 const float custom = 0.8;
-const float customMapLoopNum = 20.0;
+const float customMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

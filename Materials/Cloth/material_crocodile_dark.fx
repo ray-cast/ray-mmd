@@ -115,7 +115,7 @@ const float melaninMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-#define CUSTOM_ENABLE 0
+#define CUSTOM_ENABLE 0  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
 #define CUSTOM_MAP_UV_FLIP 0
