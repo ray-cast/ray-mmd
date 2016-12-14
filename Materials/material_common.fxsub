@@ -749,7 +749,7 @@ float GetMetalness(float2 coord)
 
 float3 GetTransmittance(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
+#if USE_CUSTOM_MATERIAL && (CUSTOM_ENABLE || SSS_ENABLE)
     #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
             coord.y = 1 - coord.y;
@@ -769,6 +769,47 @@ float3 GetTransmittance(float2 coord)
         return transmittanceMapColor;
     #else
         return transmittance;
+    #endif
+#else
+    return 0.0;
+#endif
+}
+
+float GetMelanin(float2 coord)
+{
+#if USE_CUSTOM_MATERIAL
+    #if MELANIN_MAP_ENABLE
+        #if MELANIN_MAP_UV_FLIP
+            coord.y = 1 - coord.y;
+        #endif
+        
+        #if MELANIN_MAP_IN_TOONMAP
+            #if MELANIN_MAP_SWIZZLE == 0
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
+            #elif MELANIN_MAP_SWIZZLE == 1
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
+            #elif MELANIN_MAP_SWIZZLE == 2
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
+            #elif MELANIN_MAP_SWIZZLE == 3
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
+            #else
+                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
+            #endif
+        #else
+            #if MELANIN_MAP_SWIZZLE == 0
+                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
+            #elif MELANIN_MAP_SWIZZLE == 1
+                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).g;
+            #elif MELANIN_MAP_SWIZZLE == 2
+                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).b;
+            #elif MELANIN_MAP_SWIZZLE == 3
+                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).a;
+            #else
+                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
+            #endif
+        #endif
+    #else
+        return melanin;
     #endif
 #else
     return 0.0;
@@ -825,6 +866,8 @@ float3 GetCustomData(float2 coord)
             return customData;
         #endif
     #endif
+#elif USE_CUSTOM_MATERIAL && SSS_ENABLE
+    return frac(transmittanceStrength);
 #else
     return 0.0f;
 #endif
@@ -837,11 +880,11 @@ float GetLightMode(MaterialParam material)
         return CUSTOM_ENABLE;
     #else
         #if SSS_ENABLE
+            float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
             #if EMISSIVE_ENABLE
-                return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_SKIN;
-            #else
-                return SHADINGMODELID_SKIN;
+                return any(material.emissive) ? SHADINGMODELID_EMISSIVE : profile;
             #endif
+            return profile;
         #elif EMISSIVE_ENABLE && USE_CUSTOM_MATERIAL
             return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
         #else
@@ -850,47 +893,6 @@ float GetLightMode(MaterialParam material)
     #endif
 #else
     return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
-#endif
-}
-
-float GetMelanin(float2 coord)
-{
-#if USE_CUSTOM_MATERIAL
-    #if MELANIN_MAP_ENABLE
-        #if MELANIN_MAP_UV_FLIP
-            coord.y = 1 - coord.y;
-        #endif
-        
-        #if MELANIN_MAP_IN_TOONMAP
-            #if MELANIN_MAP_SWIZZLE == 0
-                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
-            #elif MELANIN_MAP_SWIZZLE == 1
-                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
-            #elif MELANIN_MAP_SWIZZLE == 2
-                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
-            #elif MELANIN_MAP_SWIZZLE == 3
-                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
-            #else
-                return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
-            #endif
-        #else
-            #if MELANIN_MAP_SWIZZLE == 0
-                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
-            #elif MELANIN_MAP_SWIZZLE == 1
-                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).g;
-            #elif MELANIN_MAP_SWIZZLE == 2
-                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).b;
-            #elif MELANIN_MAP_SWIZZLE == 3
-                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).a;
-            #else
-                return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
-            #endif
-        #endif
-    #else
-        return melanin;
-    #endif
-#else
-    return 0.0;
 #endif
 }
 
