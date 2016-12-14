@@ -120,7 +120,7 @@ const float parallaxMapLoopNum = 1.0;
 // Shading Material ID
 // 0 : Default
 // 1 : PreIntegrated Skin // curvature/opacity map
-// 2 : Reserved
+// 2 : Reserved   // emissive placeholder
 // 3 : Reserved
 // 4 : Reserved
 // 5 : Cloth      // sheen map

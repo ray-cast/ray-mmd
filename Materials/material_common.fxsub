@@ -758,8 +758,7 @@ float3 GetTransmittance(float2 coord)
         #if SSS_MAP_IS_THICKNESS
             float3 transmittanceMapColor = 1 - tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum);
         #else
-            float3 transmittanceMapColor = tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb;
-            transmittanceMapColor = srgb2linear(transmittanceMapColor);
+            float3 transmittanceMapColor = srgb2linear(tex2D(TransmittanceMapSamp, coord * transmittanceMapLoopNum).rgb);
         #endif
 
         #if SSS_MAP_APPLY_COLOR
