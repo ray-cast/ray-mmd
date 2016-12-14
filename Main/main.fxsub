@@ -83,8 +83,8 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, floa
         float MaterialRoughness = SmoothnessToRoughness(ShininessToSmoothness(MaterialPower));
 
         float4 lighting = albedo;
-        lighting.rgb *= DiffuseBRDF(MaterialRoughness, N, L, V);
-        lighting.rgb += SpecularBRDF(MaterialRoughness, N, L, V, 0.04, 1.0);
+        lighting.rgb *= DiffuseBRDF(N, L, V, MaterialRoughness);
+        lighting.rgb += SpecularBRDF_GGX(N, L, V, MaterialRoughness, 0.04, 1.0);
         lighting.rgb *= LightSpecular;
 
         return linear2srgb(lighting);
