@@ -1,3 +1,6 @@
+bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
+bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
+
 float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord)
 {
     float4 lighting = 0;
@@ -46,12 +49,15 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
     shadow = lerp(1, shadowDepth.r, mEnvShadowP);
 #endif
 
+    if (ExistSkybox || ExistSkyboxHDR)
+    {
 #if SSSS_QUALITY > 0
     lighting += diffuse * shadow;
     lighting += alpha ? specular * shadow : 0;
 #else
     lighting += (diffuse + specular) * shadow;
 #endif
+    }
 #endif
 
     return lighting;
@@ -126,7 +132,7 @@ float4 ShadingOpacitySpecularPS(
 #endif
 
     specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
-       
+
     return float4(specular, 0);
 }
 
@@ -142,7 +148,7 @@ float4 ShadingTransparentPS(
     
     MaterialParam material;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-        
+
     float3 N = material.normal;
     float3 V = normalize(viewdir);
     float3 L = mul(normalize(-LightDirection), (float3x3)matView);
