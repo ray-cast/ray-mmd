@@ -18,6 +18,8 @@ const float albedoMapLoopNum = 1.0;
 // 透明通道
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
+#define ALPHA_MAP_ANIMATION_ENABLE 0
+#define ALPHA_MAP_ANIMATION_SPEED 0
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3 // (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
@@ -28,6 +30,7 @@ const float alphaMapLoopNum = 1.0;
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0
+#define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
@@ -37,10 +40,11 @@ const float normalMapScale = 1.0;
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
 #define NORMAL_MAP_SUB_UV_FLIP 0
+#define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
-const float normalMapSubLoopNum = 1.0;
 const float normalMapSubScale = 1;
+const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
@@ -73,11 +77,12 @@ const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 #define SSS_MAP_FILE "transmittance.png"
 
 const float3 transmittance = 0.0;
-const float transmittanceStrength = 0.0f;
+const float transmittanceStrength = 0.0f; // (0.0 = marble, 1.0 = skin)
 const float transmittanceMapLoopNum = 1.0;
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
+#define MELANIN_MAP_IN_TOONMAP 0
 #define MELANIN_MAP_UV_FLIP 0
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
@@ -90,6 +95,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
+#define EMISSIVE_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define EMISSIVE_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define EMISSIVE_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define EMISSIVE_MAP_UV_FLIP 0
@@ -111,6 +117,14 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
+// Shading Material ID
+// 0 : Default
+// 1 : PreIntegrated Skin // curvature/opacity
+// 2 : Reserved
+// 3 : Reserved
+// 4 : Reserved
+// 5 : Cloth      // sheen
+// 6 : Clear Coat // smoothness
 #define CUSTOM_ENABLE 5  // ID
 #define CUSTOM_MAP_ENABLE 0
 #define CUSTOM_MAP_IN_TOONMAP 0
@@ -122,4 +136,4 @@ const float parallaxMapLoopNum = 1.0;
 const float custom = 0.6;
 const float customMapLoopNum = 1.0;
 
-#include "../material_common.fxsub"
+#include "material_common.fxsub"
