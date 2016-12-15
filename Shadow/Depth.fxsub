@@ -17,7 +17,7 @@ void ShadowlessObjectVS(
     out float3 oTexcoord : TEXCOORD0,
     out float4 oPosition : POSITION)
 {
-    oPosition = mul(Position, matViewProject);
+    oPosition = mul(Position, matWorldViewProject);
     oTexcoord = float3(Texcoord.xy, oPosition.z);
 }
 

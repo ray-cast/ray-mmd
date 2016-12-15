@@ -46,7 +46,7 @@ void DrawObjectVS(
     oNormal = Normal;
     oTexcoord = Texcoord;
     oViewdir = CameraPosition - Position.xyz;
-    oPosition = mul(Position, matViewProject);
+    oPosition = mul(Position, matWorldViewProject);
 }
 
 float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
