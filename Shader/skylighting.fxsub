@@ -192,6 +192,7 @@ void EnvLightingPS(
     out float4 oColor0 : COLOR0,
     out float4 oColor1 : COLOR1)
 {
+#if IBL_ENABLE
     float2 coord = texcoord.xy / texcoord.w;
     coord = PosToCoord(coord);
     coord += ViewportOffset;
@@ -212,6 +213,10 @@ void EnvLightingPS(
     MaterialParam materialAlpha;    
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
+    float3 sum1 = material.albedo + material.specular;
+    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+    clip(sum(sum1 + sum2 - 1e-5));
+    
 #if AA_QUALITY > 1
     float roughness = SmoothnessToRoughness(material.smoothness);
     float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2); 
@@ -227,7 +232,6 @@ void EnvLightingPS(
     float3 diffuse2, specular2;
     ShadingMaterial(materialAlpha, materialAlpha.normal, V, diffuse2, specular2);
     
-#if IBL_ENABLE
     oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
     oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 #else
@@ -237,6 +241,7 @@ void EnvLightingPS(
 }
 
 const float4 BackColor = float4(0,0,0,0);
+const float4 IBLColor  = float4(0,0.5,0,0.5);
 
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
@@ -248,6 +253,8 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
         "Clear=Color;"\
         "RenderColorTarget0=;" \
         "RenderColorTarget1=EnvLightAlphaMap;" \
+        "ClearSetColor=IBLColor;"\
+        "Clear=Color;"\
         "Pass=DrawObject;" \
     ;> { \
         pass DrawObject { \

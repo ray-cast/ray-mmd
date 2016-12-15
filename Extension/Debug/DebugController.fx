@@ -123,17 +123,17 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += (mul(material.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormal;
     result += material.specular * showSpecular;
     result += material.smoothness * showSmoothness;
-    result += material.transmittance * showTransmittance;
     result += material.customData * showCurvature;
+    result += material.customDataB * showTransmittance;
     result += material.emissive * showEmissive;
     
     result += materialAlpha.albedo * showAlbedoAlpha;
     result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
-    result += materialAlpha.transmittance * showTransmittanceAlpha;
     result += materialAlpha.customData * showCurvatureAlpha;
-    result += materialAlpha.transmittance * showEmissiveAlpha;
+    result += materialAlpha.customDataB * showTransmittanceAlpha;
+    result += materialAlpha.emissive * showEmissiveAlpha;
 
     result = linear2srgb(result);
 
