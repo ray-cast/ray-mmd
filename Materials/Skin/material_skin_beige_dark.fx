@@ -125,7 +125,7 @@ const float parallaxMapLoopNum = 1.0;
 // 4 : Reserved
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
-#define CUSTOM_ENABLE 1  // ID
+#define CUSTOM_ENABLE 0  // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
 #define CUSTOM_A_MAP_IN_TOONMAP 0
@@ -134,7 +134,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.6;
+const float customA = 0.0;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0

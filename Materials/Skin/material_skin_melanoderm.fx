@@ -144,6 +144,5 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_FILE "custom.png"
 
 const float3 customB = 0.0;
-const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
