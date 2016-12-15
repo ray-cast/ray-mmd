@@ -20,7 +20,7 @@ struct MaterialParam
     float emissiveIntensity;
     float smoothness;
     float alpha;
-    float customData;
+    float customDataA;
     float3 customDataB;
     float linearDepth;
     int lightModel;
@@ -64,12 +64,13 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     material.smoothness = buffer1.w;
 
     material.normal = DecodeNormal(buffer2.xyz);
-    material.customDataB = 0;
     material.emissive = 0;
     material.emissiveIntensity = 0;
     
+    material.customDataA = buffer2.w;
+    material.customDataB = 0;
+    
     material.linearDepth = buffer4.x;
-    material.customData = buffer2.w;
     material.alpha = buffer4.w;
     
     if (buffer4.z <= 1e-5)
