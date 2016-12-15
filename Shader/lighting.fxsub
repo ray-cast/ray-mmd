@@ -313,12 +313,6 @@ float4 SubsurfaceShadingLUT(sampler CurvatureLUT, MaterialParam material, float3
     }
 }
 
-float HorizonOcclusion(float3 N, float3 R)
-{
-    float factor = clamp(1.0 + 1.3 * dot(R, N), 0.1, 1.0);
-    return factor * factor;
-}
-
 float EnvironmentMip(int miplevel, float smoothness)
 {
     return lerp(miplevel, 0, smoothness * smoothness);

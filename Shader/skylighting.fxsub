@@ -144,7 +144,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     diffuse = prefilteredDiffuse;
     diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
     
-    specular = prefilteredSpeculr * HorizonOcclusion(worldNormal, worldReflect);
+    specular = prefilteredSpeculr;
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
     
     [branch]
