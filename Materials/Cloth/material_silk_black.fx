@@ -134,7 +134,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.8;
+const float customA = 0.8; // sheen
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0
