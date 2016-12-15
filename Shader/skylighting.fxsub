@@ -146,6 +146,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     
     specular = prefilteredSpeculr;
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+    specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
     
     [branch]
     if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
@@ -171,7 +172,6 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     }
     
     specular *= step(0, material.specular - 1e-5);
-    specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
 }
 
 void EnvLightingVS(
