@@ -12,7 +12,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 0.035;
+const float3 albedo = 0.8;
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
@@ -28,14 +28,14 @@ const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
-#define NORMAL_MAP_ENABLE 0
+#define NORMAL_MAP_ENABLE 1
 #define NORMAL_MAP_IN_SPHEREMAP 0
 #define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_FILE "normal.png"
+#define NORMAL_MAP_FILE "../_MaterialMap/leather_01_n.png"
 
 const float normalMapScale = 1.0;
-const float normalMapLoopNum = 1.0;
+const float normalMapLoopNum = 150.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
@@ -54,8 +54,8 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.55;
-const float smoothnessMapLoopNum = 1.0;
+const float smoothness = 0.6;
+const float smoothnessMapLoopNum = 100.0;
 
 // 金属程度
 #define METALNESS_MAP_ENABLE 0
@@ -66,7 +66,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.0; // (改为 0.0 不计算IBL spec)
+const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
 // Subsurface Scattering Color
 #define SSS_ENABLE 0
@@ -142,7 +142,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = pow(float3(153, 102, 0) / 255, 2.2); // Fuzz Color
+const float3 customB = pow(float3(225, 105, 0) / 255, 2.2); // Fuzz Color
 const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
