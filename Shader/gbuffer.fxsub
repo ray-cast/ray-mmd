@@ -77,7 +77,9 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
         material.lightModel = floor(abs(buffer4.z));
     }
     
-    if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+    if (material.lightModel == SHADINGMODELID_SKIN || 
+        material.lightModel == SHADINGMODELID_SUBSURFACE ||
+        material.lightModel == SHADINGMODELID_CLOTH)
     {
         material.specular = buffer3.xxx;
         material.transmittance = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));

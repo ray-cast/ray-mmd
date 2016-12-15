@@ -118,22 +118,31 @@ const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
 // Shading Material ID
-// 0 : Default
-// 1 : PreIntegrated Skin // curvature/opacity
+// 0 : Default            // customA = invalid,   customB = invalid
+// 1 : PreIntegrated Skin // customA = curvature, customB = invalid
 // 2 : Reserved
 // 3 : Reserved
 // 4 : Reserved
-// 5 : Cloth      // sheen
-// 6 : Clear Coat // smoothness
+// 5 : Cloth              // customA = sheen,      customB = Fuzz Color
+// 6 : Clear Coat         // customA = smoothness, customB = invalid;
 #define CUSTOM_ENABLE 0  // ID
-#define CUSTOM_MAP_ENABLE 0
-#define CUSTOM_MAP_IN_TOONMAP 0
-#define CUSTOM_MAP_UV_FLIP 0
-#define CUSTOM_MAP_COLOR_FLIP 0
-#define CUSTOM_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_MAP_FILE "custom.png"
 
-const float custom = 0.0;
-const float customMapLoopNum = 1.0;
+#define CUSTOM_A_MAP_ENABLE 0
+#define CUSTOM_A_MAP_IN_TOONMAP 0
+#define CUSTOM_A_MAP_UV_FLIP 0
+#define CUSTOM_A_MAP_COLOR_FLIP 0
+#define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define CUSTOM_A_MAP_FILE "custom.png"
+
+const float customA = 0.0;
+const float customAMapLoopNum = 1.0;
+
+#define CUSTOM_B_MAP_ENABLE 0
+#define CUSTOM_B_MAP_UV_FLIP 0
+#define CUSTOM_B_MAP_COLOR_FLIP 0
+#define CUSTOM_B_MAP_FILE "custom.png"
+
+const float3 customB = 0.0;
+const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

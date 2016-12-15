@@ -147,7 +147,7 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5h / (Gv + Gl);
 
-    float3 f0 = max(0.02, specular);
+    float3 f0 = max(0.04, specular);
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, vh);
 
@@ -165,7 +165,7 @@ float3 SpecularBRDF_Cloth(float nh, float nl, float vh, float nv, float roughnes
     float G = 4 * (nl + nv - nl * nv);
     spec /= G;
     
-    float3 f0 = max(0.02, specular);
+    float3 f0 = max(0.04, specular);
     float3 fresnel = fresnelSchlick(f0, 1, vh);
     
     return fresnel * spec * nl;
@@ -242,7 +242,7 @@ float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, floa
     
     float3 diffuse = DiffuseBRDF(N, Ld, V, roughness);
     float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
-    float3 spec2 = SpecularBRDF_Cloth(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
+    float3 spec2 = SpecularBRDF_Cloth(nh, nl, vh, nv, roughness, material.transmittance, normalizeFactor);
     float3 cloth = lerp(spec1, spec2, material.customData);    
     return float4(material.albedo * diffuse + cloth, 0);
 }
