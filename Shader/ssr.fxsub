@@ -260,6 +260,8 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
     float4 refl3 = tex2Dlod(SSRLightX4Samp, float4(coord, 0, 0));
     
     float4 color = 0;
+    
+    [branch]
     if (gloss > 2.0 / 3.0)
         color = lerp(refl1, refl0, weight * weight);
     else if (gloss > 1.0/3.0)
