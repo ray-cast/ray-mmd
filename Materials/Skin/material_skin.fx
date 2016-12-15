@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 80.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.55;
+const float smoothness = 0.3;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -66,7 +66,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04;
+const float metalnessBaseSpecular = 0.0;
 
 // Subsurface Scattering Color
 #define SSS_ENABLE 1
