@@ -332,8 +332,8 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
 #if PARALLAX_MAP_ENABLE
 float3 ParallaxOcclusionDirection(float3 normal, float3 worldPos, float2 coord)
 {
-    float3 viewNormal = mul(normal, (float3x3)matView);
-    float3 viewPosition = mul(float4(worldPos, 1), matView).xyz;
+    float3 viewNormal = mul(normal, (float3x3)matWorldView);
+    float3 viewPosition = mul(float4(worldPos, 1), matWorldView).xyz;
     float3 viewdir = normalize(-viewPosition);
 
     float3 dp1 = ddx(viewPosition);
@@ -425,7 +425,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     gbuffer.buffer1.xyz = material.albedo;
     gbuffer.buffer1.w = material.smoothness;
 
-    material.normal = mul(material.normal, (float3x3)matView);
+    material.normal = mul(material.normal, (float3x3)matWorldView);
     material.normal = normalize(material.normal);
     
     gbuffer.buffer2.xyz = EncodeNormal(material.normal);
