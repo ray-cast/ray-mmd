@@ -437,14 +437,14 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
     if (material.lightModel == SHADINGMODELID_SKIN || 
         material.lightModel == SHADINGMODELID_SUBSURFACE ||
         material.lightModel == SHADINGMODELID_CLOTH)
-    {       
-        material.customDataB = rgb2ycbcr(material.customDataB);
+    {
+        material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
         gbuffer.buffer3.yz = material.customDataB.gb;
         gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
     }
     else if (material.lightModel == SHADINGMODELID_EMISSIVE)
     {
-        material.emissive = rgb2ycbcr(material.emissive);
+        material.emissive = rgb2ycbcr(min(0.999, material.emissive));
         gbuffer.buffer3.yz = material.emissive.gb;
         gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
     }
@@ -556,12 +556,12 @@ float3 GetAlbedo(float2 uv, bool useTexture)
 #endif
 }
 
-float3 GetEmissiveColor(float2 uv, bool useTexture)
+float3 GetEmissiveColor(MaterialParam material, float2 uv, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
     #if EMISSIVE_MAP_ENABLE || EMISSIVE_USE_ALBEDO       
         #if EMISSIVE_USE_ALBEDO
-            float3 emissiveColor = GetAlbedo(uv, useTexture);
+            float3 emissiveColor = material.albedo;
         #else
             #if EMISSIVE_MAP_UV_FLIP
                 uv.y = 1 - uv.y;
@@ -993,7 +993,7 @@ GbufferParam MaterialPS(
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.customDataA = GetCustomDataA(coord.xy);
     material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
-    material.emissive = GetEmissiveColor(coord.xy, use_texture);
+    material.emissive = GetEmissiveColor(material, coord.xy, use_texture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.lightModel = GetLightMode(material);
     material.alpha = 1;
@@ -1036,7 +1036,7 @@ GbufferParam Material2PS(
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
-    material.emissive = GetEmissiveColor(coord.xy, use_texture);
+    material.emissive = GetEmissiveColor(material, coord.xy, use_texture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.lightModel = GetLightMode(material);
     material.customDataA = GetCustomDataA(coord.xy);

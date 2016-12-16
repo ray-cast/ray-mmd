@@ -78,13 +78,13 @@ void DebugControllerVS(
 
 float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR 
 {
-    float4 MRT0 = tex2D(Gbuffer1Map, coord);
-    float4 MRT1 = tex2D(Gbuffer2Map, coord);
-    float4 MRT2 = tex2D(Gbuffer3Map, coord);
+    float4 MRT1 = tex2D(Gbuffer1Map, coord);
+    float4 MRT2 = tex2D(Gbuffer2Map, coord);
+    float4 MRT3 = tex2D(Gbuffer3Map, coord);
     float4 MRT4 = tex2D(Gbuffer4Map, coord);
 
     MaterialParam material;
-    DecodeGbuffer(MRT0, MRT1, MRT2, MRT4, material);
+    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
     
     float4 MRT5 = tex2D(Gbuffer5Map, coord);
     float4 MRT6 = tex2D(Gbuffer6Map, coord);
