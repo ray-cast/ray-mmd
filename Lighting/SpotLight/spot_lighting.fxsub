@@ -158,7 +158,7 @@ void LightSourceVS(
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition  : POSITION)
-{
+{    
     if (length(Position.xyz - LightPosition) > 0.1)
     {
         Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightSpotAngle), LightSpotAngle);

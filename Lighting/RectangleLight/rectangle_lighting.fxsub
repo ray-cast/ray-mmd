@@ -190,24 +190,20 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
     float3 L2 = normalize(Lw);
     
-    float atten1 = GetPhysicalLightAttenuation(Lw, LightRange);
+    float atten = GetPhysicalLightAttenuation(Lw, LightRange);
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
     #if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
-        atten1 *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
+        atten *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
     #endif
     
-    float atten2 = saturate(dot(material.normal, L2)) * atten1;
-    
-    float3 diffuse = material.albedo * DiffuseBRDF(material.normal, L2, V, material);
+    float3 diffuse = DiffuseBRDF(material.normal, L2, V, roughness);
+    float3 specular = RectangleLightBRDF(material.normal, V, L, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
     
     #if VIDEO_MAP_ENABLE
-        float mip = (1 - material.smoothness * material.smoothness) * 6;
+        float mip = 6 * (1 - material.smoothness * material.smoothness);
         diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
-    #endif
-    
-    float3 specular = RectangleLightBRDF(material.normal, V, L, viewLightRight, viewLightUp, viewLightDirection, LightRect, material.smoothness, material.specular, coord2);
-       
-    #if VIDEO_MAP_ENABLE
+
         if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
             coord2.x <= 0.0 || coord2.y <= 0.0)
         {
@@ -221,9 +217,8 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     #endif
     
     float4 lighting = 0;
-    lighting.rgb += atten1 * diffuse;
-    lighting.rgb += atten2 * specular;    
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
+    lighting.rgb += (material.albedo * diffuse + specular);
+    lighting.rgb *= float3(mR, mG, mB) * atten * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     

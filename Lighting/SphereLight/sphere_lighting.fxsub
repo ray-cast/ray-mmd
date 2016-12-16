@@ -149,25 +149,24 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
-    
+        
     float atten = GetPhysicalLightAttenuation(L, LightRange);
-    float vis = saturate(dot(material.normal, L2)) * atten;
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
-    float3 diffuse = material.albedo * atten * DiffuseBRDF(material.normal, L2, V, material);
+    float3 diffuse = DiffuseBRDF(material.normal, L2, V, roughness);    
+    float3 specular = SphereAreaLightBRDF(material.normal, V, L, LightSize, roughness, material.specular);
+    
 #if IBL_ENABLE
     float3 diffDir = mul(L2, (float3x3)matViewInverse);
-    diffuse *= DecodeRGBM(tex2D(IBLDiffuseSampler, computeSphereCoord(diffDir)), IBL_RGBM_RANGE);
-#endif
+    diffuse *= DecodeRGBM(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(diffDir), 0, 0)), IBL_RGBM_RANGE);
 
-    float3 specular = vis * SphereAreaLightBRDF(material.normal, V, L, LightSize, material.smoothness, material.specular);
-#if IBL_ENABLE
     float3 specularDir = mul(SphereLightDirection(material.normal, V, L, LightSize), (float3x3)matViewInverse);
     float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-    specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(computeSphereCoord(specularDir), 0, mipLayer)), IBL_RGBM_RANGE);
+    specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(specularDir), 0, mipLayer)), IBL_RGBM_RANGE);
 #endif
 
-    float4 lighting = float4(diffuse + specular, 0);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
+    float4 lighting = float4(material.albedo * diffuse + specular, 0);
+    lighting.rgb *= float3(mR, mG, mB) * atten * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     

@@ -134,13 +134,13 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
     float3 L2 = normalize(L);
     
-    float atten1 = GetPhysicalLightAttenuation(L, LightRange);
-    float atten2 = saturate(dot(material.normal, L2)) * atten1;
+    float atten = GetPhysicalLightAttenuation(L, LightRange);
+    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
-    float4 lighting = 0.0f;    
-    lighting.rgb = atten1 * material.albedo * DiffuseBRDF(material.normal, L2, V, material);    
-    lighting.rgb += atten2 * TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, material.smoothness, material.specular);
-    lighting.rgb *= float3(mR, mG, mB) * LightIntensity;
+    float4 lighting = 0.0f;
+    lighting.rgb =  DiffuseBRDF(material.normal, L2, V, roughness) * material.albedo;
+    lighting.rgb += TubeLightBRDF(P, material.normal, V, L0, L1, LightWidth, LightRadius, roughness, material.specular);
+    lighting.rgb *= float3(mR, mG, mB) * atten * LightIntensity;
     lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
     lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
     
