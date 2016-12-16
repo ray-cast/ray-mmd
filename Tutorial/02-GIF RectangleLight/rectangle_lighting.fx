@@ -1,4 +1,4 @@
-﻿// 最大半径
+// 最大半径
 #define LIGHTSOURCE_MAX_RANGE 200
 
 // 最小强度
