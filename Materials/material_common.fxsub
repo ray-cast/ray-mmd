@@ -99,7 +99,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
-    texture2D NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
+    texture NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
     sampler NormalMapSamp = sampler_state
     {
         texture = NormalMap;
@@ -110,7 +110,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE && NORMAL_MAP_SUB_IN_SPHEREMAP != 1
-    texture2D NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
+    texture NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
     sampler NormalSubMapSamp = sampler_state
     {
         texture = NormalSubMap;
@@ -121,7 +121,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TOONMAP != 1
-    texture2D SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
+    texture SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
     sampler SmoothnessMapSamp = sampler_state
     {
         texture = SmoothnessMap;
@@ -132,7 +132,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TOONMAP != 1
-    texture2D MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
+    texture MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
     sampler MetalnessMapSamp = sampler_state
     {
         texture = MetalnessMap;
@@ -143,7 +143,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && SSS_MAP_ENABLE
-    texture2D TransmittanceMap<string ResourceName = SSS_MAP_FILE;>; 
+    texture TransmittanceMap<string ResourceName = SSS_MAP_FILE;>; 
     sampler TransmittanceMapSamp = sampler_state
     {
         texture = TransmittanceMap;
@@ -154,7 +154,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_A_MAP_ENABLE
-    texture2D CustomAMap<string ResourceName = CUSTOM_A_MAP_FILE;>; 
+    texture CustomAMap<string ResourceName = CUSTOM_A_MAP_FILE;>; 
     sampler CustomAMapSamp = sampler_state
     {
         texture = CustomAMap;
@@ -165,7 +165,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_A_MAP_ENABLE
-    texture2D CustomBMap<string ResourceName = CUSTOM_A_MAP_FILE;>; 
+    texture CustomBMap<string ResourceName = CUSTOM_A_MAP_FILE;>; 
     sampler CustomBMapSamp = sampler_state
     {
         texture = CustomBMap;
@@ -176,7 +176,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && MELANIN_MAP_ENABLE
-    texture2D MelaninMap<string ResourceName = MELANIN_MAP_FILE;>; 
+    texture MelaninMap<string ResourceName = MELANIN_MAP_FILE;>; 
     sampler MelaninMapSamp = sampler_state
     {
         texture = MelaninMap;
@@ -208,7 +208,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && PARALLAX_MAP_ENABLE
-    texture2D ParallaxMap<string ResourceName = PARALLAX_MAP_FILE;>; 
+    texture ParallaxMap<string ResourceName = PARALLAX_MAP_FILE;>; 
     sampler ParallaxMapSamp = sampler_state
     {
         texture = ParallaxMap;
