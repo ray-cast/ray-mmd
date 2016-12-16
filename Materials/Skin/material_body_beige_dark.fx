@@ -68,18 +68,6 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.0;
 
-// Subsurface Scattering Color
-#define SSS_ENABLE 1
-#define SSS_MAP_ENABLE 0
-#define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_IS_THICKNESS 0
-#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
-#define SSS_MAP_FILE "transmittance.png"
-
-const float3 transmittance = pow(float3(238, 104, 94) / 255, 2.2);
-const float transmittanceStrength = 1.6f; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
-const float transmittanceMapLoopNum = 1.0;
-
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
@@ -118,14 +106,15 @@ const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
 // Shading Material ID
-// 0 : Default            // customA = invalid,   customB = invalid
-// 1 : PreIntegrated Skin // customA = curvature, customB = invalid
-// 2 : Reserved
+// 0 : Default            // customA = invalid,    customB = invalid
+// 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
+// 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
 // 4 : Reserved
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
-#define CUSTOM_ENABLE 0  // ID
+// 7 : Sursubface         // customA = curvature,  customB = transmittance color;
+#define CUSTOM_ENABLE 1  // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
 #define CUSTOM_A_MAP_IN_TOONMAP 0
@@ -134,7 +123,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.0;
+const float customA = 0.6;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0
@@ -142,6 +131,6 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 0.0;
+const float3 customB = pow(float3(238, 104, 94) / 255, 2.2);
 
 #include "../material_common.fxsub"
