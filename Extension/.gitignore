@@ -9,7 +9,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 AtmosphericScattering
-OutdoorFloor
 ColorGrading
 NoiseBlur
 PaniniProjection
+BokehBlur
