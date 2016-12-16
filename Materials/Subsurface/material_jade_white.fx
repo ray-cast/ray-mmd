@@ -119,13 +119,14 @@ const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
 // Shading Material ID
-// 0 : Default            // customA = invalid,   customB = invalid
-// 1 : PreIntegrated Skin // customA = curvature, customB = invalid
-// 2 : Reserved
+// 0 : Default            // customA = invalid,    customB = invalid
+// 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
+// 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
 // 4 : Reserved
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
+// 7 : Sursubface         // customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0  // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
@@ -144,5 +145,6 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_FILE "custom.png"
 
 const float3 customB = 0.0;
+const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
