@@ -118,23 +118,44 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 #endif
 }
 
-float Diffuse_Burley(float nv, float nl, float vh, float roughness)
+float BurleyBRDF(float3 N, float3 V, float3 L, float roughness)
 {
+    float3 H = normalize(V + L);
+    
+    float nl = saturate(dot(N, L));
+    float vh = saturate(dot(V, H));
+    float nv = max(abs(dot(N, V)), 0.1);
+    
     float energyBias = 0.5 * roughness;
     float energyFactor = lerp(1, 1 / 1.51, roughness);
+    
     float Fd90 = energyBias + 2.0 * vh * vh * roughness;
     float FdV = 1 + (Fd90 - 1) * pow5(1 - nv);
     float FdL = 1 + (Fd90 - 1) * pow5(1 - nl);
-    return FdV * FdL * energyFactor;
+    
+    return FdV * FdL * energyFactor * nl;
+}
+
+float OrenNayarBRDF(float3 N, float3 V, float3 L, float roughness)
+{
+    float3 H = normalize(V + L);
+    
+    float nl = saturate(dot(N, L));
+    float vh = saturate(dot(V, H));
+    float nv = max(abs(dot(N, V)), 0.1);
+    
+    float m = roughness * roughness;
+    float s = dot(L, V) - dot(N, L) * dot(N, V);
+    float t = s <= 0 ? 1 : max(max(dot(N, L), dot(N, V)), 1e-6);
+    float A = 1.0h / (1.0h + (0.5h - 2.0h / (3.0h * PI)) * m);
+    float B = m * A;
+    
+    return max(A + B * (s / t), 0) * nl;
 }
 
 float3 DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 {
-    float3 H = normalize(V + L);
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = max(abs(dot(N, V)), 0.1);
-    return Diffuse_Burley(roughness, nv, nl, vh) * nl;
+    return BurleyBRDF(N, V, L, roughness);
 }
 
 float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
