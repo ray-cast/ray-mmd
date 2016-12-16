@@ -130,6 +130,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_ENABLE 0
 #define CUSTOM_B_MAP_UV_FLIP 0
 #define CUSTOM_B_MAP_COLOR_FLIP 0
+#define CUSTOM_B_MAP_APPLY_COLOR 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
 const float3 customB = 0.0;

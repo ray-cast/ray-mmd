@@ -164,8 +164,8 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_A_MAP_ENABLE
-    texture CustomBMap<string ResourceName = CUSTOM_A_MAP_FILE;>; 
+#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE && CUSTOM_B_MAP_ENABLE
+    texture CustomBMap<string ResourceName = CUSTOM_B_MAP_FILE;>; 
     sampler CustomBMapSamp = sampler_state
     {
         texture = CustomBMap;
@@ -879,23 +879,27 @@ float3 GetCustomDataB(float2 coord)
         #endif
 
         #if CUSTOM_B_MAP_SWIZZLE == 0
-            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum);
+            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
         #elif CUSTOM_B_MAP_SWIZZLE == 1
-            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum);
+            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
         #elif CUSTOM_B_MAP_SWIZZLE == 2
-            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum);
+            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
         #elif CUSTOM_B_MAP_SWIZZLE == 3
-            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum);
+            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
         #else
-            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum);
+            customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
+        #endif
+        
+        #if CUSTOM_B_MAP_COLOR_FLIP
+            customData = 1 - customData;
+        #endif
+        
+        #if CUSTOM_B_MAP_APPLY_COLOR
+            customData *= customB;
         #endif
     #endif
     
-    #if CUSTOM_B_MAP_COLOR_FLIP
-        return 1 - customData;
-    #else
-        return customData;
-    #endif
+    return customData;
 #elif USE_CUSTOM_MATERIAL && SSS_ENABLE
     #if SSS_MAP_ENABLE
         #if SSS_MAP_UV_FLIP
