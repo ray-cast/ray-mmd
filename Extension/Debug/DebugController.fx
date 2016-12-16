@@ -4,13 +4,12 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
-#if !defined(MIKUMIKUMOVING)
 float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo"; >;
 float showNormal : CONTROLOBJECT < string name="(self)"; string item = "Normal"; >;
 float showSpecular : CONTROLOBJECT < string name="(self)"; string item = "Specular"; >;
 float showSmoothness : CONTROLOBJECT < string name="(self)"; string item = "Smoothness"; >;
-float showTransmittance : CONTROLOBJECT < string name="(self)"; string item = "Transmittance"; >;
-float showCurvature : CONTROLOBJECT < string name="(self)"; string item = "Curvature"; >;
+float showCustomDataA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataA"; >;
+float showCustomDataB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataB"; >;
 float showEmissive : CONTROLOBJECT < string name="(self)"; string item = "Emissive"; >;
 float showDepth : CONTROLOBJECT < string name="(self)"; string item = "Depth"; >;
 
@@ -19,33 +18,14 @@ float showAlbedoAlpha : CONTROLOBJECT < string name="(self)"; string item = "Alb
 float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "NormalAlpha"; >;
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
-float showTransmittanceAlpha : CONTROLOBJECT < string name="(self)"; string item = "TransmittanceAlpha"; >;
-float showCurvatureAlpha : CONTROLOBJECT < string name="(self)"; string item = "CurvatureAlpha"; >;
+float showCustomDataAlphaA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaA"; >;
+float showCustomDataAlphaB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaB"; >;
 float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "EmissiveAlpha"; >;
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
 float showSSAO : CONTROLOBJECT < string name="(self)"; string item = "SSAO"; >;
 float showSSR : CONTROLOBJECT < string name="(self)"; string item = "SSR"; >;
 float showPSSM : CONTROLOBJECT < string name="(self)"; string item = "PSSM"; >;
-#else
-float showAlbedo <string UIName = "showAlbedo"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showNormal <string UIName = "showNormal"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSpecular <string UIName = "showSpecular"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSmoothness <string UIName = "showSmoothness"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showTransmittance <string UIName = "showTransmittance"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showEmissive <string UIName = "showEmissive"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showDepth <string UIName = "showDepth"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showAlpha <string UIName = "showAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showAlbedoAlpha <string UIName = "showAlbedoAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showNormalAlpha <string UIName = "showNormalAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSpecularAlpha <string UIName = "showSpecularAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSmoothnessAlpha <string UIName = "showSmoothnessAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showEmissiveAlpha <string UIName = "showEmissiveAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showDepthAlpha <string UIName = "showDepthAlpha"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSSAO <string UIName = "showSSAO"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showSSR <string UIName = "showSSR"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-float showPSSM <string UIName = "showPSSM"; string UIWidget = "Slider"; bool UIVisible =  true; float UIMin = 0; float UIMax = 1;> = 0;
-#endif
 
 texture2D ScnMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0,1.0};
@@ -114,8 +94,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     MaterialParam materialAlpha;
     DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
     
-    float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showTransmittance + showCurvature + showEmissive;
-    showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showTransmittanceAlpha + showCurvatureAlpha + showEmissiveAlpha;
+    float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showCustomDataB + showCustomDataA + showEmissive;
+    showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
     showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
     
     float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
@@ -123,16 +103,16 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
     result += (mul(material.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormal;
     result += material.specular * showSpecular;
     result += material.smoothness * showSmoothness;
-    result += material.customData * showCurvature;
-    result += material.customDataB * showTransmittance;
+    result += material.customDataA * showCustomDataA;
+    result += material.customDataB * showCustomDataB;
     result += material.emissive * showEmissive;
     
     result += materialAlpha.albedo * showAlbedoAlpha;
     result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
     result += materialAlpha.specular * showSpecularAlpha;
     result += materialAlpha.smoothness * showSmoothnessAlpha;
-    result += materialAlpha.customData * showCurvatureAlpha;
-    result += materialAlpha.customDataB * showTransmittanceAlpha;
+    result += materialAlpha.customDataA * showCustomDataAlphaA;
+    result += materialAlpha.customDataB * showCustomDataAlphaB;
     result += materialAlpha.emissive * showEmissiveAlpha;
 
     result = linear2srgb(result);

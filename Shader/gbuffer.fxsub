@@ -8,6 +8,10 @@
 #define SHADINGMODELID_SUBSURFACE   7
 #define SHADINGMODELID_MASK         8
 
+#define LIGHTINGMODEL_NORMAL         0
+#define LIGHTINGMODEL_TRANSMITTANCE  1
+#define LIGHTINGMODEL_EMISSIVE       2
+
 #define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
 
@@ -58,8 +62,6 @@ float3 DecodeNormal(float3 enc)
 
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
-    material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-
     material.albedo = buffer1.xyz;
     material.smoothness = buffer1.w;
 
@@ -72,6 +74,12 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
     
     material.linearDepth = buffer4.x;
     material.alpha = buffer4.w;
+    
+    material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
+    if (material.lightModel == LIGHTINGMODEL_TRANSMITTANCE)
+    {
+        material.lightModel = floor(buffer2.w * TWO_BITS_EXTRACTION_FACTOR) > 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
+    }
     
     if (buffer4.z <= 1e-5)
     {
