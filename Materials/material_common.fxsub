@@ -459,7 +459,7 @@ float3 ColorSynthesis(float3 diffuse, float m)
     return diffuse * lerp(1.0, melanin, m);
 }
 
-float GetAlpha(float2 coord, bool use_texture)
+float GetAlpha(float2 coord, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL
     #if ALPHA_MAP_ENABLE
@@ -469,15 +469,15 @@ float GetAlpha(float2 coord, bool use_texture)
     
         #if ALPHA_MAP_IN_TEXTURE
             #if ALPHA_MAP_SWIZZLE == 0
-                return use_texture ? tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a : MaterialDiffuse.a;
+                return useTexture ? tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a : MaterialDiffuse.a;
             #elif ALPHA_MAP_SWIZZLE == 1
-                return use_texture ? tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a : MaterialDiffuse.a;
+                return useTexture ? tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a : MaterialDiffuse.a;
             #elif ALPHA_MAP_SWIZZLE == 2
-                return use_texture ? tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a : MaterialDiffuse.a;
+                return useTexture ? tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a : MaterialDiffuse.a;
             #elif ALPHA_MAP_SWIZZLE == 3
-                return use_texture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
+                return useTexture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
             #else
-                return use_texture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
+                return useTexture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
             #endif
         #else
             #if ALPHA_MAP_SWIZZLE == 0
@@ -496,11 +496,11 @@ float GetAlpha(float2 coord, bool use_texture)
         return alpha;
     #endif
 #else
-    return use_texture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
+    return useTexture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
 #endif
 }
 
-float3 GetAlbedo(float2 uv, bool use_texture)
+float3 GetAlbedo(float2 uv, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL
     #if ALBEDO_MAP_ENABLE
@@ -509,7 +509,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
         #endif
         #if ALBEDO_MAP_IN_TEXTURE
             float3 albedoColor = MaterialDiffuse.rgb;
-            if (use_texture)
+            if (useTexture)
             {
                 albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
                 albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
@@ -544,7 +544,7 @@ float3 GetAlbedo(float2 uv, bool use_texture)
 #else
     float3 diffuse = MaterialDiffuse.rgb;
     
-    if (use_texture)
+    if (useTexture)
     {
         float4 TexColor = tex2D(DiffuseMapSamp, uv);
         TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
@@ -555,12 +555,12 @@ float3 GetAlbedo(float2 uv, bool use_texture)
 #endif
 }
 
-float3 GetEmissiveColor(float2 uv, bool use_texture)
+float3 GetEmissiveColor(float2 uv, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
     #if EMISSIVE_MAP_ENABLE || EMISSIVE_USE_ALBEDO       
         #if EMISSIVE_USE_ALBEDO
-            float3 emissiveColor = GetAlbedo(uv, use_texture);
+            float3 emissiveColor = GetAlbedo(uv, useTexture);
         #else
             #if EMISSIVE_MAP_UV_FLIP
                 uv.y = 1 - uv.y;
@@ -959,8 +959,7 @@ void MaterialVS(
 GbufferParam MaterialPS(
     in float3 normal   : TEXCOORD0,
     in float3 coord    : TEXCOORD1,
-    in float3 worldPos : TEXCOORD2,
-    uniform bool useTexture)
+    in float3 worldPos : TEXCOORD2)
 {
     normal = normalize(normal);
     
@@ -975,13 +974,13 @@ GbufferParam MaterialPS(
     #endif
 #endif
 
-    float alpha = GetAlpha(coord.xy, useTexture);
+    float alpha = GetAlpha(coord.xy, use_texture);
     clip(alpha - ALPHA_THRESHOLD);
 #if ALPHA_MAP_ANIMATION_ENABLE
     clip(-1);
 #endif
 
-    float3 albedoColor = GetAlbedo(coord.xy, useTexture);
+    float3 albedoColor = GetAlbedo(coord.xy, use_texture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(coord.xy));
     
     float3 MaterialMetalness = GetMetalness(coord.xy);
@@ -993,7 +992,7 @@ GbufferParam MaterialPS(
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.customDataA = GetCustomDataA(coord.xy);
     material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
-    material.emissive = GetEmissiveColor(coord.xy, useTexture);
+    material.emissive = GetEmissiveColor(coord.xy, use_texture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.lightModel = GetLightMode(material);
     material.alpha = 1;
@@ -1004,8 +1003,7 @@ GbufferParam MaterialPS(
 GbufferParam Material2PS(
     in float3 normal   : TEXCOORD0,
     in float3 coord    : TEXCOORD1,
-    in float3 worldPos : TEXCOORD2,
-    uniform bool useTexture)
+    in float3 worldPos : TEXCOORD2)
 {
     normal = normalize(normal);
     
@@ -1020,10 +1018,10 @@ GbufferParam Material2PS(
     #endif
 #endif
 
-    float alpha = GetAlpha(coord.xy, useTexture);
+    float alpha = GetAlpha(coord.xy, use_texture);
     clip(alpha - 0.01);
 
-    float3 albedoColor = GetAlbedo(coord.xy, useTexture);
+    float3 albedoColor = GetAlbedo(coord.xy, use_texture);
     albedoColor = ColorSynthesis(albedoColor, GetMelanin(coord.xy));
    
     float3 MaterialMetalness = GetMetalness(coord.xy);
@@ -1037,7 +1035,7 @@ GbufferParam Material2PS(
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
-    material.emissive = GetEmissiveColor(coord.xy, useTexture);
+    material.emissive = GetEmissiveColor(coord.xy, use_texture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.lightModel = GetLightMode(material);
     material.customDataA = GetCustomDataA(coord.xy);
@@ -1051,8 +1049,8 @@ GbufferParam Material2PS(
     return EncodeGbuffer(material, coord.z);
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+#define OBJECT_TEC(name, mmdpass) \
+    technique name < string MMDPass = mmdpass; \
     string Script = \
         "RenderColorTarget0=;" \
         "RenderColorTarget1=Gbuffer2RT;" \
@@ -1069,23 +1067,17 @@ GbufferParam Material2PS(
         pass DrawObject { \
             AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
-            PixelShader  = compile ps_3_0 MaterialPS(tex); \
+            PixelShader  = compile ps_3_0 MaterialPS(); \
         } \
         pass DrawAlphaObject { \
             AlphaTestEnable = false; AlphaBlendEnable = false; \
             VertexShader = compile vs_3_0 MaterialVS(); \
-            PixelShader  = compile ps_3_0 Material2PS(tex); \
+            PixelShader  = compile ps_3_0 Material2PS(); \
         } \
     }
 
-OBJECT_TEC(MainTec0, "object", false)
-OBJECT_TEC(MainTec1, "object", true)
-OBJECT_TEC(MainTec2, "object", false)
-OBJECT_TEC(MainTec3, "object", true)
-OBJECT_TEC(MainTecBS0, "object_ss", false)
-OBJECT_TEC(MainTecBS1, "object_ss", true)
-OBJECT_TEC(MainTecBS2, "object_ss", false)
-OBJECT_TEC(MainTecBS3, "object_ss", true)
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
 
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTech < string MMDPass = "shadow";  > {}
