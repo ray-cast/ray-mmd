@@ -34,22 +34,23 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
+const float normalMapLoopNum = 1.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
-#define NORMAL_MAP_SUB_UV_FLIP 0
+#define NORMAL_MAP_SUB_IN_SPHEREMAP 0
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
+#define NORMAL_MAP_SUB_UV_FLIP 0
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
-const float normalMapSubScale = 1.0;
+const float normalMapSubScale = 1;
 const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
-#define SMOOTHNESS_MAP_IS_ROUGHNESS 0
+#define SMOOTHNESS_MAP_IS_ROUGHNESS 0 // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"

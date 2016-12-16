@@ -10,6 +10,11 @@ float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 
+bool use_texture;
+bool use_subtexture;
+bool use_spheremap;
+bool use_toon;
+
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
@@ -104,7 +109,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
     };
 #endif
 
-#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE
+#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE && NORMAL_MAP_SUB_IN_SPHEREMAP != 1
     texture2D NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
     sampler NormalSubMapSamp = sampler_state
     {
@@ -224,7 +229,7 @@ sampler DiffuseMapSamp = sampler_state
 };
 #endif
 
-#if NORMAL_MAP_IN_SPHEREMAP
+#if NORMAL_MAP_IN_SPHEREMAP || NORMAL_MAP_SUB_IN_SPHEREMAP
 texture SphereMap : MATERIALSPHEREMAP;
 sampler SphereMapSamp = sampler_state {
     texture = <SphereMap>;
@@ -610,58 +615,71 @@ float GetEmissiveIntensity()
 #endif
 }
 
-float3 GetNormal(float3 N, float3 viewdir, float2 coord)
+float3 GetMainNormal(float2 coord)
 {
-#if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
+#if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE
     #if NORMAL_MAP_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
 
     #if NORMAL_MAP_IN_SPHEREMAP
-        float3 tangentNormal = tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-        #if NORMAL_MAP_IS_COMPRESSED
-            tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
-        #endif
-        tangentNormal.rg *= normalMapScale;
-        tangentNormal = normalize(tangentNormal);
-    #elif NORMAL_MAP_SUB_ENABLE && !NORMAL_MAP_ENABLE
-        float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-        #if NORMAL_MAP_SUB_IS_COMPRESSED
-            tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
-        #endif
-        tangentNormal.rg *= normalMapSubScale;
-        tangentNormal = normalize(tangentNormal);
+        float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
     #else    
         float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-        #if NORMAL_MAP_IS_COMPRESSED
-            tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
-        #endif
-        tangentNormal.rg *= normalMapScale;
-        tangentNormal = normalize(tangentNormal);
     #endif
-       
-    #if NORMAL_MAP_UV_FLIP
+    
+    #if NORMAL_MAP_IS_COMPRESSED
+        tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+    #endif
+    
+    tangentNormal.rg *= normalMapScale;
+    tangentNormal = normalize(tangentNormal);
+        
+    return tangentNormal;
+#else
+    return float3(0, 0, 1);
+#endif
+}
+
+float3 GetSubNormal(float2 coord)
+{
+#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE
+    #if NORMAL_MAP_SUB_UV_FLIP
         coord.y = 1 - coord.y;
     #endif
+
+    #if NORMAL_MAP_IN_SPHEREMAP
+        float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+    #else    
+        float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+    #endif
     
-    #if NORMAL_MAP_ENABLE && NORMAL_MAP_SUB_ENABLE
-        #if NORMAL_MAP_SUB_UV_FLIP
-            coord.y = 1 - coord.y;
-        #endif
+    #if NORMAL_MAP_IS_COMPRESSED
+        tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+    #endif
     
-        float3 tangentSubNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-        #if NORMAL_MAP_SUB_IS_COMPRESSED
-            tangentSubNormal.z = sqrt(1.0 - tangentSubNormal.x * tangentSubNormal.x - tangentSubNormal.y * tangentSubNormal.y);
-        #endif
-        tangentSubNormal.rg *= normalMapSubScale;
-        tangentSubNormal = normalize(tangentSubNormal);
+    tangentNormal.rg *= normalMapSubScale;
+    tangentNormal = normalize(tangentNormal);
+    
+    return tangentNormal;
+#else
+    return float3(0, 0, 1);
+#endif
+}
+
+float3 GetNormal(float3 N, float3 viewdir, float2 coord)
+{
+#if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
+    #if NORMAL_MAP_ENABLE
+        float3 tangentNormal = GetMainNormal(coord);
         
-        tangentNormal.rg += tangentSubNormal.rg;
-        tangentNormal = normalize(tangentNormal);
-        
-        #if NORMAL_MAP_SUB_UV_FLIP
-            coord.y = 1 - coord.y;
+        #if NORMAL_MAP_SUB_ENABLE
+            float3 tangentSubNormal = GetSubNormal(coord);        
+            tangentNormal.rg += tangentSubNormal.rg;
+            tangentNormal = normalize(tangentNormal);
         #endif
+    #elif NORMAL_MAP_SUB_ENABLE
+        float3 tangentNormal = GetSubNormal(coord);
     #endif
     
     return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
