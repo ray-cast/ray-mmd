@@ -18,7 +18,7 @@ void ShadowlessObjectVS(
     out float4 oPosition : POSITION)
 {
     oPosition = mul(Position, matWorldViewProject);
-    oTexcoord = float3(Texcoord.xy, oPosition.z);
+    oTexcoord = float3(Texcoord.xy, oPosition.w);
 }
 
 float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR

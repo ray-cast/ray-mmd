@@ -194,11 +194,11 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
         "*.pmd=shadow/PSSM.fx;"
         "*.x=hide;";
 >;
-shared texture ShadowmapMap : RENDERCOLORTARGET <
+shared texture2D ShadowmapMap : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
-texture ShadowmapMapTemp : RENDERCOLORTARGET <
+texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
     float2 ViewPortRatio = {1.0, 1.0};
     string Format = "G16R16F";
 >;
