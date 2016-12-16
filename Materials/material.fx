@@ -68,18 +68,6 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
-// Subsurface Scattering Color
-#define SSS_ENABLE 0
-#define SSS_MAP_ENABLE 0
-#define SSS_MAP_UV_FLIP 0
-#define SSS_MAP_IS_THICKNESS 0
-#define SSS_MAP_APPLY_COLOR 0   // using a thickness map, enable it
-#define SSS_MAP_FILE "transmittance.png"
-
-const float3 transmittance = 0.0;
-const float transmittanceStrength = 0.0f; // (0 ~ 0.99 marble, 1.0 ~ 1.99 skin)
-const float transmittanceMapLoopNum = 1.0;
-
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
@@ -118,13 +106,14 @@ const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
 // Shading Material ID
-// 0 : Default            // customA = invalid,   customB = invalid
-// 1 : PreIntegrated Skin // customA = curvature, customB = invalid
-// 2 : Reserved
+// 0 : Default            // customA = invalid,    customB = invalid
+// 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
+// 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
 // 4 : Reserved
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
+// 7 : Sursubface         // customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0  // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
