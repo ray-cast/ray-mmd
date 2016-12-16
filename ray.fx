@@ -101,14 +101,11 @@ float Script : STANDARDSGLOBAL <
 
 technique DeferredLighting<
 	string Script =
-    "RenderColorTarget=ScnMap;"
+    "RenderColorTarget=;"
     "RenderDepthStencilTarget=DepthBuffer;"
     "ClearSetStencil=ClearStencil;"
     "ClearSetColor=BackColor;"
     "ClearSetDepth=ClearDepth;"
-    "Clear=Color;"
-    "Clear=Depth;"
-    "ScriptExternal=Color;"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
     "RenderColorTarget=ShadowmapMap;"
@@ -119,6 +116,12 @@ technique DeferredLighting<
     "RenderColorTarget=ShadowmapMap;     Pass=ShadowBlurY;"
     "ClearSetColor=BackColor;"
 #endif
+
+    "RenderColorTarget=ScnMap;"
+    "RenderDepthStencilTarget=DepthBuffer;"
+    "Clear=Color;"
+    "Clear=Depth;"
+    "ScriptExternal=Color;"
 
 #if SSAO_QUALITY > 0
     "RenderColorTarget=SSAOMap;  Pass=SSAO;"
