@@ -45,7 +45,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #include "shader/ACES.fxsub"
 #include "shader/fimic.fxsub"
 
-#if SHADOW_QUALITY > 0
+#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
 #   include "shader/shadowcommon.fxsub"
 #   include "shader/shadowmap.fxsub"
 #endif
