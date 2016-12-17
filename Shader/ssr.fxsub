@@ -182,7 +182,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 #if SSR_QUALITY == 2
     maxDistance += viewPosition.z * 0.35;
 #elif SSR_QUALITY == 3
-    maxDistance += viewPosition.z * 0.75;
+    maxDistance += viewPosition.z * 0.45;
 #endif
 
     float atten = dot(viewReflect, V);
