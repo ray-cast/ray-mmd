@@ -192,7 +192,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     }
     
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
-    specular *= step(0, material.specular - 1e-5);
+    specular *= step(0, sum(material.specular) - 1e-5);
 }
 
 void EnvLightingVS(
