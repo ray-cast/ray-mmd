@@ -567,9 +567,11 @@ float3 GetEmissiveColor(MaterialParam material, float2 uv, bool useTexture)
                 uv.y = 1 - uv.y;
             #endif
             #if EMISSIVE_MAP_IN_TEXTURE
-                float3 emissiveColor = srgb2linear(tex2D(DiffuseMapSamp, uv * emissiveMapLoopNum).rgb);
+                float4 emissiveTexCol = srgb2linear(tex2D(DiffuseMapSamp, uv * emissiveMapLoopNum));
+                float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
             #else
-                float3 emissiveColor = srgb2linear(tex2D(EmissiveMapSamp, uv * emissiveMapLoopNum).rgb);
+                float4 emissiveTexCol = srgb2linear(tex2D(EmissiveMapSamp, uv * emissiveMapLoopNum));
+                float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
             #endif
         #endif
         
