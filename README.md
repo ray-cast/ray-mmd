@@ -23,18 +23,20 @@ Ray-MMD
 * [Notepad++](https://notepad-plus-plus.org/)
 * [Visual studio code](http://code.visualstudio.com/Download)
 
-#### 更新内容 :
-##### 2016-11-26 ver 1.1.0
-* __修改了cmft的输出编码，用于支持更大范围的亮度  [(预览)](https://github.com/ray-cast/images/raw/master/cmft_110.jpg)__
-* 改进了SSR
-* 添加压缩法线的支持 (RG Normal Map)
-* 添加曲率贴图 (Curvature Map)
-* 添加了Sphere Fog的Volumetric Shadow [(预览)](https://github.com/ray-cast/images/raw/master/volumetric_110.jpg)
-* 添加了新的皮肤材质 [(预览)](https://github.com/ray-cast/images/raw/master/skin_110.jpg)
-
-#### 项目主页 :
+#### Home :
 * [Github](https://github.com/ray-cast/ray-mmd)
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
+
+#### 更新内容 :
+##### 2016-11-26 ver 1.2.0
+* 添加了ShadingMaterialID，用于模拟更多的布料
+* 添加了PNG贴图的自发光支持
+* 添加了天空球的色彩调节
+* 添加了天空球的垂直翻转
+* 改进了SSSS的计算方式
+* 改进了SSAO近处出现白边
+* 改进了主光源阴影近处出现白边
+* 修复部分模型IBL specular的计算bug
 
 #### 教程 :
 ##### 1.0 简介 :
@@ -271,6 +273,14 @@ Ray-MMD
 * BalanceR/G/B 色彩平衡
 
 #### 更新历史 :
+##### 2016-11-26 ver 1.1.0
+* __修改了cmft的输出编码，用于支持更大范围的亮度  [(预览)](https://github.com/ray-cast/images/raw/master/cmft_110.jpg)__
+* 改进了SSR
+* 添加压缩法线的支持 (RG Normal Map)
+* 添加曲率贴图 (Curvature Map)
+* 添加了Sphere Fog的Volumetric Shadow [(预览)](https://github.com/ray-cast/images/raw/master/volumetric_110.jpg)
+* 添加了新的皮肤材质 [(预览)](https://github.com/ray-cast/images/raw/master/skin_110.jpg)
+
 ##### 2016-10-29 ver 1.0.9
 * 添加了区域光的阴影 (点光源阴影的模拟)
 * 添加了EMISSIVE_APPLY_MORPH_INTENSITY用于多光源强度的调节
