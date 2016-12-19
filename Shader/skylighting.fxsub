@@ -126,7 +126,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
     scattering *= material.customDataB * dependentSplit;
     scattering *= (1 + mEnvSSSLightP * 5 - mEnvSSSLightM);
     
-    return prefilteredDiffuse + scattering;
+    return prefilteredDiffuse * (1 + mEnvDiffLightP * 5 - mEnvDiffLightM) + scattering;
 }
 
 float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R)
@@ -168,6 +168,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     specular = prefilteredSpeculr;
     specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
     
+#if LIGHTMODEL_BRDF >= 1
     [branch]
     if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
     {
@@ -190,7 +191,13 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
         float4 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect);
         specular = lerp(specular, specular2.rgb, specular2.a);
     }
-    
+#else
+    if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+    {
+        diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+    }
+#endif
+
     specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
     specular *= step(0, sum(material.specular) - 1e-5);
 }
