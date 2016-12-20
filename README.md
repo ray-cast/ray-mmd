@@ -30,6 +30,7 @@ Ray-MMD
 #### 更新内容 :
 ##### 2016-11-26 ver 1.2.0
 * 添加了ShadingMaterialID，用于模拟更多的布料
+* 添加了Skybox的ColorBalance [(预览)](https://github.com/ray-cast/images/raw/master/balance_120beta.png)
 * 添加了PNG贴图的自发光支持
 * 添加了天空球的色彩调节
 * 添加了天空球的垂直翻转
