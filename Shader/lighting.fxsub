@@ -26,12 +26,12 @@ float SmoothnessToShininess(float smoothness)
 
 float fresnelSchlick(float f0, float f9, float LdotH)
 {
-    return lerp(f0, f9, pow(1 - LdotH, 5));
+    return lerp(f0, f9, pow5(1 - LdotH));
 }
 
 float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
 {
-    return lerp(f0, f9, pow(1 - LdotH, 5));
+    return lerp(f0, f9, pow5(1 - LdotH));
 }
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
@@ -173,7 +173,7 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
     float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
     spec *= 0.5h / (Gv + Gl);
 
-    float3 f0 = max(0.04, specular);
+    float3 f0 = max(0.02, specular);
     float3 f90 = ComputeSpecularMicroOcclusion(f0);
     float3 fresnel = fresnelSchlick(f0, f90, vh);
 
