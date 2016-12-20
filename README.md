@@ -30,7 +30,7 @@ Ray-MMD
 #### 更新内容 :
 ##### 2016-11-26 ver 1.2.0
 * __注:新版本需要替换以前的 material_common.fxsub__
-* 添加了ShadingMaterialID，用于模拟更多的布料
+* 添加了ShadingMaterialID，用于模拟更多的布料 [(预览)](https://github.com/ray-cast/images/raw/master/ID_120beta.png)
 * 添加了PNG贴图的自发光支持
 * 添加了Skybox的垂直翻转
 * 添加了Skybox的ColorBalance [(预览)](https://github.com/ray-cast/images/raw/master/balance_120beta.png)
