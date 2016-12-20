@@ -28,7 +28,7 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
-##### 2016-11-26 ver 1.2.0
+##### 2016-11-26 ver 1.2.0beta
 * __注:新版本需要替换以前的 material_common.fxsub__
 * 添加了ShadingMaterialID，用于模拟更多的布料 [(预览)](https://github.com/ray-cast/images/raw/master/ID_120beta.png)
 * 添加了教程 Tutorial/06-Fake Transmittance [(预览)](https://github.com/ray-cast/ray-mmd/raw/master/Tutorial/06-Fake Transmittance/README.png)
@@ -36,8 +36,8 @@ Ray-MMD
 * 添加了Skybox的垂直翻转
 * 添加了Skybox的ColorBalance [(预览)](https://github.com/ray-cast/images/raw/master/balance_120beta.png)
 * 改进了SSSS的计算方式 [(预览1)](https://github.com/ray-cast/images/raw/master/skin_120beta.png) [(预览2)](https://github.com/ray-cast/images/raw/master/dragon_120beta.png)
-* 改进了SSAO近处出现白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_120beta.png)
-* 改进了主光源阴影近处出现白边
+* 改进了SSAO近处出现白色边缘 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_120beta.png)
+* 改进了主光源阴影近处出现白色边缘
 * 修复部分模型IBL specular的计算bug
 
 #### 教程 :
