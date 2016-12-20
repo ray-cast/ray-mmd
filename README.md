@@ -34,7 +34,7 @@ Ray-MMD
 * 添加了天空球的色彩调节
 * 添加了天空球的垂直翻转
 * 改进了SSSS的计算方式
-* 改进了SSAO近处出现白边
+* 改进了SSAO近处出现白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_120beta.png)
 * 改进了主光源阴影近处出现白边
 * 修复部分模型IBL specular的计算bug
 
