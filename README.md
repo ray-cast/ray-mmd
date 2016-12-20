@@ -34,7 +34,7 @@ Ray-MMD
 * 添加了PNG贴图的自发光支持
 * 添加了Skybox的垂直翻转
 * 添加了Skybox的ColorBalance [(预览)](https://github.com/ray-cast/images/raw/master/balance_120beta.png)
-* 改进了SSSS的计算方式
+* 改进了SSSS的计算方式 [(预览1)](https://github.com/ray-cast/images/raw/master/skin_120beta.png) [(预览2)](https://github.com/ray-cast/images/raw/master/dragon_120beta.png)
 * 改进了SSAO近处出现白边 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_120beta.png)
 * 改进了主光源阴影近处出现白边
 * 修复部分模型IBL specular的计算bug
