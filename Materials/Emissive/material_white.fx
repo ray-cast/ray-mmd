@@ -81,7 +81,7 @@ const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 1
-#define EMISSIVE_USE_ALBEDO 1 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
+#define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
 #define EMISSIVE_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
@@ -94,7 +94,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
-const float emissiveIntensity = 1.0;
+const float emissiveIntensity = 2.0;
 const float emissiveMapLoopNum = 1.0;
 
 // 视差贴图

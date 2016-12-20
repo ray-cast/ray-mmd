@@ -199,7 +199,7 @@ float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughne
 }
 
 float4 SpecularBRDF_ClearCoat(float nh, float nl, float vh, float nv, float roughness, float specular, float NormalizationFactor)
-{    
+{
     float m2 = roughness * roughness;
     float spec = (nh * m2 - nh) * nh + 1;
     spec = m2 / (spec * spec) * NormalizationFactor;
