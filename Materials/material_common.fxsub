@@ -556,12 +556,12 @@ float3 GetAlbedo(float2 uv, bool useTexture)
 #endif
 }
 
-float3 GetEmissiveColor(MaterialParam material, float2 uv, bool useTexture)
+float3 GetEmissiveColor(float3 albedo, float2 uv, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
     #if EMISSIVE_MAP_ENABLE || EMISSIVE_USE_ALBEDO       
         #if EMISSIVE_USE_ALBEDO
-            float3 emissiveColor = material.albedo;
+            float3 emissiveColor = albedo;
         #else
             #if EMISSIVE_MAP_UV_FLIP
                 uv.y = 1 - uv.y;
@@ -999,7 +999,7 @@ GbufferParam MaterialPS(
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
     material.customDataA = GetCustomDataA(coord.xy);
     material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
-    material.emissive = GetEmissiveColor(material, coord.xy, use_texture);
+    material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
     material.emissiveIntensity = GetEmissiveIntensity();
     material.lightModel = GetLightMode(material);
     material.alpha = 1;
@@ -1042,11 +1042,11 @@ GbufferParam Material2PS(
     material.smoothness = GetSmoothness(coord.xy);
     material.albedo = albedoColor * (1.0 - MaterialMetalness);
     material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
-    material.emissive = GetEmissiveColor(material, coord.xy, use_texture);
-    material.emissiveIntensity = GetEmissiveIntensity();
-    material.lightModel = GetLightMode(material);
     material.customDataA = GetCustomDataA(coord.xy);
     material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
+    material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
+    material.emissiveIntensity = GetEmissiveIntensity();
+    material.lightModel = GetLightMode(material);
 #if ALPHA_MAP_ANIMATION_ENABLE
     material.alpha = alpha;
 #else
