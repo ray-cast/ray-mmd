@@ -28,7 +28,7 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
-##### 2016-11-26 ver 1.2.0beta
+##### 2016-12-20 ver 1.2.0beta
 * __注:新版本需要替换以前的 material_common.fxsub__
 * 添加了ShadingMaterialID，用于模拟更多的布料 [(预览)](https://github.com/ray-cast/images/raw/master/ID_120beta.png)
 * 添加了教程 Tutorial/06-Fake Transmittance [(预览)](https://github.com/ray-cast/ray-mmd/raw/master/Tutorial/06-Fake Transmittance/README.png)
