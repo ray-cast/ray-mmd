@@ -590,24 +590,20 @@ float3 GetEmissiveColor(float3 albedo, float2 uv, bool useTexture)
         return emissive.rgb;
     #endif
 #else
-    return MaterialSpecular * step(0, MaterialPower - 200);
+    return 0;
 #endif
 }
 
 float GetEmissiveIntensity()
 {
-#if USE_CUSTOM_MATERIAL
-    #if EMISSIVE_ENABLE
-        #if EMISSIVE_APPLY_MORPH_INTENSITY
-            return emissiveIntensity * LightIntensity;
-        #else
-            return emissiveIntensity;
-        #endif
+#if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
+    #if EMISSIVE_APPLY_MORPH_INTENSITY
+        return emissiveIntensity * LightIntensity;
     #else
-        return 0;
+        return emissiveIntensity;
     #endif
 #else
-    return max(0, (MaterialPower - 200) * 0.1);
+    return 0;
 #endif
 }
 
