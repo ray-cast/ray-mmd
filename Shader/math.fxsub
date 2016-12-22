@@ -68,6 +68,11 @@ float pow5(float x)
     return xx * xx * x;
 }
 
+float sum(float2 v)
+{
+    return dot(v, 1.0);
+}
+
 float sum(float3 v)
 {
     return dot(v, 1.0);
@@ -83,7 +88,17 @@ float madd(float v, float t1, float t2)
     return v * t1 + t2;
 }
 
+float2 madd(float2 v, float2 t1, float2 t2)
+{
+    return v * t1 + t2;
+}
+
 float3 madd(float3 v, float3 t1, float3 t2)
+{
+    return v * t1 + t2;
+}
+
+float4 madd(float4 v, float4 t1, float4 t2)
 {
     return v * t1 + t2;
 }

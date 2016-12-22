@@ -155,7 +155,11 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
     return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 }
 
-float4 SSAOBlur(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1, uniform sampler source, uniform float2 offset) : COLOR
+float4 SSAOBlur(
+    in float2 coord   : TEXCOORD0, 
+    in float3 viewdir : TEXCOORD1, 
+    uniform sampler source, 
+    uniform float2 offset) : COLOR
 {
     float center_d = linearizeDepth2(coord);
 

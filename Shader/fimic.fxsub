@@ -402,10 +402,12 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
     float L = length(coord * 2 - 1);
     L = 1 - smoothstep(outer, inner, L);
-    float3 color = tex2Dlod(source, float4(coord, 0, 0)).rgb;
-    color.g = tex2Dlod(source, float4(coord - ViewportOffset2 * L * (mDispersion * 8), 0, 0)).g;
-    color.b = tex2Dlod(source, float4(coord + ViewportOffset2 * L * (mDispersion * 8), 0, 0)).b;
-    return color;
+    float2 offset = ViewportOffset2 * L * (mDispersion * 8);
+    float3 shift1 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+    float3 shift2 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
+    float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
+    float3 shift = float3(shift2.r, shift1.g, shift3.b);
+    return shift;
 }
 
 float3 ApplyVignette(float3 color, float2 coord)

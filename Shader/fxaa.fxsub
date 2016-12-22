@@ -30,39 +30,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ==============================================================================
-#if AA_QUALITY==1
-#define FXAA_QUALITY__PRESET 12
-#elif AA_QUALITY==2
-#define FXAA_QUALITY__PRESET 20
+#if 0
+#define FXAA_QUALITY__PS 12
+#define FXAA_QUALITY__P0 1.0
+#define FXAA_QUALITY__P1 1.0
+#define FXAA_QUALITY__P2 1.0
+#define FXAA_QUALITY__P3 1.0
+#define FXAA_QUALITY__P4 1.0
+#define FXAA_QUALITY__P5 1.5
+#define FXAA_QUALITY__P6 2.0
+#define FXAA_QUALITY__P7 2.0
+#define FXAA_QUALITY__P8 2.0
+#define FXAA_QUALITY__P9 2.0
+#define FXAA_QUALITY__P10 4.0
+#define FXAA_QUALITY__P11 8.00
 #else
-#define FXAA_QUALITY__PRESET 29
-#endif
-#if (FXAA_QUALITY__PRESET==12)
 #define FXAA_QUALITY__PS 5
 #define FXAA_QUALITY__P0 1.0
 #define FXAA_QUALITY__P1 1.5
 #define FXAA_QUALITY__P2 2.0
 #define FXAA_QUALITY__P3 4.0
 #define FXAA_QUALITY__P4 12.0
-#elif (FXAA_QUALITY__PRESET==20)
-#define FXAA_QUALITY__PS 3
-#define FXAA_QUALITY__P0 1.5
-#define FXAA_QUALITY__P1 2.0
-#define FXAA_QUALITY__P2 8.0
-#elif (FXAA_QUALITY__PRESET==29)
-#define FXAA_QUALITY__PS 12
-#define FXAA_QUALITY__P0 1.0
-#define FXAA_QUALITY__P1 1.5
-#define FXAA_QUALITY__P2 2.0
-#define FXAA_QUALITY__P3 2.0
-#define FXAA_QUALITY__P4 2.0
-#define FXAA_QUALITY__P5 2.0
-#define FXAA_QUALITY__P6 2.0
-#define FXAA_QUALITY__P7 2.0
-#define FXAA_QUALITY__P8 2.0
-#define FXAA_QUALITY__P9 2.0
-#define FXAA_QUALITY__P10 4.0
-#define FXAA_QUALITY__P11 8.0
 #endif
 #define FxaaBool bool
 #define FxaaDiscard clip(-1)
