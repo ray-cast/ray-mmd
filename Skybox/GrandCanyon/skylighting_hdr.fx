@@ -5,7 +5,7 @@
 // 环境光贴图的mipmap层数
 #define IBL_MIPMAP_LEVEL 7
 // HDR range
-#define IBL_RGBM_RANGE 24
+#define IBL_RGBT_RANGE 1024
 
 #define IBLDIFF_MAP_FILE "texture/skydiff_hdr.dds"
 #define IBLSPEC_MAP_FILE "texture/skyspec_hdr.dds"
