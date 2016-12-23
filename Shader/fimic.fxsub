@@ -273,11 +273,16 @@ float4 GlareDetectionPS(
     float4 bloom = saturate(color * saturate(luminance(color.rgb) - threshold));
 #endif
     bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
-    
+
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
     float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
     float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
     
-    bloom.rgb += DecodeGBufferEmissive(MRT7, MRT8);
+    float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
+    float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+    
+    bloom.rgb += lerp(emissive0, emissive1, MRT8.a);
         
     return bloom;
 }
@@ -433,10 +438,15 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 {
     float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
 
+    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
     float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
     float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
     
-    color += DecodeGBufferEmissive(MRT7, MRT8);
+    float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
+    float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+    
+    color += lerp(emissive0, emissive1, MRT8.a);
     
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
     float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
