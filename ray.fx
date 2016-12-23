@@ -226,72 +226,37 @@ technique DeferredLighting<
 #endif
 
 #if AA_QUALITY == 2
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
-	
-	"RenderColorTarget=SMAABlendMap; Pass=SMAABlendingWeightCalculation;"
-	"RenderColorTarget=;             Pass=SMAANeighborhoodBlending;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 #endif
 
 #if AA_QUALITY == 3
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 	
-	"RenderColorTarget=SMAABlendMap;   Pass=SMAABlendingWeightCalculation1x;"
-	"RenderColorTarget=ShadingMapTemp; Pass=SMAANeighborhoodBlending;"
-	
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
-	
-	"RenderColorTarget=SMAABlendMap; Pass=SMAABlendingWeightCalculation2x;"
-	"RenderColorTarget=;             Pass=SMAANeighborhoodBlendingFinal;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
 #endif
 
 #if AA_QUALITY == 4
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 	
-	"RenderColorTarget=SMAABlendMap;   Pass=SMAABlendingWeightCalculation1x;"
-	"RenderColorTarget=ShadingMapTemp; Pass=SMAANeighborhoodBlending;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 	
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation3x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 	
-	"RenderColorTarget=SMAABlendMap; Pass=SMAABlendingWeightCalculation2x;"
-	"RenderColorTarget=;             Pass=SMAANeighborhoodBlending;"
-	
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
-	
-	"RenderColorTarget=SMAABlendMap; Pass=SMAABlendingWeightCalculation3x;"
-	"RenderColorTarget=;             Pass=SMAANeighborhoodBlending;"
-	
-	"RenderColorTarget=SMAAEdgeMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"Pass=SMAAEdgeDetection;"
-	
-	"RenderColorTarget=SMAABlendMap; Pass=SMAABlendingWeightCalculation4x;"
-	"RenderColorTarget=;             Pass=SMAANeighborhoodBlendingFinal;"
+	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation4x;"
+	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
 #endif
 ;>
 {
@@ -701,24 +666,12 @@ technique DeferredLighting<
 	pass SMAAEdgeDetection < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = ALWAYS;
-		StencilRef = 1;
-		StencilPass = REPLACE;
-		StencilFail = KEEP;
-		StencilZFail = KEEP;
-		StencilWriteMask = 1;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS();
 		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapTempSamp);
 	}
 	pass SMAABlendingWeightCalculation < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(0, 0, 0, 0));
 	}
@@ -733,35 +686,18 @@ technique DeferredLighting<
 	pass SMAAEdgeDetection < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = ALWAYS;
-		StencilRef = 1;
-		StencilPass = REPLACE;
-		StencilFail = KEEP;
-		StencilZFail = KEEP;
-		StencilWriteMask = 1;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS();
 		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapTempSamp);
 	}
 	pass SMAABlendingWeightCalculation1x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(1, 1, 1, 0));
 	}
 	pass SMAABlendingWeightCalculation2x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(2, 2, 2, 0));
 	}
@@ -782,57 +718,30 @@ technique DeferredLighting<
 	pass SMAAEdgeDetection < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = ALWAYS;
-		StencilRef = 1;
-		StencilPass = REPLACE;
-		StencilFail = KEEP;
-		StencilZFail = KEEP;
-		StencilWriteMask = 1;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS();
 		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapTempSamp);
 	}
 	pass SMAABlendingWeightCalculation1x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(5, 3, 1, 3));
 	}
 	pass SMAABlendingWeightCalculation2x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(4, 6, 2, 3));
 	}
 	pass SMAABlendingWeightCalculation3x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(3, 5, 1, 4));
 	}
 	pass SMAABlendingWeightCalculation4x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilPass = KEEP;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
 		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(6, 4, 2, 4));
 	}

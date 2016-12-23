@@ -214,16 +214,6 @@ float4 SMAALumaEdgeDetectionPS(
 	in float4 coord3 : TEXCOORD3,
 	uniform sampler source) : COLOR
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord0.xy, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord0.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord0.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord0.xy, 0, 0));
-
-	MaterialParam material;    
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-	
-	clip(sum(material.albedo + material.specular) - 1e-5);
-	
 	float4 offset[3] = { coord1, coord2, coord3 };
 	float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 	
@@ -282,7 +272,9 @@ float4 SMAABlendingWeightCalculationPS(
 {
 	float4 weights = 0;
 	float4 offset[3] = { coord1, coord2, coord3 };
-	float4 edge = tex2Dlod(SMAAEdgeMapSamp, float4(coord0.xy, 0, 0));   
+	float2 edge = tex2Dlod(SMAAEdgeMapSamp, float4(coord0.xy, 0, 0)).rg;
+	
+	clip(sum(edge) - 1e-5);
 	
 	if (edge.g > 0.0)
 	{
@@ -348,6 +340,7 @@ float4 SMAANeighborhoodBlendingPS(
 		float4 color = 0;
 		color += blendingWeight.x * tex2Dlod(source, float4(coord0 + ViewportOffset2 * blendingOffset.xy, 0, 0));
 		color += blendingWeight.y * tex2Dlod(source, float4(coord0 - ViewportOffset2 * blendingOffset.zw, 0, 0));
+
 		return srgb ? float4(ACESOutputDevice(color.rgb), 1) : float4(color.rgb, luminance(color));
 	}
 }

@@ -464,7 +464,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	color = ApplyContrast(color);
 	
 #if AA_QUALITY > 0
-	return float4(color, luminance(color));
+	return float4(color, sum(color) / 3);
 #else
 	return float4(ACESOutputDevice(color.rgb), 1);
 #endif
