@@ -161,7 +161,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
     diffuse *= DecodeRGBM(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(diffDir), 0, 0)), IBL_RGBM_RANGE);
 
     float3 specularDir = mul(normalize(SphereLightDirection(material.normal, V, L, LightSize)), (float3x3)matViewInverse);
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
+    float mipLayer = lerp(IBL_MIPMAP_LEVEL - 1, 0, material.smoothness);
     specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(specularDir), 0, mipLayer)), IBL_RGBM_RANGE);
 #endif
 

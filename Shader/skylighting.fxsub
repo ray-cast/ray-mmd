@@ -4,7 +4,7 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/lighting.fxsub"
+#include "../../shader/ibl.fxsub"
 
 float mEnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float mEnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
@@ -40,6 +40,10 @@ float mSkinColGM :  CONTROLOBJECT < string name="(self)"; string item = "SkinG-"
 float mSkinColBM :  CONTROLOBJECT < string name="(self)"; string item = "SkinB-"; >;
 float mSkinCol  :  CONTROLOBJECT < string name="(self)"; string item = "SkinGray+"; >;
 
+static float4 mSkinBalance = float4(float3(mSkinColRP, mSkinColGP, mSkinColBP) - float3(mSkinColRM, mSkinColGM, mSkinColBM), mSkinCol);
+static float4 mDiffuseBalance = float4(float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM), mDiffuseCol);
+static float4 mSpecularBalance = float4(float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM), mSpecularCol);
+
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
 texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
@@ -55,30 +59,6 @@ sampler IBLSpecularSampler = sampler_state {
     MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
     ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
-
-float3 ColorBalanceDiff(float3 color)
-{
-    float3 lum = luminance(color);
-    color = lerp(color, lum, mDiffuseCol);
-    color *= float3(1 + float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM));
-    return color;
-}
-
-float3 ColorBalanceSpec(float3 color)
-{
-    float3 lum = luminance(color);
-    color = lerp(color, lum, mSpecularCol);
-    color *= float3(1 + float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM));
-    return color;
-}
-
-float3 ColorBalanceSkin(float3 color)
-{
-    float3 lum = luminance(color);
-    color = lerp(color, lum, mSkinCol);
-    color *= float3(1 + float3(mSkinColRP, mSkinColGP, mSkinColBP) - float3(mSkinColRM, mSkinColGM, mSkinColBM));
-    return color;
-}
 
 float3 DecodeHDR(float4 rgbx)
 {
@@ -117,8 +97,8 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
     
     if (material.lightModel == SHADINGMODELID_SKIN)
     {
-        prefilteredDiffuse = ColorBalanceSkin(prefilteredDiffuse);        
-        prefilteredTransmittance = ColorBalanceSkin(prefilteredTransmittance);
+        prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mSkinBalance);        
+        prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mSkinBalance);
     }
     
     float3 dependentSplit = 0.5;
@@ -128,6 +108,23 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
     scattering += prefilteredDiffuse * (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
     
     return scattering;
+}
+
+float3 ImageBasedLightClothScattering(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
+{
+    float m = roughness * roughness;
+    float m2 = m * m;
+    float A = 4;
+    float spec = (nh - nh * m2) * nh + m2;
+    spec /= (1 + A * m2) * (1 + 4 * m2 * m2 / (spec * spec)) * NormalizationFactor;
+    
+    float G = 4 * (nl + nv - nl * nv);
+    spec /= G;
+    
+    float3 f0 = max(0.02, specular);
+    float3 fresnel = fresnelSchlick(f0, 1.0, vh);
+    
+    return fresnel * spec * nl;
 }
 
 float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R)
@@ -143,7 +140,7 @@ float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R
     
     float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
     
-    return float4(SpecularBRDF_InvGGX(nh, nl, vh, nv, roughness, material.customDataB, PI), material.customDataA);
+    return float4(ImageBasedLightClothScattering(nh, nl, vh, nv, roughness, material.customDataB, PI), material.customDataA);
 }
 
 void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out float3 diffuse, out float3 specular)
@@ -160,8 +157,8 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out fl
     float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
     float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));
 
-    prefilteredDiffuse = ColorBalanceDiff(prefilteredDiffuse);
-    prefilteredSpeculr = ColorBalanceSpec(prefilteredSpeculr);
+    prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mDiffuseBalance);
+    prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mSpecularBalance);
    
     diffuse = prefilteredDiffuse;
     diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
