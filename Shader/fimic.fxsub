@@ -26,26 +26,26 @@ texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewPortRatio={0.5, 0.5}; st
 texture DownsampleMap3rd : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
 sampler DownsampleSamp1st = sampler_state {
-    texture = <DownsampleMap1st>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <DownsampleMap1st>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler DownsampleSamp2nd = sampler_state {
-    texture = <DownsampleMap2nd>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <DownsampleMap2nd>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler DownsampleSamp3rd = sampler_state {
-    texture = <DownsampleMap3rd>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <DownsampleMap3rd>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 texture GlareLightMap : RENDERCOLORTARGET<float2 ViewPortRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler GlareLightMapSamp = sampler_state {
-    texture = <GlareLightMap>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <GlareLightMap>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 texture BloomMap1st : RENDERCOLORTARGET<float2 ViewPortRatio={0.50, 0.50}; string Format="A16B16G16R16F";>;
@@ -58,44 +58,44 @@ texture BloomMap3rdTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.125, 0.125};
 texture BloomMap4thTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
 
 sampler BloomSamp1stTemp = sampler_state {
-    texture = <BloomMap1stTemp>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap1stTemp>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp1st = sampler_state {
-    texture = <BloomMap1st>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap1st>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp2ndTemp = sampler_state {
-    texture = <BloomMap2ndTemp>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap2ndTemp>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp2nd = sampler_state {
-    texture = <BloomMap2nd>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap2nd>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp3rdTemp = sampler_state {
-    texture = <BloomMap3rdTemp>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap3rdTemp>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp3rd = sampler_state {
-    texture = <BloomMap3rd>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap3rd>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp4thTemp = sampler_state {
-    texture = <BloomMap4thTemp>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap4thTemp>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp4th = sampler_state {
-    texture = <BloomMap4th>;
-    MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <BloomMap4th>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 
 #if HDR_STAR_MODE > 0
@@ -120,44 +120,44 @@ texture StreakMap3rdTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; 
 texture StreakMap4thTemp : RENDERCOLORTARGET<float2 ViewPortRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
 sampler StreakSamp1st = sampler_state {
-    texture = <StreakMap1st>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap1st>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp1stTemp = sampler_state {
-    texture = <StreakMap1stTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap1stTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp2nd = sampler_state {
-    texture = <StreakMap2nd>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap2nd>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp2ndTemp = sampler_state {
-    texture = <StreakMap2ndTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap2ndTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp3rd = sampler_state {
-    texture = <StreakMap3rd>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap3rd>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp3rdTemp = sampler_state {
-    texture = <StreakMap3rdTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap3rdTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp4th = sampler_state {
-    texture = <StreakMap4th>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap4th>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler StreakSamp4thTemp = sampler_state {
-    texture = <StreakMap4thTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	texture = <StreakMap4thTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 #endif
 
@@ -176,296 +176,296 @@ static float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5
 texture GhostMaskMap<string ResourceName = "shader/textures/mask.png";>; 
 sampler GhostMaskMapSamp = sampler_state
 {
-    texture = <GhostMaskMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP; AddressV = CLAMP;
+	texture = <GhostMaskMap>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP; AddressV = CLAMP;
 };
 
 texture GhostImageMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {0.5, 0.5};
-    string Format="A2B10G10R10";
+	float2 ViewPortRatio = {0.5, 0.5};
+	string Format="A2B10G10R10";
 >;
 sampler GhostImageMapSamp = sampler_state {
-    texture = <GhostImageMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <GhostImageMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
 
 void HDRDownsampleVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD,
-    out float2 oTexcoord1 : TEXCOORD0,
-    out float2 oTexcoord2 : TEXCOORD1,
-    out float2 oTexcoord3 : TEXCOORD2,
-    out float2 oTexcoord4 : TEXCOORD3,
-    out float4 oPosition : POSITION,
-    uniform float2 step)
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD,
+	out float2 oTexcoord1 : TEXCOORD0,
+	out float2 oTexcoord2 : TEXCOORD1,
+	out float2 oTexcoord3 : TEXCOORD2,
+	out float2 oTexcoord4 : TEXCOORD3,
+	out float4 oPosition : POSITION,
+	uniform float2 step)
 {
-    oPosition = Position;
-    oTexcoord1 = Texcoord + step * 0.5;
-    oTexcoord2 = oTexcoord1 + float2(step.x, 0);
-    oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
-    oTexcoord4 = oTexcoord1 + float2(0, step.y);
+	oPosition = Position;
+	oTexcoord1 = Texcoord + step * 0.5;
+	oTexcoord2 = oTexcoord1 + float2(step.x, 0);
+	oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
+	oTexcoord4 = oTexcoord1 + float2(0, step.y);
 }
 
 float4 HDRDownsample4XPS(
-    in float2 coord1 : TEXCOORD0, 
-    in float2 coord2 : TEXCOORD1, 
-    in float2 coord3 : TEXCOORD2, 
-    in float2 coord4 : TEXCOORD3,
-    uniform sampler source) : COLOR
+	in float2 coord1 : TEXCOORD0, 
+	in float2 coord2 : TEXCOORD1, 
+	in float2 coord3 : TEXCOORD2, 
+	in float2 coord4 : TEXCOORD3,
+	uniform sampler source) : COLOR
 {
-    float4 color = tex2Dlod(source, float4(coord1, 0, 0));
-    color += tex2Dlod(source, float4(coord2, 0, 0));
-    color += tex2Dlod(source, float4(coord3, 0, 0));
-    color += tex2Dlod(source, float4(coord4, 0, 0));
-    return color / 4;
+	float4 color = tex2Dlod(source, float4(coord1, 0, 0));
+	color += tex2Dlod(source, float4(coord2, 0, 0));
+	color += tex2Dlod(source, float4(coord3, 0, 0));
+	color += tex2Dlod(source, float4(coord4, 0, 0));
+	return color / 4;
 }
 
 float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
-    return tex2Dlod(source, float4(coord, 0, 0));
+	return tex2Dlod(source, float4(coord, 0, 0));
 }
 
 void GlareDetectionVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD,
-    out float2 oTexcoord1 : TEXCOORD0,
-    out float2 oTexcoord2 : TEXCOORD1,
-    out float2 oTexcoord3 : TEXCOORD2,
-    out float2 oTexcoord4 : TEXCOORD3,
-    out float2 oTexcoord5 : TEXCOORD4,
-    out float4 oPosition : POSITION)
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD,
+	out float2 oTexcoord1 : TEXCOORD0,
+	out float2 oTexcoord2 : TEXCOORD1,
+	out float2 oTexcoord3 : TEXCOORD2,
+	out float2 oTexcoord4 : TEXCOORD3,
+	out float2 oTexcoord5 : TEXCOORD4,
+	out float4 oPosition : POSITION)
 {
-    float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
-    float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
-    
-    oPosition = Position;
-    oTexcoord1 = Texcoord + ViewportOffset;
-    oTexcoord2 = oTexcoord1 + offset0.xy;
-    oTexcoord3 = oTexcoord1 + offset0.zw;
-    oTexcoord4 = oTexcoord1 + offset1.xy;
-    oTexcoord5 = oTexcoord1 + offset1.zw;
+	float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
+	float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
+	
+	oPosition = Position;
+	oTexcoord1 = Texcoord + ViewportOffset;
+	oTexcoord2 = oTexcoord1 + offset0.xy;
+	oTexcoord3 = oTexcoord1 + offset0.zw;
+	oTexcoord4 = oTexcoord1 + offset1.xy;
+	oTexcoord5 = oTexcoord1 + offset1.zw;
 }
 
 float4 GlareDetectionPS(
-    in float2 coord1 : TEXCOORD0,
-    in float2 coord2 : TEXCOORD1,
-    in float2 coord3 : TEXCOORD2,
-    in float2 coord4 : TEXCOORD3,
-    in float2 coord5 : TEXCOORD4,
-    uniform sampler source) : COLOR
+	in float2 coord1 : TEXCOORD0,
+	in float2 coord2 : TEXCOORD1,
+	in float2 coord3 : TEXCOORD2,
+	in float2 coord4 : TEXCOORD3,
+	in float2 coord5 : TEXCOORD4,
+	uniform sampler source) : COLOR
 {   
-    float4 color = tex2Dlod(source, float4(coord1, 0, 0));
-    color = min(color, tex2Dlod(source, float4(coord2, 0, 0)));
-    color = min(color, tex2Dlod(source, float4(coord3, 0, 0)));
-    color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
-    color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
-    
-    float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);
-    
+	float4 color = tex2Dlod(source, float4(coord1, 0, 0));
+	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)));
+	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)));
+	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
+	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
+	
+	float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);
+	
 #if HDR_BLOOM_MODE == 1
-    float4 bloom = max(0, color - threshold);
+	float4 bloom = max(0, color - threshold);
 #elif HDR_BLOOM_MODE == 2
-    float4 bloom = saturate(color - threshold);
+	float4 bloom = saturate(color - threshold);
 #else
-    float4 bloom = saturate(color * saturate(luminance(color.rgb) - threshold));
+	float4 bloom = saturate(color * saturate(luminance(color.rgb) - threshold));
 #endif
-    bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
+	bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
 
-    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
-    
-    float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
-    float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-    
-    bloom.rgb += lerp(emissive0, emissive1, MRT8.a);
-        
-    return bloom;
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
+	
+	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
+	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+	
+	bloom.rgb += lerp(emissive0, emissive1, MRT8.a);
+		
+	return bloom;
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
 {
-    static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
-    static const float weightSum = 262106.0;
-    
-    float4 color = 0;
-    float2 coords = coord - offset * 7.0;
-    
-    for (int i = 0; i < 15; ++i)
-    {
-        color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
-        coords += offset;
-    }
+	static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
+	static const float weightSum = 262106.0;
+	
+	float4 color = 0;
+	float2 coords = coord - offset * 7.0;
+	
+	for (int i = 0; i < 15; ++i)
+	{
+		color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
+		coords += offset;
+	}
 
-    return color;
+	return color;
 }
 
 float BloomFactor(float factor) 
 {
-    float mirrorFactor = 1.2 - factor;
-    return lerp(factor, mirrorFactor, mBloomRadius);
+	float mirrorFactor = 1.2 - factor;
+	return lerp(factor, mirrorFactor, mBloomRadius);
 }
 
 void StarStreakVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD,
-    out float2 oTexcoord0 : TEXCOORD0,
-    out float2 oTexcoord1 : TEXCOORD1,
-    out float2 oTexcoord2 : TEXCOORD2,
-    out float2 oTexcoord3 : TEXCOORD3,
-    out float4 oPosition : POSITION,
-    uniform float2 stepSize,
-    uniform float stride)
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float2 oTexcoord1 : TEXCOORD1,
+	out float2 oTexcoord2 : TEXCOORD2,
+	out float2 oTexcoord3 : TEXCOORD3,
+	out float4 oPosition : POSITION,
+	uniform float2 stepSize,
+	uniform float stride)
 {
-    float2 offset = ViewportSize * 0.25;
-    oTexcoord0 = Texcoord + (0.5 / offset);
-    oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride;
-    oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 2;
-    oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 3;
-    oPosition = Position;
+	float2 offset = ViewportSize * 0.25;
+	oTexcoord0 = Texcoord + (0.5 / offset);
+	oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride;
+	oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 2;
+	oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 3;
+	oPosition = Position;
 }
 
 float4 StarStreakPS(
-    in float2 coord0 : TEXCOORD0,
-    in float2 coord1 : TEXCOORD1,
-    in float2 coord2 : TEXCOORD2,
-    in float2 coord3 : TEXCOORD3,
-    uniform sampler source, uniform float4 colorCoeff[4], uniform float threshold) : COLOR
+	in float2 coord0 : TEXCOORD0,
+	in float2 coord1 : TEXCOORD1,
+	in float2 coord2 : TEXCOORD2,
+	in float2 coord3 : TEXCOORD3,
+	uniform sampler source, uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-    float4 color0 = tex2Dlod(source, float4(coord0, 0, 0)) * colorCoeff[0];
-    float4 color1 = tex2Dlod(source, float4(coord1, 0, 0)) * colorCoeff[1];
-    float4 color2 = tex2Dlod(source, float4(coord2, 0, 0)) * colorCoeff[2];
-    float4 color3 = tex2Dlod(source, float4(coord3, 0, 0)) * colorCoeff[3];
-    return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold + EPSILON) * 10);
+	float4 color0 = tex2Dlod(source, float4(coord0, 0, 0)) * colorCoeff[0];
+	float4 color1 = tex2Dlod(source, float4(coord1, 0, 0)) * colorCoeff[1];
+	float4 color2 = tex2Dlod(source, float4(coord2, 0, 0)) * colorCoeff[2];
+	float4 color3 = tex2Dlod(source, float4(coord3, 0, 0)) * colorCoeff[3];
+	return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold + EPSILON) * 10);
 }
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-    float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2Dlod(BloomSamp1st, float4(coord, 0, 0));
-    float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2Dlod(BloomSamp2nd, float4(coord, 0, 0));
-    float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2Dlod(BloomSamp3rd, float4(coord, 0, 0));
-    float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2Dlod(BloomSamp4th, float4(coord, 0, 0));
-    
-    float4 bloom = 0.0f;
-    bloom += bloom1;
-    bloom += bloom2;
-    bloom += bloom3;
-    bloom += bloom4;
-    
+	float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2Dlod(BloomSamp1st, float4(coord, 0, 0));
+	float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2Dlod(BloomSamp2nd, float4(coord, 0, 0));
+	float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2Dlod(BloomSamp3rd, float4(coord, 0, 0));
+	float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2Dlod(BloomSamp4th, float4(coord, 0, 0));
+	
+	float4 bloom = 0.0f;
+	bloom += bloom1;
+	bloom += bloom2;
+	bloom += bloom3;
+	bloom += bloom4;
+	
 #if HDR_STAR_MODE > 0
-    float4 star = max(tex2Dlod(StreakSamp1st, float4(coord, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord, 0, 0)));
-    #if HDR_STAR_MODE > 1
-        star = max(star, max(tex2Dlod(StreakSamp3rd, float4(coord, 0, 0)), tex2Dlod(StreakSamp4th, float4(coord, 0, 0))));
-    #endif
-    bloom += star;
+	float4 star = max(tex2Dlod(StreakSamp1st, float4(coord, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord, 0, 0)));
+	#if HDR_STAR_MODE > 1
+		star = max(star, max(tex2Dlod(StreakSamp3rd, float4(coord, 0, 0)), tex2Dlod(StreakSamp4th, float4(coord, 0, 0))));
+	#endif
+	bloom += star;
 #endif
-    
-    return bloom;
+	
+	return bloom;
 }
 
 void GhostImageVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD,
-    out float2 oTexcoord0 : TEXCOORD0,
-    out float2 oTexcoord1 : TEXCOORD1,
-    out float2 oTexcoord2 : TEXCOORD2,
-    out float2 oTexcoord3 : TEXCOORD3,
-    out float4 oPosition : POSITION,
-    uniform float4 scalar)
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float2 oTexcoord1 : TEXCOORD1,
+	out float2 oTexcoord2 : TEXCOORD2,
+	out float2 oTexcoord3 : TEXCOORD3,
+	out float4 oPosition : POSITION,
+	uniform float4 scalar)
 {
-    oTexcoord0 = (Texcoord - 0.5) * scalar[0] + 0.5;
-    oTexcoord1 = (Texcoord - 0.5) * scalar[1] + 0.5;
-    oTexcoord2 = (Texcoord - 0.5) * scalar[2] + 0.5;
-    oTexcoord3 = (Texcoord - 0.5) * scalar[3] + 0.5;
-    oPosition = Position;
+	oTexcoord0 = (Texcoord - 0.5) * scalar[0] + 0.5;
+	oTexcoord1 = (Texcoord - 0.5) * scalar[1] + 0.5;
+	oTexcoord2 = (Texcoord - 0.5) * scalar[2] + 0.5;
+	oTexcoord3 = (Texcoord - 0.5) * scalar[3] + 0.5;
+	oPosition = Position;
 }
 
 float4 GhostImagePS(
-    in float2 coord0 : TEXCOORD0,
-    in float2 coord1 : TEXCOORD1,
-    in float2 coord2 : TEXCOORD2,
-    in float2 coord3 : TEXCOORD3,
-    uniform sampler source1,
-    uniform sampler source2,
-    uniform sampler source3,
-    uniform sampler source4, 
-    uniform float4 colorCoeff[4], uniform float threshold) : COLOR
+	in float2 coord0 : TEXCOORD0,
+	in float2 coord1 : TEXCOORD1,
+	in float2 coord2 : TEXCOORD2,
+	in float2 coord3 : TEXCOORD3,
+	uniform sampler source1,
+	uniform sampler source2,
+	uniform sampler source3,
+	uniform sampler source4, 
+	uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-    float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
-    float4 color1 = (tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord0, 0, 0)) * colorCoeff[0];
-    float4 color2 = (tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord1, 0, 0)) * colorCoeff[1];
-    float4 color3 = (tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord2, 0, 0)) * colorCoeff[2];
-    float4 color4 = (tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord3, 0, 0)) * colorCoeff[3];
-    return max(0, (color1 + color2 + color3 + color4));
+	float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
+	float4 color1 = (tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord0, 0, 0)) * colorCoeff[0];
+	float4 color2 = (tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord1, 0, 0)) * colorCoeff[1];
+	float4 color3 = (tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord2, 0, 0)) * colorCoeff[2];
+	float4 color4 = (tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord3, 0, 0)) * colorCoeff[3];
+	return max(0, (color1 + color2 + color3 + color4));
 }
 
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
-    float L = length(coord * 2 - 1);
-    L = 1 - smoothstep(outer, inner, L);
-    float2 offset = ViewportOffset2 * L * (mDispersion * 8);
-    float3 shift1 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
-    float3 shift2 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
-    float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
-    float3 shift = float3(shift2.r, shift1.g, shift3.b);
-    return shift;
+	float L = length(coord * 2 - 1);
+	L = 1 - smoothstep(outer, inner, L);
+	float2 offset = ViewportOffset2 * L * (mDispersion * 8);
+	float3 shift1 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	float3 shift2 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
+	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
+	float3 shift = float3(shift2.r, shift1.g, shift3.b);
+	return shift;
 }
 
 float3 ApplyVignette(float3 color, float2 coord)
 {
-    float L = length(coord * 2 - 1);
-    return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
+	float L = length(coord * 2 - 1);
+	return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
 }
 
 float3 ApplyColorBalance(float3 color)
 {
-    float3 lum = luminance(color);
-    color = lerp(color, lum, mColBalance);
-    color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
-    return color;
+	float3 lum = luminance(color);
+	color = lerp(color, lum, mColBalance);
+	color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+	return color;
 }
 
 float3 ApplyContrast(float3 color)
 {
-    return lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
+	return lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
 }
 
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
-    float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
+	float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
 
-    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-    
-    float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
-    float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-    
-    color += lerp(emissive0, emissive1, MRT8.a);
-    
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	
+	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
+	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+	
+	color += lerp(emissive0, emissive1, MRT8.a);
+	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
-    float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
-    color += lerp(bloom, 0, mBloomTonemapping);
+	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
+	color += lerp(bloom, 0, mBloomTonemapping);
 #endif
-    
-    color = ApplyVignette(color, coord);
-    color = ApplyColorBalance(color);
-    color = ACESToneMapping(color * (mExposureMin + mExposure * mExposureMax));
-    
+	
+	color = ApplyVignette(color, coord);
+	color = ApplyColorBalance(color);
+	color = ACESToneMapping(color * (mExposureMin + mExposure * mExposureMax));
+	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
-    color += lerp(0, bloom, mBloomTonemapping);
+	color += lerp(0, bloom, mBloomTonemapping);
 #endif
-    
-    color = ApplyContrast(color);
-    
+	
+	color = ApplyContrast(color);
+	
 #if AA_QUALITY > 0
-    return float4(color, luminance(color));
+	return float4(color, luminance(color));
 #else
-    return float4(ACESOutputDevice(color.rgb), 1);
+	return float4(ACESOutputDevice(color.rgb), 1);
 #endif
 }

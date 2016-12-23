@@ -1,108 +1,108 @@
 float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 {   
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-    
-    MaterialParam material;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-    
-    if (material.lightModel != SHADINGMODELID_SKIN &&
-        material.lightModel != SHADINGMODELID_SUBSURFACE)
-    {
-        clip(-1);
-    }
-    
-    return 1;
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+	
+	if (material.lightModel != SHADINGMODELID_SKIN &&
+		material.lightModel != SHADINGMODELID_SUBSURFACE)
+	{
+		clip(-1);
+	}
+	
+	return 1;
 }
 
 float4 SSSGuassBlurPS(
-    in float2 coord : TEXCOORD0,
-    in float3 viewdir : TEXCOORD1,
-    uniform sampler source,
-    uniform sampler original,
-    uniform float2 direction) : COLOR
+	in float2 coord : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	uniform sampler source,
+	uniform sampler original,
+	uniform float2 direction) : COLOR
 {
-    const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
+	const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
 
-    const float3 profileVarArr[4] =
-    {
-        float3( 3.3, 2.8, 1.4 ),  // marble
-        float3( 3.3, 1.4, 1.1 ),  // skin
-        float3( 1.0, 1.0, 1.0 ),
-        float3( 1.0, 1.0, 1.0 )
-    };
+	const float3 profileVarArr[4] =
+	{
+		float3( 3.3, 2.8, 1.4 ),  // marble
+		float3( 3.3, 1.4, 1.1 ),  // skin
+		float3( 1.0, 1.0, 1.0 ),
+		float3( 1.0, 1.0, 1.0 )
+	};
 
-    const float4 profileSpikeRadArr[4] =
-    {
-        float4(0.30, 0.30, 0.80, 8.0 ), // marble
-        float4(0.15, 0.20, 0.25, 1.0),  // skin
-        float4(1.0, 1.0, 1.0, 1.0),
-        float4(1.0, 1.0, 1.0, 1.0)
-    };
+	const float4 profileSpikeRadArr[4] =
+	{
+		float4(0.30, 0.30, 0.80, 8.0 ), // marble
+		float4(0.15, 0.20, 0.25, 1.0),  // skin
+		float4(1.0, 1.0, 1.0, 1.0),
+		float4(1.0, 1.0, 1.0, 1.0)
+	};
 
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-    MaterialParam material;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-    
-    float4 colorM = tex2Dlod(source, float4(coord, 0, 0));
-    
-    float3 V = normalize(viewdir);
-    float3 P = V * material.linearDepth / V.z;
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+	
+	float4 colorM = tex2Dlod(source, float4(coord, 0, 0));
+	
+	float3 V = normalize(viewdir);
+	float3 P = V * material.linearDepth / V.z;
 
-    float3 normal = cross(ddy(P), ddx(P));
-    float perspectiveScaleX = dot(normalize(normal.xz), normalize(-P.xz));
-    float perspectiveScaleY = dot(normalize(normal.yz), normalize(-P.yz));
-    float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
+	float3 normal = cross(ddy(P), ddx(P));
+	float perspectiveScaleX = dot(normalize(normal.xz), normalize(-P.xz));
+	float perspectiveScaleY = dot(normalize(normal.yz), normalize(-P.yz));
+	float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
-    float sssAmount = material.customDataA;
-    float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
-    float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1.0;
-    float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
-    
-    float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
+	float sssAmount = material.customDataA;
+	float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
+	float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1.0;
+	float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
+	
+	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
 
-    float3 blurFalloff = -1.0f / (2 * profileVarArr[sssIndex]);
+	float3 blurFalloff = -1.0f / (2 * profileVarArr[sssIndex]);
 
-    float3 totalWeight = 1;
-    float3 totalColor = colorM.rgb;
+	float3 totalWeight = 1;
+	float3 totalColor = colorM.rgb;
 
-    [unroll]
-    for (int i = 0; i < 6; i++)
-    {
-        float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
-        float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
+	[unroll]
+	for (int i = 0; i < 6; i++)
+	{
+		float2 offset1 = coord.xy + offsets[i] / 5.5 * finalStep;
+		float2 offset2 = coord.xy - offsets[i] / 5.5 * finalStep;
 
-        float4 sampleColor1 = tex2Dlod(source, float4(offset1, 0, 0));
-        float4 sampleColor2 = tex2Dlod(source, float4(offset2, 0, 0));
+		float4 sampleColor1 = tex2Dlod(source, float4(offset1, 0, 0));
+		float4 sampleColor2 = tex2Dlod(source, float4(offset2, 0, 0));
 
-        float depthDiff1 = (sampleColor1.a - material.linearDepth) * 1000 * mSSSSWidth;
-        float depthDiff2 = (sampleColor2.a - material.linearDepth) * 1000 * mSSSSWidth;
+		float depthDiff1 = (sampleColor1.a - material.linearDepth) * 1000 * mSSSSWidth;
+		float depthDiff2 = (sampleColor2.a - material.linearDepth) * 1000 * mSSSSWidth;
 
-        float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
-        float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
+		float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
+		float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
 
-        totalWeight += weight1;
-        totalWeight += weight2;
+		totalWeight += weight1;
+		totalWeight += weight2;
 
-        totalColor += weight1 * sampleColor1.rgb;
-        totalColor += weight2 * sampleColor2.rgb;
-    }
+		totalColor += weight1 * sampleColor1.rgb;
+		totalColor += weight2 * sampleColor2.rgb;
+	}
 
-    totalColor /= totalWeight;
-    
-    if (direction.y > 0.01)
-    {
-        totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
+	totalColor /= totalWeight;
+	
+	if (direction.y > 0.01)
+	{
+		totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
 #if SSSS_QUALITY > 1
-        totalColor *= material.albedo;
+		totalColor *= material.albedo;
 #endif
-    }
-    
-    return float4(totalColor, colorM.a);
+	}
+	
+	return float4(totalColor, colorM.a);
 }

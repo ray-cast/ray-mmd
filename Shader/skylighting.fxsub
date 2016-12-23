@@ -48,214 +48,214 @@ static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEn
 
 texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
 sampler IBLDiffuseSampler = sampler_state {
-    texture = <IBLDiffuseTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	texture = <IBLDiffuseTexture>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>; 
 sampler IBLSpecularSampler = sampler_state {
-    texture = <IBLSpecularTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	texture = <IBLSpecularTexture>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 float3 DecodeHDR(float4 rgbx)
 {
 #if IBL_HDR_ENABLE
-    #if IBL_RGBT_RANGE
-        return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
-    #elif IBL_RGBM_RANGE
-        return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
-    #else
-        return DecodeRGBM(rgbx, 6);
-    #endif
+	#if IBL_RGBT_RANGE
+		return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
+	#elif IBL_RGBM_RANGE
+		return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
+	#else
+		return DecodeRGBM(rgbx, 6);
+	#endif
 #else
-    return rgbx.rgb;
+	return rgbx.rgb;
 #endif
 }
 
 float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V)
 {
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
-    float3 R = mul(matTransform, EnvironmentReflect(N, V));
-    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));    
-    return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
+	float3 R = mul(matTransform, EnvironmentReflect(N, V));
+	float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer));    
+	return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
 }
 
 float4 ImageBasedLightHair(MaterialParam material, float3 N, float3 V, float3 R)
 {
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
-    float3 FakeNormal = -normalize(V - N * dot(V, N));
-    float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(FakeNormal), 0, mipLayer));
-    return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
+	float3 FakeNormal = -normalize(V - N * dot(V, N));
+	float4 prefilteredSpeculr = tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(FakeNormal), 0, mipLayer));
+	return float4(DecodeHDR(prefilteredSpeculr), 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
 }
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
-    float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
-    
-    if (material.lightModel == SHADINGMODELID_SKIN)
-    {
-        prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mSkinBalance);        
-        prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mSkinBalance);
-    }
-    
-    float3 dependentSplit = 0.5;
-    float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
-    scattering *= material.customDataB * dependentSplit;
-    scattering *= (1 + mEnvSSSLightP * 5 - mEnvSSSLightM);
-    scattering += prefilteredDiffuse * (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
-    
-    return scattering;
+	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
+	
+	if (material.lightModel == SHADINGMODELID_SKIN)
+	{
+		prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mSkinBalance);        
+		prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mSkinBalance);
+	}
+	
+	float3 dependentSplit = 0.5;
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
+	scattering *= material.customDataB * dependentSplit;
+	scattering *= (1 + mEnvSSSLightP * 5 - mEnvSSSLightM);
+	scattering += prefilteredDiffuse * (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
+	
+	return scattering;
 }
 
 float3 ImageBasedLightClothScattering(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
 {
-    float m = roughness * roughness;
-    float m2 = m * m;
-    float A = 4;
-    float spec = (nh - nh * m2) * nh + m2;
-    spec /= (1 + A * m2) * (1 + 4 * m2 * m2 / (spec * spec)) * NormalizationFactor;
-    
-    float G = 4 * (nl + nv - nl * nv);
-    spec /= G;
-    
-    float3 f0 = max(0.02, specular);
-    float3 fresnel = fresnelSchlick(f0, 1.0, vh);
-    
-    return fresnel * spec * nl;
+	float m = roughness * roughness;
+	float m2 = m * m;
+	float A = 4;
+	float spec = (nh - nh * m2) * nh + m2;
+	spec /= (1 + A * m2) * (1 + 4 * m2 * m2 / (spec * spec)) * NormalizationFactor;
+	
+	float G = 4 * (nl + nv - nl * nv);
+	spec /= G;
+	
+	float3 f0 = max(0.02, specular);
+	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
+	
+	return fresnel * spec * nl;
 }
 
 float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R)
 {
-    float3 L = R;
+	float3 L = R;
 
-    float3 H = normalize(V + L);
+	float3 H = normalize(V + L);
 
-    float nh = saturate(dot(N, H));
-    float nl = saturate(dot(N, L));
-    float vh = saturate(dot(V, H));
-    float nv = abs(dot(N, V)) + 1e-5h;
-    
-    float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-    
-    return float4(ImageBasedLightClothScattering(nh, nl, vh, nv, roughness, material.customDataB, PI), material.customDataA);
+	float nh = saturate(dot(N, H));
+	float nl = saturate(dot(N, L));
+	float vh = saturate(dot(V, H));
+	float nv = abs(dot(N, V)) + 1e-5h;
+	
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	
+	return float4(ImageBasedLightClothScattering(nh, nl, vh, nv, roughness, material.customDataB, PI), material.customDataA);
 }
 
 void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 V, out float3 diffuse, out float3 specular)
 {
-    float3 worldView = V;
-    float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-    float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
-    
-    float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
+	float3 worldView = V;
+	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
+	
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 
-    float3 R = mul(matTransform, worldReflect);
-    float3 N = mul(matTransform, worldNormal);
+	float3 R = mul(matTransform, worldReflect);
+	float3 N = mul(matTransform, worldNormal);
 
-    float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
-    float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));
+	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
+	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));
 
-    prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mDiffuseBalance);
-    prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mSpecularBalance);
+	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mDiffuseBalance);
+	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mSpecularBalance);
    
-    diffuse = prefilteredDiffuse;
-    diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
-    
-    specular = prefilteredSpeculr;
-    specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
-    
+	diffuse = prefilteredDiffuse;
+	diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
+	
+	specular = prefilteredSpeculr;
+	specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	
 #if LIGHTMODEL_BRDF >= 1
-    [branch]
-    if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
-    {
-        float4 specular2 = ImageBasedLightClearCost(material, mul(FlatNormal, (float3x3)matViewInverse), worldView);
-        specular *= (1 - specular2.a);
-        specular += specular2.rgb;
-    }
-    else if (material.lightModel == SHADINGMODELID_HAIR)
-    {
-        float4 specular2 = ImageBasedLightHair(material, worldNormal, worldView, worldReflect);
-        specular *= (1 - specular2.a);
-        specular += specular2.rgb;
-    }
-    else if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
-    {
-        diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
-    }
-    else if (material.lightModel == SHADINGMODELID_CLOTH)
-    {
-        float4 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect);
-        specular = lerp(specular, specular2.rgb, specular2.a);
-    }
+	[branch]
+	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+	{
+		float4 specular2 = ImageBasedLightClearCost(material, mul(FlatNormal, (float3x3)matViewInverse), worldView);
+		specular *= (1 - specular2.a);
+		specular += specular2.rgb;
+	}
+	else if (material.lightModel == SHADINGMODELID_HAIR)
+	{
+		float4 specular2 = ImageBasedLightHair(material, worldNormal, worldView, worldReflect);
+		specular *= (1 - specular2.a);
+		specular += specular2.rgb;
+	}
+	else if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+	{
+		diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+	}
+	else if (material.lightModel == SHADINGMODELID_CLOTH)
+	{
+		float4 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect);
+		specular = lerp(specular, specular2.rgb, specular2.a);
+	}
 #else
-    if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
-    {
-        diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
-    }
+	if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+	{
+		diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+	}
 #endif
 
-    specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
-    specular *= step(0, sum(material.specular) - 1e-5);
+	specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
+	specular *= step(0, sum(material.specular) - 1e-5);
 }
 
 void EnvLightingVS(
-    in float4 Position : POSITION,
-    in float2 Texcoord : TEXCOORD0,
-    out float4 oTexcoord : TEXCOORD0,
-    out float3 oViewdir  : TEXCOORD1,
-    out float4 oPosition : SV_Position)
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD0,
+	out float4 oTexcoord : TEXCOORD0,
+	out float3 oViewdir  : TEXCOORD1,
+	out float4 oPosition : SV_Position)
 {
-    oViewdir = CameraPosition - mul(Position, matWorld).xyz;
-    oTexcoord = oPosition = mul(Position, matWorldViewProject);
+	oViewdir = CameraPosition - mul(Position, matWorld).xyz;
+	oTexcoord = oPosition = mul(Position, matWorldViewProject);
 }
 
 void EnvLightingPS(
-    float4 texcoord : TEXCOORD0,
-    float3 viewdir  : TEXCOORD1,
-    float4 screenPosition : SV_Position,
-    out float4 oColor0 : COLOR0,
-    out float4 oColor1 : COLOR1)
+	float4 texcoord : TEXCOORD0,
+	float3 viewdir  : TEXCOORD1,
+	float4 screenPosition : SV_Position,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1)
 {
 #if IBL_ENABLE
-    float2 coord = texcoord.xy / texcoord.w;
-    coord = PosToCoord(coord);
-    coord += ViewportOffset;
+	float2 coord = texcoord.xy / texcoord.w;
+	coord = PosToCoord(coord);
+	coord += ViewportOffset;
 
-    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
-    MaterialParam material;    
-    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	MaterialParam material;    
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-    MaterialParam materialAlpha;    
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-    
-    float3 sum1 = material.albedo + material.specular;
-    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-    clip(sum(sum1 + sum2 - 1e-5));
-       
-    float3 V = normalize(viewdir);
-    
-    float3 diffuse, specular;
-    ShadingMaterial(material, materialAlpha.normal, V, diffuse, specular);
-    
-    float3 diffuse2, specular2;
-    ShadingMaterial(materialAlpha, materialAlpha.normal, V, diffuse2, specular2);
-    
-    oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
-    oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
+	MaterialParam materialAlpha;    
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+	
+	float3 sum1 = material.albedo + material.specular;
+	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+	clip(sum(sum1 + sum2 - 1e-5));
+	   
+	float3 V = normalize(viewdir);
+	
+	float3 diffuse, specular;
+	ShadingMaterial(material, materialAlpha.normal, V, diffuse, specular);
+	
+	float3 diffuse2, specular2;
+	ShadingMaterial(materialAlpha, materialAlpha.normal, V, diffuse2, specular2);
+	
+	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
+	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 #else
-    oColor0 = EncodeYcbcr(screenPosition, 0, 0);
-    oColor1 = EncodeYcbcr(screenPosition, 0, 0);
+	oColor0 = EncodeYcbcr(screenPosition, 0, 0);
+	oColor1 = EncodeYcbcr(screenPosition, 0, 0);
 #endif
 }
 
@@ -265,23 +265,23 @@ const float4 IBLColor  = float4(0,0.5,0,0.5);
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
 #define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass;\
-    string Script = \
-        "ClearSetColor=BackColor;"\
-        "RenderColorTarget0=LightAlphaMap;"\
-        "Clear=Color;"\
-        "RenderColorTarget0=;" \
-        "RenderColorTarget1=EnvLightAlphaMap;" \
-        "ClearSetColor=IBLColor;"\
-        "Clear=Color;"\
-        "Pass=DrawObject;" \
-    ;> { \
-        pass DrawObject { \
-            AlphaBlendEnable = false; AlphaTestEnable = false;\
-            VertexShader = compile vs_3_0 EnvLightingVS(); \
-            PixelShader  = compile ps_3_0 EnvLightingPS(); \
-        } \
-    }
+	technique name < string MMDPass = mmdpass;\
+	string Script = \
+		"ClearSetColor=BackColor;"\
+		"RenderColorTarget0=LightAlphaMap;"\
+		"Clear=Color;"\
+		"RenderColorTarget0=;" \
+		"RenderColorTarget1=EnvLightAlphaMap;" \
+		"ClearSetColor=IBLColor;"\
+		"Clear=Color;"\
+		"Pass=DrawObject;" \
+	;> { \
+		pass DrawObject { \
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
+			VertexShader = compile vs_3_0 EnvLightingVS(); \
+			PixelShader  = compile ps_3_0 EnvLightingPS(); \
+		} \
+	}
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

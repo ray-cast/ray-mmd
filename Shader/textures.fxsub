@@ -11,314 +11,314 @@
 #endif
 
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
-    float2 ViewPortRatio = {1.0,1.0};
-    int MipLevels = 1;
-    bool AntiAlias = false;
-    string Format = "D24S8";
+	float2 ViewPortRatio = {1.0,1.0};
+	int MipLevels = 1;
+	bool AntiAlias = false;
+	string Format = "D24S8";
 >;
 texture2D ScnMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0,1.0};
-    int MipLevels = 1;
-    bool AntiAlias = false;
-    string Format = "A16B16G16R16F";
+	float2 ViewPortRatio = {1.0,1.0};
+	int MipLevels = 1;
+	bool AntiAlias = false;
+	string Format = "A16B16G16R16F";
 >;
 sampler ScnSamp = sampler_state {
-    texture = <ScnMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ScnMap>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if FOG_ENABLE
 texture FogMap: OFFSCREENRENDERTARGET <
-    string Description = "Multi volumetirc fog map for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    int Miplevels = 1;
-    bool AntiAlias = false;
-    string DefaultEffect =
-        "SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
-        "GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
-        "AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
-        "* = hide;";
+	string Description = "Multi volumetirc fog map for ray";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	int Miplevels = 1;
+	bool AntiAlias = false;
+	string DefaultEffect =
+		"SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
+		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
+		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
+		"* = hide;";
 >;
 sampler FogMapSamp = sampler_state {
-    texture = <FogMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <FogMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
 texture LightMap: OFFSCREENRENDERTARGET <
-    string Description = "Multi light source map for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    int Miplevels = 1;
-    bool AntiAlias = false;
-    string DefaultEffect =
-        "AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
-        "DirectionalLight*.* =./Lighting/DirectionalLight/directional_lighting.fx;"
-        "SpotLight*.* =./Lighting/SpotLight/spot_lighting.fx;"
-        "PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
-        "SphereLight*.* =./Lighting/SphereLight/sphere_lighting.fx;"
-        "TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
-        "LED*.* =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
-        "RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
-        "* = hide;";
+	string Description = "Multi light source map for ray";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	int Miplevels = 1;
+	bool AntiAlias = false;
+	string DefaultEffect =
+		"AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
+		"DirectionalLight*.* =./Lighting/DirectionalLight/directional_lighting.fx;"
+		"SpotLight*.* =./Lighting/SpotLight/spot_lighting.fx;"
+		"PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
+		"SphereLight*.* =./Lighting/SphereLight/sphere_lighting.fx;"
+		"TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
+		"LED*.* =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
+		"RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
+		"* = hide;";
 >;
 shared texture LightAlphaMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0,1.0};
-    int MipLevels = 1;
-    bool AntiAlias = false;
-    string Format = "A16B16G16R16F";
+	float2 ViewPortRatio = {1.0,1.0};
+	int MipLevels = 1;
+	bool AntiAlias = false;
+	string Format = "A16B16G16R16F";
 >;
 sampler LightMapSamp = sampler_state {
-    texture = <LightMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <LightMap>;
+	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler LightAlphaMapSamp = sampler_state {
-    texture = <LightAlphaMap>;
-    MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <LightAlphaMap>;
+	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if IBL_QUALITY
 texture EnvLightMap: OFFSCREENRENDERTARGET <
-    string Description = "Image-based-lighting map for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    float4 ClearColor = { 0, 0.5, 0, 0.5 };
-    float ClearDepth = 1.0;
-    int Miplevels = 1;
-    bool AntiAlias = false;
-    string DefaultEffect =
-        "skybox*.*=./Skybox/skylighting_none.fx;"
-        "*= hide;";
+	string Description = "Image-based-lighting map for ray";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	float4 ClearColor = { 0, 0.5, 0, 0.5 };
+	float ClearDepth = 1.0;
+	int Miplevels = 1;
+	bool AntiAlias = false;
+	string DefaultEffect =
+		"skybox*.*=./Skybox/skylighting_none.fx;"
+		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 sampler EnvLightMapSamp = sampler_state {
-    texture = <EnvLightMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <EnvLightMap>;
+	MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler EnvLightAlphaMapSamp = sampler_state {
-    texture = <EnvLightAlphaMap>;
-    MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <EnvLightAlphaMap>;
+	MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
 shared texture MaterialMap: OFFSCREENRENDERTARGET <
-    string Description = "Material cache map for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
-    string DefaultEffect =
-        "self = hide;"
-        "*fog.pmx=hide;"
-        "*controller.pmx=hide;"
-        "skybox*.* = ./materials/material_skybox.fx;"
-        "AmbientLight*.* =hide;"
-        "LED*.pmx =./materials/lighting/material_led.fx;"
-        "DirectionalLight*.* =./materials/lighting/material_lighting.fx;"
-        "SpotLight*.* =./materials/lighting/material_lighting.fx;"
-        "PointLight*.* =./materials/lighting/material_lighting.fx;"
-        "SphereLight*.* =./materials/lighting/material_lighting.fx;"
-        "TubeLight*.* =./materials/lighting/material_lighting.fx;"
-        "RectangleLight*.* =./materials/lighting/material_lighting.fx;"
-        "*.pmd = ./materials/material.fx;"
-        "*.pmx = ./materials/material.fx;"
-        "*.x = hide;"
-        "* = hide;";
+	string Description = "Material cache map for ray";
+	float2 ViewPortRatio = {1.0, 1.0};
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	string Format = "A8R8G8B8";
+	int Miplevels = 1;
+	bool AntiAlias = false;
+	string DefaultEffect =
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"skybox*.* = ./materials/material_skybox.fx;"
+		"AmbientLight*.* =hide;"
+		"LED*.pmx =./materials/lighting/material_led.fx;"
+		"DirectionalLight*.* =./materials/lighting/material_lighting.fx;"
+		"SpotLight*.* =./materials/lighting/material_lighting.fx;"
+		"PointLight*.* =./materials/lighting/material_lighting.fx;"
+		"SphereLight*.* =./materials/lighting/material_lighting.fx;"
+		"TubeLight*.* =./materials/lighting/material_lighting.fx;"
+		"RectangleLight*.* =./materials/lighting/material_lighting.fx;"
+		"*.pmd = ./materials/material.fx;"
+		"*.pmx = ./materials/material.fx;"
+		"*.x = hide;"
+		"* = hide;";
 >;
 texture DepthMap : OFFSCREENRENDERTARGET <
-    string Description = "SSAO and shadow rendering for ray";
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "G16R16F";
-    float4 ClearColor = { 1, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    int MipLevels = 1;
-    string DefaultEffect =
-        "self = hide;"
-        "*fog.pmx=hide;"
-        "*controller.pmx=hide;"
-        "skybox*.* =shadow/Depth_noalpha.fx;"
-        "AmbientLight*.* =hide;"
-        "DirectionalLight*.* =shadow/Depth_noalpha.fx;"
-        "PointLight*.*=shadow/Depth_noalpha.fx;"
-        "SpotLight*.*=shadow/Depth_noalpha.fx;"
-        "SphereLight*.*=shadow/Depth_noalpha.fx;"
-        "TubeLight*.* =shadow/Depth_noalpha.fx;"
-        "LED*.*=shadow/Depth_noalpha.fx;"
-        "RectangleLight*.*=shadow/Depth_noalpha.fx;"
-        "*.pmx=shadow/Depth.fx;"
-        "*.pmd=shadow/Depth.fx;"
-        "*.x=hide;";
+	string Description = "SSAO and shadow rendering for ray";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "G16R16F";
+	float4 ClearColor = { 1, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	int MipLevels = 1;
+	string DefaultEffect =
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"skybox*.* =shadow/Depth_noalpha.fx;"
+		"AmbientLight*.* =hide;"
+		"DirectionalLight*.* =shadow/Depth_noalpha.fx;"
+		"PointLight*.*=shadow/Depth_noalpha.fx;"
+		"SpotLight*.*=shadow/Depth_noalpha.fx;"
+		"SphereLight*.*=shadow/Depth_noalpha.fx;"
+		"TubeLight*.* =shadow/Depth_noalpha.fx;"
+		"LED*.*=shadow/Depth_noalpha.fx;"
+		"RectangleLight*.*=shadow/Depth_noalpha.fx;"
+		"*.pmx=shadow/Depth.fx;"
+		"*.pmd=shadow/Depth.fx;"
+		"*.x=hide;";
 >;
 sampler DepthMapSamp = sampler_state {
-    texture = <DepthMap>;
-    MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <DepthMap>;
+	MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE
 shared texture PSSM : OFFSCREENRENDERTARGET <
-    string Description = "Cascade shadow map for ray";
-    int Width = SHADOW_MAP_SIZE;
-    int Height = SHADOW_MAP_SIZE;
-    string Format = "R32F";
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    int MipLevels = 1;
-    string DefaultEffect =
-        "self = hide;"
-        "*fog.pmx=hide;"
-        "*controller.pmx=hide;"
-        "skybox*.* =shadow/PSSM_noalpha.fx;"
-        "AmbientLight*.* =hide;"
-        "DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
-        "PointLight*.*=shadow/PSSM_noalpha.fx;"
-        "SpotLight*.*=shadow/PSSM_noalpha.fx;"
-        "SphereLight*.*=shadow/PSSM_noalpha.fx;"
-        "TubeLight*.* =shadow/PSSM_noalpha.fx;"
-        "LED*.*=shadow/PSSM_noalpha.fx;"
-        "RectangleLight*.*=shadow/PSSM_noalpha.fx;"
-        "*.pmx=shadow/PSSM.fx;"
-        "*.pmd=shadow/PSSM.fx;"
-        "*.x=hide;";
+	string Description = "Cascade shadow map for ray";
+	int Width = SHADOW_MAP_SIZE;
+	int Height = SHADOW_MAP_SIZE;
+	string Format = "R32F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	int MipLevels = 1;
+	string DefaultEffect =
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"skybox*.* =shadow/PSSM_noalpha.fx;"
+		"AmbientLight*.* =hide;"
+		"DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
+		"PointLight*.*=shadow/PSSM_noalpha.fx;"
+		"SpotLight*.*=shadow/PSSM_noalpha.fx;"
+		"SphereLight*.*=shadow/PSSM_noalpha.fx;"
+		"TubeLight*.* =shadow/PSSM_noalpha.fx;"
+		"LED*.*=shadow/PSSM_noalpha.fx;"
+		"RectangleLight*.*=shadow/PSSM_noalpha.fx;"
+		"*.pmx=shadow/PSSM.fx;"
+		"*.pmd=shadow/PSSM.fx;"
+		"*.x=hide;";
 >;
 shared texture2D ShadowmapMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "G16R16F";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "G16R16F";
 >;
 texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "G16R16F";
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "G16R16F";
 >;
 sampler PSSMsamp = sampler_state {
-    texture = <PSSM>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <PSSM>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler ShadowmapSamp = sampler_state {
-    texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ShadowmapMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler ShadowmapSampTemp = sampler_state {
-    texture = <ShadowmapMapTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ShadowmapMapTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
 shared texture Gbuffer2RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A8R8G8B8" ;
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8" ;
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 shared texture Gbuffer3RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 shared texture Gbuffer4RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F" ;
-    bool AntiAlias = false;
-    int MipLevels = 1;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F" ;
+	bool AntiAlias = false;
+	int MipLevels = 1;
 >;
 shared texture Gbuffer5RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 shared texture Gbuffer6RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 shared texture Gbuffer7RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A8R8G8B8";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 shared texture Gbuffer8RT: RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 sampler Gbuffer1Map = sampler_state {
-    texture = <MaterialMap>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP; AddressV  = CLAMP;
+	texture = <MaterialMap>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP; AddressV  = CLAMP;
 };
 sampler Gbuffer2Map = sampler_state {
-    texture = <Gbuffer2RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP; AddressV  = CLAMP;
+	texture = <Gbuffer2RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP; AddressV  = CLAMP;
 };
 sampler Gbuffer3Map = sampler_state {
-    texture = <Gbuffer3RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer3RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer4Map = sampler_state {
-    texture = <Gbuffer4RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer4RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer5Map = sampler_state {
-    texture = <Gbuffer5RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer5RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer6Map = sampler_state {
-    texture = <Gbuffer6RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer6RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer7Map = sampler_state {
-    texture = <Gbuffer7RT>;
-    MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer7RT>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler Gbuffer8Map = sampler_state {
-    texture = <Gbuffer8RT>;
-    MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <Gbuffer8RT>;
+	MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 texture ShadingMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 texture ShadingMapTemp : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0, 1.0};
-    string Format = "A16B16G16R16F";
-    int Miplevels = 1;
-    bool AntiAlias = false;
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	int Miplevels = 1;
+	bool AntiAlias = false;
 >;
 sampler ShadingMapSamp = sampler_state {
-    texture = <ShadingMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ShadingMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler ShadingMapTempSamp = sampler_state {
-    texture = <ShadingMapTemp>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ShadingMapTemp>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };

@@ -111,22 +111,22 @@ if(doneNP){if(!doneN)lumaEndN=FxaaLuma(FxaaTexTop(tex,posN.xy));if(!doneP)lumaEn
 
 float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : COLOR
 {
-    float4 color = FxaaPixelShader(coord.xy,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                decal,
-                decal,
-                decal,
-                texelStep,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                mFXAAQualitySubpix,
-                mFXAAQualityEdgeThreshold,
-                mFXAAQualityEdgeThresholdMin,
-                0.0f,
-                0.0f,
-                0.0f,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
-            );
-    return float4(ACESOutputDevice(color.rgb), 1);
+	float4 color = FxaaPixelShader(coord.xy,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				decal,
+				decal,
+				decal,
+				texelStep,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				mFXAAQualitySubpix,
+				mFXAAQualityEdgeThreshold,
+				mFXAAQualityEdgeThresholdMin,
+				0.0f,
+				0.0f,
+				0.0f,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
+			);
+	return float4(ACESOutputDevice(color.rgb), 1);
 }

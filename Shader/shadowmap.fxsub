@@ -9,115 +9,115 @@ static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraVie
 
 float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
-    float shadow = 0.0;
-    float s = 1.5 / SHADOW_MAP_SIZE;
+	float shadow = 0.0;
+	float s = 1.5 / SHADOW_MAP_SIZE;
 
-    [unroll]
-    for (int x = -samples; x <= samples; x++) 
-    {
-        [unroll]
-        for (int y = -samples; y <= samples; y++)
-        {
-            float2 pos = coord + float2(x, y) * s;
-            shadow += CalcLight(tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x, receiverDepth, sdrate);
-        }
-    }
-    
-    samples = samples * 2 + 1;
-    
-    return saturate(shadow / (samples * samples));
+	[unroll]
+	for (int x = -samples; x <= samples; x++) 
+	{
+		[unroll]
+		for (int y = -samples; y <= samples; y++)
+		{
+			float2 pos = coord + float2(x, y) * s;
+			shadow += CalcLight(tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x, receiverDepth, sdrate);
+		}
+	}
+	
+	samples = samples * 2 + 1;
+	
+	return saturate(shadow / (samples * samples));
 }
 
 float4 ShadowMapGenPS(
-    in float2 coord : TEXCOORD0,
-    in float3 viewdir : TEXCOORD1) : COLOR
+	in float2 coord : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1) : COLOR
 {
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-    
-    MaterialParam material;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
    
-    material.linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).g);
+	material.linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).g);
 
-    float3 V = normalize(viewdir);
-    float4 viewPosition = float4(V * material.linearDepth / V.z, 1);
-    
-    float4 proj = mul(viewPosition, matLightProjectFromCameraView);
-    proj.xy /= proj.w;
+	float3 V = normalize(viewdir);
+	float4 viewPosition = float4(V * material.linearDepth / V.z, 1);
+	
+	float4 proj = mul(viewPosition, matLightProjectFromCameraView);
+	proj.xy /= proj.w;
 
-    const float2 scale = float2(0.25, -0.25);
-    
-    float4 LightPPos01, LightPPos23;
-    LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
-    LightPPos01.zw = (proj.xy * lightParam[1].xy + lightParam[1].zw);
-    LightPPos23.xy = (proj.xy * lightParam[2].xy + lightParam[2].zw);
-    LightPPos23.zw = (proj.xy * lightParam[3].xy + lightParam[3].zw);
-    LightPPos01 *= scale.xyxy;
-    LightPPos23 *= scale.xyxy;
-    
-    float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
-    float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
-    float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
-    float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
+	const float2 scale = float2(0.25, -0.25);
+	
+	float4 LightPPos01, LightPPos23;
+	LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
+	LightPPos01.zw = (proj.xy * lightParam[1].xy + lightParam[1].zw);
+	LightPPos23.xy = (proj.xy * lightParam[2].xy + lightParam[2].zw);
+	LightPPos23.zw = (proj.xy * lightParam[3].xy + lightParam[3].zw);
+	LightPPos01 *= scale.xyxy;
+	LightPPos23 *= scale.xyxy;
+	
+	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
+	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
+	float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
+	float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
 
-    float4 texCoord0 = lightPPos3;
-    float4 texCoord1 = 0;
-    if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
-    if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
-    if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
-    
-    float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
-    float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
-    float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
-    float receiverDepth = proj.z;
+	float4 texCoord0 = lightPPos3;
+	float4 texCoord1 = 0;
+	if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
+	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
+	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+	
+	float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
+	float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
+	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
+	float receiverDepth = proj.z;
 
-    clip(casterDepth1 + casterDepth0 - 1e-5);
-    
-    float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-    receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.005;
+	clip(casterDepth1 + casterDepth0 - 1e-5);
+	
+	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
+	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.005;
 
-    float sdrate = 30000.0 / 4.0 - 0.05;
-    float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
-    float shadow2 = min(shadow, saturate(dot(material.normal, -mul(LightDirection, (float3x3)matView))));
-    
-    return float4(shadow2, shadow, 0, 0);
+	float sdrate = 30000.0 / 4.0 - 0.05;
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
+	float shadow2 = min(shadow, saturate(dot(material.normal, -mul(LightDirection, (float3x3)matView))));
+	
+	return float4(shadow2, shadow, 0, 0);
 }
 
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-    float2 offset1 = coord + offset;
-    float2 offset2 = coord - offset;
-    
-    float totalWeight = 1;
-    float2 totalColor = tex2Dlod(source, float4(coord, 0, 0)).rg;
-    
-    float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
-    float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, saturate(center_d / mSSAOBlurFalloff));
+	float2 offset1 = coord + offset;
+	float2 offset2 = coord - offset;
+	
+	float totalWeight = 1;
+	float2 totalColor = tex2Dlod(source, float4(coord, 0, 0)).rg;
+	
+	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
+	float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, saturate(center_d / mSSAOBlurFalloff));
 
-    [unroll]
-    for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
-    {
-        float2 shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).xy;
-        float2 shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).xy;
-        
-        float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
-        float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
-        
-        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, sharpness);
-        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, sharpness);
+	[unroll]
+	for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
+	{
+		float2 shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).xy;
+		float2 shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).xy;
+		
+		float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
+		float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
+		
+		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, sharpness);
+		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, sharpness);
 
-        totalColor += shadow1 * bilateralWeight1;
-        totalColor += shadow2 * bilateralWeight2;
+		totalColor += shadow1 * bilateralWeight1;
+		totalColor += shadow2 * bilateralWeight2;
 
-        totalWeight += bilateralWeight1;
-        totalWeight += bilateralWeight2;
-        
-        offset1 += offset;
-        offset2 -= offset;
-    }
+		totalWeight += bilateralWeight1;
+		totalWeight += bilateralWeight2;
+		
+		offset1 += offset;
+		offset2 -= offset;
+	}
 
-    return float4(totalColor / totalWeight, 0, 0);
+	return float4(totalColor / totalWeight, 0, 0);
 }
