@@ -44,7 +44,6 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #include "shader/lighting.fxsub"
 #include "shader/ACES.fxsub"
 #include "shader/fimic.fxsub"
-#include "shader/shading.fxsub"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
 #   include "shader/shadowcommon.fxsub"
@@ -70,6 +69,8 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #if AA_QUALITY >= 2
 #   include "shader/smaa.fxsub"
 #endif
+
+#include "shader/shading.fxsub"
 
 float4 ScreenSpaceQuadVS(
     in float4 Position : POSITION,

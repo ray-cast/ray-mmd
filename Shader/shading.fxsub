@@ -31,7 +31,7 @@ float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 
     float3 diffuse, specular;
     DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY > 0
     float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     diffuse *= ssao;
     specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
@@ -124,7 +124,7 @@ float4 ShadingOpacitySpecularPS(
     float3 iblDiffuse, iblSpecular;
     DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
     
-#if SSAO_SAMPLER_COUNT > 0
+#if SSAO_QUALITY > 0
     float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
     iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
