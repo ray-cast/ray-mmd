@@ -5,49 +5,49 @@
 #if RECIEVER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state {
-    texture = <DiffuseMap>;
-    MinFilter = POINT;  MagFilter = POINT;  MipFilter = POINT;
-    ADDRESSU  = WRAP;   ADDRESSV  = WRAP;
+	texture = <DiffuseMap>;
+	MinFilter = POINT;  MagFilter = POINT;  MipFilter = POINT;
+	ADDRESSU  = WRAP;   ADDRESSV  = WRAP;
 };
 #endif
 
 void ShadowlessObjectVS(
-    in float4 Position : POSITION, 
-    in float2 Texcoord : TEXCOORD0,
-    out float3 oTexcoord : TEXCOORD0,
-    out float4 oPosition : POSITION)
+	in float4 Position : POSITION, 
+	in float2 Texcoord : TEXCOORD0,
+	out float3 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
 {
-    oPosition = mul(Position, matWorldViewProject);
-    oTexcoord = float3(Texcoord.xy, oPosition.w);
+	oPosition = mul(Position, matWorldViewProject);
+	oTexcoord = float3(Texcoord.xy, oPosition.w);
 }
 
 float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 {
 #if RECIEVER_ALPHA_ENABLE
-    clip(!opadd - 0.001f);
-    float alpha = MaterialDiffuse.a;
+	clip(!opadd - 0.001f);
+	float alpha = MaterialDiffuse.a;
 #if RECIEVER_ALPHA_MAP_ENABLE
-    if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
+	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
-    clip(alpha - 0.01);
+	clip(alpha - 0.01);
 #endif
 
 #if SSAO_DISABLE
-    coord.z = -coord.z;
+	coord.z = -coord.z;
 #endif
 
-    return float4(1, coord.z, 0, 1);
+	return float4(1, coord.z, 0, 1);
 }
 
 #define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-    >{ \
-        pass DrawObject { \
-            AlphaTestEnable = false; AlphaBlendEnable = false; \
-            VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
-            PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
-        } \
-    }
+	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+	>{ \
+		pass DrawObject { \
+			AlphaTestEnable = false; AlphaBlendEnable = false; \
+			VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
+			PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
+		} \
+	}
 
 OBJECT_SHADOWLESS_TEC(DepthTec2, "object", false)
 OBJECT_SHADOWLESS_TEC(DepthTec3, "object", true)

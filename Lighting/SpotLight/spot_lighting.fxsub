@@ -51,28 +51,28 @@ static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewPr
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-    string Description = "Shadow Rendering for SpotLight";
-    int Width = SHADOW_MAP_SIZE;
-    int Height = SHADOW_MAP_SIZE;
-    string Format = "R32F";
-    float4 ClearColor = { 0, 0, 0, 0 };
-    float ClearDepth = 1.0;
-    int MipLevels = 1;
-    string DefaultEffect = 
-        "self = hide;"
-        "*fog.pmx=hide;"
-        "*controller.pmx=hide;"
-        "*.pmx = spot_shadow.fx;"
-        "*.pmd = spot_shadow.fx;"
-        "* = hide";
+	string Description = "Shadow Rendering for SpotLight";
+	int Width = SHADOW_MAP_SIZE;
+	int Height = SHADOW_MAP_SIZE;
+	string Format = "R32F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	int MipLevels = 1;
+	string DefaultEffect = 
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*.pmx = spot_shadow.fx;"
+		"*.pmd = spot_shadow.fx;"
+		"* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
-    texture = <ShadowMap>;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-    MipFilter = NONE;
-    AddressU = CLAMP;
-    AddressV = CLAMP;
+	texture = <ShadowMap>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = NONE;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
@@ -80,30 +80,30 @@ static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_
 
 float ShadowPCF(float3 viewPosition, int samples) 
 {
-    float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
-    proj.xy = PosToCoord(proj.xy / proj.w);
-    proj.xy += ShadowmapOffset;
-    proj.z = exp(-proj.z * 0.5);
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
+	proj.xy = PosToCoord(proj.xy / proj.w);
+	proj.xy += ShadowmapOffset;
+	proj.z = exp(-proj.z * 0.5);
 
-    float shadow = 0.0;
+	float shadow = 0.0;
 
 #if SHADOW_MAP_SOFT_QUALITY > 0
-    [unroll]
-    for (int x = -samples; x <= samples; x++) 
-    {
-        [unroll]
-        for (int y = -samples; y <= samples; y++)
-        {
-            float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-            shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
-        }
-    }
-    
-    samples = samples * 2 + 1;
-    
-    return saturate(shadow / (samples * samples));
+	[unroll]
+	for (int x = -samples; x <= samples; x++) 
+	{
+		[unroll]
+		for (int y = -samples; y <= samples; y++)
+		{
+			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
+			shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
+		}
+	}
+	
+	samples = samples * 2 + 1;
+	
+	return saturate(shadow / (samples * samples));
 #else
-    return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);
+	return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);
 #endif
 }
 
@@ -111,172 +111,172 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 float4 ShadingMaterial(MaterialParam material, float3 V)
 {
-    float3 P = V * material.linearDepth / V.z;
-    float3 L = viewLightPosition - P;
-    float3 L2 = normalize(L);
-    
-    float atten = GetPhysicalLightAttenuation(L, LightRange);
-    atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
-       
-    float4 lighting = 0.0f;   
-    lighting = SurfaceShading(material, material.normal, L2, L2, V, 1.0);
-    lighting += SubsurfaceShading(material, material.normal, L2, V);
-    lighting *= float4(mR, mG, mB, 1) * atten * LightIntensity;
-    lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-    lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
-    
-    return lighting;
+	float3 P = V * material.linearDepth / V.z;
+	float3 L = viewLightPosition - P;
+	float3 L2 = normalize(L);
+	
+	float atten = GetPhysicalLightAttenuation(L, LightRange);
+	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
+	   
+	float4 lighting = 0.0f;   
+	lighting = SurfaceShading(material, material.normal, L2, L2, V, 1.0);
+	lighting += SubsurfaceShading(material, material.normal, L2, V);
+	lighting *= float4(mR, mG, mB, 1) * atten * LightIntensity;
+	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
+	
+	return lighting;
 }
 
 float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
 {
-    float linearDepth = material.linearDepth;
-    float linearDepth2 = materialAlpha.linearDepth;
-    linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-    
-    float shadow = 1;
+	float linearDepth = material.linearDepth;
+	float linearDepth2 = materialAlpha.linearDepth;
+	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+	
+	float shadow = 1;
 #if SHADOW_MAP_ENABLE
-    float3 P = V * linearDepth / V.z;
-    #if SHADOW_MAP_SOFT_QUALITY == 1
-        shadow *= ShadowPCF(P, 1);
-    #elif SHADOW_MAP_SOFT_QUALITY == 2
-        shadow *= ShadowPCF(P, 2);
-    #elif SHADOW_MAP_SOFT_QUALITY >= 3
-        shadow *= ShadowPCF(P, 3);
-    #else
-        shadow *= ShadowPCF(P, 0);
-    #endif
+	float3 P = V * linearDepth / V.z;
+	#if SHADOW_MAP_SOFT_QUALITY == 1
+		shadow *= ShadowPCF(P, 1);
+	#elif SHADOW_MAP_SOFT_QUALITY == 2
+		shadow *= ShadowPCF(P, 2);
+	#elif SHADOW_MAP_SOFT_QUALITY >= 3
+		shadow *= ShadowPCF(P, 3);
+	#else
+		shadow *= ShadowPCF(P, 0);
+	#endif
 #endif
 
-    return shadow;
+	return shadow;
 }
 
 void LightSourceVS(
-    in float4 Position : POSITION,
-    in float3 Normal : NORMAL,
-    in float2 Texcoord : TEXCOORD0,
-    out float4 oTexcoord0 : TEXCOORD0,
-    out float4 oTexcoord1 : TEXCOORD1,
-    out float4 oPosition  : POSITION)
+	in float4 Position : POSITION,
+	in float3 Normal : NORMAL,
+	in float2 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition  : POSITION)
 {    
-    if (length(Position.xyz - LightPosition) > 0.1)
-    {
-        Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightSpotAngle), LightSpotAngle);
-    }
-    
-    Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange / 2;
-    oTexcoord0 = oPosition = mul(Position, matViewProject);
-    oTexcoord1 = -mul(Position, matView);
+	if (length(Position.xyz - LightPosition) > 0.1)
+	{
+		Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightSpotAngle), LightSpotAngle);
+	}
+	
+	Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange / 2;
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord1 = -mul(Position, matView);
 }
 
 void LightSourcePS(
-    float4 texcoord : TEXCOORD0, 
-    float3 viewdir : TEXCOORD1,
-    out float4 oColor0 : COLOR0,
-    out float4 oColor1 : COLOR1)
+	float4 texcoord : TEXCOORD0, 
+	float3 viewdir : TEXCOORD1,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1)
 {
-    float2 coord = texcoord.xy / texcoord.w;
-    coord = PosToCoord(coord);
-    coord += ViewportOffset;
+	float2 coord = texcoord.xy / texcoord.w;
+	coord = PosToCoord(coord);
+	coord += ViewportOffset;
 
-    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
-    MaterialParam material;
-    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-    
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-    
-    float3 sum1 = material.albedo + material.specular;
-    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-    clip(sum(sum1 + sum2 - 1e-5));
+	MaterialParam materialAlpha;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+	
+	float3 sum1 = material.albedo + material.specular;
+	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+	clip(sum(sum1 + sum2 - 1e-5));
 
-    float3 V = normalize(viewdir);
-    
-    oColor0 = ShadingMaterial(material, V);
-    oColor1 = ShadingMaterial(materialAlpha, V);
-    
-    clip(sum(oColor0 + oColor1) - 1e-5);
-    
-    float shadow = ShadingShadow(material, materialAlpha, V);
-    oColor0 *= shadow;
-    oColor1 *= shadow;
+	float3 V = normalize(viewdir);
+	
+	oColor0 = ShadingMaterial(material, V);
+	oColor1 = ShadingMaterial(materialAlpha, V);
+	
+	clip(sum(oColor0 + oColor1) - 1e-5);
+	
+	float shadow = ShadingShadow(material, materialAlpha, V);
+	oColor0 *= shadow;
+	oColor1 *= shadow;
 }
 
 void LightSourceShadowlessPS(
-    float4 texcoord : TEXCOORD0, 
-    float3 viewdir : TEXCOORD1,
-    out float4 oColor0 : COLOR0,
-    out float4 oColor1 : COLOR1)
+	float4 texcoord : TEXCOORD0, 
+	float3 viewdir : TEXCOORD1,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1)
 {
-    float2 coord = texcoord.xy / texcoord.w;
-    coord = PosToCoord(coord);
-    coord += ViewportOffset;
+	float2 coord = texcoord.xy / texcoord.w;
+	coord = PosToCoord(coord);
+	coord += ViewportOffset;
 
-    float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-    float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-    float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-    float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
-    MaterialParam material;
-    DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-    
-    float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-    float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-    float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-    float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-    MaterialParam materialAlpha;
-    DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-    
-    float3 sum1 = material.albedo + material.specular;
-    float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-    clip(sum(sum1 + sum2 - 1e-5));
-    
-    float3 V = normalize(viewdir);
-    
-    oColor0 = ShadingMaterial(material, V);
-    oColor1 = ShadingMaterial(materialAlpha, V);
+	MaterialParam materialAlpha;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+	
+	float3 sum1 = material.albedo + material.specular;
+	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
+	clip(sum(sum1 + sum2 - 1e-5));
+	
+	float3 V = normalize(viewdir);
+	
+	oColor0 = ShadingMaterial(material, V);
+	oColor1 = ShadingMaterial(materialAlpha, V);
 }
 
 technique MainTech0 < string MMDPass = "object";
-    string Script = 
-        "RenderColorTarget0=;"
-        "RenderColorTarget1=LightAlphaMap;"
-        "Pass=DrawObject;"
+	string Script = 
+		"RenderColorTarget0=;"
+		"RenderColorTarget1=LightAlphaMap;"
+		"Pass=DrawObject;"
 ;>{
-    pass DrawObject {
-        ZEnable = false; ZWriteEnable = false;
-        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
-        SrcBlend = ONE; DestBlend = ONE;
-        CullMode = CW;
-        VertexShader = compile vs_3_0 LightSourceVS();
-        PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
-    }
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 LightSourceVS();
+		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+	}
 }
 
 technique MainTecBS0 < string MMDPass = "object_ss";
-    string Script = 
-        "RenderColorTarget0=;"
-        "RenderColorTarget1=LightAlphaMap;"
-        "Pass=DrawObject;"
+	string Script = 
+		"RenderColorTarget0=;"
+		"RenderColorTarget1=LightAlphaMap;"
+		"Pass=DrawObject;"
 ;>{
-    pass DrawObject {
-        ZEnable = false; ZWriteEnable = false;
-        AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
-        SrcBlend = ONE; DestBlend = ONE;
-        CullMode = CW;
-        VertexShader = compile vs_3_0 LightSourceVS();
-        PixelShader  = compile ps_3_0 LightSourcePS();
-    }
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 LightSourceVS();
+		PixelShader  = compile ps_3_0 LightSourcePS();
+	}
 }
 
 technique EdgeTec < string MMDPass = "edge"; > {}
