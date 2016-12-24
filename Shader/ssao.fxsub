@@ -1,10 +1,10 @@
-#if SSAO_QUALITY == 1
+#if SSAO_QUALITY == 1 || SSAO_QUALITY == 4
 #   define SSAO_SAMPLER_COUNT 8
 #   define SSAO_BLUR_RADIUS 8
-#elif SSAO_QUALITY == 2
+#elif SSAO_QUALITY == 2 || SSAO_QUALITY == 5
 #   define SSAO_SAMPLER_COUNT 12
 #   define SSAO_BLUR_RADIUS 8
-#elif SSAO_QUALITY >= 3
+#elif SSAO_QUALITY >= 3 || SSAO_QUALITY == 6
 #   define SSAO_SAMPLER_COUNT 16
 #   define SSAO_BLUR_RADIUS 8
 #else
