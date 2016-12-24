@@ -16,13 +16,21 @@ shared texture SSAOMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
-	string Format = "L8";
+#if SSAO_QUALITY > 3
+    string Format = "A8R8G8B8";
+#else
+    string Format = "L8";
+#endif
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
-	string Format = "L8";
+#if SSAO_QUALITY > 3
+    string Format = "A8R8G8B8";
+#else
+    string Format = "L8";
+#endif
 >;
 sampler SSAOMapSamp = sampler_state {
 	texture = <SSAOMap>;
@@ -84,12 +92,17 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	float3 viewPosition = -viewdir * abs(depth);
 	   
 	float sampleWeight = 0.0f;
-	float sampleAmbient = 0.0f;
 	float sampleNoise = GetJitterOffset(coord.zw);
 	float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
 	float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
 	float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
 	
+#if SSAO_QUALITY > 3
+	float4 sampleAmbient = 0.0f;
+#else
+	float sampleAmbient = 0.0f;
+#endif
+
 	float2 rotateKernel[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
 	float2 sampleDiskRadius = ((ViewportSize.x / ((1 + mSSAORadiusM - mSSAORadiusP) * 16)) / ViewportSize);
@@ -145,14 +158,29 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
 		sampleWeight += sum(falloff);
+		
+#if SSAO_QUALITY > 3
+        sampleAmbient.x += sum(occlustion);
+        sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
+        sampleAmbient.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
+        sampleAmbient.yzw += occlustion[2] * sampleDirection[2] * sampleLength[2];
+        sampleAmbient.yzw += occlustion[3] * sampleDirection[3] * sampleLength[3];
+#else
 		sampleAmbient += sum(occlustion);
+#endif
 	}
 
 	sampleAmbient /= sampleWeight;
 	sampleAmbient *= depth < 0.0 ? 0.25 : 1.0;
+
+	float ao = saturate(1 - sampleAmbient.x);
+	ao = pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
 	
-	float ao = saturate(1 - sampleAmbient);
-	return pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+#if SSAO_QUALITY > 3
+	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
+#else
+	return ao;
+#endif
 }
 
 float4 SSAOBlur(
@@ -163,9 +191,14 @@ float4 SSAOBlur(
 {
 	float center_d = linearizeDepth2(coord);
 
-	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
+#if SSAO_QUALITY > 3
 	float total_w = 1.0f;
-	
+	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
+#else
+	float total_w = 1.0f;
+	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
+#endif
+
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
 	
@@ -187,9 +220,14 @@ float4 SSAOBlur(
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
+#if SSAO_QUALITY > 3
+		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
+		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
+#else
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
-		
+#endif
+
 		total_w += bilateralWeight1;
 		total_w += bilateralWeight2;
 		
