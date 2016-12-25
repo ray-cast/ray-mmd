@@ -276,10 +276,20 @@ float4 MainSurfaceShading(MaterialParam material, float4 energy)
 	}
 	else
 	{
+		return float4(material.albedo * energy.r + energy.gba, 0);
+	}
+#elif SSSS_QUALITY == 1
+	if (material.lightModel == SHADINGMODELID_SKIN ||
+		material.lightModel == SHADINGMODELID_SUBSURFACE)
+	{
 		return float4(material.albedo * energy.r, 0);
 	}
+	else
+	{
+		return float4(material.albedo * energy.r + energy.gba, 0);
+	}
 #else
-	return float4(material.albedo * energy.r, 0);
+	return float4(material.albedo * energy.r + energy.gba, 0);
 #endif
 }
 
