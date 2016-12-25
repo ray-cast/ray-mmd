@@ -59,6 +59,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #endif
 
 #if SSR_QUALITY > 0
+#   include "shader/ibl.fxsub"
 #   include "shader/ssr.fxsub"
 #endif
 
