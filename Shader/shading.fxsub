@@ -112,6 +112,12 @@ float4 ShadingOpacitySpecularPS(
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
 	
 	float3 specular = 0;
+
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+#else
+	float shadow = 1;
+#endif
 	
 #if MAIN_LIGHT_ENABLE
 	if (material.lightModel == SHADINGMODELID_SKIN ||
@@ -120,9 +126,7 @@ float4 ShadingOpacitySpecularPS(
 		float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 		specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, 1.0);
 		specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
-	#if SHADOW_QUALITY > 0
-		specular *= tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	#endif
+		specular *= shadow;
 	
 	#if SSAO_QUALITY > 3
 		float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).yzw;
@@ -140,7 +144,10 @@ float4 ShadingOpacitySpecularPS(
 	iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
-	specular += iblSpecular;
+	if (ExistSkybox || ExistSkyboxHDR)
+	{
+		specular += iblSpecular * lerp(1, shadow, mEnvShadowP);
+	}
 #endif
 
 	specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
