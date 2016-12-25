@@ -112,7 +112,7 @@ float4 ShadingOpacitySpecularPS(
 	
 	float3 specular = 0;
 	
-#if MAIN_LIGHT_ENABLE
+#if MAIN_LIGHT_ENABLE && SSSS_QUALITY == 2
 	if (material.lightModel == SHADINGMODELID_SKIN ||
 		material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{

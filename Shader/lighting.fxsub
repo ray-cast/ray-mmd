@@ -63,18 +63,6 @@ float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 #endif
 }
 
-float4 SubsurfaceShadingPreIntegratedSkinLUT(sampler CurvatureLUT, MaterialParam material, float3 N, float3 L)
-{
-	float nl = saturate(dot(N, L) * 0.5 + 0.5);
-	float curvature = material.customDataA;
-	float3 brdf = srgb2linear(tex2Dlod(CurvatureLUT, float4(nl, curvature, 0, 0)).rgb);
-#if SSSS_QUALITY > 1
-	return float4(material.customDataB * brdf, 0);
-#else
-	return float4(material.albedo * material.customDataB * brdf, 0);
-#endif
-}
-
 float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	float w = 0.5;
