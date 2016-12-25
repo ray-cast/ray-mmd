@@ -21,7 +21,7 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 	
 #if SSAO_QUALITY > 3
 	float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).yzw;
-	lighting *= pow2(1 - saturate(dot(bentNormal * 2 - 1, L)));
+	lighting *= pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
 #endif
 
 #endif
@@ -130,7 +130,7 @@ float4 ShadingOpacitySpecularPS(
 	
 	#if SSAO_QUALITY > 3
 		float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).yzw;
-		specular *= pow2(1 - saturate(dot(bentNormal * 2 - 1, L)));
+		specular *= pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
 	#endif
 	}
 #endif

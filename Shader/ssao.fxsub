@@ -105,7 +105,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
 	float2 rotateKernel[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / ((1 + mSSAORadiusM - mSSAORadiusP) * 16)) / ViewportSize);
+	float2 sampleDiskRadius = ((ViewportSize.x / 16) / ViewportSize);
 	
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 	
@@ -173,8 +173,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	sampleAmbient /= sampleWeight;
 	sampleAmbient *= depth < 0.0 ? 0.25 : 1.0;
 
-	float ao = saturate(1 - sampleAmbient.x);
-	ao = pow(ao,  (mSSAOIntensityMin + ao) * (1 - mSSAOM) + ao * ao * mSSAOP * mSSAOIntensityMax);
+	float ao = saturate(1 - sampleAmbient.x * pow2(1 - sampleAmbient.x) * mSSAOScale);
 	
 #if SSAO_QUALITY > 3
 	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);

@@ -11,8 +11,8 @@ float mDirectionLightM : CONTROLOBJECT < string name="ray_controller.pmx"; strin
 float mEnvShadowP  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;
 float mSSAOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO+"; >;
 float mSSAOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO-"; >;
-float mSSAORadiusP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO Radius+"; >;
-float mSSAORadiusM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO Radius-"; >;
+float mSSDOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSDO+"; >;
+float mSSDOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSDO-"; >;
 float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure"; >;
 float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
 float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
@@ -32,6 +32,9 @@ float mColBalanceRM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
+
+static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
+static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 
 float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
