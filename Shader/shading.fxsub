@@ -9,10 +9,11 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 
 #if SHADOW_QUALITY > 0
 	float2 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-	lighting = SurfaceShading(material, N, L, L, V, 1.0) * shadow.r;
+	lighting = MainSurfaceShading(material, SurfaceEnergy(material, N, L, L, V, 1.0)) * shadow.r;
 	lighting += SubsurfaceShading(material, N, L, V) * shadow.g;
 #else
-	lighting = SurfaceShading(material, N, L, L, V, 1.0) + SubsurfaceShading(material, N, L, V);
+	lighting = MainSurfaceShading(material, SurfaceEnergy(material, N, L, L, V, 1.0));
+	lighting += SubsurfaceShading(material, N, L, V);
 #endif
 	lighting *= float4(LightSpecular, 1);
 	lighting *= (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
@@ -112,7 +113,7 @@ float4 ShadingOpacitySpecularPS(
 	
 	float3 specular = 0;
 	
-#if MAIN_LIGHT_ENABLE && SSSS_QUALITY == 2
+#if MAIN_LIGHT_ENABLE
 	if (material.lightModel == SHADINGMODELID_SKIN ||
 		material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{

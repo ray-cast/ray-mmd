@@ -119,9 +119,9 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
 	   
 	float4 lighting = 0.0f;   
-	lighting = SurfaceShading(material, material.normal, L2, L2, V, 1.0);
-	lighting += SubsurfaceShading(material, material.normal, L2, V);
-	lighting *= float4(mR, mG, mB, 1) * atten * LightIntensity;
+	lighting = MultiSurfaceShading(material, SurfaceEnergy(material, material.normal, L2, L2, V, 1.0), float3(mR, mG, mB));
+	lighting += SubsurfaceShading(material, material.normal, L2, V) * float4(mR, mG, mB, 0);
+	lighting *= atten * LightIntensity;
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	

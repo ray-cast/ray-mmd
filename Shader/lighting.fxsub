@@ -56,7 +56,7 @@ float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 	
 	float3 brdf = lerp(curve1, curve2, madd(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
 		
-#if SSSS_QUALITY > 1
+#if SSSS_QUALITY >= 2
 	return float4(material.customDataB * brdf, 0);
 #else
 	return float4(material.albedo * material.customDataB * brdf, 0);
@@ -68,7 +68,7 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 	float w = 0.5;
 	float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
 	float phase = ComputePhaseFunctions(dot(V, L), 1 - material.customDataA);
-#if SSSS_QUALITY > 1
+#if SSSS_QUALITY >= 2
 	return float4(material.customDataB * nl * phase, 0);
 #else
 	return float4(material.albedo * material.customDataB * nl * phase, 0);
@@ -110,7 +110,7 @@ float OrenNayarBRDF(float3 N, float3 V, float3 L, float roughness)
 	return max(A + B * (s / t), 0) * nl;
 }
 
-float3 DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
+float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 {
 	return BurleyBRDF(N, V, L, roughness);
 }
@@ -181,33 +181,12 @@ float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 sp
 
 float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
-	float3 H = normalize(V + Ls);
-
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, Ls));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
-	
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
-	float3 diffuse = DiffuseBRDF(N, Ld, V, roughness);
-	float3 specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
+	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
+	float3 specular = SpecularBRDF_GGX(N, Ls, V, roughness, material.specular, normalizeFactor);
 	
-#if SSSS_QUALITY > 1
-	if (material.lightModel != SHADINGMODELID_SUBSURFACE &&
-		material.lightModel != SHADINGMODELID_SKIN)
-	{
-		diffuse *=  material.albedo;
-	}
-#else
-	diffuse *= material.albedo;
-#endif
-
-#if SSSS_QUALITY > 1
-	return float4(diffuse, luminance(specular));
-#else
-	return float4(diffuse + specular, 0);
-#endif
+	return float4(diffuse, specular);
 }
 
 float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
@@ -221,12 +200,12 @@ float4 ClothShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, floa
 	
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
-	float3 diffuse = DiffuseBRDF(N, Ld, V, roughness);
+	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 	float3 spec2 = SpecularBRDF_InvGGX(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
 	float3 spec = lerp(spec1, spec2, material.customDataA); 
 	   
-	return float4(material.albedo * diffuse + spec, 0);
+	return float4(diffuse, spec);
 }
 
 float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
@@ -241,13 +220,13 @@ float4 ClearCoatShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, 
 	float roughness1 = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float roughness2 = max(SmoothnessToRoughness(material.customDataA), 0.001);
 	
-	float3 diffuse = DiffuseBRDF(N, Ld, V, roughness1);
+	float diffuse = DiffuseBRDF(N, Ld, V, roughness1);
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness1, material.specular, normalizeFactor);
 	float4 spec2 = SpecularBRDF_ClearCoat(nh, nl, vh, nv, roughness2, 0.04, normalizeFactor);    
-	return float4((material.albedo * diffuse + spec1) * spec2.a + spec2.rgb, 0);
+	return float4(diffuse * spec2.a, spec1 * spec2.a + spec2.rgb);
 }
 
-float4 SurfaceShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
 #if LIGHTMODEL_BRDF >= 1
 	if (material.lightModel == SHADINGMODELID_CLOTH)
@@ -284,5 +263,49 @@ float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 	}
 #else
 	return SubsurfaceShadingTwoSide(material, N, L, V);
+#endif
+}
+
+float4 MainSurfaceShading(MaterialParam material, float4 energy)
+{
+#if SSSS_QUALITY >= 2
+	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
+		material.lightModel == SHADINGMODELID_SKIN)
+	{
+		return energy.r;
+	}
+	else
+	{
+		return float4(material.albedo * energy.r, 0);
+	}
+#else
+	return float4(material.albedo * energy.r, 0);
+#endif
+}
+
+float4 MultiSurfaceShading(MaterialParam material, float4 energy, float3 lightColor)
+{
+#if SSSS_QUALITY >= 2
+	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
+		material.lightModel == SHADINGMODELID_SKIN)
+	{
+		return float4(lightColor * energy.r, luminance(energy.gba * lightColor));
+	}
+	else
+	{
+		return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
+	}
+#elif SSSS_QUALITY == 1
+	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
+		material.lightModel == SHADINGMODELID_SKIN)
+	{
+		return float4(lightColor * material.albedo * energy.r, luminance(energy.gba * lightColor));
+	}
+	else
+	{
+		return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
+	}
+#else
+	return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
 #endif
 }
