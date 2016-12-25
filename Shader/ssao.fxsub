@@ -16,7 +16,7 @@ shared texture SSAOMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
     string Format = "A8R8G8B8";
 #else
     string Format = "L8";
@@ -26,7 +26,7 @@ texture SSAOMapTemp : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
     string Format = "A8R8G8B8";
 #else
     string Format = "L8";
@@ -97,7 +97,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
 	float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
 	
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	float4 sampleAmbient = 0.0f;
 #else
 	float sampleAmbient = 0.0f;
@@ -159,7 +159,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
 		sampleWeight += sum(falloff);
 		
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
         sampleAmbient.x += sum(occlustion);
         sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
         sampleAmbient.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
@@ -175,7 +175,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
 	float ao = saturate(1 - sampleAmbient.x * pow2(1 - sampleAmbient.x) * mSSAOScale);
 	
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
 #else
 	return ao;
@@ -190,7 +190,7 @@ float4 SSAOBlur(
 {
 	float center_d = linearizeDepth2(coord);
 
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
 #else
@@ -219,7 +219,7 @@ float4 SSAOBlur(
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
-#if SSAO_QUALITY > 3
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
 #else
