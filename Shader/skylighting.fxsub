@@ -231,7 +231,7 @@ void EnvLightingPS(
 	float3 sum1 = material.albedo + material.specular;
 	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
 	clip(sum(sum1 + sum2 - 1e-5));
-	   
+
 	float3 V = normalize(viewdir);
 	
 	float3 diffuse, specular;
