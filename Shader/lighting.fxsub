@@ -99,12 +99,13 @@ float OrenNayarBRDF(float3 N, float3 V, float3 L, float roughness)
 	
 	float nl = saturate(dot(N, L));
 	float vh = saturate(dot(V, H));
-	float nv = max(abs(dot(N, V)), 0.1);
+	float vl = saturate(dot(V, L));
+	float nv = abs(dot(N, V) + 1e-5);
 	
 	float m = roughness * roughness;
-	float s = dot(L, V) - dot(N, L) * dot(N, V);
-	float t = s <= 0 ? 1 : max(max(dot(N, L), dot(N, V)), 1e-6);
-	float A = 1.0h / (1.0h + (0.5h - 2.0h / (3.0h * PI)) * m);
+	float s = vl - nl * nv;
+	float t = s <= 0 ? 1 : max(max(nl, nv), 1e-6);
+	float A = 1.0 / (1.0 + (0.5 - 2.0 / (3.0 * PI)) * m);
 	float B = m * A;
 	
 	return max(A + B * (s / t), 0) * nl;
