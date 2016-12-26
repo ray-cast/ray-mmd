@@ -129,7 +129,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLaye
 	}
 	
 	float3 dependentSplit = 0.5;
-	float3 scattering = prefilteredDiffuse + prefilteredTransmittance * fresnel;
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance * fresnel * material.customDataA;
 	scattering *=  material.customDataB * dependentSplit * mEnvIntensitySSS;
 	scattering += prefilteredDiffuse * mEnvIntensityDiff;
 	

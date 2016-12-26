@@ -1,8 +1,8 @@
 #define USE_CUSTOM_MATERIAL 1
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 1
-#define ALBEDO_MAP_IN_TEXTURE 1
+#define ALBEDO_MAP_ENABLE 0
+#define ALBEDO_MAP_IN_TEXTURE 0
 #define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
@@ -12,7 +12,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1;
+const float3 albedo = float3(0.972, 0.960, 0.915);
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
@@ -38,13 +38,13 @@ const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
 
 // 子法线贴图
-#define NORMAL_MAP_SUB_ENABLE 1
+#define NORMAL_MAP_SUB_ENABLE 0
 #define NORMAL_MAP_SUB_UV_FLIP 0
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
-#define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
+#define NORMAL_MAP_SUB_FILE "normal.png"
 
 const float normalMapSubScale = 1.0;
-const float normalMapSubLoopNum = 60.0;
+const float normalMapSubLoopNum = 1.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 60.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.5;
+const float smoothness = 0.55;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -64,9 +64,9 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define METALNESS_MAP_FILE "metalness.png"
 
-const float metalness = 0.0;
+const float metalness = 1.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04;
+const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
@@ -114,26 +114,23 @@ const float parallaxMapLoopNum = 1.0;
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Sursubface         // customA = curvature,  customB = transmittance color;
-#define CUSTOM_ENABLE 1  // ID
+#define CUSTOM_ENABLE 0  // ID
 
-#define CUSTOM_A_MAP_ENABLE 1
+#define CUSTOM_A_MAP_ENABLE 0
 #define CUSTOM_A_MAP_IN_TOONMAP 0
-#define CUSTOM_A_MAP_UV_FLIP 1
+#define CUSTOM_A_MAP_UV_FLIP 0
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_A_MAP_FILE "curvature_body.png"
+#define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.6;
+const float customA = 0.0;
 const float customAMapLoopNum = 1.0;
 
-#define CUSTOM_B_MAP_ENABLE 1
-#define CUSTOM_B_MAP_UV_FLIP 1
-#define CUSTOM_B_MAP_COLOR_FLIP 1
-#define CUSTOM_B_MAP_APPLY_COLOR 1
-#define CUSTOM_B_MAP_FILE "thickness_body.png"
-#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
+#define CUSTOM_B_MAP_ENABLE 0
+#define CUSTOM_B_MAP_UV_FLIP 0
+#define CUSTOM_B_MAP_COLOR_FLIP 0
+#define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = SSS_SKIN_TRANSMITTANCE(0.8);
-const float customBMapLoopNum = 1.0;
+const float3 customB = 0.0;
 
-#include "../../material_common.fxsub"
+#include "../material_common.fxsub"
