@@ -55,7 +55,7 @@ float linearizeDepth2(float2 uv)
 
 float3 GetPosition(float2 uv)
 {
-	float depth = abs(linearizeDepth(uv));
+	float depth = linearizeDepth2(uv);
 	return ReconstructPos(uv, matProjectInverse, depth);
 }
 

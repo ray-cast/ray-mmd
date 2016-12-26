@@ -33,12 +33,12 @@ float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
 
-static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
-static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
-
-float3 LightDiffuse   : DIFFUSE   < string Object = "Light"; >;
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
 float3 LightDirection : DIRECTION < string Object = "Light"; >;
+
+static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
+static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
+static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
@@ -53,7 +53,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 #   include "shader/shadowmap.fxsub"
 #endif
 
-#if SSAO_QUALITY > 0
+#if SSAO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
 #   include "shader/ssao.fxsub"
 #endif
 
@@ -129,7 +129,7 @@ technique DeferredLighting<
 	"Clear=Depth;"
 	"ScriptExternal=Color;"
 
-#if SSAO_QUALITY > 0
+#if SSAO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
 	"RenderColorTarget=SSAOMap;  Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
 	"RenderColorTarget=SSAOMapTemp; Pass=SSAOBlurX;"
@@ -266,7 +266,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
-#if SSAO_QUALITY
+#if SSAO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
 	pass SSAO < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

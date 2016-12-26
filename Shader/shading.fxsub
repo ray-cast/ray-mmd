@@ -16,7 +16,7 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 	lighting += SubsurfaceShading(material, N, L, V);
 #endif
 	lighting *= float4(LightSpecular, 1);
-	lighting *= (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+	lighting *= mMainLightIntensity;
 	lighting *= step(0, sum(material.albedo + material.specular) - 1e-5);
 	
 #if SSAO_QUALITY > 3
@@ -89,7 +89,9 @@ float4 ShadingOpacityPS(
 	float3 lighting = ShadingMaterial(material, N, V, L, coord);
 	lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 	lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
+#if IBL_QUALITY
 	lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, false);
+#endif
 
 	return float4(lighting, material.linearDepth);
 }
@@ -125,7 +127,7 @@ float4 ShadingOpacitySpecularPS(
 	{
 		float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 		specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, 1.0);
-		specular *= LightSpecular * (mLightIntensityMin * (1 - mDirectionLightM) + mDirectionLightP * mLightIntensityMax);
+		specular *= LightSpecular * mMainLightIntensity;
 		specular *= shadow;
 	
 	#if SSAO_QUALITY > 3
@@ -176,8 +178,10 @@ float4 ShadingTransparentPS(
 
 	float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
 	lighting += ShadingMaterial(material, N, V, L, coord);
+#if IBL_QUALITY
 	lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
-	
+#endif
+
 	float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
 	float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0)).rgb;
 	lighting = lerp(prefilteredRefract, lighting, material.alpha);
