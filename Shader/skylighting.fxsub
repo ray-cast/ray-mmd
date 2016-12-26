@@ -231,6 +231,13 @@ void EnvLightingPS(
 	float3 sum1 = material.albedo + material.specular;
 	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
 	clip(sum(sum1 + sum2 - 1e-5));
+	
+#if AA_QUALITY > 1
+    float roughness = SmoothnessToRoughness(material.smoothness);
+    float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2); 
+    float finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));    
+    material.smoothness = finalSmoothness;
+#endif
 
 	float3 V = normalize(viewdir);
 	

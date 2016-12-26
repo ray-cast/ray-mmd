@@ -230,13 +230,13 @@ technique DeferredLighting<
 	"Pass=FXAA;"
 #endif
 
-#if AA_QUALITY == 2 || AA_QUALITY == 3
+#if AA_QUALITY == 2
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
 	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 #endif
 
-#if AA_QUALITY == 4 || AA_QUALITY == 5
+#if AA_QUALITY == 3
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection1x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
 	"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlending;"
@@ -649,7 +649,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 FXAA3(ShadingMapTempSamp, ViewportOffset2);
 	}
 #endif
-#if AA_QUALITY == 2 || AA_QUALITY == 3
+#if AA_QUALITY == 2
 	pass SMAAEdgeDetection < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -669,7 +669,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, 1);
 	}
 #endif
-#if AA_QUALITY == 4 || AA_QUALITY == 5
+#if AA_QUALITY == 3
 	pass SMAAEdgeDetection1x < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
