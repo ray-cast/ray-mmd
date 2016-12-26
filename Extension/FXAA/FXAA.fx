@@ -176,7 +176,7 @@ technique FXAA <
     "ScriptExternal=Color;"
     
     "RenderColorTarget=;"
-    "RenderDepthStencilTarget=;"
+    "Clear=Color;"
     "Pass=FXAA;"
     ;
 > {
