@@ -40,9 +40,13 @@ float mSkinColGM :  CONTROLOBJECT < string name="(self)"; string item = "SkinG-"
 float mSkinColBM :  CONTROLOBJECT < string name="(self)"; string item = "SkinB-"; >;
 float mSkinCol  :  CONTROLOBJECT < string name="(self)"; string item = "SkinGray+"; >;
 
-static float4 mSkinBalance = float4(float3(mSkinColRP, mSkinColGP, mSkinColBP) - float3(mSkinColRM, mSkinColGM, mSkinColBM), mSkinCol);
-static float4 mDiffuseBalance = float4(float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM), mDiffuseCol);
-static float4 mSpecularBalance = float4(float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM), mSpecularCol);
+static float4 mBalanceSkin = float4(float3(mSkinColRP, mSkinColGP, mSkinColBP) - float3(mSkinColRM, mSkinColGM, mSkinColBM), mSkinCol);
+static float4 mBalanceDiffuse = float4(float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM), mDiffuseCol);
+static float4 mBalanceSpecular = float4(float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM), mSpecularCol);
+
+static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
@@ -114,21 +118,20 @@ float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R
 	return float4(ImageBasedLightClothScattering(nh, nl, vh, nv, roughness, material.customDataB, PI), material.customDataA);
 }
 
-float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float fresnel, float3 prefilteredDiffuse)
 {
-	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
+	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(N), 0, mipLayer - 2)));
 	
 	if (material.lightModel == SHADINGMODELID_SKIN)
 	{
-		prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mSkinBalance);        
-		prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mSkinBalance);
+		prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceSkin);        
+		prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mBalanceSkin);
 	}
 	
 	float3 dependentSplit = 0.5;
-	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
-	scattering *= material.customDataB * dependentSplit;
-	scattering *= (1 + mEnvSSSLightP * 5 - mEnvSSSLightM);
-	scattering += prefilteredDiffuse * (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance * fresnel;
+	scattering *=  material.customDataB * dependentSplit * mEnvIntensitySSS;
+	scattering += prefilteredDiffuse * mEnvIntensityDiff;
 	
 	return scattering;
 }
@@ -147,18 +150,16 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	R = ComputeSpecularDominantDir(N, R, roughness);
 	
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-
+	float fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	
 	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));
 
-	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mDiffuseBalance);
-	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mSpecularBalance);
+	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceDiffuse);
+	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mBalanceSpecular);
    
-	diffuse = prefilteredDiffuse;
-	diffuse *= (1 + mEnvDiffLightP * 5 - mEnvDiffLightM);
-	
-	specular = prefilteredSpeculr;
-	specular *= EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+	specular = prefilteredSpeculr * fresnel;
 	
 #if LIGHTMODEL_BRDF >= 1
 	[branch]
@@ -170,7 +171,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	}
 	else if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{
-		diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
 	}
 	else if (material.lightModel == SHADINGMODELID_CLOTH)
 	{
@@ -180,11 +181,11 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 #else
 	if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{
-		diffuse = ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
 	}
 #endif
 
-	specular *= (1 + mEnvSpecLightP * 5 - mEnvSpecLightM);
+	specular *= mEnvIntensitySpec;
 	specular *= step(0, sum(material.specular) - 1e-5);
 }
 

@@ -44,7 +44,7 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
 
 const float normalMapSubScale = 1.5;
-const float normalMapSubLoopNum = 50.0;
+const float normalMapSubLoopNum = 60.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
