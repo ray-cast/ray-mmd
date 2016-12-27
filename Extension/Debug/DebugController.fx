@@ -8,6 +8,7 @@ float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo";
 float showNormal : CONTROLOBJECT < string name="(self)"; string item = "Normal"; >;
 float showSpecular : CONTROLOBJECT < string name="(self)"; string item = "Specular"; >;
 float showSmoothness : CONTROLOBJECT < string name="(self)"; string item = "Smoothness"; >;
+float showCustomID : CONTROLOBJECT < string name="(self)"; string item = "CustomID"; >;
 float showCustomDataA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataA"; >;
 float showCustomDataB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataB"; >;
 float showEmissive : CONTROLOBJECT < string name="(self)"; string item = "Emissive"; >;
@@ -18,6 +19,7 @@ float showAlbedoAlpha : CONTROLOBJECT < string name="(self)"; string item = "Alb
 float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "NormalAlpha"; >;
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
+float showCustomIDAlpha : CONTROLOBJECT < string name="(self)"; string item = "CustomIDAlpha"; >;
 float showCustomDataAlphaA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaA"; >;
 float showCustomDataAlphaB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaB"; >;
 float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "EmissiveAlpha"; >;
@@ -94,8 +96,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
-	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showCustomDataB + showCustomDataA + showEmissive;
-	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
+	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showCustomID + showCustomDataB + showCustomDataA + showEmissive;
+	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
 	showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
 	
 	float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
@@ -114,7 +116,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.customDataA * showCustomDataAlphaA;
 	result += materialAlpha.customDataB * showCustomDataAlphaB;
 	result += materialAlpha.emissive * showEmissiveAlpha;
-
+	
 	result = linear2srgb(result);
 
 	result += materialAlpha.alpha * showAlpha;
@@ -132,7 +134,29 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	#if SHADOW_QUALITY > 0
 		result += pow(tex2D(PSSMsamp, coord).r * 4, 10) * showPSSM;
 	#endif
-
+	
+	if (material.lightModel == SHADINGMODELID_SKIN)
+		result += float3(1,0,0) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_SUBSURFACE)
+		result += float3(0,1,0) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_CLOTH)
+		result += float3(0,0,1) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_EMISSIVE)
+		result += float3(1,1,1) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+		result += float3(1,0,1) * showCustomID;
+		
+	if (materialAlpha.lightModel == SHADINGMODELID_SKIN)
+		result += float3(1,0,0) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_SUBSURFACE)
+		result += float3(0,1,0) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_CLOTH)
+		result += float3(0,0,1) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_EMISSIVE)
+		result += float3(1,1,1) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_CLEAR_COAT)
+		result += float3(1,0,1) * showCustomIDAlpha;
+		
 	return float4(result, 1);
 }
 
