@@ -992,7 +992,7 @@ GbufferParam MaterialPS(
 	material.normal = GetNormal(normal, worldPos, coord.xy);
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
+	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
@@ -1037,7 +1037,7 @@ GbufferParam Material2PS(
 #endif
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, albedoColor, MaterialMetalness);
+	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
