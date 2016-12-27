@@ -583,7 +583,7 @@ float3 GetEmissiveColor(float3 albedo, float2 uv, bool useTexture)
 			emissiveColor *= float3(MorphRed, MorphGreen, MorphBlue);
 		#endif
 		
-		return saturate(emissiveColor - 0.005);
+		return emissiveColor;
 	#elif EMISSIVE_APPLY_MORPH_COLOR
 		return float3(MorphRed, MorphGreen, MorphBlue);
 	#else
@@ -927,18 +927,18 @@ float GetLightMode(MaterialParam material)
 {
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
 	#if EMISSIVE_ENABLE
-		return any(material.emissive) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
+		return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
 	#else
 		return CUSTOM_ENABLE;
 	#endif
 #elif USE_CUSTOM_MATERIAL && SSS_ENABLE
 	float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
 	#if EMISSIVE_ENABLE
-		return any(material.emissive) ? SHADINGMODELID_EMISSIVE : profile;
+		return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : profile;
 	#endif
 	return profile;
 #elif USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
-	return any(material.emissive) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
+	return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #else
 	return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #endif
