@@ -114,7 +114,7 @@ const float parallaxMapLoopNum = 1.0;
 // 4 : Reserved
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
-// 7 : Sursubface         // customA = curvature,  customB = transmittance color;
+// 7 : Subsurface         // customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0  // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
