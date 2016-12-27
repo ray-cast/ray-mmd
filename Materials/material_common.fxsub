@@ -47,6 +47,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR (3.0f + MAX_FRACTIONAL_8_BIT)
+#define EMISSIVE_EPSILON (2.0f / 255.0f)
 
 #define ALPHA_THRESHOLD 0.98
 
@@ -288,8 +289,7 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-	rgb = max(6.10352e-5, rgb);
-	return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
+	return rgb < 0.04045f ? rgb / 12.92f : pow(max(6.10352e-5, rgb) * (1.0 / 1.055) + 0.0521327, 2.4);
 }
 
 float4 srgb2linear(float4 c)
@@ -927,18 +927,18 @@ float GetLightMode(MaterialParam material)
 {
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
 	#if EMISSIVE_ENABLE
-		return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
+		return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
 	#else
 		return CUSTOM_ENABLE;
 	#endif
 #elif USE_CUSTOM_MATERIAL && SSS_ENABLE
 	float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
 	#if EMISSIVE_ENABLE
-		return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : profile;
+		return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : profile;
 	#endif
 	return profile;
 #elif USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
-	return any(saturate(material.emissive - 0.005)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
+	return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #else
 	return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #endif
