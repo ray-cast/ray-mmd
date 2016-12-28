@@ -131,7 +131,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 		for (int y = -samples; y <= samples; y++)
 		{
 			float2 offset = float2(x, y) * ShadowmapOffset2;
-			shadow += CalcLight(BiasedZ(tex2D(ShadowMapSamp, proj.xy + offset).r, bias, offset), proj.z, threshold);
+			shadow += CalcLight(BiasedZ(tex2Dlod(ShadowMapSamp, float4(proj.xy + offset, 0, 0)).r, bias, offset), proj.z, threshold);
 		}
 	}
 	
