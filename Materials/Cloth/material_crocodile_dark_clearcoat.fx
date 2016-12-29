@@ -29,7 +29,7 @@ const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
 #define NORMAL_MAP_ENABLE 1
-#define NORMAL_MAP_IN_SPHEREMAP 1
+#define NORMAL_MAP_IN_SPHEREMAP 0
 #define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "../_MaterialMap/leather_01_n.png"
