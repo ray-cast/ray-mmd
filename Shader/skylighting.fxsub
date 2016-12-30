@@ -120,7 +120,7 @@ float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
 {
-	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(N), 0, mipLayer - 2)));
+	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
 	
 	if (material.lightModel == SHADINGMODELID_SKIN)
 	{
@@ -129,7 +129,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLaye
 	}
 	
 	float3 dependentSplit = 0.5;
-	float3 scattering = prefilteredDiffuse + prefilteredTransmittance * fresnel * material.customDataA;
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
 	scattering *=  material.customDataB * dependentSplit * mEnvIntensitySSS;
 	scattering += prefilteredDiffuse * mEnvIntensityDiff;
 	
