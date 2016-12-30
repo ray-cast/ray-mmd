@@ -28,12 +28,36 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
-##### 2016-12-30 ver 1.2.0
+##### 2016-12-31 ver 1.2.0
 * 添加了SMAA抗锯齿
 * 添加了SSDO，现在只有主光源有效
-* 添加了Skyblur.fx, 用于模糊天空球背景 [(预览)](https://github.com/ray-cast/images/raw/master/skyblur_120.jpg)
+* 添加了skybox_blur.fx, 用于模糊天空球背景 [(预览)](https://github.com/ray-cast/images/raw/master/skyblur_120.jpg)
 * 改进了GbufferFillter, 用于减少一些头发产生的锯齿
 * 修复了错误的SSS光照计算
+
+##### 2016-12-27 ver 1.2.0beta
+* 修复了纯黑物体specular计算出错
+* 修复了启用自发光材质时CustomID无效
+
+##### 2016-12-25 ver 1.2.0beta
+* 修复了SSS的bug
+
+##### 2016-12-23 ver 1.2.0beta
+* 优化Skylighting载入速度
+* 修复了自发光材质被透明物体遮挡时不发光的bug
+* 修复了Skylighting计算SSS的bug
+
+##### 2016-12-20 ver 1.2.0beta
+* __注:新版本需要替换以前的 material_common.fxsub__
+* 添加了ShadingMaterialID，用于模拟更多的布料 [(预览)](https://github.com/ray-cast/images/raw/master/ID_120beta.png)
+* 添加了教程 Tutorial/06-Fake Transmittance [(预览)](https://github.com/ray-cast/ray-mmd/raw/master/Tutorial/06-Fake Transmittance/README.png)
+* 添加了PNG贴图的自发光支持
+* 添加了Skybox的垂直翻转
+* 添加了Skybox的ColorBalance [(预览)](https://github.com/ray-cast/images/raw/master/balance_120beta.png)
+* 改进了SSSS的计算方式 [(预览1)](https://github.com/ray-cast/images/raw/master/skin_120beta.png) [(预览2)](https://github.com/ray-cast/images/raw/master/dragon_120beta.png)
+* 改进了SSAO近处出现白色边缘 [(预览)](https://github.com/ray-cast/images/raw/master/ssao_120beta.png)
+* 改进了主光源阴影近处出现白色边缘
+* 修复部分模型IBL specular的计算bug
 
 #### 教程 :
 ##### 1.0 简介 :
