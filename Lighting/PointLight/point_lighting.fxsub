@@ -132,9 +132,11 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	
 	float atten = GetPhysicalLightAttenuation(L, LightRange);
    
-	float4 lighting = 0.0f;
-	lighting = MultiSurfaceShading(material, SurfaceEnergy(material, material.normal, L2, L2, V, 1.0), float3(mR, mG, mB));
-	lighting += SubsurfaceShading(material, material.normal, L2, V) * float4(mR, mG, mB, 0);
+	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 specular = energy.gba;
+
+	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 	lighting *= atten * LightIntensity;
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);

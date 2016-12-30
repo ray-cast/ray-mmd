@@ -56,11 +56,7 @@ float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 	
 	float3 brdf = lerp(curve1, curve2, madd(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
 	
-#if SSSS_QUALITY >= 2
 	return float4(material.customDataB * brdf, 0);
-#else
-	return float4(material.albedo * material.customDataB * brdf, 0);
-#endif
 }
 
 float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, float3 V)
@@ -68,11 +64,7 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 	float w = 0.5;
 	float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
 	float phase = ComputePhaseFunctions(dot(V, L), 1 - material.customDataA);
-#if SSSS_QUALITY >= 2
 	return float4(material.customDataB * nl * phase, 0);
-#else
-	return float4(material.albedo * material.customDataB * nl * phase, 0);
-#endif
 }
 
 float BurleyBRDF(float3 N, float3 V, float3 L, float roughness)
@@ -267,56 +259,56 @@ float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 #endif
 }
 
-float4 MainSurfaceShading(MaterialParam material, float4 energy)
+float4 MainSurfaceShading(MaterialParam material, float3 diffuse, float3 specular)
 {
 #if SSSS_QUALITY >= 2
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_SKIN)
 	{
-		return energy.r;
+		return diffuse;
 	}
 	else
 	{
-		return float4(material.albedo * energy.r + energy.gba, 0);
+		return float4(material.albedo * diffuse + specular, 0);
 	}
 #elif SSSS_QUALITY == 1
 	if (material.lightModel == SHADINGMODELID_SKIN ||
 		material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{
-		return float4(material.albedo * energy.r, 0);
+		return float4(material.albedo * diffuse, 0);
 	}
 	else
 	{
-		return float4(material.albedo * energy.r + energy.gba, 0);
+		return float4(material.albedo * diffuse + specular, 0);
 	}
 #else
-	return float4(material.albedo * energy.r + energy.gba, 0);
+	return float4(material.albedo * diffuse + specular, 0);
 #endif
 }
 
-float4 MultiSurfaceShading(MaterialParam material, float4 energy, float3 lightColor)
+float4 MultiSurfaceShading(MaterialParam material, float3 diffuse, float3 specular, float3 lightColor)
 {
 #if SSSS_QUALITY >= 2
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_SKIN)
 	{
-		return float4(lightColor * energy.r, luminance(energy.gba * lightColor));
+		return float4(lightColor * diffuse, luminance(specular * lightColor));
 	}
 	else
 	{
-		return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
+		return float4(lightColor * (material.albedo * diffuse + specular), 0);
 	}
 #elif SSSS_QUALITY == 1
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_SKIN)
 	{
-		return float4(lightColor * material.albedo * energy.r, luminance(energy.gba * lightColor));
+		return float4(lightColor * material.albedo * diffuse, luminance(specular * lightColor));
 	}
 	else
 	{
-		return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
+		return float4(lightColor * (material.albedo * diffuse + specular), 0);
 	}
 #else
-	return float4(lightColor * (material.albedo * energy.r + energy.gba), 0);
+	return float4(lightColor * (material.albedo * diffuse + specular), 0);
 #endif
 }

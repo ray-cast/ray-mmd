@@ -45,18 +45,12 @@ float SphereNormalization(float3 L, float radius, float roughness)
 	return normFactor * normFactor;
 }
 
-float3 SphereAreaLightBRDF(float3 N, float3 V, float3 L, float radius, float roughness, float3 f0)
+float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius, float roughness, float3 f0)
 {
 	float3 Lw = SphereLightDirection(N, V, L, radius);
 	float3 L2 = normalize(Lw);
-	float3 H = normalize(V + L2);
-
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, L2));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
-	
-	return SpecularBRDF_GGX(nh, nl, vh, nv, roughness, f0, SphereNormalization(Lw, radius, roughness));
+	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, SphereNormalization(Lw, radius, roughness));
+	return energy;
 }
 
 float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
@@ -99,20 +93,13 @@ float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float r
 	return rectangleAngle;
 }
 
-float3 RectangleLightBRDF(float3 N, float3 V, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float roughness, float3 f0, out float2 coord)
+float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float roughness, float3 f0, out float2 coord)
 {
 	float3 R = reflect(V, N);
 	float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
-	
 	float3 L2 = normalize(Lw);
-	float3 H = normalize(V + L2);
-
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, L2));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
-	
-	return SpecularBRDF_GGX(nh, nl, vh, nv, roughness, f0, SphereNormalization(Lw, Lwh.y, roughness));
+	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, SphereNormalization(Lw, Lwh.y, roughness));
+	return energy;
 }
 
 float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
@@ -138,17 +125,11 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 	return closestPoint + centerToRay * saturate(radius / length(centerToRay));
 }
 
-float3 TubeLightBRDF(float3 P, float3 N, float3 V, float3 L0, float3 L1, float LightWidth, float LightRadius, float roughness, float3 f0)
+float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius, float roughness, float3 f0)
 {
+	float3 R = reflect(V, N);
 	float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
-	float3 L2 = normalize(Lw);
-	
-	float3 H = normalize(V + L2);
-
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, L2));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
-	
-	return SpecularBRDF_GGX(nh, nl, vh, nv, roughness, f0, SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness));
+	float3 Ls = normalize(Lw);
+	float4 energy = SurfaceEnergy(material, N, L, Ls, V, SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness));
+	return energy;
 }

@@ -196,29 +196,32 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
 		atten *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
 	#endif
-	
-	float3 diffuse = DiffuseBRDF(material.normal, L2, V, roughness);
-	float3 specular = RectangleLightBRDF(material.normal, V, L, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
-	
-	#if VIDEO_MAP_ENABLE
-		float mip = 6 * (1 - material.smoothness * material.smoothness);
-		diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
 
-		if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
-			coord2.x <= 0.0 || coord2.y <= 0.0)
-		{
-			specular *= 0.0;
-		}
-		else
-		{
-			float mip = (1 - material.smoothness * material.smoothness) * 6;
-			specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
-		}
-	#endif
+	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 specular = energy.gba;
 	
-	float4 lighting = 0;
-	lighting.rgb += (material.albedo * diffuse + specular);
-	lighting.rgb *= float3(mR, mG, mB) * atten * LightIntensity;
+#if VIDEO_MAP_ENABLE
+	float mip = 6 * (1 - material.smoothness * material.smoothness);
+	diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
+
+	if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
+		coord2.x <= 0.0 || coord2.y <= 0.0)
+	{
+		specular *= 0.0;
+	}
+	else
+	{
+		float mip = (1 - material.smoothness * material.smoothness) * 6;
+		specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
+	}
+
+	float4 lighting = float4((material.albedo * diffuse + specular) * float3(mR, mG, mB), 0);
+#else
+	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
+#endif
+
+	lighting *= atten * LightIntensity;
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	

@@ -9,11 +9,17 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 
 #if SHADOW_QUALITY > 0
 	float2 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-	lighting = MainSurfaceShading(material, SurfaceEnergy(material, N, L, L, V, 1.0)) * shadow.r;
-	lighting += SubsurfaceShading(material, N, L, V) * shadow.g;
+	
+	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
+	float3 diffuse = energy.r * shadow.r + SubsurfaceShading(material, material.normal, L, V) * shadow.g;
+	float3 specular = energy.gba * shadow.r;
+
+	lighting = MainSurfaceShading(material, diffuse, specular);
 #else
-	lighting = MainSurfaceShading(material, SurfaceEnergy(material, N, L, L, V, 1.0));
-	lighting += SubsurfaceShading(material, N, L, V);
+	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 specular = energy.gba;
+	lighting = MainSurfaceShading(material, diffuse, specular);
 #endif
 	lighting *= float4(LightSpecular, 1);
 	lighting *= mMainLightIntensity;

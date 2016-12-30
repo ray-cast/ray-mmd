@@ -153,8 +153,9 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float atten = GetPhysicalLightAttenuation(L, LightRange);
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
-	float3 diffuse = DiffuseBRDF(material.normal, L2, V, roughness);    
-	float3 specular = SphereAreaLightBRDF(material.normal, V, L, LightSize, roughness, material.specular);
+	float4 energy = SphereAreaLightEnergy(material, material.normal, L, V, LightSize, roughness, material.specular);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 specular = energy.gba;
 	
 #if IBL_ENABLE
 	float3 diffDir = mul(L2, (float3x3)matViewInverse);
@@ -163,10 +164,12 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float3 specularDir = mul(normalize(SphereLightDirection(material.normal, V, L, LightSize)), (float3x3)matViewInverse);
 	float mipLayer = lerp(IBL_MIPMAP_LEVEL - 1, 0, material.smoothness);
 	specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(specularDir), 0, mipLayer)), IBL_RGBM_RANGE);
+	float4 lighting = float4((material.albedo * diffuse + specular) * float3(mR, mG, mB), 0);
+#else
+	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 #endif
 
-	float4 lighting = float4(material.albedo * diffuse + specular, 0);
-	lighting.rgb *= float3(mR, mG, mB) * atten * LightIntensity;
+	lighting *= atten * LightIntensity;
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	
