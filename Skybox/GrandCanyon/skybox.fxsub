@@ -7,12 +7,12 @@ bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 float mEnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
 float mEnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
 float mEnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
-float mColBalanceRP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR+"; >;
-float mColBalanceGP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG+"; >;
-float mColBalanceBP :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB+"; >;
-float mColBalanceRM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceR-"; >;
-float mColBalanceGM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceG-"; >;
-float mColBalanceBM :  CONTROLOBJECT < string name="(self)"; string item = "BalanceB-"; >;
+float mColBalanceRP : CONTROLOBJECT < string name="(self)"; string item = "BalanceR+"; >;
+float mColBalanceGP : CONTROLOBJECT < string name="(self)"; string item = "BalanceG+"; >;
+float mColBalanceBP : CONTROLOBJECT < string name="(self)"; string item = "BalanceB+"; >;
+float mColBalanceRM : CONTROLOBJECT < string name="(self)"; string item = "BalanceR-"; >;
+float mColBalanceGM : CONTROLOBJECT < string name="(self)"; string item = "BalanceG-"; >;
+float mColBalanceBM : CONTROLOBJECT < string name="(self)"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="(self)"; string item = "BalanceGray+"; >;
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
@@ -23,20 +23,29 @@ sampler ShadowmapSamp = sampler_state {
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
-#if SKYBOX_HDR_ENABLE
-texture2D decal<string ResourceName = SKYBOX_HDR_FILE;>; 
-#else
-texture2D decal<string ResourceName = SKYBOX_MAP_FILE;>; 
-#endif
-sampler decalMap = sampler_state
-{
-    texture = <decal>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MIPFILTER = NONE;
-    ADDRESSU  = CLAMP;
-    ADDRESSV  = CLAMP;
+#if SKYBOX_BLUR_ENABLE
+texture IBLSpecularTexture<string ResourceName = SKYBOX_BLUR_MAP_FILE;>; 
+sampler IBLSpecularSampler = sampler_state {
+    texture = <IBLSpecularTexture>;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+#else
+    #if SKYBOX_HDR_ENABLE
+    texture2D decal<string ResourceName = SKYBOX_HDR_FILE;>; 
+    #else
+    texture2D decal<string ResourceName = SKYBOX_MAP_FILE;>; 
+    #endif
+    sampler decalMap = sampler_state
+    {
+        texture = <decal>;
+        MINFILTER = LINEAR;
+        MAGFILTER = LINEAR;
+        MIPFILTER = NONE;
+        ADDRESSU  = CLAMP;
+        ADDRESSV  = CLAMP;
+    };
+#endif
 
 float3 ApplyColorBalance(float3 color)
 {
@@ -67,7 +76,21 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 {
     float3 N = normalize(mul(matTransform, normal));
     
-    float4 color = tex2D(decalMap, ComputeSphereCoord(N));
+    float2 uv = ComputeSphereCoord(N);
+    
+#if SKYBOX_BLUR_ENABLE
+    float4 color = tex2Dlod(IBLSpecularSampler, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
+    #if SKYBOX_BLUR_COLOR_RANGE == 1024
+        color.rgb = DecodeRGBT(color, 1024);
+    #elif SKYBOX_BLUR_COLOR_RANGE == 24
+        color.rgb = DecodeRGBM(color, 24);
+    #else
+        color.rgb = DecodeRGBM(color, 6);
+    #endif
+#else
+    float4 color = tex2Dlod(decalMap, float4(uv, 0, 0));
+#endif
+
 #if SKYDOME_ENABLE
     if (ExistRay)
     {
