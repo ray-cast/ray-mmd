@@ -137,7 +137,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 		float4 projPos = startScreenPos + deltaScreenPos * len;
 		projPos.xy /= projPos.w;
 		
-		float depth = tex2Dlod(DepthMapSamp, float4(projPos.xy, 0, 0)).g;
+		float depth = tex2Dlod(Gbuffer8Map, float4(projPos.xy, 0, 0)).r;
 		
 		if (abs(depth - projPos.z) < intervalSize)
 		{
@@ -161,10 +161,10 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
 float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
 {
-	float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
@@ -223,7 +223,7 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
 	float2 offset1 = coord.xy - offset;
 	
 	[unroll]
-	for (int i = 1; i < 6; ++i)
+	for (int i = 1; i < 5; ++i)
 	{
 		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
 		
@@ -241,10 +241,10 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
 
 float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 {
-	float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 	
 	MaterialParam material;
 	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
