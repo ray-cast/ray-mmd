@@ -25,16 +25,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#define SMAA_MAX_SEARCH_STEPS 16
-#define SMAA_MAX_SEARCH_STEPS_DIAG 0
-#define SMAA_CORNER_ROUNDING 0
-#define SMAA_AREATEX_MAX_DISTANCE 16
-#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
-#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
-#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
-#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
-#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
-#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
+#if AA_QUALITY == 2 || AA_QUALITY == 4
+	#define SMAA_MAX_SEARCH_STEPS 16
+	#define SMAA_MAX_SEARCH_STEPS_DIAG 0
+	#define SMAA_CORNER_ROUNDING 0
+	#define SMAA_AREATEX_MAX_DISTANCE 16
+	#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
+	#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
+	#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
+	#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
+	#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
+	#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
+#else
+	#define SMAA_MAX_SEARCH_STEPS 16
+	#define SMAA_MAX_SEARCH_STEPS_DIAG 8
+	#define SMAA_CORNER_ROUNDING 25
+	#define SMAA_AREATEX_MAX_DISTANCE 16
+	#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
+	#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
+	#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
+	#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
+	#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
+	#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
+#endif
 
 texture SMAAEdgeMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
@@ -106,7 +119,7 @@ float SMAASearchXLeft(sampler edgesTex, sampler searchTex, float2 texcoord, floa
 	}
 	
 	float offset = madd(-(255.0 / 127.0), SMAASearchLength(searchTex, e, 0.0), 3.25);
-	return texcoord.x + ViewportOffset2.x * offset;
+	return madd(ViewportOffset2.x, offset, texcoord.x);
 }
 
 float SMAASearchXRight(sampler edgesTex, sampler searchTex, float2 texcoord, float end) 
@@ -117,7 +130,7 @@ float SMAASearchXRight(sampler edgesTex, sampler searchTex, float2 texcoord, flo
 	{
 		e = tex2Dlod(edgesTex, float4(texcoord, 0, 0)).rg;
 		texcoord += ViewportOffset2 * float2(2.0, 0.0);
-		if (!(texcoord.x > end &&  e.g > 0.8281 && e.r == 0.0)) break;
+		if (!(texcoord.x < end &&  e.g > 0.8281 && e.r == 0.0)) break;
 	}
 	
 	float offset = madd(-(255.0 / 127.0), SMAASearchLength(searchTex, e, 0.5), 3.25);
@@ -179,7 +192,7 @@ void SMAAMovc(bool4 cond, inout float4 variable, float4 value)
 float2 SMAAAreaDiag(sampler areaTex, float2 dist, float2 e, float offset) 
 {
 	float2 texcoord = madd(float2(SMAA_AREATEX_MAX_DISTANCE_DIAG, SMAA_AREATEX_MAX_DISTANCE_DIAG), e, dist);
-	texcoord = mad(SMAA_AREATEX_PIXEL_SIZE, texcoord, 0.5 * SMAA_AREATEX_PIXEL_SIZE);
+	texcoord = madd(SMAA_AREATEX_PIXEL_SIZE, texcoord, 0.5 * SMAA_AREATEX_PIXEL_SIZE);
 	texcoord.x += 0.5;
 	texcoord.y += SMAA_AREATEX_SUBTEX_SIZE * offset;
 	return tex2Dlod(areaTex, float4(texcoord, 0, 0)).ra;
@@ -205,7 +218,7 @@ float2 SMAASearchDiag1(sampler edgesTex, float2 texcoord, float2 dir, out float2
 	for (int i = 0; i < SMAA_MAX_SEARCH_STEPS_DIAG; i++)
 	{
 		if (!(coord.z < float(SMAA_MAX_SEARCH_STEPS_DIAG - 1) && coord.w > 0.9)) break;
-		coord.xyz = mad(t, float3(dir, 1.0), coord.xyz);
+		coord.xyz = madd(t, float3(dir, 1.0), coord.xyz);
 		e = tex2Dlod(edgesTex, float4(coord.xy, 0, 0)).rg;
 		coord.w = dot(e, float2(0.5, 0.5));
 	}
@@ -222,7 +235,7 @@ float2 SMAASearchDiag2(sampler edgesTex, float2 texcoord, float2 dir, out float2
 	for (int i = 0; i < SMAA_MAX_SEARCH_STEPS_DIAG; i++)
 	{
 		if (!(coord.z < float(SMAA_MAX_SEARCH_STEPS_DIAG - 1) && coord.w > 0.9)) break;
-		coord.xyz = mad(t, float3(dir, 1.0), coord.xyz);
+		coord.xyz = madd(t, float3(dir, 1.0), coord.xyz);
 		e = tex2Dlod(edgesTex, float4(coord.xy, 0, 0)).rg;
 		e = SMAADecodeDiagBilinearAccess(e);
 		coord.w = dot(e, float2(0.5, 0.5));
@@ -469,8 +482,9 @@ float4 SMAANeighborhoodBlendingVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
-	oTexcoord1 = Texcoord.xyxy + ViewportOffset2.xyxy * float4(1.0, 0.0, 0.0, 1.0);
+	float2 coord = Texcoord.xy + ViewportOffset;
+	oTexcoord0 = coord.xyxy;
+	oTexcoord1 = coord.xyxy + ViewportOffset2.xyxy * float4(1.0, 0.0, 0.0, 1.0);
 	return Position;
 }
 
