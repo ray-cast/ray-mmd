@@ -55,7 +55,6 @@ float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 	float oneMinusCurva2 = oneMinusCurva * oneMinusCurva;
 	
 	float3 brdf = lerp(curve1, curve2, madd(oneMinusCurva2, -1.0 * oneMinusCurva2, 1.0));
-	brdf = pow(brdf, 1 / 2.2);
 	
 #if SSSS_QUALITY >= 2
 	return float4(material.customDataB * brdf, 0);
