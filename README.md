@@ -32,6 +32,7 @@ Ray-MMD
 * 添加了SMAA抗锯齿
 * 添加了SSDO，现在只有主光源有效
 * 添加了skybox_blur.fx, 用于模糊天空球背景 [(预览)](https://github.com/ray-cast/images/raw/master/skyblur_120.jpg)
+* 改进了CMFT的过滤工具,
 * 改进了GbufferFillter, 用于减少一些头发产生的锯齿
 * 修复了错误的SSS光照计算
 
