@@ -32,9 +32,9 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_IN_SPHEREMAP 0
 #define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_FILE "TDA hair by RGL.png"
+#define NORMAL_MAP_FILE "TDA hair by RGL.jpg"
 
-const float normalMapScale = 0.5;
+const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
 
 // 子法线贴图
