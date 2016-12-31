@@ -143,6 +143,21 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 #endif
 
+float3 DecodeHDR(float4 rgbx)
+{
+#if IBL_HDR_ENABLE
+	#if IBL_RGBT_RANGE
+		return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
+	#elif IBL_RGBM_RANGE
+		return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
+	#else
+		return DecodeRGBM(rgbx, 6);
+	#endif
+#else
+	return rgbx.rgb;
+#endif
+}
+
 float4 ShadingMaterial(MaterialParam material, float3 V)
 {
 	float3 P = V * material.linearDepth / V.z;
@@ -159,11 +174,11 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	
 #if IBL_ENABLE
 	float3 diffDir = mul(L2, (float3x3)matViewInverse);
-	diffuse *= DecodeRGBM(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(diffDir), 0, 0)), IBL_RGBM_RANGE);
+	diffuse *= DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(diffDir), 0, 0)));
 
 	float3 specularDir = mul(normalize(SphereLightDirection(material.normal, V, L, LightSize)), (float3x3)matViewInverse);
 	float mipLayer = lerp(IBL_MIPMAP_LEVEL - 1, 0, material.smoothness);
-	specular *= DecodeRGBM(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(specularDir), 0, mipLayer)), IBL_RGBM_RANGE);
+	specular *= DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(specularDir), 0, mipLayer)));
 	float4 lighting = float4((material.albedo * diffuse + specular) * float3(mR, mG, mB), 0);
 #else
 	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
