@@ -162,9 +162,6 @@ sampler StreakSamp4thTemp = sampler_state {
 #endif
 
 #if HDR_FLARE_MODE > 0
-static float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0, 0.3);
-static float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.77);
-
 #if HDR_FLARE_MODE == 1
 static float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
 static float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
@@ -180,7 +177,6 @@ sampler GhostMaskMapSamp = sampler_state
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
 	AddressU  = CLAMP; AddressV = CLAMP;
 };
-
 texture GhostImageMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {0.5, 0.5};
 	string Format="A2B10G10R10";
@@ -392,15 +388,14 @@ float4 GhostImagePS(
 	uniform sampler source1,
 	uniform sampler source2,
 	uniform sampler source3,
-	uniform sampler source4, 
 	uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
 	float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
-	float4 color1 = (tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord0, 0, 0)) * colorCoeff[0];
-	float4 color2 = (tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord1, 0, 0)) * colorCoeff[1];
-	float4 color3 = (tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord2, 0, 0)) * colorCoeff[2];
-	float4 color4 = (tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(source4, float4(coord3, 0, 0)) * colorCoeff[3];
-	return max(0, (color1 + color2 + color3 + color4));
+	float4 color1 = saturate(tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord0, 0, 0)) * colorCoeff[0];
+	float4 color2 = saturate(tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord1, 0, 0)) * colorCoeff[1];
+	float4 color3 = saturate(tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord2, 0, 0)) * colorCoeff[2];
+	float4 color4 = saturate(tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord3, 0, 0)) * colorCoeff[3];
+	return color1 + color2 + color3 + color4;
 }
 
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
