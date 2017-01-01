@@ -452,7 +452,8 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
 	color += lerp(bloom, 0, mBloomTonemapping);
 #endif
-	
+
+	color = WihteBalance(color, mColorTemperature);
 	color = ApplyVignette(color, coord);
 	color = ApplyColorBalance(color);
 	color = ACESToneMapping(color * (mExposureMin + mExposure * mExposureMax));

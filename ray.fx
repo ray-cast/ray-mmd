@@ -32,6 +32,8 @@ float mColBalanceRM :  CONTROLOBJECT < string name="ray_controller.pmx"; string 
 float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
 float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
 float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
+float mTemperatureP  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Temperature+"; >;
+float mTemperatureM  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Temperature-"; >;
 
 float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
 float3 LightDirection : DIRECTION < string Object = "Light"; >;
@@ -39,6 +41,7 @@ float3 LightDirection : DIRECTION < string Object = "Light"; >;
 static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
+static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mTemperatureP);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
