@@ -63,8 +63,12 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 {
 	float w = 0.5;
 	float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
-	float phase = ComputePhaseFunctions(dot(V, L), 1 - material.customDataA);
-	return float4(material.customDataB * nl * phase, 0);
+	float vl = saturate(dot(V, -L));
+	float a = material.customDataA;
+	float a2 = a * a;
+	float d = (vl * a2 - vl) * vl + 1;
+	float GGX = (a2 / PI) / (d * d);
+	return float4(material.customDataB * nl * GGX, 0);
 }
 
 float BurleyBRDF(float3 N, float3 V, float3 L, float roughness)
