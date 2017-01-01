@@ -11,7 +11,7 @@ float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, flo
 	float2 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
 	
 	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
-	float3 diffuse = energy.r * shadow.r + SubsurfaceShading(material, material.normal, L, V) * shadow.g;
+	float3 diffuse = energy.r * shadow.r + SubsurfaceShading(material, material.normal, L, V).rgb * shadow.g;
 	float3 specular = energy.gba * shadow.r;
 
 	lighting = MainSurfaceShading(material, diffuse, specular);

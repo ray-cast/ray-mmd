@@ -79,6 +79,14 @@ static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mT
 
 #include "shader/shading.fxsub"
 
+#if HDR_FLARE_MODE == 1
+static const float4 ghost_modulation1st[4] = ghost_blueCoeff1st;
+static const float4 ghost_modulation2nd[4] = ghost_blueCoeff2nd;
+#else
+static const float4 ghost_modulation1st[4] = ghost_orangeCoeff1st;
+static const float4 ghost_modulation2nd[4] = ghost_orangeCoeff2nd;
+#endif
+
 float4 ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
