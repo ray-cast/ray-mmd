@@ -66,30 +66,20 @@ Ray-MMD
 #### 教程 :
 ##### 1.0 简介 :
 　　IBL(Image-based-lighting)基于图片的光,需要对图片做一些处理,使其能够让天空球作为一个大
-的光源，因此不同的天空球光照效果也是不一样的,也自然会产生出不同的色调(如下图):  
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL1.jpg">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL1_small.png" width = "33%" height = "16.5%" align=center/>
-</a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2.jpg">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL2_small.png" width = "33%" height = "16.5%" align=center/>
-</a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL.png">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL3_small.png" width = "33%" height = "16.5%" align=center/>
-</a>   
+的光源，因此不同的天空球光照效果也是不一样的,也自然会产生出不同的色调(如下图):
+[![link text](https://github.com/ray-cast/images/raw/master/IBL1_small.png)](https://github.com/ray-cast/images/raw/master/IBL1.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/IBL2_small.png)](https://github.com/ray-cast/images/raw/master/IBL2.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/IBL3_small.png)](https://github.com/ray-cast/images/raw/master/IBL.jpg)
+
 　　假设白炽灯，远光灯，太阳，都是白色的，但很明显虽然都是白色，太阳是最刺眼的，其次远光灯
 这样只用RGB来描述光的颜色是远远不够的，需要一个光强来描述颜色的强度，对此jpg,png,tga这类
 颜色最大只有255(整数时是 0 ~ 255, 浮点时是0.0 ~ 1.0)的并不是HDR(High-dynamic-range).  
 　　因此IBL的图片最好使用支持颜色大于255的文件(dds, hdr)，这样光照效果会显得更亮，立体感更强，
-画面也不会灰,越亮的区域产生的bloom也会越大(以下是没有使用HDR效果):  
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL2_nohdr.jpg">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL2_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
-</a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL_nohdr.jpg">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
-</a>
-<a target="_Blank" href="https://github.com/ray-cast/images/raw/master/IBL3_nohdr.jpg">
-    <img src="https://github.com/ray-cast/images/raw/master/IBL3_nohdr_s.png" width = "33%" height = "16.5%" align=center/>
-</a>    
+画面也不会灰,越亮的区域产生的bloom也会越大(以下是没有使用HDR效果):
+[![link text](https://github.com/ray-cast/images/raw/master/IBL2_nohdr_s.png)](https://github.com/ray-cast/images/raw/master/IBL2_nohdr.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/IBL_nohdr_s.png)](https://github.com/ray-cast/images/raw/master/IBL_nohdr.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/IBL3_nohdr_s.png)](https://github.com/ray-cast/images/raw/master/IBL3_nohdr.jpg)
+ 
 
 ##### 2.0 文件夹介绍 :
 * Extension : 添加一些额外的
