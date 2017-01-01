@@ -383,10 +383,14 @@ float4 GhostImagePS(
 	uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
 	float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
-	float4 color1 = saturate(tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord0, 0, 0)) * colorCoeff[0];
-	float4 color2 = saturate(tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord1, 0, 0)) * colorCoeff[1];
-	float4 color3 = saturate(tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord2, 0, 0)) * colorCoeff[2];
-	float4 color4 = saturate(tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * tex2Dlod(GhostMaskMapSamp, float4(coord3, 0, 0)) * colorCoeff[3];
+	float4 color1 = saturate(tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * colorCoeff[0];
+	float4 color2 = saturate(tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * colorCoeff[1];
+	float4 color3 = saturate(tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * colorCoeff[2];
+	float4 color4 = saturate(tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * colorCoeff[3];
+ 	color1 *= tex2Dlod(GhostMaskMapSamp, float4(coord0, 0, 0));
+ 	color2 *= tex2Dlod(GhostMaskMapSamp, float4(coord1, 0, 0));
+ 	color3 *= tex2Dlod(GhostMaskMapSamp, float4(coord2, 0, 0));
+ 	color4 *= tex2Dlod(GhostMaskMapSamp, float4(coord3, 0, 0));
 	return color1 + color2 + color3 + color4;
 }
 
