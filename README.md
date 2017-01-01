@@ -28,6 +28,9 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
+##### 2017-1-1 ver 1.2.0 (22:13 GMT+8)
+* 添加了ColorTemperature用于WhiteBalance
+
 ##### 2017-1-1 ver 1.2.0
 * 添加了ColorTemperature用于WhiteBalance
 
