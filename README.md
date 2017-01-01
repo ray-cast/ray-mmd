@@ -29,7 +29,7 @@ Ray-MMD
 
 #### 更新内容 :
 ##### 2017-1-1 ver 1.2.0 (22:13 GMT+8)
-* 添加了ColorTemperature用于WhiteBalance
+* 修复了ShadingMaterialID中Subsurface的bug
 
 ##### 2017-1-1 ver 1.2.0
 * 添加了ColorTemperature用于WhiteBalance
