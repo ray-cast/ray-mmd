@@ -28,6 +28,9 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
+##### 2017-1-1 ver 1.2.0
+* 添加了ColorTemperature用于WhiteBalance
+
 ##### 2016-12-31 ver 1.2.0
 * 添加了SMAA抗锯齿
 * 添加了SSDO，现在只有主光源有效
@@ -371,3 +374,4 @@ Ray-MMD
 * [Horizon Occlusion for IBL](http://marmosetco.tumblr.com/post/81245981087)
 * [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)
 * [Parallax Occlusion Map](http://sunandblackcat.com/tipFullView.php?topicid=28)
+* [Convert Temperature to RGB](https://github.com/davidf2281/ColorTempToRGB)
