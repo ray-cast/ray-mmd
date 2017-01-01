@@ -355,6 +355,7 @@ float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 	return bloom;
 }
 
+#if HDR_FLARE_MODE > 0
 void GhostImageVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD,
@@ -393,6 +394,7 @@ float4 GhostImagePS(
  	color4 *= tex2Dlod(GhostMaskMapSamp, float4(coord3, 0, 0));
 	return color1 + color2 + color3 + color4;
 }
+#endif
 
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
