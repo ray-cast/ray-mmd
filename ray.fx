@@ -79,14 +79,6 @@ static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mT
 
 #include "shader/shading.fxsub"
 
-#if HDR_FLARE_MODE == 1
-static const float4 ghost_modulation1st[4] = ghost_blueCoeff1st;
-static const float4 ghost_modulation2nd[4] = ghost_blueCoeff2nd;
-#else
-static const float4 ghost_modulation1st[4] = ghost_orangeCoeff1st;
-static const float4 ghost_modulation2nd[4] = ghost_orangeCoeff2nd;
-#endif
-
 float4 ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
@@ -196,7 +188,7 @@ technique DeferredLighting<
 	"RenderColorTarget=BloomMap4th;      Pass=BloomDownsampleX4;"
 	"RenderColorTarget=BloomMap4thTemp;  Pass=BloomBlurX4;"
 	"RenderColorTarget=BloomMap4th;      Pass=BloomBlurY4;"
-#if HDR_STAR_MODE == 1
+#if HDR_STAR_MODE == 1 || HDR_STAR_MODE == 2
 	"RenderColorTarget=StreakMap1stTemp; Pass=Star1stStreak1st;"
 	"RenderColorTarget=StreakMap1st;     Pass=Star1stStreak2nd;"
 	"RenderColorTarget=StreakMap1stTemp; Pass=Star1stStreak3rd;"
@@ -205,7 +197,8 @@ technique DeferredLighting<
 	"RenderColorTarget=StreakMap2nd;     Pass=Star2ndStreak2nd;"
 	"RenderColorTarget=StreakMap2ndTemp; Pass=Star2ndStreak3rd;"
 	"RenderColorTarget=StreakMap2nd;     Pass=Star2ndStreak4th;"
-#elif HDR_STAR_MODE >= 2
+#endif
+#if HDR_STAR_MODE == 3 || HDR_STAR_MODE == 4
 	"RenderColorTarget=StreakMap1st;     Pass=Star1stStreak1st;"
 	"RenderColorTarget=StreakMap1stTemp; Pass=Star1stStreak2nd;"
 	"RenderColorTarget=StreakMap1st;     Pass=Star1stStreak3rd;"
@@ -501,7 +494,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset4);
 		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4thTemp, BloomOffsetY4, 11);
 	}
-#if HDR_STAR_MODE == 1
+#if HDR_STAR_MODE == 1 || HDR_STAR_MODE == 2
 	pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -550,7 +543,8 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0), 64);
 		PixelShader  = compile ps_3_0 StarStreakPS(StreakSamp2ndTemp, star_colorCoeff4th, 0);
 	}
-#elif HDR_STAR_MODE >= 2
+#endif
+#if HDR_STAR_MODE == 3 || HDR_STAR_MODE == 4
 	pass Star1stStreak1st < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
