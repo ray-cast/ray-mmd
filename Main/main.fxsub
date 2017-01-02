@@ -41,7 +41,7 @@ void DrawObjectVS(
 	out float4 oTexcoord  : TEXCOORD0,
 	out float3 oNormal    : TEXCOORD1,
 	out float3 oViewdir   : TEXCOORD2,
-	out float4 oPosition  : SV_Position)
+	out float4 oPosition  : POSITION)
 {
 	oNormal = Normal;
 	oTexcoord = Texcoord;
@@ -49,7 +49,7 @@ void DrawObjectVS(
 	oPosition = mul(Position, matWorldViewProject);
 }
 
-float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : SV_Target
+float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : COLOR
 {
 #if EXIST_RAY
 	#if DISCARD_ALPHA_ENABLE
