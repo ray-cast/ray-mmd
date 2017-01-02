@@ -965,7 +965,11 @@ GbufferParam MaterialPS(
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
 	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
+#if CUSTOM_ENABLE == SHADINGMODELID_GLASS
+	material.customDataB = GetCustomDataB(coord.xy);
+#else
 	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
+#endif
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
 	material.emissiveIntensity = GetEmissiveIntensity();
 	material.lightModel = GetLightMode(material);
@@ -1010,7 +1014,11 @@ GbufferParam Material2PS(
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
 	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
+#if CUSTOM_ENABLE == SHADINGMODELID_GLASS
+	material.customDataB = GetCustomDataB(coord.xy);
+#else
 	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
+#endif
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
 	material.emissiveIntensity = GetEmissiveIntensity();
 	material.lightModel = GetLightMode(material);
