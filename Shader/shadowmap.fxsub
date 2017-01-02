@@ -10,7 +10,7 @@ static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraVie
 float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
 	float shadow = 0.0;
-	float s = 1.0 / SHADOW_MAP_SIZE;
+	float s = 1.25 / SHADOW_MAP_SIZE;
 
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
@@ -77,7 +77,7 @@ float4 ShadowMapGenPS(
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	
 	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.007;
+	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.01;
 
 	float sdrate = 30000.0 / 4.0 - 0.05;	
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
