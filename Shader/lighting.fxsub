@@ -56,7 +56,7 @@ float4 SubsurfaceShadingTwoSide(MaterialParam material, float3 N, float3 L, floa
 	float a = material.customDataA;
 	float a2 = a * a;
 	float d = (vl * a2 - vl) * vl + 1;
-	float GGX = (a2 / PI) / (d * d);
+	float GGX = a2 / (d * d);
 	return float4(material.customDataB * nl * GGX, 0);
 }
 
