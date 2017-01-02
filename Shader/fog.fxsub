@@ -18,6 +18,17 @@ float ComputeScatteringExtinction(float depth)
 	return (1 - exp(-depth * 0.025));
 }
 
+float ComputePhaseFunctions(float theta, float g)
+{
+	float gg = g * g;
+	float g2 = 2 * g;
+	
+	float theta2 = theta * theta;
+	float phase = ((1 - gg) /  pow(abs(1.0 + gg - g2 * theta2), 1.5));
+	
+	return phase;
+}
+
 float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 viewPosition)
 {
 	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);

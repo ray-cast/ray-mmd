@@ -189,6 +189,39 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	specular *= step(0, sum(material.specular) - 1e-5);
 }
 
+#if AA_GBUFFER_FILTER_QUALITY
+float3 ComputeAvgNormal(sampler NormalMap, float2 coord, float2 offset)
+{
+	float3 avgNormal = 0;
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1,  0) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1,  0) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 0,  1) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 0, -1) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1, -1) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1,  1) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1,  1) * offset, 0, 0)));
+	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1, -1) * offset, 0, 0)));
+	return avgNormal / 9;
+}
+
+float AdjustRoughness(float roughness, float3 normal)
+{
+	float len = length(normal);
+	if (len < 1.0)
+	{
+		float len2 = len * len;
+		float kappa = (3 * len - len * len2) / (1 - len2);
+		float variance = 1.0 / (2.0 * kappa);
+		return sqrt(roughness * roughness + variance);
+	}
+	else
+	{
+		return roughness;
+	}
+}
+#endif
+
 void EnvLightingVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,

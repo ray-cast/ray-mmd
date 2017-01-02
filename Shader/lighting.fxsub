@@ -13,17 +13,6 @@ float3 ComputeSpecularMicroOcclusion(float3 f0)
 	return saturate(dot(f0, 0.33333h) * 50);
 }
 
-float ComputePhaseFunctions(float theta, float g)
-{
-	float gg = g * g;
-	float g2 = 2 * g;
-	
-	float theta2 = theta * theta;
-	float phase = ((1 - gg) /  pow(abs(1.0 + gg - g2 * theta2), 1.5));
-	
-	return phase;
-}
-
 float4 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, float3 L)
 {
 	float nl = saturate(dot(N, L) * 0.5 + 0.5);
