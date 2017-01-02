@@ -1,6 +1,6 @@
-#define SHADOW_BLUR_COUNT 4
+#define SHADOW_BLUR_COUNT 6
 
-static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, LightZMax);
+static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, LightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
@@ -10,7 +10,7 @@ static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraVie
 float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
 	float shadow = 0.0;
-	float s = 1.25 / SHADOW_MAP_SIZE;
+	float s = 1.5 / SHADOW_MAP_SIZE;
 
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
