@@ -10,7 +10,7 @@ static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraVie
 float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples) 
 {
 	float shadow = 0.0;
-	float s = 1.5 / SHADOW_MAP_SIZE;
+	float s = 1.0 / SHADOW_MAP_SIZE;
 
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
@@ -19,7 +19,7 @@ float ShadowPCF(float2 coord, float receiverDepth, float sdrate, int samples)
 		for (int y = -samples; y <= samples; y++)
 		{
 			float2 pos = coord + float2(x, y) * s;
-			shadow += CalcLight(tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x, receiverDepth, sdrate);
+			shadow += tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x < receiverDepth ? 0 : 1;
 		}
 	}
 	
@@ -77,13 +77,13 @@ float4 ShadowMapGenPS(
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	
 	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.005;
+	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.007;
 
-	float sdrate = 30000.0 / 4.0 - 0.05;
+	float sdrate = 30000.0 / 4.0 - 0.05;	
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, sdrate, 3);
 	float shadow2 = min(shadow, saturate(dot(material.normal, -mul(LightDirection, (float3x3)matView))));
 	
-	return float4(shadow2, shadow, 0, 0);
+	return float4(shadow, shadow2, 0, 0);
 }
 
 float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
