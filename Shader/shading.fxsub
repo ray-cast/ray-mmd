@@ -188,9 +188,18 @@ float4 ShadingTransparentPS(
 	lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
 #endif
 
-	float ior = saturate(1 - material.specular.x / 0.04) * (1 - material.alpha) * material.alpha * 0.04325;
-	float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0)).rgb;
-	lighting = lerp(prefilteredRefract, lighting, material.alpha);
+	if (material.lightModel == SHADINGMODELID_GLASS)
+	{
+		float2 ior = mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04325;
+		float3 fresnel = EnvironmentSpecularUnreal4(N, V, material.smoothness, material.specular);
+		float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord + ior, 0, 0)).rgb;
+		lighting = lerp(prefilteredRefract * material.customDataB, lighting, fresnel * material.alpha);
+	}
+	else
+	{
+		float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0)).rgb;
+		lighting = lerp(prefilteredRefract, lighting, material.alpha);
+	}
 
 #if FOG_ENABLE
 	float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));

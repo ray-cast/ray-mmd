@@ -111,7 +111,7 @@ const float parallaxMapLoopNum = 1.0;
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
-// 4 : Reserved
+// 4 : Glass              // customA = Fake Ior    customB = Refract Color
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;

@@ -38,7 +38,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define SHADINGMODELID_SKIN         1
 #define SHADINGMODELID_EMISSIVE     2
 #define SHADINGMODELID_HAIR         3
-#define SHADINGMODELID_EYE          4
+#define SHADINGMODELID_GLASS        4
 #define SHADINGMODELID_CLOTH        5
 #define SHADINGMODELID_CLEAR_COAT   6
 #define SHADINGMODELID_SUBSURFACE   7
@@ -436,6 +436,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
+		material.lightModel == SHADINGMODELID_GLASS ||
 		material.lightModel == SHADINGMODELID_CLOTH)
 	{
 		material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));

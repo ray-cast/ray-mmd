@@ -50,6 +50,7 @@ static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mT
 #include "shader/lighting.fxsub"
 #include "shader/ACES.fxsub"
 #include "shader/fimic.fxsub"
+#include "shader/ibl.fxsub"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
 #   include "shader/shadowcommon.fxsub"
@@ -65,7 +66,6 @@ static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mT
 #endif
 
 #if SSR_QUALITY > 0
-#   include "shader/ibl.fxsub"
 #   include "shader/ssr.fxsub"
 #endif
 
