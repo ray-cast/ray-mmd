@@ -355,10 +355,10 @@ float4 StarStreakPS(
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-	float4 bloom1 = BloomFactor(mBloomFactors[0]) * tex2Dlod(BloomSamp1st, float4(coord, 0, 0));
-	float4 bloom2 = BloomFactor(mBloomFactors[1]) * tex2Dlod(BloomSamp2nd, float4(coord, 0, 0));
-	float4 bloom3 = BloomFactor(mBloomFactors[2]) * tex2Dlod(BloomSamp3rd, float4(coord, 0, 0));
-	float4 bloom4 = BloomFactor(mBloomFactors[3]) * tex2Dlod(BloomSamp4th, float4(coord, 0, 0));
+	float4 bloom1 = tex2Dlod(BloomSamp1st, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[0]);
+	float4 bloom2 = tex2Dlod(BloomSamp2nd, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[1]);
+	float4 bloom3 = tex2Dlod(BloomSamp3rd, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[2]);
+	float4 bloom4 = tex2Dlod(BloomSamp4th, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[3]);
 	
 	float4 bloom = 0.0f;
 	bloom += bloom1;

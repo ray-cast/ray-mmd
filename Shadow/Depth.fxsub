@@ -1,5 +1,4 @@
 #include "../ray.conf"
-#include "../shader/math.fxsub"
 #include "../shader/common.fxsub"
 
 #if RECIEVER_ALPHA_MAP_ENABLE
@@ -11,7 +10,7 @@ sampler DiffuseMapSamp = sampler_state {
 };
 #endif
 
-void ShadowlessObjectVS(
+void DepthObjectVS(
 	in float4 Position : POSITION, 
 	in float2 Texcoord : TEXCOORD0,
 	out float3 oTexcoord : TEXCOORD0,
@@ -21,7 +20,7 @@ void ShadowlessObjectVS(
 	oTexcoord = float3(Texcoord.xy, oPosition.w);
 }
 
-float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
+float4 DepthObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 {
 #if RECIEVER_ALPHA_ENABLE
 	clip(!opadd - 0.001f);
@@ -39,20 +38,20 @@ float4 ShadowlessObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : C
 	return float4(1, coord.z, 0, 1);
 }
 
-#define OBJECT_SHADOWLESS_TEC(name, mmdpass, tex) \
+#define OBJECT_TEC(name, mmdpass, tex) \
 	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
 	>{ \
 		pass DrawObject { \
 			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 ShadowlessObjectVS(); \
-			PixelShader  = compile ps_3_0 ShadowlessObjectPS(tex); \
+			VertexShader = compile vs_3_0 DepthObjectVS(); \
+			PixelShader  = compile ps_3_0 DepthObjectPS(tex); \
 		} \
 	}
 
-OBJECT_SHADOWLESS_TEC(DepthTec2, "object", false)
-OBJECT_SHADOWLESS_TEC(DepthTec3, "object", true)
-OBJECT_SHADOWLESS_TEC(DepthTecBS2, "object_ss", false)
-OBJECT_SHADOWLESS_TEC(DepthTecBS3, "object_ss", true)
+OBJECT_TEC(DepthTec2, "object", false)
+OBJECT_TEC(DepthTec3, "object", true)
+OBJECT_TEC(DepthTecBS2, "object_ss", false)
+OBJECT_TEC(DepthTecBS3, "object_ss", true)
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
