@@ -43,21 +43,21 @@ float3 FilmicTonemap(float3 x)
 
 float3 ACESToneMapping(float3 color)
 {
-#if HDR_TONEMAP_OPERATOR == 1
+#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
 	float3 curr = ACESFilmRec709(color);
 	return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 2
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
 	float3 curr = ACESFilmRec709(color);
 	return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 3
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
 	float3 curr = ACESFilmRec2020(color);
 	return lerp(curr, color, mTonemapping);
-#elif HDR_TONEMAP_OPERATOR == 4
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
 	float3 curr = FilmicTonemap(color * 2);
 	float3 whiteScale = 1.0f / FilmicTonemap(11.2);
 	curr = curr * whiteScale;
 	return saturate(lerp(curr, color, mTonemapping));
-#elif HDR_TONEMAP_OPERATOR == 5
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
 	float3 curr = 2 * FilmicTonemap(color);
 	float3 whiteScale = 1.0f / FilmicTonemap(11.2);
 	curr = curr * whiteScale;
@@ -69,16 +69,12 @@ float3 ACESToneMapping(float3 color)
 
 float3 ACESOutputDevice(float3 color)
 {
-#if HDR_TONEMAP_OPERATOR == 1
+#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
 	return linear2srgb(color);
-#elif HDR_TONEMAP_OPERATOR == 2
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
 	return linear2rec709(color);
-#elif HDR_TONEMAP_OPERATOR == 3
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
 	return color;
-#elif HDR_TONEMAP_OPERATOR == 4
-	return linear2srgb(color);
-#elif HDR_TONEMAP_OPERATOR == 5
-	return linear2srgb(color);
 #else
 	return linear2srgb(color);
 #endif
