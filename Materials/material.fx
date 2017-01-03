@@ -1,19 +1,19 @@
-#define USE_CUSTOM_MATERIAL 0
+#define USE_CUSTOM_MATERIAL 0         // When set to 1, u can create a custom material.
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 1
-#define ALBEDO_MAP_IN_TEXTURE 1
-#define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
-#define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
-#define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
-#define ALBEDO_MAP_UV_FLIP 0
-#define ALBEDO_MAP_APPLY_COLOR 0
-#define ALBEDO_MAP_APPLY_DIFFUSE 1
-#define ALBEDO_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "albedo.png"
+#define ALBEDO_MAP_ENABLE 1           // When set to 1, this allows u to use texture.
+#define ALBEDO_MAP_IN_TEXTURE 1       // Texture can be create from a pmx.
+#define ALBEDO_MAP_IN_SCREEN_MAP 0    // Texture can be create from a screen map or AVI map, see "Tutorial\04-LED".
+#define ALBEDO_MAP_ANIMATION_ENABLE 0 // Texture can be create from a GIF/APNG anim, see "Tutorial\01-GIF Animation".
+#define ALBEDO_MAP_ANIMATION_SPEED 1  // The minimum speed is 1x.
+#define ALBEDO_MAP_UV_FLIP 0          // Flip texture horizontal, X axis.
+#define ALBEDO_MAP_APPLY_COLOR 0      // Texture colors to multiply with the albedo color.
+#define ALBEDO_MAP_APPLY_DIFFUSE 1    // Texture colors to multiply with the PMX.
+#define ALBEDO_APPLY_MORPH_COLOR 0    // Texture colors to multiply with the "morph controller".
+#define ALBEDO_MAP_FILE "albedo.png"  // Enter the path to the texture resource.
 
-const float3 albedo = 1.0;
-const float albedoMapLoopNum = 1.0;
+const float3 albedo = 1.0;            // albedo = float3(r, g, b) or albedo = float3(125,125,125) / 255;
+const float albedoMapLoopNum = 1.0;   // Number of iterations.
 
 // 透明通道
 #define ALPHA_MAP_ENABLE 1
@@ -21,7 +21,7 @@ const float albedoMapLoopNum = 1.0;
 #define ALPHA_MAP_ANIMATION_ENABLE 0
 #define ALPHA_MAP_ANIMATION_SPEED 0
 #define ALPHA_MAP_UV_FLIP 0
-#define ALPHA_MAP_SWIZZLE 3 // (R = 0, G = 1, B = 2, A = 3)
+#define ALPHA_MAP_SWIZZLE 3           // The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
 
 const float alpha = 1.0;
@@ -30,7 +30,7 @@ const float alphaMapLoopNum = 1.0;
 // 法线贴图
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0
-#define NORMAL_MAP_IS_COMPRESSED 0 // RG normal map to RGB normal.
+#define NORMAL_MAP_IS_COMPRESSED 0     // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
@@ -50,9 +50,9 @@ const float normalMapSubLoopNum = 1.0;
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
-#define SMOOTHNESS_MAP_IS_ROUGHNESS 0 // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
+#define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
-#define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
@@ -62,18 +62,18 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_ENABLE 0
 #define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
-#define METALNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define METALNESS_MAP_SWIZZLE 0
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
+const float metalnessBaseSpecular = 0.04; // not calculate IBLspec when set to zero.
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
 #define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define MELANIN_MAP_SWIZZLE 0
 #define MELANIN_MAP_FILE "melanin.png"
 
 const float melanin = 0.0;
@@ -81,12 +81,12 @@ const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0
-#define EMISSIVE_USE_ALBEDO 0 //参数来至albedo,但可以使用EMISSIVE_APPLY_COLOR 和 EMISSIVE_APPLY_MORPH_COLOR
+#define EMISSIVE_USE_ALBEDO 0 // It can be used from albedo params, but u can still use the EMISSIVE_APPLY_COLOR or EMISSIVE_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
-#define EMISSIVE_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
-#define EMISSIVE_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
-#define EMISSIVE_MAP_ANIMATION_SPEED 1  // 最小为1倍速
+#define EMISSIVE_MAP_IN_SCREEN_MAP 0
+#define EMISSIVE_MAP_ANIMATION_ENABLE 0
+#define EMISSIVE_MAP_ANIMATION_SPEED 1
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
 #define EMISSIVE_APPLY_MORPH_COLOR 0 // Light color for multi-light-source
@@ -121,7 +121,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_IN_TOONMAP 0
 #define CUSTOM_A_MAP_UV_FLIP 0
 #define CUSTOM_A_MAP_COLOR_FLIP 0
-#define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define CUSTOM_A_MAP_SWIZZLE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
 const float customA = 0.0;
