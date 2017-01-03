@@ -121,12 +121,8 @@ float4 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
 {
 	float3 prefilteredTransmittance = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
-	
-	if (material.lightModel == SHADINGMODELID_SKIN)
-	{
-		prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceSkin);        
-		prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mBalanceSkin);
-	}
+	prefilteredTransmittance = ColorBalance(prefilteredTransmittance, mBalanceSkin);
+	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceSkin);
 	
 	float3 dependentSplit = 0.5;
 	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
@@ -161,8 +157,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel;
 	
-#if LIGHTMODEL_BRDF >= 1
-	[branch]
+#if LIGHTMODEL_BRDF
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
 		float4 specular2 = ImageBasedLightClearCost(material, mul(FlatNormal, (float3x3)matViewInverse), worldView);
@@ -250,7 +245,7 @@ void EnvLightingPS(
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
 	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
-	MaterialParam material;    
+	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
@@ -258,7 +253,7 @@ void EnvLightingPS(
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
 	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-	MaterialParam materialAlpha;    
+	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
 	float3 sum1 = material.albedo + material.specular;
@@ -268,9 +263,9 @@ void EnvLightingPS(
 	float finalSmoothness = material.smoothness;
 	
 #if AA_GBUFFER_FILTER_QUALITY > 0
-    float roughness = SmoothnessToRoughness(material.smoothness);
-    float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2); 
-    finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));    
+	float roughness = SmoothnessToRoughness(material.smoothness);
+	float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2); 
+	finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));    
 #endif
 
 	float3 V = normalize(viewdir);
