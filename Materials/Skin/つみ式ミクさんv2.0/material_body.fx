@@ -75,7 +75,7 @@ const float metalnessBaseSpecular = 0.04;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 0.4;
+const float melanin = 0.0;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
