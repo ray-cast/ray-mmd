@@ -28,6 +28,9 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
+##### 2017-1-4 ver 1.2.0 (8:51 GMT+8)
+* 修复Issue #16
+
 ##### 2017-1-1 ver 1.2.0 (22:13 GMT+8)
 * 修复了ShadingMaterialID中Subsurface的bug
 
