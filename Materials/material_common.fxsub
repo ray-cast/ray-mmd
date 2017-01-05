@@ -712,7 +712,7 @@ float GetSmoothness(float2 coord)
 		#endif
 		
 		#if SMOOTHNESS_MAP_APPLY_SCALE
-			smoothnessValue *= smoothness;
+			smoothnessValue = saturate(smoothnessValue * smoothness);
 		#endif
 		
 		return smoothnessValue;
@@ -755,7 +755,7 @@ float GetMetalness(float2 coord)
 		#endif
 		
 		#if METALNESS_MAP_APPLY_SCALE
-			metalnessValue *= metalness;
+			metalnessValue = saturate(metalnessValue * metalness);
 		#endif
 		
 		return metalnessValue;
