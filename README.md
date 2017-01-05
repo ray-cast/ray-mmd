@@ -364,6 +364,7 @@ Ray-MMD
 ##### Digging Deeper
 * [Moving to the Next Generation - The Rendering Technology of Ryse](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)
 * [ACES Filmic Tone Mapping Curve](https://knarkowicz.wordpress.com/2016/08/31/hdr-display-first-steps/)
+* [HDR Display Support in Infamous Second Son and Infamous First Light ](http://www.glowybits.com/blog/2016/12/21/ifl_iss_hdr_1/)
 * [Compact Normal Storage for small G-Buffers](http://aras-p.info/texts/CompactNormalStorage.html)
 * [Convert Blinn-Phong to Beckmann distribution](http://simonstechblog.blogspot.de/2011/12/microfacet-brdf.html)
 * [Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel](https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/)
