@@ -9,7 +9,7 @@ float4 linear2rec709(float4 c)
 	return float4(linear2rec709(c.rgb), c.a);
 }
 
-float3 ACESFilmRec709(float3 x)
+float3 ACESFilmLinear(float3 x)
 {
 	const float A = 2.51f;
 	const float B = 0.03f;
@@ -21,12 +21,19 @@ float3 ACESFilmRec709(float3 x)
 
 float3 ACESFilmRec2020(float3 x)
 {
-	float a = 15.8f;
-	float b = 2.12f;
-	float c = 1.2f;
-	float d = 5.92f;
-	float e = 1.9f;
+	const float a = 15.8f;
+	const float b = 2.12f;
+	const float c = 1.2f;
+	const float d = 5.92f;
+	const float e = 1.9f;
 	return (x * (a * x + b)) / (x * (c * x + d) + e);
+}
+
+float3 ACESFilmSRGB(float3 x)
+{
+    return saturate(
+            (x * (x * (x * (x * 8.4680 + 1.0) - 0.002957) + 0.0001004) - 0.0000001274) /
+            (x * (x * (x * (x * 8.3604 + 1.8227) + 0.2189) - 0.002117) + 0.00003673));
 }
 
 float3 FilmicTonemap(float3 x) 
@@ -44,10 +51,10 @@ float3 FilmicTonemap(float3 x)
 float3 ACESToneMapping(float3 color)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
-	float3 curr = ACESFilmRec709(color);
+	float3 curr = ACESFilmLinear(color);
 	return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	float3 curr = ACESFilmRec709(color);
+	float3 curr = ACESFilmLinear(color);
 	return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
 	float3 curr = ACESFilmRec2020(color);

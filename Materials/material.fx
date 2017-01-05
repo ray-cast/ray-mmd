@@ -53,7 +53,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
-#define SMOOTHNESS_MAP_APPLY_SCALE 0   // smoothness map to multiply with the smoothness.
+#define SMOOTHNESS_MAP_APPLY_SCALE 0   // smoothness values to multiply with the smoothness.
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
@@ -64,7 +64,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE 0
-#define METALNESS_MAP_APPLY_SCALE 0      // metalness map to multiply with the metalness.
+#define METALNESS_MAP_APPLY_SCALE 0      // metalness values to multiply with the metalness.
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;
