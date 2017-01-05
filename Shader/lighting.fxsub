@@ -269,7 +269,7 @@ float4 MainSurfaceShading(MaterialParam material, float3 diffuse, float3 specula
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_SKIN)
 	{
-		return diffuse;
+		return float4(diffuse, 0);
 	}
 	else
 	{
