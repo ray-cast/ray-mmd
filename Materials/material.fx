@@ -1,7 +1,7 @@
 #define USE_CUSTOM_MATERIAL 0         // When set to 1, u can create a custom material.
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 1           // When set to 1, this allows u to use texture.
+#define ALBEDO_MAP_ENABLE 1           // When set to 1, this allows u to use texture. set to 0, this allows u to use albedo color.
 #define ALBEDO_MAP_IN_TEXTURE 1       // Texture can be create from a pmx.
 #define ALBEDO_MAP_IN_SCREEN_MAP 0    // Texture can be create from a screen map or AVI map, see "Tutorial\04-LED".
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // Texture can be create from a GIF/APNG anim, see "Tutorial\01-GIF Animation".
@@ -53,6 +53,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
+#define SMOOTHNESS_MAP_APPLY_SCALE 0   // smoothness map to multiply with the smoothness.
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
@@ -63,6 +64,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE 0
+#define METALNESS_MAP_APPLY_SCALE 0      // metalness map to multiply with the metalness.
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;

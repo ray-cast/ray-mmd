@@ -686,31 +686,35 @@ float GetSmoothness(float2 coord)
 	
 		#if SMOOTHNESS_MAP_IN_TOONMAP
 			#if SMOOTHNESS_MAP_SWIZZLE == 1
-				float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).g;
+				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).g;
 			#elif SMOOTHNESS_MAP_SWIZZLE == 2
-				float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).b;
+				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).b;
 			#elif SMOOTHNESS_MAP_SWIZZLE == 3
-				float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).a;
+				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).a;
 			#else
-				float smoothness = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
+				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
 			#endif
 		#else
 			#if SMOOTHNESS_MAP_SWIZZLE == 1
-				float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).g;
+				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).g;
 			#elif SMOOTHNESS_MAP_SWIZZLE == 2
-				float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).b;
+				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).b;
 			#elif SMOOTHNESS_MAP_SWIZZLE == 3
-				float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).a;
+				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).a;
 			#else
-				float smoothness = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).r;
+				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).r;
 			#endif
 		#endif
-		
+			
 		#if SMOOTHNESS_MAP_IS_ROUGHNESS
-			smoothness = RoughnessToSmoothness(smoothness);
+			smoothnessValue = RoughnessToSmoothness(smoothnessValue);
 		#endif
 		
-		return smoothness;
+		#if SMOOTHNESS_MAP_APPLY_SCALE
+			smoothnessValue *= smoothness;
+		#endif
+		
+		return smoothnessValue;
 	#else       
 		return smoothness;
 	#endif
@@ -729,25 +733,31 @@ float GetMetalness(float2 coord)
 		
 		#if METALNESS_MAP_IN_TOONMAP
 			#if METALNESS_MAP_SWIZZLE == 1
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
+				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
 			#elif METALNESS_MAP_SWIZZLE == 2
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
+				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
 			#elif METALNESS_MAP_SWIZZLE == 3
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
+				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
 			#else
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
+				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
 			#endif
 		#else
 			#if METALNESS_MAP_SWIZZLE == 1
-				return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).g;
+				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).g;
 			#elif METALNESS_MAP_SWIZZLE == 2
-				return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).b;
+				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).b;
 			#elif METALNESS_MAP_SWIZZLE == 3
-				return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).a;
+				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).a;
 			#else
-				return tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).r;
+				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).r;
 			#endif
 		#endif
+		
+		#if METALNESS_MAP_APPLY_SCALE
+			metalnessValue *= metalness;
+		#endif
+		
+		return metalnessValue;
 	#else
 		return metalness;
 	#endif
