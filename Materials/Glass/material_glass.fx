@@ -1,22 +1,22 @@
 #define USE_CUSTOM_MATERIAL 1
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 1
-#define ALBEDO_MAP_IN_TEXTURE 1
+#define ALBEDO_MAP_ENABLE 0
+#define ALBEDO_MAP_IN_TEXTURE 0
 #define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
 #define ALBEDO_MAP_UV_FLIP 0
 #define ALBEDO_MAP_APPLY_COLOR 0
-#define ALBEDO_MAP_APPLY_DIFFUSE 1
+#define ALBEDO_MAP_APPLY_DIFFUSE 0
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = 0.45;
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
-#define ALPHA_MAP_ENABLE 1
+#define ALPHA_MAP_ENABLE 0
 #define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
 #define ALPHA_MAP_ANIMATION_SPEED 0
@@ -24,7 +24,7 @@ const float albedoMapLoopNum = 1.0;
 #define ALPHA_MAP_SWIZZLE 3 // (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
 
-const float alpha = 1.0;
+const float alpha = 0.99;
 const float alphaMapLoopNum = 1.0;
 
 // 法线贴图
@@ -34,8 +34,8 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
+const float normalMapLoopNum = 1.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.3;
+const float smoothness = 1.0;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -114,7 +114,7 @@ const float parallaxMapLoopNum = 1.0;
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
-#define CUSTOM_ENABLE 6  // ID
+#define CUSTOM_ENABLE 4 // ID
 
 #define CUSTOM_A_MAP_ENABLE 0
 #define CUSTOM_A_MAP_IN_TOONMAP 0
@@ -123,7 +123,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.95;
+const float customA = 0.0;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0
@@ -131,6 +131,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 0.0;
+const float3 customB = 1.0;
+const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

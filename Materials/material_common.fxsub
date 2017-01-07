@@ -49,7 +49,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define TWO_BITS_EXTRACTION_FACTOR (3.0f + MAX_FRACTIONAL_8_BIT)
 #define EMISSIVE_EPSILON (2.0f / 255.0f)
 
-#define ALPHA_THRESHOLD 0.98
+#define ALPHA_THRESHOLD 0.999
 
 shared texture Gbuffer2RT: RENDERCOLORTARGET;
 shared texture Gbuffer3RT: RENDERCOLORTARGET;
