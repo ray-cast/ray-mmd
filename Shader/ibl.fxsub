@@ -40,7 +40,6 @@ float3 ComputeSpecularDominantDir(float3 N, float3 R, float roughness)
     return normalize(lerp(N, R, lerpFactor));
 }
 
-
 float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
 {
     bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));

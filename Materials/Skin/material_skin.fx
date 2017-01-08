@@ -34,8 +34,8 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
+const float normalMapLoopNum = 1.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 1
@@ -66,7 +66,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.0;
+const float metalnessBaseSpecular = 0.04;
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
