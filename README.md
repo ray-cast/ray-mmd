@@ -376,3 +376,4 @@ Ray-MMD
 * [Screen space glossy reflections](http://roar11.com/2015/07/screen-space-glossy-reflections/)
 * [Parallax Occlusion Map](http://sunandblackcat.com/tipFullView.php?topicid=28)
 * [Convert Temperature to RGB](https://github.com/davidf2281/ColorTempToRGB)
+* [Texture repetition](http://www.iquilezles.org/www/articles/texturerepetition/texturerepetition.htm)

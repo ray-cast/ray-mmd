@@ -461,6 +461,70 @@ float3 ColorSynthesis(float3 diffuse, float m)
 	return diffuse * lerp(1.0, melanin, m);
 }
 
+#if ALBEDO_MAP_UV_REPETITION || NORMAL_MAP_UV_REPETITION || NORMAL_MAP_SUB_UV_REPETITION
+float4 hash4( float2 p ) { return frac(sin(float4( 1.0+dot(p,float2(37.0,17.0)), 
+											  2.0+dot(p,float2(11.0,47.0)),
+											  3.0+dot(p,float2(41.0,29.0)),
+											  4.0+dot(p,float2(23.0,31.0))))*103.0); }
+
+float4 textureNoTile1(sampler samp, in float2 uv )
+{
+	int2 iuv = int2( floor( uv ) );
+	float2 fuv = frac( uv );
+
+	float4 ofa = hash4( iuv + int2(0,0) );
+	float4 ofb = hash4( iuv + int2(1,0) );
+	float4 ofc = hash4( iuv + int2(0,1) );
+	float4 ofd = hash4( iuv + int2(1,1) );
+	
+	float2 duvx = ddx( uv );
+	float2 duvy = ddy( uv );
+
+	ofa.zw = sign( ofa.zw-0.5 );
+	ofb.zw = sign( ofb.zw-0.5 );
+	ofc.zw = sign( ofc.zw-0.5 );
+	ofd.zw = sign( ofd.zw-0.5 );
+	
+	float2 uva = uv*ofa.zw + ofa.xy, ddxa = duvx*ofa.zw, ddya = duvy*ofa.zw;
+	float2 uvb = uv*ofb.zw + ofb.xy, ddxb = duvx*ofb.zw, ddyb = duvy*ofb.zw;
+	float2 uvc = uv*ofc.zw + ofc.xy, ddxc = duvx*ofc.zw, ddyc = duvy*ofc.zw;
+	float2 uvd = uv*ofd.zw + ofd.xy, ddxd = duvx*ofd.zw, ddyd = duvy*ofd.zw;
+		
+	float2 b = smoothstep( 0.25,0.75, fuv );
+	
+	return lerp( lerp( tex2Dgrad( samp, uva, ddxa, ddya ), 
+					   tex2Dgrad( samp, uvb, ddxb, ddyb ), b.x ), 
+				lerp(  tex2Dgrad( samp, uvc, ddxc, ddyc ),
+					   tex2Dgrad( samp, uvd, ddxd, ddyd ), b.x), b.y );
+}
+
+float4 textureNoTile2( sampler samp, in float2 uv )
+{
+	float2 p = floor( uv );
+	float2 f = frac( uv );
+	
+	float2 duvx = ddx( uv );
+	float2 duvy = ddy( uv );
+	
+	float4 va = 0.0;
+	float wt = 0.0;
+	for( int j=-1; j<=1; j++ )
+	for( int i=-1; i<=1; i++ )
+	{
+		float2 g = float2( float(i), float(j) );
+		float4 o = hash4( p + g );
+		float2 r = g - f + o.xy;
+		float d = dot(r,r);
+		float w = exp(-5.0*d );
+		float4 c = tex2Dgrad(samp, uv + o.zw, duvx, duvy );
+		va += w*c;
+		wt += w;
+	}
+	
+	return va/wt;
+}
+#endif
+
 float GetAlpha(float2 coord, bool useTexture)
 {
 #if USE_CUSTOM_MATERIAL
@@ -509,14 +573,26 @@ float3 GetAlbedo(float2 uv, bool useTexture)
 			float3 albedoColor = MaterialDiffuse.rgb;
 			if (useTexture)
 			{
+			#if ALBEDO_MAP_UV_REPETITION == 1
+				float3 albedoColor = textureNoTile1(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
+			#elif ALBEDO_MAP_UV_REPETITION == 2
+				float3 albedoColor = textureNoTile2(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
+			#else
 				albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
+			#endif
 				albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
 			#if ALBEDO_MAP_APPLY_DIFFUSE
 				albedoColor *= MaterialDiffuse.rgb;
 			#endif
 			}
 		#else
+		#if ALBEDO_MAP_UV_REPETITION == 1
+			float3 albedoColor = textureNoTile1(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
+		#elif ALBEDO_MAP_UV_REPETITION == 2
+			float3 albedoColor = textureNoTile2(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
+		#else
 			float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
+		#endif
 			albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
 			#if ALBEDO_MAP_APPLY_DIFFUSE
 				albedoColor *= MaterialDiffuse.rgb;
@@ -612,9 +688,21 @@ float3 GetMainNormal(float2 coord)
 	#endif
 
 	#if NORMAL_MAP_IN_SPHEREMAP
-		float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-	#else    
-		float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
+		#if NORMAL_MAP_UV_REPETITION == 1
+			float3 tangentNormal = use_spheremap ? textureNoTile1(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#elif NORMAL_MAP_UV_REPETITION == 2
+			float3 tangentNormal = use_spheremap ? textureNoTile2(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#else
+			float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#endif
+	#else
+		#if NORMAL_MAP_UV_REPETITION == 1
+			float3 tangentNormal = textureNoTile1(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
+		#elif NORMAL_MAP_UV_REPETITION == 2
+			float3 tangentNormal = textureNoTile2(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
+		#else
+			float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
+		#endif
 	#endif
 	
 	#if NORMAL_MAP_IS_COMPRESSED
@@ -638,9 +726,21 @@ float3 GetSubNormal(float2 coord)
 	#endif
 
 	#if NORMAL_MAP_IN_SPHEREMAP
-		float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-	#else    
-		float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+		#if NORMAL_MAP_UV_REPETITION == 1
+			float3 tangentNormal = use_spheremap ? textureNoTile1(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#elif NORMAL_MAP_UV_REPETITION == 2
+			float3 tangentNormal = use_spheremap ? textureNoTile2(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#else
+			float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+		#endif
+	#else
+		#if NORMAL_MAP_UV_REPETITION == 1
+			float3 tangentNormal = textureNoTile1(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+		#elif NORMAL_MAP_UV_REPETITION == 2
+			float3 tangentNormal = textureNoTile2(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+		#else
+			float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
+		#endif
 	#endif
 	
 	#if NORMAL_MAP_IS_COMPRESSED

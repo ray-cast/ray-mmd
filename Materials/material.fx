@@ -7,6 +7,7 @@
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // Texture can be create from a GIF/APNG anim, see "Tutorial\01-GIF Animation".
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // The minimum speed is 1x.
 #define ALBEDO_MAP_UV_FLIP 0          // Flip texture horizontal, X axis.
+#define ALBEDO_MAP_UV_REPETITION 0    // Texture repetition/loop mode, 0 = Default Tile, 1 = Texture No Tile 1, 2 = Texture No Tile 2
 #define ALBEDO_MAP_APPLY_COLOR 0      // Texture colors to multiply with the albedo color.
 #define ALBEDO_MAP_APPLY_DIFFUSE 1    // Texture colors to multiply with the PMX.
 #define ALBEDO_APPLY_MORPH_COLOR 0    // Texture colors to multiply with the "morph controller".
@@ -32,6 +33,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_IN_SPHEREMAP 0      // Texture can be create from a sph map.
 #define NORMAL_MAP_IS_COMPRESSED 0     // RG normal map to RGB normal.
 #define NORMAL_MAP_UV_FLIP 0
+#define NORMAL_MAP_UV_REPETITION 0
 #define NORMAL_MAP_FILE "normal.png"
 
 const float normalMapScale = 1.0;      // Normal map strength;
@@ -42,6 +44,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_IN_SPHEREMAP 0
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0
 #define NORMAL_MAP_SUB_UV_FLIP 0
+#define NORMAL_MAP_SUB_UV_REPETITION 0
 #define NORMAL_MAP_SUB_FILE "normal.png"
 
 const float normalMapSubScale = 1;
