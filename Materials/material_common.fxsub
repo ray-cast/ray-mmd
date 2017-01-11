@@ -725,18 +725,18 @@ float3 GetSubNormal(float2 coord)
 		coord.y = 1 - coord.y;
 	#endif
 
-	#if NORMAL_MAP_IN_SPHEREMAP
-		#if NORMAL_MAP_UV_REPETITION == 1
+	#if NORMAL_MAP_SUB_IN_SPHEREMAP
+		#if NORMAL_MAP_SUB_UV_REPETITION == 1
 			float3 tangentNormal = use_spheremap ? textureNoTile1(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#elif NORMAL_MAP_UV_REPETITION == 2
+		#elif NORMAL_MAP_SUB_UV_REPETITION == 2
 			float3 tangentNormal = use_spheremap ? textureNoTile2(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 		#else
 			float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 		#endif
 	#else
-		#if NORMAL_MAP_UV_REPETITION == 1
+		#if NORMAL_MAP_SUB_UV_REPETITION == 1
 			float3 tangentNormal = textureNoTile1(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-		#elif NORMAL_MAP_UV_REPETITION == 2
+		#elif NORMAL_MAP_SUB_UV_REPETITION == 2
 			float3 tangentNormal = textureNoTile2(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
 		#else
 			float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
