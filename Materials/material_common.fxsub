@@ -636,13 +636,13 @@ float3 GetSubNormal(float2 coord)
 		coord.y = 1 - coord.y;
 	#endif
 
-	#if NORMAL_MAP_IN_SPHEREMAP
+	#if NORMAL_MAP_SUB_IN_SPHEREMAP
 		float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 	#else    
 		float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
 	#endif
 	
-	#if NORMAL_MAP_IS_COMPRESSED
+	#if NORMAL_MAP_SUB_IS_COMPRESSED
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
 	#endif
 	
