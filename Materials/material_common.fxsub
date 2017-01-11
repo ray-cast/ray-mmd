@@ -743,7 +743,7 @@ float3 GetSubNormal(float2 coord)
 		#endif
 	#endif
 	
-	#if NORMAL_MAP_IS_COMPRESSED
+	#if NORMAL_MAP_SUB_IS_COMPRESSED
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
 	#endif
 	
