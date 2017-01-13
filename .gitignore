@@ -1,0 +1,22 @@
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+Skybox/StPeters
+Skybox/Grace
+Skybox/incskies_030
+Skybox/Charcoal
+Skybox/uffizi
+Skybox/Time of day
+Materials/Test
+Extension/AtmosphericScattering
+Extension/ColorGrading
+Extension/NoiseBlur
+Extension/PaniniProjection
+Extension/BokehBlur
