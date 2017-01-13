@@ -44,7 +44,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_FILE "../_MaterialMap/skin.png"
 
 const float normalMapSubScale = 1.0;
-const float normalMapSubLoopNum = 80.0;
+const float normalMapSubLoopNum = 100.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 80.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.2;
+const float smoothness = 0.55;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -75,7 +75,7 @@ const float metalnessBaseSpecular = 0.04;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 0.0;
+const float melanin = 0.2;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
