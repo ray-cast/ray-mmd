@@ -1,78 +1,49 @@
-bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
-bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
-
-float3 ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord)
+void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
-	float4 lighting = 0;
-
 #if MAIN_LIGHT_ENABLE
-
-#if SHADOW_QUALITY > 0
-	float2 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
+	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+	specular = energy.gba;
 	
-	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
-	float3 diffuse = energy.r * shadow.r + SubsurfaceShading(material, material.normal, L, V).rgb * shadow.g;
-	float3 specular = energy.gba * shadow.r;
-
-	lighting = MainSurfaceShading(material, diffuse, specular);
-#else
-	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
-	float3 specular = energy.gba;
-	lighting = MainSurfaceShading(material, diffuse, specular);
+#if SHADOW_QUALITY
+	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+	diffuse *= shadow;
+	specular *= shadow;
 #endif
-	lighting *= float4(LightSpecular, 1);
-	lighting *= mMainLightIntensity;
-	lighting *= step(0, sum(material.albedo + material.specular) - 1e-5);
+
+	float3 lightColor = LightSpecular * mMainLightIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
+	diffuse *= lightColor;
+	specular *= lightColor;
 	
 #if SSAO_QUALITY > 3
-	float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).yzw;
-	lighting *= pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
+	float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).gba;
+	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
+	diffuse *= ssdo;
+	specular *= ssdo;
 #endif
-
 #endif
-	
-	return lighting.rgb;
 }
 
-float3 ShadingImageBasedLighting(MaterialParam material, sampler source, float4 screenPosition, float2 coord, float3 N, float3 V, bool alpha)
+void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 screenPosition, float2 coord, float3 V, out float3 diffuse, out float3 specular)
 {
-	float3 lighting = 0;
-	
-#if IBL_QUALITY > 0   
-	float3 diffuse, specular;
+#if IBL_QUALITY
 	DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
-#if SSAO_QUALITY > 0
+#if SSAO_QUALITY
 	float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
 	diffuse *= ssao;
-	specular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
-#if SSSS_QUALITY > 1
-	diffuse *= (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE) ? 1 : material.albedo;
-#else
-	diffuse *= material.albedo;
-#endif
-
-	float shadow = 1;
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
+	float shadow = any(ExistSkybox + ExistSkyboxHDR);
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 	float2 shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-	shadow = lerp(1, shadowDepth.r, mEnvShadowP);
+	shadow = lerp(shadow, shadowDepth.r, mEnvShadowP);
 #endif
 
-	if (ExistSkybox || ExistSkyboxHDR)
-	{
-#if SSSS_QUALITY > 0
-	lighting += diffuse * shadow;
-	lighting += alpha ? specular * shadow : 0;
-#else
-	lighting += (diffuse + specular) * shadow;
+	diffuse *= shadow;
+	specular *= shadow;
 #endif
-	}
-#endif
-
-	return lighting;
 }
 
 float4 ShadingOpacityPS(
@@ -92,19 +63,51 @@ float4 ShadingOpacityPS(
 	float3 V = normalize(viewdir);
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
 	
-	float3 lighting = ShadingMaterial(material, N, V, L, coord);
+	float3 lighting = 0;
 	lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
-	lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
+	lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);;
+
+#if MAIN_LIGHT_ENABLE
+	float3 diffuse, specular;
+	ShadingMaterial(material, N, V, L, coord, diffuse, specular);
+#if SSSS_QUALITY
+	lighting += diffuse;
+#else
+	lighting += diffuse * material.albedo + specular;
+#endif
+#endif
+
 #if IBL_QUALITY
-	lighting += ShadingImageBasedLighting(material, EnvLightMapSamp, screenPosition, coord, N, V, false);
+	float3 iblDiffuse, iblSpecular;
+	ShadingImageBasedLighting(EnvLightMapSamp, material, screenPosition, coord, V, iblDiffuse, iblSpecular);
+#if SSSS_QUALITY
+	lighting += iblDiffuse;
+#else
+	lighting += iblDiffuse * material.albedo + iblSpecular;
+#endif
 #endif
 
 	return float4(lighting, material.linearDepth);
 }
 
+float4 ShadingOpacityAlbedoPS(in float2 coord: TEXCOORD0) : COLOR
+{
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	
+	clip(sum(material.albedo + material.specular) - 1e-5);
+	
+	return float4(material.albedo, 0);
+}
+
 float4 ShadingOpacitySpecularPS(
-	in float2 coord: TEXCOORD0, 
-	in float3 viewdir: TEXCOORD1, 
+	in float2 coord: TEXCOORD0,
+	in float3 viewdir: TEXCOORD1,
 	in float4 screenPosition : SV_Position) : COLOR
 {
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
@@ -119,48 +122,23 @@ float4 ShadingOpacitySpecularPS(
 	float3 V = normalize(viewdir);
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
 	
-	float3 specular = 0;
+	float3 lighting = 0;
 
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY > 0
-	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-#else
-	float shadow = 1;
-#endif
-	
 #if MAIN_LIGHT_ENABLE
-	if (material.lightModel == SHADINGMODELID_SKIN ||
-		material.lightModel == SHADINGMODELID_SUBSURFACE)
-	{
-		float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-		specular = SpecularBRDF_GGX(N, L, V, roughness, material.specular, 1.0);
-		specular *= LightSpecular * mMainLightIntensity;
-		specular *= shadow;
-	
-	#if SSAO_QUALITY > 3
-		float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).yzw;
-		specular *= pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
-	#endif
-	}
+	float3 diffuse, specular;
+	ShadingMaterial(material, N, V, L, coord, diffuse, specular);
+	lighting += specular;
 #endif
 
-#if IBL_QUALITY > 0
+#if IBL_QUALITY
 	float3 iblDiffuse, iblSpecular;
-	DecodeYcbcr(EnvLightMapSamp, coord, screenPosition, ViewportOffset2, iblDiffuse, iblSpecular);
-	
-#if SSAO_QUALITY > 0
-	float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
-	iblSpecular *= ComputeSpecularOcclusion(abs(dot(N, V)) + EPSILON, ssao, material.smoothness);
+	ShadingImageBasedLighting(EnvLightMapSamp, material, screenPosition, coord, V, iblDiffuse, iblSpecular);
+	lighting += iblSpecular;
 #endif
 
-	if (ExistSkybox || ExistSkyboxHDR)
-	{
-		specular += iblSpecular * lerp(1, shadow, mEnvShadowP);
-	}
-#endif
+	lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
 
-	specular += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
-
-	return float4(specular, 0);
+	return float4(lighting, 0);
 }
 
 float4 ShadingTransparentPS(
@@ -183,9 +161,17 @@ float4 ShadingTransparentPS(
 	float4 lightingAlpha = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0));
 
 	float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
-	lighting += ShadingMaterial(material, N, V, L, coord);
+	
+#if MAIN_LIGHT_ENABLE
+	float3 diffuse, specular;
+	ShadingMaterial(material, N, V, L, coord, diffuse, specular);
+	lighting += diffuse * material.albedo + specular;
+#endif
+
 #if IBL_QUALITY
-	lighting += ShadingImageBasedLighting(material, EnvLightAlphaMapSamp, screenPosition, coord, N, V, true);
+	float3 iblDiffuse, iblSpecular;
+	ShadingImageBasedLighting(EnvLightAlphaMapSamp, material, screenPosition, coord, V, iblDiffuse, iblSpecular);
+	lighting += iblDiffuse * material.albedo + iblSpecular;
 #endif
 
 	if (material.lightModel == SHADINGMODELID_GLASS)

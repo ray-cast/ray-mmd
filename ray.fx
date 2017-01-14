@@ -6,37 +6,40 @@ const float4 WhiteColor = 1.0;
 const float ClearDepth = 1.0;
 const int ClearStencil = 0;
 
-float mDirectionLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectionLight+"; >;
-float mDirectionLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DirectionLight-"; >;
-float mEnvShadowP  : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvShadow+"; >;
-float mSSAOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO+"; >;
-float mSSAOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSAO-"; >;
-float mSSDOP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSDO+"; >;
-float mSSDOM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "SSDO-"; >;
-float mExposure : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Exposure"; >;
-float mVignette : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Vignette"; >;
-float mDispersion : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Dispersion"; >;
-float mDispersionRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "DispersionRadius"; >;
-float mBloomThreshold : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomThreshold"; >;
-float mBloomRadius : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomRadius"; >;
-float mBloomIntensity : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomIntensity"; >;
-float mBloomStarFade : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomStarFade"; >;
-float mBloomTonemapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BloomTonemapping"; >;
-float mTonemapping : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Tonemapping"; >;
-float mContrastP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast+"; >;
-float mContrastM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Contrast-"; >;
-float mColBalanceRP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceR+"; >;
-float mColBalanceGP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG+"; >;
-float mColBalanceBP :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB+"; >;
-float mColBalanceRM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceR-"; >;
-float mColBalanceGM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceG-"; >;
-float mColBalanceBM :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceB-"; >;
-float mColBalance  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "BalanceGray+"; >;
-float mTemperatureP  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Temperature+"; >;
-float mTemperatureM  :  CONTROLOBJECT < string name="ray_controller.pmx"; string item = "Temperature-"; >;
+float mDirectionLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DirectionLight+";>;
+float mDirectionLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DirectionLight-";>;
+float mEnvShadowP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvShadow+";>;
+float mSSAOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO+";>;
+float mSSAOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO-";>;
+float mSSDOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO+";>;
+float mSSDOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO-";>;
+float mExposure : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure";>;
+float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
+float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
+float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
+float mBloomThreshold : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold";>;
+float mBloomRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius";>;
+float mBloomIntensity : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity";>;
+float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
+float mBloomTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomTonemapping";>;
+float mTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Tonemapping";>;
+float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast+";>;
+float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
+float mColBalanceRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR+";>;
+float mColBalanceGP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG+";>;
+float mColBalanceBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB+";>;
+float mColBalanceRM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR-";>;
+float mColBalanceGM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG-";>;
+float mColBalanceBM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB-";>;
+float mColBalance : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceGray+";>;
+float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature+";>;
+float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
 
-float3 LightSpecular  : SPECULAR  < string Object = "Light"; >;
-float3 LightDirection : DIRECTION < string Object = "Light"; >;
+float3 LightSpecular : SPECULAR< string Object = "Light";>;
+float3 LightDirection : DIRECTION< string Object = "Light";>;
+
+bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
+bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
 
 static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
@@ -149,6 +152,7 @@ technique DeferredLighting<
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap;     Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
+	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #endif
 
@@ -337,6 +341,13 @@ technique DeferredLighting<
 		StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 SSSGuassBlurPS(ShadingMapSamp, ShadingMapTempSamp,float2(0.0, 1.0));
+	}
+	pass ShadingOpacityAlbedo < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = DESTCOLOR; DestBlend = ZERO;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
 	}
 	pass ShadingOpacitySpecular < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = true; AlphaTestEnable = false;

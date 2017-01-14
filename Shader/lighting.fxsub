@@ -231,33 +231,6 @@ float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 #endif
 }
 
-float4 MainSurfaceShading(MaterialParam material, float3 diffuse, float3 specular)
-{
-#if SSSS_QUALITY >= 2
-	if (material.lightModel == SHADINGMODELID_SUBSURFACE ||
-		material.lightModel == SHADINGMODELID_SKIN)
-	{
-		return float4(diffuse, 0);
-	}
-	else
-	{
-		return float4(material.albedo * diffuse + specular, 0);
-	}
-#elif SSSS_QUALITY == 1
-	if (material.lightModel == SHADINGMODELID_SKIN ||
-		material.lightModel == SHADINGMODELID_SUBSURFACE)
-	{
-		return float4(material.albedo * diffuse, 0);
-	}
-	else
-	{
-		return float4(material.albedo * diffuse + specular, 0);
-	}
-#else
-	return float4(material.albedo * diffuse + specular, 0);
-#endif
-}
-
 float4 MultiSurfaceShading(MaterialParam material, float3 diffuse, float3 specular, float3 lightColor)
 {
 #if SSSS_QUALITY >= 2
