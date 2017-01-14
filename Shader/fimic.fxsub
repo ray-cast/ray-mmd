@@ -248,7 +248,7 @@ void GlareDetectionVS(
 {
 	float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
 	float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
-	
+
 	oPosition = Position;
 	oTexcoord1 = Texcoord + ViewportOffset;
 	oTexcoord2 = oTexcoord1 + offset0.xy;
@@ -264,15 +264,15 @@ float4 GlareDetectionPS(
 	in float2 coord4 : TEXCOORD3,
 	in float2 coord5 : TEXCOORD4,
 	uniform sampler source) : COLOR
-{   
+{
 	float4 color = tex2Dlod(source, float4(coord1, 0, 0));
 	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)));
 	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)));
 	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
 	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
-	
+
 	float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);
-	
+
 #if HDR_BLOOM_MODE == 1
 	float4 bloom = max(0, color - threshold);
 #elif HDR_BLOOM_MODE == 2
@@ -286,12 +286,12 @@ float4 GlareDetectionPS(
 	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
 	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
-	
+
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-	
-	bloom.rgb += lerp(emissive0, emissive1, MRT8.a);
-		
+
+	bloom.rgb += max(0.0, lerp(emissive0, emissive1, MRT8.a) - 1.0);
+
 	return bloom;
 }
 

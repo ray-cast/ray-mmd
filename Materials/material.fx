@@ -14,7 +14,7 @@
 #define ALBEDO_MAP_FILE "albedo.png"  // Enter the path to the texture resource.
 
 const float3 albedo = 1.0;            // albedo = float3(r, g, b) or albedo = float3(125,125,125) / 255;
-const float albedoMapLoopNum = 1.0;   // Number of iterations.
+const float albedoMapLoopNum = 1.0;   // Number of iterations // float2 albedoMapLoopNum = float2(x, y);
 
 // 透明通道
 #define ALPHA_MAP_ENABLE 1
