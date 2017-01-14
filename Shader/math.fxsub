@@ -241,32 +241,6 @@ float RoughnessToSmoothness(float roughness)
 	return 1.0f - sqrt(roughness);
 }
 
-float ShininessToSmoothness(float spec)
-{
-	return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
-}
-
-float RoughnessToShininess(float roughness)
-{
-	return 2.0f / (roughness * roughness + 0.0001) - 2.0f;
-}
-
-float SmoothnessToShininess(float smoothness)
-{
-	float roughness = SmoothnessToRoughness(smoothness);
-	return RoughnessToShininess(roughness);
-}
-
-float fresnelSchlick(float f0, float f9, float LdotH)
-{
-	return lerp(f0, f9, pow5(1 - LdotH));
-}
-
-float3 fresnelSchlick(float3 f0, float3 f9, float LdotH)
-{
-	return lerp(f0, f9, pow5(1 - LdotH));
-}
-
 float3 ColorBalance(float3 color, float4 balance)
 {
 	float3 lum = luminance(color);
