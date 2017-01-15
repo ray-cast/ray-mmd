@@ -13,7 +13,7 @@ float mSSAOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SS
 float mSSAOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO-";>;
 float mSSDOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO+";>;
 float mSSDOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO-";>;
-float mExposure : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure";>;
+float mExposureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
@@ -45,6 +45,7 @@ static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mTemperatureP);
+static float mExposure = mExposureMin + mExposureP * mExposureMax;
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
