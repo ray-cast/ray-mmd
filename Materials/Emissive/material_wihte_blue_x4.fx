@@ -90,7 +90,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = float3(102, 204, 255) / 255;
-const float emissiveIntensity = 1.0;
+const float emissiveIntensity = 4.0;
 const float emissiveMapLoopNum = 1.0;
 
 #define PARALLAX_MAP_ENABLE 0
