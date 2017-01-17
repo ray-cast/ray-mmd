@@ -206,7 +206,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	
 #if VIDEO_MAP_ENABLE
 	float mip = 6 * (1 - material.smoothness * material.smoothness);
-	diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, vedioMapLoopBegin + coord1, ViewportOffset2, 3, 10, mip).rgb) * LightIntensity * atten;
+	diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
 
 	if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
 		coord2.x <= 0.0 || coord2.y <= 0.0)
@@ -216,7 +216,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	else
 	{
 		float mip = (1 - material.smoothness * material.smoothness) * 6;
-		specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(vedioMapLoopBegin + coord2 * vedioMapLoopNum, 0, mip)).rgb);
+		specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
 	}
 
 	float4 lighting = float4((material.albedo * diffuse + specular) * float3(mR, mG, mB), 0);
@@ -224,6 +224,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 #endif
 
+	lighting *= atten * LightIntensity;
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	
