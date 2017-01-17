@@ -66,7 +66,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04; // (改为 0.0 不计算IBL spec)
+const float metalnessBaseSpecular = 0.0; // (改为 0.0 不计算IBL spec)
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0

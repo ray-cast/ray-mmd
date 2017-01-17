@@ -65,7 +65,7 @@ float4 ShadingOpacityPS(
 	
 	float3 lighting = 0;
 	lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
-	lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);;
+	lighting += srgb2linear(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb);
 
 #if MAIN_LIGHT_ENABLE
 	float3 diffuse, specular;
