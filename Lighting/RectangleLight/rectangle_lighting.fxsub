@@ -224,7 +224,11 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 #endif
 
+#if VIDEO_MAP_ENABLE
+	lighting *= LightIntensity;
+#else
 	lighting *= atten * LightIntensity;
+#endif
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	
