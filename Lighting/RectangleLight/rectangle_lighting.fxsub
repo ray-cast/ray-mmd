@@ -202,7 +202,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	#endif
 	
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
-	diffuse = material.albedo * (energy.r + SubsurfaceShading(material, material.normal, L, V).rgb);
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
 	
 #if VIDEO_MAP_UV_FLIP
@@ -227,7 +227,10 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 #endif
 
 	diffuse *= atten * LightColor * LightIntensity;
+	diffuse *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
+	
 	specular *= atten * LightColor * LightIntensity;
+	specular *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 }
 
 float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
