@@ -190,7 +190,12 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
 	float3 L2 = normalize(Lw);
 	
+#if VIDEO_MAP_ENABLE
+	float atten = 1;
+#else
 	float atten = GetPhysicalLightAttenuation(Lw, LightRange);
+#endif
+
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
 	#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
@@ -221,12 +226,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 #endif
 
-#if VIDEO_MAP_ENABLE
-	lighting *= LightIntensity;
-#else
 	lighting *= atten * LightIntensity;
-#endif
-
 	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
 	
