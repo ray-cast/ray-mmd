@@ -90,7 +90,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 #if SHADOW_MAP_PCF_FILTER == 0
 	depth = exp(-(depth - depthBias) * depthScale);
 #else
-	depth -= viewPosition.z * 0.0005;
+	depth -= viewPosition.z * 0.0007;
 #endif
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);

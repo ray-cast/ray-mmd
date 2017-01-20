@@ -1,7 +1,7 @@
 #define USE_CUSTOM_MATERIAL 1
 
 // 反照率贴图
-#define ALBEDO_MAP_ENABLE 1
+#define ALBEDO_MAP_ENABLE 0
 #define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
@@ -12,7 +12,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = float3(0.0,0.5,1.0);
 const float albedoMapLoopNum = 1.0;
 
 // 透明通道
@@ -34,8 +34,8 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
+const float normalMapScale = 1.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 0
@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.7;
+const float smoothness = 0.1;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
