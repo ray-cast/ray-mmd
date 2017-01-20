@@ -225,7 +225,7 @@ void LightSourcePS(
 	
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
-	oColor2 = float4(diffuseAlpha + specularAlpha, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 	
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 	
@@ -276,7 +276,7 @@ void LightSourceShadowlessPS(
 	
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
-	oColor2 = float4(diffuseAlpha + specularAlpha, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
 
 technique MainTech0 < string MMDPass = "object";

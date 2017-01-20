@@ -158,13 +158,7 @@ float4 ShadingTransparentPS(
 	float3 V = normalize(viewdir);
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
 	
-	float4 lightingAlpha = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0));
-
-#if SSSS_QUALITY == 1
-	float3 lighting = lightingAlpha.rgb * material.albedo + lightingAlpha.a;
-#else
-	float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
-#endif
+	float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 
 #if MAIN_LIGHT_ENABLE
 	float3 diffuse, specular;
