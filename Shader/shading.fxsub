@@ -136,7 +136,7 @@ float4 ShadingOpacitySpecularPS(
 	lighting += iblSpecular;
 #endif
 
-	lighting += tex2Dlod(LightMapSamp, float4(coord, 0, 0)).a;
+	lighting += tex2Dlod(LightSpecMapSamp, float4(coord, 0, 0)).rgb;
 
 	return float4(lighting, 0);
 }

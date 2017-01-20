@@ -1,3 +1,4 @@
+shared texture LightSpecMap : RENDERCOLORTARGET;
 shared texture LightAlphaMap : RENDERCOLORTARGET;
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
@@ -9,6 +10,8 @@ const float4 IBLColor = float4(0,0.5,0,0.5);
     string Script = \
         "ClearSetColor=BackColor;"\
         "RenderColorTarget0=LightAlphaMap;"\
+        "Clear=Color;"\
+        "RenderColorTarget0=LightSpecMap;"\
         "Clear=Color;"\
         "RenderColorTarget0=EnvLightAlphaMap;" \
         "ClearSetColor=IBLColor;"\

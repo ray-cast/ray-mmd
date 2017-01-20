@@ -286,6 +286,8 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		"ClearSetColor=BackColor;"\
 		"RenderColorTarget0=LightAlphaMap;"\
 		"Clear=Color;"\
+		"RenderColorTarget0=LightSpecMap;"\
+		"Clear=Color;"\
 		"RenderColorTarget0=;" \
 		"RenderColorTarget1=EnvLightAlphaMap;" \
 		"ClearSetColor=IBLColor;"\

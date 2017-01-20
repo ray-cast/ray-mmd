@@ -67,12 +67,23 @@ texture LightMap: OFFSCREENRENDERTARGET <
 		"RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
 		"* = hide;";
 >;
+shared texture LightSpecMap : RENDERCOLORTARGET <
+	float2 ViewPortRatio = {1.0,1.0};
+	int MipLevels = 1;
+	bool AntiAlias = false;
+	string Format = "A16B16G16R16F";
+>;
 shared texture LightAlphaMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A16B16G16R16F";
 >;
+sampler LightSpecMapSamp = sampler_state {
+	texture = <LightSpecMap>;
+	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
+};
 sampler LightMapSamp = sampler_state {
 	texture = <LightMap>;
 	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;

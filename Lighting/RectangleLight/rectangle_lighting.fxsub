@@ -41,6 +41,7 @@ static float3 viewLightRight = normalize(mul((mRightTop + mRightBottom) / 2 - Li
 static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight));
 
 static float2 LightRect = float2(LightWidth, LightHeight);
+static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
 	#if VIDEO_MAP_IN_SCREEN_MAP
@@ -179,7 +180,7 @@ float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, flo
 	return (totalColor / totalWeight);
 }
 
-float4 ShadingMaterial(MaterialParam material, float3 V)
+void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
 {
 	float3 P = V * material.linearDepth / V.z;
 	
@@ -188,7 +189,12 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
 	float3 L2 = normalize(Lw);
 	
+#if VIDEO_MAP_ENABLE
+	float atten = 1;
+#else
 	float atten = GetPhysicalLightAttenuation(Lw, LightRange);
+#endif
+
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
 	#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
@@ -196,8 +202,8 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	#endif
 	
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
-	float3 specular = energy.gba;
+	diffuse = material.albedo * (energy.r + SubsurfaceShading(material, material.normal, L, V).rgb);
+	specular = energy.gba;
 	
 #if VIDEO_MAP_UV_FLIP
 	coord1.x = 1 - coord1.x;
@@ -220,17 +226,8 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	}
 #endif
 
-	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
-
-#if VIDEO_MAP_ENABLE
-	lighting *= LightIntensity;
-#else
-	lighting *= atten * LightIntensity;
-#endif
-	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
-	
-	return lighting;
+	diffuse *= atten * LightColor * LightIntensity;
+	specular *= atten * LightColor * LightIntensity;
 }
 
 float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
@@ -273,7 +270,8 @@ void LightSourcePS(
 	float2 coord : TEXCOORD0, 
 	float3 viewdir : TEXCOORD1,
 	out float4 oColor0 : COLOR0,
-	out float4 oColor1 : COLOR1)
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
 {
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
@@ -297,21 +295,30 @@ void LightSourcePS(
 
 	float3 V = normalize(viewdir);
 	
-	oColor0 = ShadingMaterial(material, V);
-	oColor1 = ShadingMaterial(materialAlpha, V);
+	float3 diffuse, specular;
+	ShadingMaterial(material, V, diffuse, specular);
 	
-	clip(sum(oColor0 + oColor1) - 1e-5);
+	float3 diffuseAlpha, specularAlpha;
+	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha + specularAlpha, 0);
+	
+	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 	
 	float shadow = ShadingShadow(material, materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
+	oColor2 *= shadow;
 }
 
 void LightSourceShadowlessPS(
 	float2 coord : TEXCOORD0, 
 	float3 viewdir : TEXCOORD1,
 	out float4 oColor0 : COLOR0,
-	out float4 oColor1 : COLOR1)
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
 {
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
@@ -335,14 +342,22 @@ void LightSourceShadowlessPS(
 	
 	float3 V = normalize(viewdir);
 	
-	oColor0 = ShadingMaterial(material, V);
-	oColor1 = ShadingMaterial(materialAlpha, V);
+	float3 diffuse, specular;
+	ShadingMaterial(material, V, diffuse, specular);
+	
+	float3 diffuseAlpha, specularAlpha;
+	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha + specularAlpha, 0);
 }
 
 technique MainTech0 < string MMDPass = "object";
 	string Script = 
 		"RenderColorTarget0=;"
-		"RenderColorTarget1=LightAlphaMap;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
 		"Pass=DrawObject;"
 ;>{
 	pass DrawObject {
@@ -358,7 +373,8 @@ technique MainTech0 < string MMDPass = "object";
 technique MainTecBS0 < string MMDPass = "object_ss";
 	string Script = 
 		"RenderColorTarget0=;"
-		"RenderColorTarget1=LightAlphaMap;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
 		"Pass=DrawObject;"
 ;>{
 	pass DrawObject {
