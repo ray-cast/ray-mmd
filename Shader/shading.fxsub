@@ -160,8 +160,12 @@ float4 ShadingTransparentPS(
 	
 	float4 lightingAlpha = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0));
 
+#if SSSS_QUALITY == 1
+	float3 lighting = lightingAlpha.rgb * material.albedo + lightingAlpha.a;
+#else
 	float3 lighting = lightingAlpha.rgb + lightingAlpha.a;
-	
+#endif
+
 #if MAIN_LIGHT_ENABLE
 	float3 diffuse, specular;
 	ShadingMaterial(material, N, V, L, coord, diffuse, specular);

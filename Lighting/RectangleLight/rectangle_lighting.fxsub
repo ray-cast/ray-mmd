@@ -218,11 +218,9 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 		float mip = (1 - material.smoothness * material.smoothness) * 6;
 		specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
 	}
-
-	float4 lighting = float4((material.albedo * diffuse + specular) * float3(mR, mG, mB), 0);
-#else
-	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 #endif
+
+	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
 
 #if VIDEO_MAP_ENABLE
 	lighting *= LightIntensity;
