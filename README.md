@@ -28,6 +28,9 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### 更新内容 :
+##### 2017-1-20 ver 1.2.0
+* 改进LED
+
 ##### 2017-1-12 ver 1.2.0
 * 修复 NORMAL_MAP_SUB_IN_SPHEREMAP 无效的 bug
 * 修复 NORMAL_MAP_SUB_IS_COMPRESSED 无效的 bug
