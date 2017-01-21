@@ -476,7 +476,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 		color = ACESToneMapping(color * mExposure);
 	else
 	{
-		float3 curr = FilmicTonemap(color * 2 * mExposure);
+		float3 curr = FilmicTonemap(color * mExposure * 3);
 		float3 whiteScale = 1.0f / FilmicTonemap(11.2);
 		curr = curr * whiteScale;
 		color = saturate(lerp(curr, color, mTonemapping));
