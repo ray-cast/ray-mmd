@@ -420,7 +420,7 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
 	float L = length(coord * 2 - 1);
 	L = 1 - smoothstep(outer, inner, L);
-	float2 offset = ViewportOffset2 * L * (mDispersion * 8);
+	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * BloomScale1;
 	float3 shift1 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
 	float3 shift2 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
 	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
@@ -469,7 +469,21 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	color = WihteBalance(color, mColorTemperature);
 	color = ApplyVignette(color, coord);
 	color = ApplyColorBalance(color);
+	
+#if HDR_TONEMAP_OPERATOR == 5
+	int lightModel = MRT8.z <= 1e-5 ? (int)floor(abs(MRT8.z)) : (int)floor(MRT7.w * TWO_BITS_EXTRACTION_FACTOR);
+	if (lightModel != SHADINGMODELID_SKIN)
+		color = ACESToneMapping(color * mExposure);
+	else
+	{
+		float3 curr = FilmicTonemap(color * 2 * mExposure);
+		float3 whiteScale = 1.0f / FilmicTonemap(11.2);
+		curr = curr * whiteScale;
+		color = saturate(lerp(curr, color, mTonemapping));
+	}
+#else
 	color = ACESToneMapping(color * mExposure);
+#endif
 	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	color += lerp(0, bloom, mBloomTonemapping);

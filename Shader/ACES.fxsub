@@ -65,9 +65,7 @@ float3 ACESToneMapping(float3 color)
 	curr = curr * whiteScale;
 	return saturate(lerp(curr, color, mTonemapping));
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
-	float3 curr = 2 * FilmicTonemap(color);
-	float3 whiteScale = 1.0f / FilmicTonemap(11.2);
-	curr = curr * whiteScale;
+	float3 curr = ACESFilmLinear(color);
 	return saturate(lerp(curr, color, mTonemapping));
 #else
 	return saturate(color);
