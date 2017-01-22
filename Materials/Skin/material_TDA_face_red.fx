@@ -2,7 +2,7 @@
 
 // 反照率贴图
 #define ALBEDO_MAP_ENABLE 1
-#define ALBEDO_MAP_IN_TEXTURE 1
+#define ALBEDO_MAP_IN_TEXTURE 0
 #define ALBEDO_MAP_IN_SCREEN_MAP 0 // 使用来至屏幕或avi的纹理
 #define ALBEDO_MAP_ANIMATION_ENABLE 0 // 指定图片是GIF/APNG时启用 (ALBEDO_MAP_IN_TEXTURE 必须为 0)
 #define ALBEDO_MAP_ANIMATION_SPEED 1  // 最小为1倍速
@@ -10,7 +10,7 @@
 #define ALBEDO_MAP_APPLY_COLOR 0
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "albedo.png"
+#define ALBEDO_MAP_FILE "TDA/face.png"
 
 const float3 albedo = 1;
 const float albedoMapLoopNum = 1.0;
@@ -75,7 +75,7 @@ const float metalnessBaseSpecular = 0.04;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 1.0;
+const float melanin = 0.0;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
@@ -131,9 +131,8 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_COLOR 1
 #define CUSTOM_B_MAP_FILE "TDA/thickness_face.png"
-#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 customB = float3(1.0,0.0,0.0) * 1.0;
+const float3 customB = float3(0.9,0.0,0.0);
 const float customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"

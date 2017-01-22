@@ -114,8 +114,8 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	{
 		rotateKernel[i + 0] = mul(kernel[i + 0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
 		rotateKernel[i + 1] = mul(kernel[i + 1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		rotateKernel[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.25;
-		rotateKernel[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale * 0.25;
+		rotateKernel[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		rotateKernel[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
 	}
 	
 	[unroll]
@@ -173,7 +173,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	sampleAmbient /= sampleWeight;
 	sampleAmbient *= depth < 0.0 ? 0.25 : 1.0;
 
-	float ao = saturate(1 - sampleAmbient.x * (1 - sampleAmbient.x) * mSSAOScale);
+	float ao = saturate(1 - sampleAmbient.x * pow2(1 - sampleAmbient.x) * mSSAOScale);
 	
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
