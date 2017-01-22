@@ -190,7 +190,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 L2 = normalize(Lw);
 	
 #if VIDEO_MAP_ENABLE
-	float atten = 1;
+	float atten = GetPhysicalLightAttenuation(Lw, LightRange, 5);
 #else
 	float atten = GetPhysicalLightAttenuation(Lw, LightRange);
 #endif
