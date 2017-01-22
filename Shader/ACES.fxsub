@@ -29,13 +29,6 @@ float3 ACESFilmRec2020(float3 x)
 	return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-float3 ACESFilmSRGB(float3 x)
-{
-    return saturate(
-            (x * (x * (x * (x * 8.4680 + 1.0) - 0.002957) + 0.0001004) - 0.0000001274) /
-            (x * (x * (x * (x * 8.3604 + 1.8227) + 0.2189) - 0.002117) + 0.00003673));
-}
-
 float3 FilmicTonemap(float3 x) 
 {
 	float A = 0.22;
