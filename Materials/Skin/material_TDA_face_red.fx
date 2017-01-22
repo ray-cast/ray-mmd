@@ -41,10 +41,10 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_ENABLE 1
 #define NORMAL_MAP_SUB_UV_FLIP 0
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
-#define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
+#define NORMAL_MAP_SUB_FILE "../_MaterialMap/skin.png"
 
 const float normalMapSubScale = 1.5;
-const float normalMapSubLoopNum = 50.0;
+const float normalMapSubLoopNum = 25.0;
 
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
@@ -54,7 +54,7 @@ const float normalMapSubLoopNum = 50.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.25;
+const float smoothness = 0.0;
 const float smoothnessMapLoopNum = 1.0;
 
 // 金属程度
@@ -75,7 +75,7 @@ const float metalnessBaseSpecular = 0.04;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 0.0;
+const float melanin = 1.0;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
@@ -121,7 +121,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_UV_FLIP 1
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_A_MAP_FILE "curvature_face.png"
+#define CUSTOM_A_MAP_FILE "TDA/curvature_face.png"
 
 const float customA = 0.6;
 const float customAMapLoopNum = 1.0;
@@ -130,10 +130,10 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_UV_FLIP 1
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_COLOR 1
-#define CUSTOM_B_MAP_FILE "thickness_face.png"
+#define CUSTOM_B_MAP_FILE "TDA/thickness_face.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 customB = SSS_SKIN_TRANSMITTANCE(0.8);
+const float3 customB = float3(1.0,0.0,0.0) * 1.0;
 const float customBMapLoopNum = 1.0;
 
-#include "../../material_common.fxsub"
+#include "../material_common.fxsub"
