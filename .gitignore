@@ -21,8 +21,6 @@ Extension/ColorGrading
 Extension/NoiseBlur
 Extension/PaniniProjection
 Extension/BokehBlur
-Lighting/IESLight
-Lighting/IESLight.pmx
 Lighting/PointLight/point_lighting_pcf_s0.fx
 Lighting/PointLight/point_lighting_pcf_s1.fx
 Lighting/PointLight/point_lighting_pcf_s2.fx
