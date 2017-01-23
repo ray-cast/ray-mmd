@@ -130,7 +130,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
     float3 L2 = normalize(L);
     
     float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBlub);
-    //atten *= ComputeIESLightProfile(mul(L2, (float3x3)matViewInverse), LightDirection);
+    atten *= ComputeIESLightProfile(mul(L2, (float3x3)matViewInverse), LightDirection);
     
     float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
     diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
