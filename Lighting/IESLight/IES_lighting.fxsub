@@ -30,7 +30,7 @@ static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
-static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
 texture IESTexture<string ResourceName = IES_FILE_PATH;>; 
@@ -130,7 +130,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
     float3 L2 = normalize(L);
     
     float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBlub);
-    atten *= ComputeIESLightProfile(mul(L2, (float3x3)matViewInverse), LightDirection);
+    //atten *= ComputeIESLightProfile(mul(L2, (float3x3)matViewInverse), LightDirection);
     
     float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
     diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
@@ -140,7 +140,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
     specular *= atten * LightColor * LightIntensity * LightIntensity2;
 }
 
-float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
+float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
 {
     float linearDepth = material.linearDepth;
     float linearDepth2 = materialAlpha.linearDepth;
@@ -258,7 +258,7 @@ void LightSourceShadowlessPS(
     float3 sum1 = material.albedo + material.specular;
     float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
     clip(sum(sum1 + sum2 - 1e-5));
-    
+       
     float3 V = normalize(viewdir);
     
     float3 diffuse, specular;

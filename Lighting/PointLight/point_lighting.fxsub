@@ -145,7 +145,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	specular *= atten * LightColor * LightIntensity * LightIntensity2;
 }
 
-float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
+float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
 {
 	float linearDepth = material.linearDepth;
 	float linearDepth2 = materialAlpha.linearDepth;

@@ -65,6 +65,7 @@ texture LightMap: OFFSCREENRENDERTARGET <
 		"TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
 		"LED*.* =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
 		"RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
+		"IESLight*.* =./Lighting/IESLight/IES1/IES_lighting.fx;"
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET <
@@ -145,6 +146,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
 		"SphereLight*.* =./materials/lighting/material_lighting.fx;"
 		"TubeLight*.* =./materials/lighting/material_lighting.fx;"
 		"RectangleLight*.* =./materials/lighting/material_lighting.fx;"
+		"IESLight*.* =./materials/lighting/material_lighting.fx;"
 		"*.pmd = ./materials/material.fx;"
 		"*.pmx = ./materials/material.fx;"
 		"*.x = hide;"
@@ -170,6 +172,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 		"TubeLight*.* =shadow/Depth_noalpha.fx;"
 		"LED*.*=shadow/Depth_noalpha.fx;"
 		"RectangleLight*.*=shadow/Depth_noalpha.fx;"
+		"IESLight*.*=shadow/Depth_noalpha.fx;"
 		"*.pmx=shadow/Depth.fx;"
 		"*.pmd=shadow/Depth.fx;"
 		"*.x=hide;";
@@ -201,6 +204,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
 		"TubeLight*.* =shadow/PSSM_noalpha.fx;"
 		"LED*.*=shadow/PSSM_noalpha.fx;"
 		"RectangleLight*.*=shadow/PSSM_noalpha.fx;"
+		"IESLight*.*=shadow/PSSM_noalpha.fx;"
 		"*.pmx=shadow/PSSM.fx;"
 		"*.pmd=shadow/PSSM.fx;"
 		"*.x=hide;";
