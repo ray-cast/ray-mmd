@@ -138,7 +138,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float atten = GetPhysicalLightAttenuation(L, LightRange);
    
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
 
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;

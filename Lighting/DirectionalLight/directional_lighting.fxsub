@@ -19,11 +19,14 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
-
 static float LightRange = 50 + mRange * 150;
+static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiLightP * mLightIntensityMax;
+
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
+static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
@@ -147,22 +150,18 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 #endif
 
-float4 ShadingMaterial(MaterialParam material, float3 V)
+void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
 {
 	float3 P = V * material.linearDepth / V.z;
 	float3 L = -viewLightDirection;
 	float3 L2 = normalize(L);
 	
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
-	float3 specular = energy.gba;
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+	specular = energy.gba;
 
-	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));
-	lighting *= LightIntensity;
-	lighting *= saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-	lighting *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
-	
-	return lighting;
+	diffuse *= LightColor * LightIntensity * LightIntensity2;
+	specular *= LightColor * LightIntensity * LightIntensity2;
 }
 
 float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
@@ -205,7 +204,8 @@ void LightSourcePS(
 	float2 coord : TEXCOORD0, 
 	float3 viewdir : TEXCOORD1,
 	out float4 oColor0 : COLOR0,
-	out float4 oColor1 : COLOR1)
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
 {
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
@@ -229,21 +229,30 @@ void LightSourcePS(
 
 	float3 V = normalize(viewdir);
 	
-	oColor0 = ShadingMaterial(material, V);
-	oColor1 = ShadingMaterial(materialAlpha, V);
+	float3 diffuse, specular;
+	ShadingMaterial(material, V, diffuse, specular);
 	
-	clip(sum(oColor0 + oColor1) - 1e-5);
+	float3 diffuseAlpha, specularAlpha;
+	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
 	
-	float shadow = ShadingShadow(material, materialAlpha, V);   
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
+	
+	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
+	
+	float shadow = ShadingShadow(material, materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
+	oColor2 *= shadow;
 }
 
 void LightSourceShadowlessPS(
 	float2 coord : TEXCOORD0, 
 	float3 viewdir : TEXCOORD1,
 	out float4 oColor0 : COLOR0,
-	out float4 oColor1 : COLOR1)
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
 {
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
@@ -267,14 +276,22 @@ void LightSourceShadowlessPS(
 	
 	float3 V = normalize(viewdir);
 	
-	oColor0 = ShadingMaterial(material, V);
-	oColor1 = ShadingMaterial(materialAlpha, V);
+	float3 diffuse, specular;
+	ShadingMaterial(material, V, diffuse, specular);
+	
+	float3 diffuseAlpha, specularAlpha;
+	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
 
 technique MainTech0 < string MMDPass = "object";
 	string Script = 
 		"RenderColorTarget0=;"
-		"RenderColorTarget1=LightAlphaMap;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
 		"Pass=DrawObject;"
 ;>{
 	pass DrawObject {
@@ -290,7 +307,8 @@ technique MainTech0 < string MMDPass = "object";
 technique MainTecBS0 < string MMDPass = "object_ss";
 	string Script = 
 		"RenderColorTarget0=;"
-		"RenderColorTarget1=LightAlphaMap;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
 		"Pass=DrawObject;"
 ;>{
 	pass DrawObject {
