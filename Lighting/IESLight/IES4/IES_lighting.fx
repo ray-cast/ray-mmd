@@ -12,6 +12,6 @@
 #define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
 #define SHADOW_MAP_SOFT_QUALITY 0 // (0 ~ 3)
 
-#define IES_FILE_PATH "C:/Users/ray/Desktop/IES/Best IES 3/2.HDR"
+#define IES_FILE_PATH "IES.HDR"
 
 #include "../IES_lighting.fxsub"
