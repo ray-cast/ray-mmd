@@ -28,16 +28,16 @@ float4 SSSGuassBlurPS(
 
 	const float3 profileVarArr[4] =
 	{
-		float3( 3.3, 2.8, 1.4 ),  // marble
-		float3( 3.3, 1.4, 1.1 ),  // skin
+		float3( 3.3, 2.8, 1.4 ),
+		float3( 3.3, 1.4, 1.1 ),
 		float3( 1.0, 1.0, 1.0 ),
 		float3( 1.0, 1.0, 1.0 )
 	};
 
 	const float4 profileSpikeRadArr[4] =
 	{
-		float4(0.30, 0.30, 0.80, 8.0 ), // marble
-		float4(0.15, 0.20, 0.25, 1.0),  // skin
+		float4(0.30, 0.30, 0.80, 8.0 ),
+		float4(0.15, 0.20, 0.25, 1.0),
 		float4(1.0, 1.0, 1.0, 1.0),
 		float4(1.0, 1.0, 1.0, 1.0)
 	};
