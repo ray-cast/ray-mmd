@@ -10,20 +10,18 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
-#### HDRI :
+HDRI
+------------
 * [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
 * [++skies;](https://aokcub.net/cg/incskies/)
 * [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
 
-#### Text editor:
+Text editor
+------------
 * [Notepad++](https://notepad-plus-plus.org/)
 * [Visual studio code](http://code.visualstudio.com/Download)
 
-#### Home :
-* [Github](https://github.com/ray-cast/ray-mmd)
-* [Coding](https://coding.net/u/raycast/p/ray-mmd)
-
-#### Tutroial:
+Tutroial:
 ------------
 * Chinese Pages [link](https://github.com/ray-cast/ray-mmd/wiki/教程)
 
