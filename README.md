@@ -10,6 +10,20 @@ Screenshots :
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
+Download :
+------------
+* [Ray-MMD alpha - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/alpha.zip)
+- About alpha version :
+    - Adding new features to the most recent version
+    - Fewer Bugs in this version
+- Latest changes - Major allocator changes (25. Jan 2017):
+    - Added IES Light Source (25. Dec 2017)
+    - Added some default materials (25. Dec 2017)
+    - Better than LED (25. Dec 2017)
+    - Better than SSSS (25. Dec 2017)
+    - Better than Shadow of Main Light (25. Dec 2017)
+    - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017):
+
 Requirement :
 ------------
 * MikuMikuDance - 926ver and above (Without Anti-Aliasing)
