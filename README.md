@@ -1,7 +1,7 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　A physically-based pendering for MMD.
+　　A physically-based rendering for MMD.
 
 Screenshots :
 ------------
