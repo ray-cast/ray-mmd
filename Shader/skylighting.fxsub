@@ -267,7 +267,9 @@ void EnvLightingPS(
 	float3 diffuse2, specular2;
 	ShadingMaterial(materialAlpha, materialAlpha.normal, V, finalSmoothness, diffuse2, specular2);
 	
-	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
+	float fakeSSAO = any(materialAlpha.alpha) ? (1 - materialAlpha.alpha * 0.5) : 1;
+	
+	oColor0 = EncodeYcbcr(screenPosition, diffuse * fakeSSAO , specular * fakeSSAO);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 #else
 	oColor0 = EncodeYcbcr(screenPosition, 0, 0);
