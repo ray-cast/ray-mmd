@@ -107,7 +107,7 @@ float3 DecodeGBufferNormal(float4 buffer2)
 	return DecodeNormal(buffer2.rgb);
 }
 
-float DecodeLightModel(float4 buffer4)
+int DecodeLightModel(float4 buffer4)
 {
 	int lightModel = (int)floor(abs(buffer4.z));
 	return lightModel;
@@ -115,11 +115,9 @@ float DecodeLightModel(float4 buffer4)
 
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
-	int lightModel = buffer4.z <= 1e-5 ? (int)floor(abs(buffer4.z)) : (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-	if (lightModel == SHADINGMODELID_EMISSIVE)
-		return max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y);
-	else
-		return 0;
+	int lightModel = DecodeLightModel(buffer4);
+	float3 emissive = max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y);
+	return emissive * any(lightModel == SHADINGMODELID_EMISSIVE);
 }
 
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
