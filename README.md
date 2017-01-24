@@ -34,7 +34,7 @@ Tutroial:
 Contact
 ------------
 
-Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
+* Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
 
 [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
 -------------------------------------------------------------------------------
