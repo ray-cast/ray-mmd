@@ -54,9 +54,10 @@ float4 SSSGuassBlurPS(
 	
 	float3 V = normalize(viewdir);
 	float3 P = V * material.linearDepth / V.z;
+	float3 N = cross(ddy(P), ddx(P));
 
-	float perspectiveScaleX = dot(normalize(material.normal.xz), normalize(-P.xz));
-	float perspectiveScaleY = dot(normalize(material.normal.yz), normalize(-P.yz));
+	float perspectiveScaleX = dot(normalize(N.xz), normalize(-P.xz));
+	float perspectiveScaleY = dot(normalize(N.yz), normalize(-P.yz));
 	float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
 
 	float sssAmount = material.customDataA;
