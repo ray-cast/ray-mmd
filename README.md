@@ -2,6 +2,14 @@ Ray-MMD
 ========
 ### Physically-Based Rendering ###
 　　A physically-based pendering for MMD.
+
+Screenshots :
+------------
+[![link text](https://github.com/ray-cast/images/raw/master/screen1_small.jpg)](https://github.com/ray-cast/images/raw/master/screen1.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/screen2_small.jpg)](https://github.com/ray-cast/images/raw/master/screen2.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
+
 Download :
 ------------
 * [Ray-MMD 1.2.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
@@ -18,13 +26,6 @@ Requirement :
 * MikuMikuDance - 926ver and above (Without Anti-Aliasing)
 * MikuMikuEffect - 037ver and above
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
-
-Screenshots :
-------------
-[![link text](https://github.com/ray-cast/images/raw/master/screen1_small.jpg)](https://github.com/ray-cast/images/raw/master/screen1.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/screen2_small.jpg)](https://github.com/ray-cast/images/raw/master/screen2.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
-[![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
 HDRi
 ------------
