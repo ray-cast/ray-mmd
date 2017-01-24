@@ -27,6 +27,20 @@ Requirement :
 * MikuMikuEffect - 037ver and above
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
+Resources
+------------
+- HDRi
+    - sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
+    - ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
+    - USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
+- Text editor
+    - Notepad++ \[[link](https://notepad-plus-plus.org)\].
+    - Visual studio code \[[link](http://code.visualstudio.com/Download)\].
+
+Tutroial:
+------------
+* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
+
 Features :
 ------------
 * Physically-Based Material
@@ -41,20 +55,6 @@ Features :
 * Bloom PostProcess
 * FXAA PostProcess
 * SMAA PostProcess
-
-Resources
-------------
-- HDRi
-    - sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
-    - ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
-    - USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
-- Text editor
-    - Notepad++ \[[link](https://notepad-plus-plus.org)\].
-    - Visual studio code \[[link](http://code.visualstudio.com/Download)\].
-
-Tutroial:
-------------
-* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
 
 Contact
 ------------
