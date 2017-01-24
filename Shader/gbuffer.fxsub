@@ -68,19 +68,10 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.customDataA = buffer2.w;
 	material.customDataB = 0;
 	
-	material.linearDepth = buffer4.x;
 	material.alpha = buffer4.w;
 	
-	material.lightModel = (int)floor(buffer3.w * TWO_BITS_EXTRACTION_FACTOR);
-	if (material.lightModel == SHADINGMODELID_SKIN)
-	{
-		material.lightModel = floor(buffer2.w * TWO_BITS_EXTRACTION_FACTOR) < 1.0 ? SHADINGMODELID_SUBSURFACE : SHADINGMODELID_SKIN;
-	}
-	
-	if (buffer4.z <= 1e-5)
-	{
-		material.lightModel = (int)floor(abs(buffer4.z));
-	}
+	material.linearDepth = buffer4.x;
+	material.lightModel = (int)floor(abs(buffer4.z));
 	
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
