@@ -93,8 +93,8 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	   
 	float sampleWeight = 0.0f;
 	float sampleNoise = GetJitterOffset(coord.zw);
-	float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius * mLightAttenuationBlub;
-	float sampleScale = saturate((mSSAOBiasFalloff * 0.5) / viewPosition.z);
+	float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius;
+	float sampleScale = saturate((mSSAOBiasFalloff * 0.25) / viewPosition.z);
 	float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
 	
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
