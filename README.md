@@ -1,9 +1,7 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　Ray渲是一个基于物理的渲染库，采用了UE4的IBL曲面拟合以及CE5光照模型(BRDF GGX),
-以更贴合物理的方式渲染MMD，该渲染需求MMD版本为926（低于926版本无法正确计算IBL),
-以及MME版本037，并且关闭MMD自带的抗锯齿。
+　　A physically-based pendering for MMD.
 Download :
 ------------
 * [Ray-MMD 1.2.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
@@ -14,6 +12,12 @@ Download :
     - Added Skybox Background Blur (20. Desc 2016)
     - Added Color Temperature for White Balance (1. Jun 2017)
     - Material description can now be used with ShadingMaterialID (20. Desc 2016)
+
+Requirement :
+------------
+* MikuMikuDance - 926ver and above (Without Anti-Aliasing)
+* MikuMikuEffect - 037ver and above
+* Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
 Screenshots :
 ------------
