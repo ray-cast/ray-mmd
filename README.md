@@ -18,8 +18,8 @@ Environment maps
 
 Text editor
 ------------
-* Notepad++ \[[link](https://notepad-plus-plus.org)\]./)
-* Visual studio code \[[link](http://code.visualstudio.com/Download)\]./)
+* Notepad++ \[[link](https://notepad-plus-plus.org)\].
+* Visual studio code \[[link](http://code.visualstudio.com/Download)\].
 
 Tutroial:
 ------------
