@@ -26,6 +26,7 @@ float showEmissiveAlpha : CONTROLOBJECT < string name="(self)"; string item = "E
 float showDepthAlpha : CONTROLOBJECT < string name="(self)"; string item = "DepthAlpha"; >;
 
 float showSSAO : CONTROLOBJECT < string name="(self)"; string item = "SSAO"; >;
+float showSSDO : CONTROLOBJECT < string name="(self)"; string item = "SSDO"; >;
 float showSSR : CONTROLOBJECT < string name="(self)"; string item = "SSR"; >;
 float showPSSM : CONTROLOBJECT < string name="(self)"; string item = "PSSM"; >;
 
@@ -98,7 +99,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	
 	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showCustomID + showCustomDataB + showCustomDataA + showEmissive;
 	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
-	showTotal += showDepth + showDepthAlpha + showSSAO + showSSR + showPSSM;
+	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM;
 	
 	float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
 	result += material.albedo * showAlbedo;
@@ -125,6 +126,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 
 	#if SSAO_QUALITY > 0
 		result += tex2D(SSAOMapSamp, coord).r * showSSAO;
+		result += tex2D(SSAOMapSamp, coord).gba * showSSDO;
 	#endif
 
 	#if SSR_QUALITY > 0
