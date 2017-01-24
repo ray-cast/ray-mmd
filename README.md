@@ -1,7 +1,7 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　A physically-based rendering for MMD.
+　　The aim of the project is to create a physically-based rendering with at MMD.
 
 Screenshots :
 ------------
