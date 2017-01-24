@@ -26,6 +26,11 @@ Ray-MMD
 #### Tutroial:
 * [中文文档](https://github.com/ray-cast/ray-mmd/wiki/教程)
 
+Contact
+------------
+
+Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
+
 [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
 -------------------------------------------------------------------------------
     Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
@@ -49,7 +54,8 @@ Ray-MMD
     AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-##### Digging Deeper
+Digging Deeper
+--------
 * [Moving to the Next Generation - The Rendering Technology of Ryse](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)
 * [ACES Filmic Tone Mapping Curve](https://knarkowicz.wordpress.com/2016/08/31/hdr-display-first-steps/)
 * [Compact Normal Storage for small G-Buffers](http://aras-p.info/texts/CompactNormalStorage.html)
