@@ -10,11 +10,11 @@ Ray-MMD
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
-HDRI
+Environment maps
 ------------
-* [sIBL Archive](http://www.hdrlabs.com/sibl/archive.html)
-* [++skies;](https://aokcub.net/cg/incskies/)
-* [USC Institute](http://gl.ict.usc.edu/Data/HighResProbes)
+* sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
+* incskies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
+* USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
 
 Text editor
 ------------
