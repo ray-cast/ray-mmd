@@ -1,6 +1,6 @@
-Ray-MMD - Physically-Based Rendering
+Ray-MMD
 ========
-### 基于物理的MikuMikuDance渲染库 ###
+### Physically-Based Rendering ###
 　　Ray渲是一个基于物理的渲染库，采用了UE4的IBL曲面拟合以及CE5光照模型(BRDF GGX),
 以更贴合物理的方式渲染MMD，该渲染需求MMD版本为926（低于926版本无法正确计算IBL),
 以及MME版本037，并且关闭MMD自带的抗锯齿。
