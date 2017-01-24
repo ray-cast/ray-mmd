@@ -26,7 +26,7 @@ Ray-MMD
 #### Tutroial:
 * [中文文档](https://github.com/ray-cast/ray-mmd/wiki/教程)
 
-#### [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
+[License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
 -------------------------------------------------------------------------------
     Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
 
