@@ -6,8 +6,8 @@ Ray-MMD
 以及MME版本037，并且关闭MMD自带的抗锯齿。
 Download :
 ------------
-* [1.2.0ver - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
-* [1.2.0ver - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.tar.gz) (updated: 24. Jan 2017)
+* [Ray-MMD 1.2.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
+* [Ray-MMD 1.2.0 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.tar.gz) (updated: 24. Jan 2017)
 
 Screenshots :
 ------------
