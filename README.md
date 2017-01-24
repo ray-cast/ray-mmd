@@ -23,7 +23,7 @@ Text editor
 
 Tutroial:
 ------------
-* Chinese Pages [link](https://github.com/ray-cast/ray-mmd/wiki/教程)
+* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/教程)\].
 
 Contact
 ------------
