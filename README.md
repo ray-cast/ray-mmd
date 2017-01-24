@@ -10,17 +10,6 @@ Screenshots :
 [![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/lights_small.jpg)](https://github.com/ray-cast/images/raw/master/lights.png)
 
-Download :
-------------
-* [Ray-MMD 1.2.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
-* [Ray-MMD 1.2.0 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.tar.gz) (updated: 24. Jan 2017)
-- Latest changes - Major allocator changes (1. Jan 2017):
-    - Added SMAA (20. Dec 2016)
-    - Added SSDO (20. Dec 2016)
-    - Added Skybox Background Blur (20. Dec 2016)
-    - Added Color Temperature for White Balance (1. Jan 2017)
-    - Material description can now be used with ShadingMaterialID (20. Dec 2016)
-
 Requirement :
 ------------
 * MikuMikuDance - 926ver and above (Without Anti-Aliasing)
