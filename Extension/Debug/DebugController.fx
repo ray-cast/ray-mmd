@@ -125,8 +125,9 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += pow(materialAlpha.linearDepth / 200, 0.5) * showDepthAlpha;
 
 	#if SSAO_QUALITY > 0
-		result += tex2D(SSAOMapSamp, coord).r * showSSAO;
-		result += tex2D(SSAOMapSamp, coord).gba * showSSDO;
+		float4 ssao = tex2D(SSAOMapSamp, coord);
+		result += ssao.r * showSSAO;
+		result += ssao.gba * showSSDO;
 	#endif
 
 	#if SSR_QUALITY > 0
