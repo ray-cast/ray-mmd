@@ -9,11 +9,12 @@ Download :
 * [Ray-MMD 1.2.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
 * [Ray-MMD 1.2.0 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.tar.gz) (updated: 24. Jan 2017)
 - Latest changes:
-    - Added SMAA
-    - Added SSDO
-    - Added Skybox Background Blur
-    - Added Color Temperature for White Balance
-    - Material description can now be used with ShadingMaterialID
+    - Major allocator changes. (1. Jun 2017)
+    - Added SMAA (20. Desc 2016)
+    - Added SSDO (20. Desc 2016)
+    - Added Skybox Background Blur (20. Desc 2016)
+    - Added Color Temperature for White Balance (1. Jun 2017)
+    - Material description can now be used with ShadingMaterialID (20. Desc 2016)
 
 Screenshots :
 ------------
