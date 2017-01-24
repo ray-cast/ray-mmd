@@ -225,12 +225,3 @@ float4 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 	return SubsurfaceShadingTwoSide(material, N, L, V);
 #endif
 }
-
-float4 MultiSurfaceShading(MaterialParam material, float3 diffuse, float3 specular, float3 lightColor)
-{
-#if SSSS_QUALITY == 1
-	return float4(lightColor * diffuse, luminance(specular * lightColor));
-#else
-	return float4(lightColor * (material.albedo * diffuse + specular), 0);
-#endif
-}

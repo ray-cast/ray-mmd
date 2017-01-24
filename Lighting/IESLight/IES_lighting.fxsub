@@ -33,22 +33,6 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-texture IESTexture<string ResourceName = IES_FILE_PATH;>; 
-sampler IESTextureSamp = sampler_state
-{
-    texture = <IESTexture>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = LINEAR;
-    AddressU  = CLAMP; AddressV = CLAMP;
-};
-
-float3 ComputeIESLightProfile(float3 L, float3 Ld)
-{
-    float3 NegLightDirection = L;
-    float DotProd = dot(NegLightDirection, Ld);
-    float NormAngle = (asin(DotProd) / PI) + 0.5f;
-    return tex2Dlod(IESTextureSamp, float4(NormAngle, 0, 0, 0)).rgb;
-}
-
 #undef SHADOW_MAP_SIZE
 
 #if SHADOW_MAP_ENABLE
@@ -122,6 +106,22 @@ float ShadowPCF(float3 viewPosition, int samples)
 }
 
 #endif
+
+texture IESTexture<string ResourceName = IES_FILE_PATH; int Miplevels = 0;>; 
+sampler IESTextureSamp = sampler_state
+{
+    texture = <IESTexture>;
+    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    AddressU  = CLAMP; AddressV = CLAMP;
+};
+
+float3 ComputeIESLightProfile(float3 L, float3 Ld)
+{
+    float3 NegLightDirection = L;
+    float DotProd = dot(NegLightDirection, Ld);
+    float NormAngle = (asin(DotProd) / PI) + 0.5f;
+    return tex2Dlod(IESTextureSamp, float4(NormAngle, 0, 0, 0)).rgb;
+}
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
 {
