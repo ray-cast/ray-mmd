@@ -4,6 +4,11 @@ Ray-MMD
 　　Ray渲是一个基于物理的渲染库，采用了UE4的IBL曲面拟合以及CE5光照模型(BRDF GGX),
 以更贴合物理的方式渲染MMD，该渲染需求MMD版本为926（低于926版本无法正确计算IBL),
 以及MME版本037，并且关闭MMD自带的抗锯齿。
+Download :
+------------
+* [1.2.0ver - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.zip) (updated: 24. Jan 2017)
+* [1.2.0ver - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.2.0.tar.gz) (updated: 24. Jan 2017)
+
 Screenshots :
 ------------
 [![link text](https://github.com/ray-cast/images/raw/master/screen1_small.jpg)](https://github.com/ray-cast/images/raw/master/screen1.jpg)
