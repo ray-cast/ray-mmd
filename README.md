@@ -45,12 +45,12 @@ Features :
 Resources
 ------------
 - HDRi
-    -sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
-    -++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
-    -USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
+    - sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
+    - ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
+    - USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
 - Text editor
-    -Notepad++ \[[link](https://notepad-plus-plus.org)\].
-    -Visual studio code \[[link](http://code.visualstudio.com/Download)\].
+    - Notepad++ \[[link](https://notepad-plus-plus.org)\].
+    - Visual studio code \[[link](http://code.visualstudio.com/Download)\].
 
 Tutroial:
 ------------
