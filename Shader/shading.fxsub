@@ -86,6 +86,11 @@ float4 ShadingOpacityPS(
 	lighting += iblDiffuse * material.albedo + iblSpecular;
 #endif
 #endif
+	
+#if SSSS_QUALITY // Fix wihte edge
+	float lightModel = DecodeLightModel(tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)));
+	material.linearDepth *= any(lightModel == SHADINGMODELID_SKIN);
+#endif
 
 	return float4(lighting, material.linearDepth);
 }

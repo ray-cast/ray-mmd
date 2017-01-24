@@ -86,7 +86,7 @@ float4 SSSGuassBlurPS(
 
 		float3 weight1 = exp((offsets[i] * offsets[i] + depthDiff1 * depthDiff1) * blurFalloff);
 		float3 weight2 = exp((offsets[i] * offsets[i] + depthDiff2 * depthDiff2) * blurFalloff);
-
+		
 		totalWeight += weight1;
 		totalWeight += weight2;
 
