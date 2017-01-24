@@ -27,20 +27,6 @@ Requirement :
 * MikuMikuEffect - 037ver and above
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
-Features :
-------------
-* Physically-Based Material
-* Multiple Light Source
-* Image Based Lighting
-* Scene Space Reflection
-* Screen Space Ambient Occlusition
-* Screen Space Subsurface Scattering
-* Color Balance PostProcess
-* HDR PostProcess
-* Bloom PostProcess
-* FXAA
-* SMAA
-
 Resources
 ------------
 - HDRi
@@ -54,6 +40,20 @@ Resources
 Tutroial:
 ------------
 * Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
+
+Features :
+------------
+* Physically-Based Material
+* Multiple Light Source
+* Image Based Lighting
+* Scene Space Reflection
+* Screen Space Ambient Occlusition
+* Screen Space Subsurface Scattering
+* Color Balance PostProcess
+* HDR PostProcess
+* Bloom PostProcess
+* FXAA PostProcess
+* SMAA PostProcess
 
 Contact
 ------------
