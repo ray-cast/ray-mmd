@@ -41,12 +41,12 @@ sampler IESTextureSamp = sampler_state
     AddressU  = CLAMP; AddressV = CLAMP;
 };
 
-float ComputeIESLightProfile(float3 L, float3 Ld)
+float3 ComputeIESLightProfile(float3 L, float3 Ld)
 {
     float3 NegLightDirection = L;
     float DotProd = dot(NegLightDirection, Ld);
     float NormAngle = (asin(DotProd) / PI) + 0.5f;
-    return tex2Dlod(IESTextureSamp, float4(NormAngle, 0, 0, 0)).r;
+    return tex2Dlod(IESTextureSamp, float4(NormAngle, 0, 0, 0)).rgb;
 }
 
 #undef SHADOW_MAP_SIZE
@@ -129,7 +129,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
     float3 L = viewLightPosition - P;
     float3 L2 = normalize(L);
     
-    float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBlub);
+    float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBlub);
     atten *= ComputeIESLightProfile(mul(L2, (float3x3)matViewInverse), LightDirection);
     
     float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
