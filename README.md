@@ -27,6 +27,21 @@ Requirement :
 * MikuMikuEffect - 037ver and above
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
+Features :
+------------
+* Physically-Based Material
+* Multiple Light Source
+* IES Light Profiles
+* Image Based Lighting
+* Scene Space Reflection
+* Screen Space Ambient Occlusition
+* Screen Space Subsurface Scattering
+* Color Balance PostProcess
+* HDR PostProcess
+* Bloom PostProcess
+* FXAA
+* SMAA
+
 HDRi
 ------------
 * sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
