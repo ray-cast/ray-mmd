@@ -24,7 +24,8 @@ Ray-MMD
 * [Coding](https://coding.net/u/raycast/p/ray-mmd)
 
 #### Tutroial:
-* [中文文档](https://github.com/ray-cast/ray-mmd/wiki/教程)
+------------
+* Chinese Pages [link](https://github.com/ray-cast/ray-mmd/wiki/教程)
 
 Contact
 ------------
