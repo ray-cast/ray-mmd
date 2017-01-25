@@ -13,10 +13,6 @@
 #define WARP_RANGE 8
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
-static const float CascadeZMin = 5;
-static const float CascadeZMax = 2000;
-static const float CascadeScale = 0.5;
-
 static const float LightZMin = 1;
 static const float LightZMax = 4000.0;
 static const float LightDistance = 1000;
@@ -130,9 +126,9 @@ float2 CalcDualShadowCoord(float3 L, float height)
 
 float CalcSplitPosition(float i)
 {
-	float p0 = CascadeZMin + ((CascadeZMax - CascadeZMin) / CascadeZMin) * (i / 4.0);
-	float p1 = CascadeZMin * pow(CascadeZMax / CascadeZMin, i / 4.0);
-	return p0 * (1.0 - CascadeScale) + p1 * CascadeScale;
+	float p0 = mPSSMCascadeZMin + ((mPSSMCascadeZMax - mPSSMCascadeZMin) / mPSSMCascadeZMin) * (i / 4.0);
+	float p1 = mPSSMCascadeZMin * pow(mPSSMCascadeZMax / mPSSMCascadeZMin, i / 4.0);
+	return p0 * (1.0 - mPSSMCascadeScale) + p1 * mPSSMCascadeScale;
 }
 
 float4 CreateFrustumFromProjection()
@@ -183,11 +179,11 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 {
 	float4 frustumInfo = CreateFrustumFromProjection();
 
-	float z0 = CascadeZMin;
+	float z0 = mPSSMCascadeZMin;
 	float z1 = CalcSplitPosition(1.0);
 	float z2 = CalcSplitPosition(2.0);
 	float z3 = CalcSplitPosition(3.0);
-	float z4 = CascadeZMax;
+	float z4 = mPSSMCascadeZMax;
 
 	return float4x4(
 		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z0, z1),
