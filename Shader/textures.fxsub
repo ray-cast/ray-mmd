@@ -155,7 +155,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
 texture DepthMap : OFFSCREENRENDERTARGET <
 	string Description = "SSAO and shadow rendering for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
-	string Format = "G16R16F";
+	string Format = "R32F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	int MipLevels = 1;

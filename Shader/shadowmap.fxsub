@@ -40,7 +40,7 @@ float4 ShadowMapGenPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	material.linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).g);
+	material.linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
 
 	float3 V = normalize(viewdir);
 	float4 viewPosition = float4(V * material.linearDepth / V.z, 1);

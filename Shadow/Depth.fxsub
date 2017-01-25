@@ -35,7 +35,7 @@ float4 DepthObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 	coord.z = -coord.z;
 #endif
 
-	return float4(1, coord.z, 0, 1);
+	return coord.z;
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \

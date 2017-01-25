@@ -201,7 +201,7 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
 	
-	float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).g);
+	float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).r);
 	
 	float fadeOnPerpendicular = saturate(atten * 2);
 	float fadeOnRoughness = material.smoothness;

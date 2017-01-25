@@ -45,7 +45,7 @@ sampler SSAOMapSampTemp = sampler_state {
 
 float linearizeDepth(float2 uv)
 {
-	return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).g;
+	return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).r;
 }
 
 float linearizeDepth2(float2 uv)
