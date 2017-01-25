@@ -26,8 +26,9 @@ void ShadowMapGenVS(
     uniform float face)
 {
     oTexcoord0 = Texcoord;
-    oTexcoord1 = mul(Position, CreateDualViewMatrix(LightPosition, face));
-    oTexcoord2 = oPosition = mul(oTexcoord1, CreateDualProjMatrix(oTexcoord1, PointLightNear, PointLightFar, face));
+    oTexcoord1 = mul(Position, matWorld);
+    oTexcoord2 = mul(oTexcoord1, CreateDualViewMatrix(LightPosition, face));
+    oTexcoord2 = oPosition = mul(oTexcoord2, CreateDualProjMatrix(oTexcoord2, PointLightNear, PointLightFar, face));
 }
 
 float4 ShadowMapGenPS(
@@ -39,8 +40,8 @@ float4 ShadowMapGenPS(
 {
     clip(proj.y * face);
     float3 viewdir = normalize(view);
-    clip(0.7f - dot(viewdir, float3(0.0f, 0.0f, -1.0f)));
-    
+    clip(0.7f - dot(viewdir, float3(0.0f,0.0f,-1.0f)));
+
 #if CASTER_ALPHA_ENABLE
     clip(!opadd - 0.001f);
     float alpha = MaterialDiffuse.a;
@@ -49,7 +50,7 @@ float4 ShadowMapGenPS(
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    
+
     return proj.z / proj.w;
 }
 
