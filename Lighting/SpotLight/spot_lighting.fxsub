@@ -33,7 +33,7 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, LightPlaneNear, LightPlaneFar);
+static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);

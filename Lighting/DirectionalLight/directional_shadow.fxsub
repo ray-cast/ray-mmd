@@ -12,7 +12,7 @@ static float LightRange = 50 + mRange * 150;
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
-static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightZMin, LightZMax);
+static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, mLightZMin, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 

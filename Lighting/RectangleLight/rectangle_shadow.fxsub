@@ -29,7 +29,7 @@ void ShadowMapGenVS(
     oTexcoord0 = Texcoord;
     oTexcoord1 = mul(Position, matWorld);
     oTexcoord2 = mul(oTexcoord1, CreateDualViewMatrix(LightPosition, face));
-    oTexcoord2 = oPosition = mul(oTexcoord2, CreateDualProjMatrix(oTexcoord2, PointLightNear, PointLightFar, face));
+    oTexcoord2 = oPosition = mul(oTexcoord2, CreateDualProjMatrix(oTexcoord2, mPointLightNear, mPointLightFar, face));
 }
 
 float4 ShadowMapGenPS(

@@ -13,16 +13,6 @@
 #define WARP_RANGE 8
 #define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
-static const float LightZMin = 1;
-static const float LightZMax = 4000.0;
-static const float LightDistance = 1000;
-
-static const float LightPlaneNear = 0.1;
-static const float LightPlaneFar = 500.0;
-
-static const float PointLightNear = 1.0;
-static const float PointLightFar  = 1000.0;
-
 float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
 {
 	const float3 up1 = float3(0, 0, 1);

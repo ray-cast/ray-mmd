@@ -1,7 +1,7 @@
 #define SHADOW_BLUR_COUNT 6
 
-static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, LightZMax);
-static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection * LightDistance);
+static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection * mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
@@ -77,7 +77,7 @@ float4 ShadowMapGenPS(
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	
 	float depthSlope = ShadowSlopeScaledBias(receiverDepth);
-	receiverDepth -= (viewPosition.z / LightZMax + depthSlope) * 0.01;
+	receiverDepth -= (viewPosition.z / mLightZMax + depthSlope) * 0.01;
 
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 3);	
 	return shadow;

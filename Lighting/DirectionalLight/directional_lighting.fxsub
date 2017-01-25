@@ -30,7 +30,7 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, LightZMin, LightZMax);
+static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, mLightZMin, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
@@ -109,7 +109,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 	proj.xy += ShadowmapOffset;
 	
 	float slopeBias = saturate(1 - dot(viewLightDirection, normalize(viewPosition - viewLightPosition)));
-	float2 bias = DepthGradient(proj.xy, proj.z / LightZMax);
+	float2 bias = DepthGradient(proj.xy, proj.z / mLightZMax);
 	
 	if (proj.x <= 0.0 || proj.x >= 1.0 ||
 		proj.y <= 0.0 || proj.y >= 1.0)

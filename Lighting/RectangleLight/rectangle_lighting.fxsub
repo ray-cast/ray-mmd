@@ -126,7 +126,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float linearDepth = length(L);
 	
 	float depthScale = 400;
-	float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
 	float shadow = 0.0;
