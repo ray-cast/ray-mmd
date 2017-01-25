@@ -19,9 +19,9 @@ Download :
 - Latest changes - Major allocator changes (25. Jan 2017):
     - Added IES Light Source (25. Dec 2017)
     - Added some default materials (25. Dec 2017)
-    - Improved SSSS and LED lighting (25. Dec 2017)
+    - Improved SSSS and LED lighting (25. Dec 2017)
     - Improved Shadow quality (25. Dec 2017)
-    - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017):
+    - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
 
 Requirement :
 ------------
