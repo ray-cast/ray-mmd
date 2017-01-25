@@ -29,25 +29,21 @@ static const float PointLightFar  = 1000.0;
 
 float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
 {
-   float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
-   float3 up;
+	const float3 up1 = float3(0, 0, 1);
+	const float3 up2 = float3(1, 0, 0);
 
-   if (any(right))
-   {
-	   right = normalize(right);
-	   up = cross(forward, right);
-   }
-   else
-   {
-	   right = float3(1.0f, 0.0f, 0.0f);
-	   up = float3(0.0f, 0.0f, -sign(forward.y));
-   }
+	float3 right = cross(CameraDirection, forward);
+	right = !any(right) ? cross(up1, forward) : right;
+	right = !any(right) ? cross(up2, forward) : right;
+	right = normalize(right);
 
-   	float3x3 rotation = {right.x, up.x, forward.x,
+	float3 up = cross(forward, right);
+
+	float3x3 rotation = {right.x, up.x, forward.x,
 						 right.y, up.y, forward.y,
 						 right.z, up.z, forward.z };
 
-   	return float4x4(rotation[0], 0,
+	return float4x4(rotation[0], 0,
 					rotation[1], 0,
 					rotation[2], 0,
 					mul(-LightPosition, rotation), 1);
