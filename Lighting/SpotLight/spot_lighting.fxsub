@@ -86,7 +86,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
-	proj.z = exp(-proj.z * 0.5);
 
 	float shadow = 0.0;
 
@@ -98,7 +97,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 		for (int y = -samples; y <= samples; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += saturate(tex2D(ShadowMapSamp, pos).r * proj.z);
+			shadow += saturate(exp((tex2D(ShadowMapSamp, pos).r - proj.z)));
 		}
 	}
 	

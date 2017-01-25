@@ -33,12 +33,14 @@ sampler DiffuseMapSamp = sampler_state
 void ShadowMapVS(
     in float4 Position : POSITION,
     in float4 Texcoord : TEXCOORD0,
+    in float3 Normal   : NORMAL,
     out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
     out float4 oPosition : POSITION)
 {
+    float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
     oTexcoord0 = Texcoord;
-    oTexcoord1 = oPosition = mul(Position, matLightViewProject);
+    oTexcoord1 = oPosition = mul(Position + float4(Normal * cosAngle * 0.025, 0), matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
@@ -52,7 +54,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, 
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return exp(position.z * 0.5);
+    return position.z;
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \
