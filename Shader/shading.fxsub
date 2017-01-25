@@ -89,7 +89,7 @@ float4 ShadingOpacityPS(
 	
 #if SSSS_QUALITY // Fix wihte edge
 	float lightModel = DecodeLightModel(tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)));
-	material.linearDepth *= any(lightModel == SHADINGMODELID_SKIN);
+	material.linearDepth *= any(lightModel == SHADINGMODELID_SKIN || lightModel == SHADINGMODELID_SUBSURFACE);
 #endif
 
 	return float4(lighting, material.linearDepth);

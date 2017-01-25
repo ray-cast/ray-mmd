@@ -1,15 +1,8 @@
 float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 {   
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-	
-	MaterialParam material;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-	
-	if (material.lightModel != SHADINGMODELID_SKIN &&
-		material.lightModel != SHADINGMODELID_SUBSURFACE)
+	float lightModel = DecodeLightModel(tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)));
+	if (lightModel != SHADINGMODELID_SKIN &&
+		lightModel != SHADINGMODELID_SUBSURFACE)
 	{
 		clip(-1);
 	}
