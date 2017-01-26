@@ -436,12 +436,12 @@ float3 ApplyVignette(float3 color, float2 coord)
 	return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
 }
 
-float3 ColorCorrect(float3 color, float contrast, float3 ColorBalance)
+float3 ColorCorrect(float3 color, float contrast, float3 colorGrainRGB, float3 colorGrainHSV)
 {
 	float3 lum = luminance(color);
 	color = lerp(color, lum, mColBalance);
 	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
-	color *= ColorBalance;
+	color *= colorGrainRGB + hsv2rgb(colorGrainHSV);
 	return color;
 }
 
@@ -465,7 +465,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #endif
 
 	color = WihteBalance(color, mColorTemperature);
-	color = ColorCorrect(color, mContrast, 1 + mColorBalanceRGB - hsv2rgb(mColorBalanceHSV));
+	color = ColorCorrect(color, mContrast, mColorBalanceRGB, mColorBalanceHSV);
 	color = ApplyVignette(color, coord);
 	
 #if HDR_TONEMAP_OPERATOR == 5
