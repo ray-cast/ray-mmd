@@ -437,9 +437,9 @@ float3 ApplyVignette(float3 color, float2 coord)
 float3 ColorCorrect(float3 color, float contrast)
 {
 	float3 lum = luminance(color);
-	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
 	color = lerp(color, lum, mColBalance);
-	color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
+	color *= mColorBalance;
 	return color;
 }
 
@@ -467,7 +467,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	color = ApplyVignette(color, coord);
 	
 #if HDR_TONEMAP_OPERATOR == 5
-	int lightModel = MRT8.z <= 1e-5 ? (int)floor(abs(MRT8.z)) : (int)floor(MRT7.w * TWO_BITS_EXTRACTION_FACTOR);
+	int lightModel = DecodeLightModel(MRT8);
 	if (lightModel != SHADINGMODELID_SKIN)
 		color = ACESToneMapping(color * mExposure);
 	else
@@ -484,7 +484,6 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	color += lerp(0, bloom, mBloomTonemapping);
 #endif
-	
 	
 #if AA_QUALITY > 0
 	return float4(color, luminance(color));

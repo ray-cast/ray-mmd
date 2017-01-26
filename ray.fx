@@ -47,6 +47,7 @@ static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensity
 static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mTemperatureP);
 static float mExposure = mExposureMin + mExposureP * mExposureMax;
 static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
+static float3 mColorBalance = 1.0 + (float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
