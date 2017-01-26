@@ -441,7 +441,7 @@ float3 ColorCorrect(float3 color, float contrast, float3 colorGrainRGB, float3 c
 	float3 lum = luminance(color);
 	color = lerp(color, lum, mColBalance);
 	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
-	color *= colorGrainRGB + hsv2rgb(colorGrainHSV);
+	color *= hsv2rgb(colorGrainHSV) + colorGrainRGB;
 	return color;
 }
 
