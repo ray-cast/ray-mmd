@@ -17,7 +17,7 @@ float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Directi
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 LightColor = hsv2rgb(float3(mH, mS, 1 - mV)) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-static float LightIntensity = lerp(lerp(1, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), LIGHTSOURCE_MIN_INTENSITY, mIntensityM);
+static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 
 void LightSourceVS(
 	in float4 Position : POSITION,

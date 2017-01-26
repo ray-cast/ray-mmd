@@ -15,11 +15,6 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float GetPhysicalLightAttenuation(float3 L, float radius)
-{
-	return GetPhysicalLightAttenuation(L, radius, mLightAttenuationBlub);
-}
-
 float GetSpotLightAttenuation(float3 L, float3 lightDirection, float cosAngle, float scale)
 {   
 	float spotAngle = dot(L, -lightDirection);

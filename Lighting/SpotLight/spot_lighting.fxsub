@@ -8,27 +8,29 @@
 #include "../../shader/shadowcommon.fxsub"
 #include "../../shader/arealight.fxsub"
 
-float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
+float mH : CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
+float mS : CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
+float mV : CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
 float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mAngleM : CONTROLOBJECT < string name="(self)"; string item = "Angle-"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float mAttenuationBulbP : CONTROLOBJECT < string name="(self)"; string item = "AttenuationBulb+"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
 static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiLightP * mLightIntensityMax;
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static float3 LightColor = hsv2rgb(float3(mH, mS, 1 - mV)) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
@@ -117,7 +119,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
 	
-	float atten = GetPhysicalLightAttenuation(L, LightRange);
+	float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);

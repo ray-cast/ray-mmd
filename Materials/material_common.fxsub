@@ -16,9 +16,17 @@ bool use_spheremap;
 bool use_toon;
 
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
-float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
+float3 hsv2rgb(float3 col)
+{
+    float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
+	return col.z * (1.0 - col.y * rgb);
+}
+
+float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
+float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
+float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
+
+static float3 MorphColor = hsv2rgb(float3(MorphRed, MorphGreen, 1 - MorphBlue));
 #endif
 
 #if EMISSIVE_APPLY_MORPH_INTENSITY
@@ -606,12 +614,12 @@ float3 GetAlbedo(float2 uv, bool useTexture)
 		#endif
 		
 		#if ALBEDO_APPLY_MORPH_COLOR
-			albedoColor *= float3(MorphRed, MorphGreen, MorphBlue);
+			albedoColor *= MorphColor;
 		#endif
 		
 		return albedoColor;
 	#elif ALBEDO_APPLY_MORPH_COLOR
-		return float3(MorphRed, MorphGreen, MorphBlue);
+		return MorphColor;
 	#else
 		return albedo.rgb;
 	#endif
@@ -653,12 +661,12 @@ float3 GetEmissiveColor(float3 albedo, float2 uv, bool useTexture)
 		#endif
 		
 		#if EMISSIVE_APPLY_MORPH_COLOR
-			emissiveColor *= float3(MorphRed, MorphGreen, MorphBlue);
+			emissiveColor *= MorphColor;
 		#endif
 		
 		return emissiveColor;
 	#elif EMISSIVE_APPLY_MORPH_COLOR
-		return float3(MorphRed, MorphGreen, MorphBlue);
+		return MorphColor;
 	#else
 		return emissive.rgb;
 	#endif
