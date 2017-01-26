@@ -53,9 +53,8 @@ float3 ycbcr2rgb(float3 YCbCr)
 
 float3 hsv2rgb(float3 col)
 {
-    float3 rgb = saturate((abs(fmod(col.x*6.0+float3(0.0,4.0,2.0),6.0)-3.0)-1.0));
-	rgb = rgb*rgb*(3.0-2.0*rgb);
-	return col.z * lerp(1.0, rgb, col.y);
+    float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
+	return col.z * (1.0 - col.y * rgb);
 }
 
 float luminance(float3 rgb)
