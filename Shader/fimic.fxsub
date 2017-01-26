@@ -434,17 +434,13 @@ float3 ApplyVignette(float3 color, float2 coord)
 	return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
 }
 
-float3 ApplyColorBalance(float3 color)
+float3 ColorCorrect(float3 color, float contrast)
 {
 	float3 lum = luminance(color);
+	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
 	color = lerp(color, lum, mColBalance);
 	color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
 	return color;
-}
-
-float3 ApplyContrast(float3 color)
-{
-	return lerp(0.18, color, 1 + mContrastP - mContrastM * 0.5);
 }
 
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
@@ -467,8 +463,8 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #endif
 
 	color = WihteBalance(color, mColorTemperature);
+	color = ColorCorrect(color, mContrast);
 	color = ApplyVignette(color, coord);
-	color = ApplyColorBalance(color);
 	
 #if HDR_TONEMAP_OPERATOR == 5
 	int lightModel = MRT8.z <= 1e-5 ? (int)floor(abs(MRT8.z)) : (int)floor(MRT7.w * TWO_BITS_EXTRACTION_FACTOR);
@@ -489,7 +485,6 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	color += lerp(0, bloom, mBloomTonemapping);
 #endif
 	
-	color = ApplyContrast(color);
 	
 #if AA_QUALITY > 0
 	return float4(color, luminance(color));

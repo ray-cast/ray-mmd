@@ -46,6 +46,7 @@ static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mTemperatureP);
 static float mExposure = mExposureMin + mExposureP * mExposureMax;
+static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
