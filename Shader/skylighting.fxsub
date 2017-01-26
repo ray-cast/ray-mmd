@@ -265,7 +265,7 @@ void EnvLightingPS(
 	ShadingMaterial(material, materialAlpha.normal, V, finalSmoothness, diffuse, specular);
 	
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, materialAlpha.normal, V, finalSmoothness, diffuse2, specular2);
+	ShadingMaterial(materialAlpha, materialAlpha.normal, V, materialAlpha.smoothness, diffuse2, specular2);
 	
 	float fakeSSAO = any(materialAlpha.alpha) ? (1 - materialAlpha.alpha * 0.5) : 1;
 	
