@@ -175,7 +175,9 @@ static const float4 ghost_scalar2nd = float4(3.6, 2.0, 0.9, -0.77);
 #if HDR_FLARE_MODE == 1
 static const float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
 static const float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
-#else
+#endif
+
+#if HDR_FLARE_MODE == 2
 static const float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(0.50, 0.50, 0.30, 1.0)};
 static const float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
 #endif
