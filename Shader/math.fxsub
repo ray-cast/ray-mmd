@@ -51,6 +51,13 @@ float3 ycbcr2rgb(float3 YCbCr)
 	return float3(R, G, B);
 }
 
+float3 hsv2rgb(float3 col)
+{
+    float3 rgb = clamp(abs(fmod(col.x*6.0+float3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0 );
+	rgb = rgb*rgb*(3.0-2.0*rgb);
+	return col.z * lerp(1.0, rgb, col.y);
+}
+
 float luminance(float3 rgb)
 {
 	const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);

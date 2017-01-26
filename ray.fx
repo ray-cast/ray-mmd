@@ -28,9 +28,9 @@ float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item =
 float mColBalanceRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR+";>;
 float mColBalanceGP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG+";>;
 float mColBalanceBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB+";>;
-float mColBalanceRM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR-";>;
-float mColBalanceGM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG-";>;
-float mColBalanceBM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB-";>;
+float mColBalanceHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceH+";>;
+float mColBalanceSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceS+";>;
+float mColBalanceVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceV+";>;
 float mColBalance : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceGray+";>;
 float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
@@ -41,13 +41,15 @@ float3 LightDirection : DIRECTION< string Object = "Light";>;
 bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
 bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
 
+
 static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6400, 40000, mTemperatureM), 1000, mTemperatureP);
 static float mExposure = mExposureMin + mExposureP * mExposureMax;
 static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
-static float3 mColorBalance = 1.0 + (float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+static float3 mColorBalanceRGB = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
+static float3 mColorBalanceHSV = float3(mColBalanceHP, mColBalanceSP, mColBalanceVP);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
