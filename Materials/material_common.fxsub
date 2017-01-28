@@ -868,7 +868,7 @@ float GetMetalness(float2 coord)
 		#endif
 		
 		#if METALNESS_MAP_APPLY_SCALE == 1
-			metalnessValue = metalness;
+			metalnessValue *= metalness;
 		#elif METALNESS_MAP_APPLY_SCALE == 2
 			metalnessValue = pow(metalnessValue, metalness);
 		#endif
@@ -945,7 +945,7 @@ float GetOcclusion(float2 coord)
 	#endif
 	
 	#if OCCLUSION_MAP_APPLY_SCALE == 1
-		occlusionValue = occlusion;
+		occlusionValue *= occlusion;
 	#elif OCCLUSION_MAP_APPLY_SCALE == 2
 		occlusionValue = pow(occlusionValue, occlusion);
 	#endif
@@ -967,25 +967,25 @@ float GetCustomDataA(float2 coord)
 		#endif
 	
 		#if CUSTOM_A_MAP_IN_TOONMAP
-			#if CUSTOM_A_MAP_SWIZZLE == 1
-				customData = tex2D(ToonMapSamp, coord * customAMapLoopNum).g;
-			#elif CUSTOM_A_MAP_SWIZZLE == 2
-				customData = tex2D(ToonMapSamp, coord * customAMapLoopNum).b;
-			#elif CUSTOM_A_MAP_SWIZZLE == 3
-				customData = tex2D(ToonMapSamp, coord * customAMapLoopNum).a;
-			#else
-				customData = tex2D(ToonMapSamp, coord * customAMapLoopNum).r;
-			#endif
+			float4 customDatas = tex2D(ToonMapSamp, coord * customAMapLoopNum);
 		#else
-			#if CUSTOM_A_MAP_SWIZZLE == 1
-				customData = tex2D(CustomAMapSamp, coord * customAMapLoopNum).g;
-			#elif CUSTOM_A_MAP_SWIZZLE == 2
-				customData = tex2D(CustomAMapSamp, coord * customAMapLoopNum).b;
-			#elif CUSTOM_A_MAP_SWIZZLE == 3
-				customData = tex2D(CustomAMapSamp, coord * customAMapLoopNum).a;
-			#else
-				customData = tex2D(CustomAMapSamp, coord * customAMapLoopNum).r;
-			#endif
+			float4 customDatas = tex2D(CustomAMapSamp, coord * customAMapLoopNum)
+		#endif
+		
+		#if CUSTOM_A_MAP_SWIZZLE == 1
+			float customData = customDatas.g;
+		#elif CUSTOM_A_MAP_SWIZZLE == 2
+			float customData = customDatas.b;
+		#elif CUSTOM_A_MAP_SWIZZLE == 3
+			float customData = customDatas.a;
+		#else
+			float customData = customDatas.r;
+		#endif
+		
+		#if OCCLUSION_MAP_APPLY_SCALE == 1
+			customData *= customA;
+		#elif OCCLUSION_MAP_APPLY_SCALE == 2
+			customData = pow(customData, customA);
 		#endif
 	#endif
 	
@@ -1030,7 +1030,7 @@ float3 GetCustomDataB(float2 coord)
 		#endif
 	#endif
 	
-	return customData;
+	return saturate(customData);
 #elif USE_CUSTOM_MATERIAL && SSS_ENABLE
 	#if SSS_MAP_ENABLE
 		#if SSS_MAP_UV_FLIP
