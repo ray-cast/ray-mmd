@@ -857,39 +857,29 @@ float GetMetalness(float2 coord)
 			coord.y = 1 - coord.y;
 		#endif
 		
-		#if MELANIN_MAP_IN_TOONMAP
+		#if METALNESS_MAP_IN_TOONMAP
 			float4 metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum);
 		#else
 			float4 metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum);
 		#endif
 		
-		#if METALNESS_MAP_IN_TOONMAP
-			#if METALNESS_MAP_SWIZZLE == 1
-				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
-			#elif METALNESS_MAP_SWIZZLE == 2
-				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
-			#elif METALNESS_MAP_SWIZZLE == 3
-				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
-			#else
-				float metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
-			#endif
+		#if METALNESS_MAP_SWIZZLE == 1
+			float metalnessValue = metalnessValues.g;
+		#elif METALNESS_MAP_SWIZZLE == 2
+			float metalnessValue = metalnessValues.b;
+		#elif METALNESS_MAP_SWIZZLE == 3
+			float metalnessValue = metalnessValues.a;
 		#else
-			#if METALNESS_MAP_SWIZZLE == 1
-				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).g;
-			#elif METALNESS_MAP_SWIZZLE == 2
-				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).b;
-			#elif METALNESS_MAP_SWIZZLE == 3
-				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).a;
-			#else
-				float metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum).r;
-			#endif
+			float metalnessValue = metalnessValues.r;
 		#endif
 		
-		#if METALNESS_MAP_APPLY_SCALE
-			metalnessValue = saturate(metalnessValue * metalness);
+		#if METALNESS_MAP_APPLY_SCALE == 1
+			metalnessValue = metalness;
+		#elif METALNESS_MAP_APPLY_SCALE == 2
+			metalnessValue = pow(metalnessValue, metalness);
 		#endif
 		
-		return metalnessValue;
+		return saturate(metalnessValue);
 	#else
 		return metalness;
 	#endif
