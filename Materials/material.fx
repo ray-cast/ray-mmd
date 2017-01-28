@@ -53,10 +53,10 @@ const float normalMapSubLoopNum = 1.0;
 // 光滑度
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0    // Texture can be create from a toon map.
-#define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
+#define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // Roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
-#define SMOOTHNESS_MAP_APPLY_SCALE 0   // map values to multiply with the (1 = color*x, 2 = color^x).
+#define SMOOTHNESS_MAP_APPLY_SCALE 0   // Map values to multiply with the (1 = color*smoothness, 2 = color^smoothness).
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
@@ -79,6 +79,7 @@ const float metalnessBaseSpecular = 0.04; // minimum of specular coefficient
 #define MELANIN_MAP_IN_TOONMAP 0
 #define MELANIN_MAP_UV_FLIP 0
 #define MELANIN_MAP_SWIZZLE 0
+#define MELANIN_MAP_APPLY_SCALE 0
 #define MELANIN_MAP_FILE "melanin.png"
 
 const float melanin = 0.0;
@@ -138,6 +139,7 @@ const float occlusionMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_UV_FLIP 0
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0
+#define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
 const float customA = 0.0;

@@ -982,9 +982,9 @@ float GetCustomDataA(float2 coord)
 			float customData = customDatas.r;
 		#endif
 		
-		#if OCCLUSION_MAP_APPLY_SCALE == 1
+		#if CUSTOM_A_MAP_APPLY_SCALE == 1
 			customData *= customA;
-		#elif OCCLUSION_MAP_APPLY_SCALE == 2
+		#elif CUSTOM_A_MAP_APPLY_SCALE == 2
 			customData = pow(customData, customA);
 		#endif
 	#endif
