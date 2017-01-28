@@ -20,6 +20,7 @@ struct MaterialParam
 	float emissiveIntensity;
 	float smoothness;
 	float alpha;
+	float visibility;
 	float customDataA;
 	float3 customDataB;
 	float linearDepth;
@@ -71,6 +72,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.alpha = buffer4.w;
 	
 	material.linearDepth = buffer4.x;
+	material.visibility = step(10.0, buffer4.y) ? 1 : buffer4.y;
 	material.lightModel = (int)floor(abs(buffer4.z));
 	
 	if (material.lightModel == SHADINGMODELID_SKIN || 
@@ -85,7 +87,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	{
 		material.specular = buffer3.xxx;
 		material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-		material.emissiveIntensity = buffer4.y;
+		material.emissiveIntensity = (buffer4.y - 1.0) / 10;
 	}
 	else
 	{
@@ -104,11 +106,17 @@ int DecodeLightModel(float4 buffer4)
 	return lightModel;
 }
 
+int DecodeEmissiveIntensity(float4 buffer4)
+{
+	return (buffer4.y - 1.0) / 10;
+}
+
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
 	int lightModel = DecodeLightModel(buffer4);
-	float3 emissive = max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)) * buffer4.y);
-	return emissive * any(lightModel == SHADINGMODELID_EMISSIVE);
+	float intensity = DecodeEmissiveIntensity(buffer4);
+	float3 emissive = max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)));
+	return emissive * intensity * any(lightModel == SHADINGMODELID_EMISSIVE);
 }
 
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)

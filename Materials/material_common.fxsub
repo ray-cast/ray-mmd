@@ -18,7 +18,7 @@ bool use_toon;
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
 float3 hsv2rgb(float3 col)
 {
-    float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
+	float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
 	return col.z * (1.0 - col.y * rgb);
 }
 
@@ -227,6 +227,17 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	};
 #endif
 
+#if USE_CUSTOM_MATERIAL && OCCLUSION_MAP_ENABLE && OCCLUSION_MAP_IN_TOONMAP != 1
+	texture OcclusionMap<string ResourceName = OCCLUSION_MAP_FILE;>; 
+	sampler OcclusionMapSamp = sampler_state
+	{
+		texture = OcclusionMap;
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
 #if ALBEDO_MAP_IN_TEXTURE || ALPHA_MAP_IN_TEXTURE || EMISSIVE_MAP_IN_TEXTURE
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
@@ -248,7 +259,7 @@ sampler SphereMapSamp = sampler_state {
 };
 #endif
 
-#if SMOOTHNESS_MAP_IN_TOONMAP || METALNESS_MAP_IN_TOONMAP || MELANIN_MAP_IN_TOONMAP
+#if SMOOTHNESS_MAP_IN_TOONMAP || METALNESS_MAP_IN_TOONMAP || MELANIN_MAP_IN_TOONMAP || OCCLUSION_MAP_IN_TOONMAP
 texture ToonMap : MATERIALTOONTEXTURE;
 sampler ToonMapSamp = sampler_state {
 	texture = <ToonMap>;
@@ -267,6 +278,7 @@ struct MaterialParam
 	float emissiveIntensity;
 	float smoothness;
 	float alpha;
+	float visibility;
 	float customDataA;
 	float3 customDataB;
 	int lightModel;
@@ -458,8 +470,11 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
 	}
 	
+	
 	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
-	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, -material.lightModel, material.alpha);    
+	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);    
+	gbuffer.buffer4.y = material.emissiveIntensity * 10 + saturate(material.visibility);
+	
 	return gbuffer;
 }
 
@@ -912,6 +927,41 @@ float GetMelanin(float2 coord)
 #endif
 }
 
+float GetOcclusion(float2 coord)
+{
+#if USE_CUSTOM_MATERIAL && OCCLUSION_MAP_ENABLE
+	#if OCCLUSION_MAP_UV_FLIP
+		coord.y = 1 - coord.y;
+	#endif
+	
+	#if OCCLUSION_MAP_IN_TOONMAP
+		float4 values = tex2D(ToonMapSamp, coord * occlusionMapLoopNum);
+	#else
+		float4 values = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum)
+	#endif
+	
+	#if OCCLUSION_MAP_SWIZZLE == 1
+		float value = values.g;
+	#elif OCCLUSION_MAP_SWIZZLE == 2
+		float value = values.b;
+	#elif OCCLUSION_MAP_SWIZZLE == 3
+		float value = values.a;
+	#else
+		float value = values.r;
+	#endif
+	
+	#if OCCLUSION_MAP_APPLY_SCALE == 1
+		value *= occlusion;
+	#elif OCCLUSION_MAP_APPLY_SCALE == 2
+		value = pow(value, occlusion);
+	#endif
+	
+	return value;
+#else
+	return 1.0;
+#endif
+}
+
 float GetCustomDataA(float2 coord)
 {
 #if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
@@ -1090,6 +1140,7 @@ GbufferParam MaterialPS(
 #endif
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
 	material.emissiveIntensity = GetEmissiveIntensity();
+	material.visibility = GetOcclusion(coord.xy);
 	material.lightModel = GetLightMode(material);
 	material.alpha = 1;
 
@@ -1139,6 +1190,7 @@ GbufferParam Material2PS(
 #endif
 	material.emissive = GetEmissiveColor(albedoColor, coord.xy, use_texture);
 	material.emissiveIntensity = GetEmissiveIntensity();
+	material.visibility = GetOcclusion(coord.xy);
 	material.lightModel = GetLightMode(material);
 #if ALPHA_MAP_ANIMATION_ENABLE
 	material.alpha = alpha;

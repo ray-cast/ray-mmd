@@ -8,6 +8,7 @@ float showAlbedo : CONTROLOBJECT < string name="(self)"; string item = "Albedo";
 float showNormal : CONTROLOBJECT < string name="(self)"; string item = "Normal"; >;
 float showSpecular : CONTROLOBJECT < string name="(self)"; string item = "Specular"; >;
 float showSmoothness : CONTROLOBJECT < string name="(self)"; string item = "Smoothness"; >;
+float showVisibility : CONTROLOBJECT < string name="(self)"; string item = "Visibility"; >;
 float showCustomID : CONTROLOBJECT < string name="(self)"; string item = "CustomID"; >;
 float showCustomDataA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataA"; >;
 float showCustomDataB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataB"; >;
@@ -19,6 +20,7 @@ float showAlbedoAlpha : CONTROLOBJECT < string name="(self)"; string item = "Alb
 float showNormalAlpha : CONTROLOBJECT < string name="(self)"; string item = "NormalAlpha"; >;
 float showSpecularAlpha : CONTROLOBJECT < string name="(self)"; string item = "SpecularAlpha"; >;
 float showSmoothnessAlpha : CONTROLOBJECT < string name="(self)"; string item = "SmoothnessAlpha"; >;
+float showVisibilityAlpha : CONTROLOBJECT < string name="(self)"; string item = "VisibilityAlpha"; >;
 float showCustomIDAlpha : CONTROLOBJECT < string name="(self)"; string item = "CustomIDAlpha"; >;
 float showCustomDataAlphaA : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaA"; >;
 float showCustomDataAlphaB : CONTROLOBJECT < string name="(self)"; string item = "CustomDataAlphaB"; >;
@@ -97,8 +99,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
-	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showCustomID + showCustomDataB + showCustomDataA + showEmissive;
-	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
+	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showVisibility + showCustomID + showCustomDataB + showCustomDataA + showEmissive;
+	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showVisibilityAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
 	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM;
 	
 	float3 result = srgb2linear(tex2D(ScnSamp, coord).rgb) * !any(showTotal);
@@ -109,6 +111,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += material.customDataA * showCustomDataA;
 	result += material.customDataB * showCustomDataB;
 	result += material.emissive * showEmissive;
+	result += material.visibility * showVisibility;
 	
 	result += materialAlpha.albedo * showAlbedoAlpha;
 	result += (mul(materialAlpha.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormalAlpha;
@@ -117,6 +120,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.customDataA * showCustomDataAlphaA;
 	result += materialAlpha.customDataB * showCustomDataAlphaB;
 	result += materialAlpha.emissive * showEmissiveAlpha;
+	result += materialAlpha.visibility * showVisibilityAlpha;
 	
 	result = linear2srgb(result);
 

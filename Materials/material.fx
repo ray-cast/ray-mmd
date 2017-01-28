@@ -56,7 +56,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // roughness is (1.0f - smoothness)^2 but not 1.0 - smoothness.
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
-#define SMOOTHNESS_MAP_APPLY_SCALE 0   // smoothness values to multiply with the smoothness.
+#define SMOOTHNESS_MAP_APPLY_SCALE 0   // map values to multiply with the (1 = color*x, 2 = color^x).
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
 const float smoothness = 0.5;
@@ -67,12 +67,12 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE 0
-#define METALNESS_MAP_APPLY_SCALE 0      // metalness values to multiply with the metalness.
+#define METALNESS_MAP_APPLY_SCALE 0
 #define METALNESS_MAP_FILE "metalness.png"
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04; // not calculate IBLspec when set to zero.
+const float metalnessBaseSpecular = 0.04; // minimum of specular coefficient
 
 // 黑色素
 #define MELANIN_MAP_ENABLE 0
@@ -86,7 +86,7 @@ const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0
-#define EMISSIVE_USE_ALBEDO 0 // It can be used from albedo params, but u can still use the EMISSIVE_APPLY_COLOR or EMISSIVE_APPLY_MORPH_COLOR
+#define EMISSIVE_USE_ALBEDO 0 // used from albedo params, but still can use the EMISSIVE_APPLY_COLOR or EMISSIVE_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
 #define EMISSIVE_MAP_IN_SCREEN_MAP 0
@@ -94,7 +94,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_ANIMATION_SPEED 1
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
-#define EMISSIVE_APPLY_MORPH_COLOR 0 // Light color for multi-light-source
+#define EMISSIVE_APPLY_MORPH_COLOR 0     // Light color for multi-light-source
 #define EMISSIVE_APPLY_MORPH_INTENSITY 0 // Light intensity for multi-light-source
 #define EMISSIVE_MAP_FILE "emissive.png"
 
@@ -110,6 +110,17 @@ const float emissiveMapLoopNum = 1.0;
 
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
+
+// Sky Occlusion
+#define OCCLUSION_MAP_ENABLE 0 // like AO map but not, but u still can use ao map
+#define OCCLUSION_MAP_IN_TOONMAP 0
+#define OCCLUSION_MAP_UV_FLIP 0
+#define OCCLUSION_MAP_SWIZZLE 0
+#define OCCLUSION_MAP_APPLY_SCALE 0
+#define OCCLUSION_MAP_FILE "occlusion.png"
+
+const float occlusion = 0.0;
+const float occlusionMapLoopNum = 1.0;
 
 // Shading Material ID
 // 0 : Default            // customA = invalid,    customB = invalid
