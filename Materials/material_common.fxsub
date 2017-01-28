@@ -807,27 +807,21 @@ float GetSmoothness(float2 coord)
 		#if SMOOTHNESS_MAP_UV_FLIP
 			coord.y = 1 - coord.y;
 		#endif
-	
-		#if SMOOTHNESS_MAP_IN_TOONMAP
-			#if SMOOTHNESS_MAP_SWIZZLE == 1
-				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).g;
-			#elif SMOOTHNESS_MAP_SWIZZLE == 2
-				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).b;
-			#elif SMOOTHNESS_MAP_SWIZZLE == 3
-				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).a;
-			#else
-				float smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum).r;
-			#endif
+
+		#if SMOOTHNeSS_MAP_IN_TOONMAP
+			float4 smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum);
 		#else
-			#if SMOOTHNESS_MAP_SWIZZLE == 1
-				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).g;
-			#elif SMOOTHNESS_MAP_SWIZZLE == 2
-				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).b;
-			#elif SMOOTHNESS_MAP_SWIZZLE == 3
-				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).a;
-			#else
-				float smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum).r;
-			#endif
+			float4 smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum);
+		#endif
+		
+		#if SMOOTHNeSS_MAP_SWIZZLE == 1
+			float smoothnessValue = smoothnessValues.g;
+		#elif SMOOTHNeSS_MAP_SWIZZLE == 2
+			float smoothnessValue = smoothnessValues.b;
+		#elif SMOOTHNeSS_MAP_SWIZZLE == 3
+			float smoothnessValue = smoothnessValues.a;
+		#else
+			float smoothnessValue = smoothnessValues.r;
 		#endif
 			
 		#if SMOOTHNESS_MAP_IS_ROUGHNESS
@@ -841,7 +835,7 @@ float GetSmoothness(float2 coord)
 		#endif
 		
 		return saturate(smoothnessValue);
-	#else       
+	#else
 		return smoothness;
 	#endif
 #else
