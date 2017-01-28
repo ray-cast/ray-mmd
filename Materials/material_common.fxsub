@@ -973,13 +973,13 @@ float GetCustomDataA(float2 coord)
 		#endif
 		
 		#if CUSTOM_A_MAP_SWIZZLE == 1
-			float customData = customDatas.g;
+			customData = customDatas.g;
 		#elif CUSTOM_A_MAP_SWIZZLE == 2
-			float customData = customDatas.b;
+			customData = customDatas.b;
 		#elif CUSTOM_A_MAP_SWIZZLE == 3
-			float customData = customDatas.a;
+			customData = customDatas.a;
 		#else
-			float customData = customDatas.r;
+			customData = customDatas.r;
 		#endif
 		
 		#if CUSTOM_A_MAP_APPLY_SCALE == 1
