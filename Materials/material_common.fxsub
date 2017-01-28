@@ -969,7 +969,7 @@ float GetCustomDataA(float2 coord)
 		#if CUSTOM_A_MAP_IN_TOONMAP
 			float4 customDatas = tex2D(ToonMapSamp, coord * customAMapLoopNum);
 		#else
-			float4 customDatas = tex2D(CustomAMapSamp, coord * customAMapLoopNum)
+			float4 customDatas = tex2D(CustomAMapSamp, coord * customAMapLoopNum);
 		#endif
 		
 		#if CUSTOM_A_MAP_SWIZZLE == 1
