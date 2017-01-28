@@ -903,7 +903,7 @@ float GetMelanin(float2 coord)
 		#if MELANIN_MAP_IN_TOONMAP
 			float4 melaninValues = tex2D(ToonMapSamp, coord * melaninMapLoopNum);
 		#else
-			float4 melaninValues = tex2D(OcclusionMapSamp, coord * melaninMapLoopNum)
+			float4 melaninValues = tex2D(MelaninMapSamp, coord * melaninMapLoopNum)
 		#endif
 		
 		#if MELANIN_MAP_SWIZZLE == 1
