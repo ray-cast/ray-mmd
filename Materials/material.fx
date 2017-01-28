@@ -112,8 +112,8 @@ const float emissiveMapLoopNum = 1.0;
 const float parallaxMapScale = 0.01;
 const float parallaxMapLoopNum = 1.0;
 
-// Sky Occlusion
-#define OCCLUSION_MAP_ENABLE 0 // like AO map but not, but u still can use ao map
+// 环境光遮蔽
+#define OCCLUSION_MAP_ENABLE 0
 #define OCCLUSION_MAP_IN_TOONMAP 0
 #define OCCLUSION_MAP_UV_FLIP 0
 #define OCCLUSION_MAP_SWIZZLE 0
