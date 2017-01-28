@@ -117,10 +117,10 @@ const float parallaxMapLoopNum = 1.0;
 #define OCCLUSION_MAP_IN_TOONMAP 0
 #define OCCLUSION_MAP_UV_FLIP 0
 #define OCCLUSION_MAP_SWIZZLE 0
-#define OCCLUSION_MAP_APPLY_SCALE 0
+#define OCCLUSION_MAP_APPLY_SCALE 0 // see SMOOTHNESS_MAP_APPLY_SCALE
 #define OCCLUSION_MAP_FILE "occlusion.png"
 
-const float occlusion = 0.0;
+const float occlusionMapScale = 0.0;
 const float occlusionMapLoopNum = 1.0;
 
 // Shading Material ID
