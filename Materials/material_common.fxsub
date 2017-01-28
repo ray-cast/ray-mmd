@@ -834,11 +834,13 @@ float GetSmoothness(float2 coord)
 			smoothnessValue = RoughnessToSmoothness(smoothnessValue);
 		#endif
 		
-		#if SMOOTHNESS_MAP_APPLY_SCALE
-			smoothnessValue = saturate(smoothnessValue * smoothness);
+		#if SMOOTHNESS_MAP_APPLY_SCALE == 1
+			smoothnessValue *= smoothness;
+		#elif SMOOTHNESS_MAP_APPLY_SCALE == 2
+			smoothnessValue = pow(smoothnessValue, smoothness);
 		#endif
 		
-		return smoothnessValue;
+		return saturate(smoothnessValue);
 	#else       
 		return smoothness;
 	#endif
@@ -899,26 +901,28 @@ float GetMelanin(float2 coord)
 		#endif
 		
 		#if MELANIN_MAP_IN_TOONMAP
-			#if MELANIN_MAP_SWIZZLE == 1
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).g;
-			#elif MELANIN_MAP_SWIZZLE == 2
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).b;
-			#elif MELANIN_MAP_SWIZZLE == 3
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).a;
-			#else
-				return tex2D(ToonMapSamp, coord * metalnessMapLoopNum).r;
-			#endif
+			float4 melaninValues = tex2D(ToonMapSamp, coord * melaninMapLoopNum);
 		#else
-			#if MELANIN_MAP_SWIZZLE == 1
-				return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).g;
-			#elif MELANIN_MAP_SWIZZLE == 2
-				return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).b;
-			#elif MELANIN_MAP_SWIZZLE == 3
-				return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).a;
-			#else
-				return tex2D(MelaninMapSamp, coord * metalnessMapLoopNum).r;
-			#endif
+			float4 melaninValues = tex2D(OcclusionMapSamp, coord * melaninMapLoopNum)
 		#endif
+		
+		#if MELANIN_MAP_SWIZZLE == 1
+			float melaninValue = melaninValues.g;
+		#elif MELANIN_MAP_SWIZZLE == 2
+			float melaninValue = melaninValues.b;
+		#elif MELANIN_MAP_SWIZZLE == 3
+			float melaninValue = melaninValues.a;
+		#else
+			float melaninValue = melaninValues.r;
+		#endif
+		
+		#if MELANIN_MAP_APPLY_SCALE == 1
+			melaninValue = melanin;
+		#elif MELANIN_MAP_APPLY_SCALE == 2
+			melaninValue = pow(melaninValue, melanin);
+		#endif
+		
+		return saturate(melaninValue);
 	#else
 		return melanin;
 	#endif
@@ -935,28 +939,28 @@ float GetOcclusion(float2 coord)
 	#endif
 	
 	#if OCCLUSION_MAP_IN_TOONMAP
-		float4 values = tex2D(ToonMapSamp, coord * occlusionMapLoopNum);
+		float4 occlusionValues = tex2D(ToonMapSamp, coord * occlusionMapLoopNum);
 	#else
-		float4 values = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum)
+		float4 occlusionValues = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum)
 	#endif
 	
 	#if OCCLUSION_MAP_SWIZZLE == 1
-		float value = values.g;
+		float occlusionValue = occlusionValues.g;
 	#elif OCCLUSION_MAP_SWIZZLE == 2
-		float value = values.b;
+		float occlusionValue = occlusionValues.b;
 	#elif OCCLUSION_MAP_SWIZZLE == 3
-		float value = values.a;
+		float occlusionValue = occlusionValues.a;
 	#else
-		float value = values.r;
+		float occlusionValue = occlusionValues.r;
 	#endif
 	
 	#if OCCLUSION_MAP_APPLY_SCALE == 1
-		value *= occlusion;
+		occlusionValue = occlusion;
 	#elif OCCLUSION_MAP_APPLY_SCALE == 2
-		value = pow(value, occlusion);
+		occlusionValue = pow(occlusionValue, occlusion);
 	#endif
 	
-	return value;
+	return saturate(occlusionValue);
 #else
 	return 1.0;
 #endif
