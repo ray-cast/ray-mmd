@@ -855,9 +855,9 @@ float GetMetalness(float2 coord)
 		#endif
 		
 		#if METALNESS_MAP_IN_TOONMAP
-			float4 metalnessValue = tex2D(ToonMapSamp, coord * metalnessMapLoopNum);
+			float4 metalnessValues = tex2D(ToonMapSamp, coord * metalnessMapLoopNum);
 		#else
-			float4 metalnessValue = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum);
+			float4 metalnessValues = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum);
 		#endif
 		
 		#if METALNESS_MAP_SWIZZLE == 1
