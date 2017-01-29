@@ -23,7 +23,7 @@ Download :
     - Added morph controler to set the attenuation of multiple light source (29. Jan 2017)
     - Improved SSSS and LED lighting (25. Jan 2017)
     - Improved Shadow quality (25. Jan 2017)
-    - Improved Emissive Material, when luminance was less than 1, not calculate bloom effcet (25. Jan 2017)
+    - Improved Emissive Material, when luminance was less than 1, not calculate bloom effect (25. Jan 2017)
     - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
     - Fixed some minor bugs (29. Jan 2017)
 
