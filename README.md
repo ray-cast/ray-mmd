@@ -25,6 +25,7 @@ Download :
     - Improved Shadow quality (25. Jan 2017)
     - Improved Emissive Material, when luminance was less than 1, not calculate bloom effcet (25. Jan 2017)
     - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
+    - Fixed some minor bugs (29. Jan 2017)
 
 Requirement :
 ------------
