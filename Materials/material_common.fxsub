@@ -16,9 +16,9 @@ bool use_spheremap;
 bool use_toon;
 
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
-float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
-float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
-float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
+float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 
 static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
 #endif
