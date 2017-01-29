@@ -72,7 +72,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.alpha = buffer4.w;
 	
 	material.linearDepth = buffer4.x;
-	material.visibility = step(10.0, buffer4.y) ? 1 : buffer4.y;
+	material.visibility = frac(buffer4.y) + 1e-5;
 	material.lightModel = (int)floor(abs(buffer4.z));
 	
 	if (material.lightModel == SHADINGMODELID_SKIN || 
@@ -87,7 +87,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	{
 		material.specular = buffer3.xxx;
 		material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-		material.emissiveIntensity = (buffer4.y - 1.0) / 10;
+		material.emissiveIntensity = floor(buffer4.y) / 100.0;
 	}
 	else
 	{
@@ -106,9 +106,9 @@ int DecodeLightModel(float4 buffer4)
 	return lightModel;
 }
 
-int DecodeEmissiveIntensity(float4 buffer4)
+float DecodeEmissiveIntensity(float4 buffer4)
 {
-	return (buffer4.y - 1.0) / 10;
+	return floor(buffer4.y) / 100.0;
 }
 
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
