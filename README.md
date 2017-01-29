@@ -22,7 +22,7 @@ Download :
     - Added some default materials (25. Dec 2017)
     - Improved SSSS and LED lighting (25. Dec 2017)
     - Improved Shadow quality (25. Dec 2017)
-    - Improved Emissive Material, luminance of less than 1, Not bloom effcet (25. Dec 2017)
+    - Improved Emissive Material, luminance of less than 1, no bloom effcet (25. Dec 2017)
     - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
 
 Requirement :
