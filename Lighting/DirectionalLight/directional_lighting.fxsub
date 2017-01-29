@@ -7,9 +7,9 @@
 #include "../../shader/lighting.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float mH : CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
-float mS : CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
-float mV : CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
+float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
 float mRange : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
@@ -25,7 +25,7 @@ static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiL
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightColor = hsv2rgb(float3(mH, mS, 1 - mV)) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));

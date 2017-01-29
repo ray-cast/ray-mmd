@@ -16,17 +16,11 @@ bool use_spheremap;
 bool use_toon;
 
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
-float3 hsv2rgb(float3 col)
-{
-	float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
-	return col.z * (1.0 - col.y * rgb);
-}
-
 float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
 float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
 
-static float3 MorphColor = hsv2rgb(float3(MorphRed, MorphGreen, 1 - MorphBlue));
+static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
 #endif
 
 #if EMISSIVE_APPLY_MORPH_INTENSITY

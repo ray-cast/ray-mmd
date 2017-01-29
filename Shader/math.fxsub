@@ -51,12 +51,6 @@ float3 ycbcr2rgb(float3 YCbCr)
 	return float3(R, G, B);
 }
 
-float3 hsv2rgb(float3 col)
-{
-    float3 rgb = smoothstep(2.0,1.0, abs(fmod(col.x*6.0+float3(0,4,2), 6.0) - 3.0));
-	return col.z * (1.0 - col.y * rgb);
-}
-
 float luminance(float3 rgb)
 {
 	const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
