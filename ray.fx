@@ -28,9 +28,9 @@ float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item =
 float mColBalanceRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR+";>;
 float mColBalanceGP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG+";>;
 float mColBalanceBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB+";>;
-float mColBalanceHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceH+";>;
-float mColBalanceSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceS+";>;
-float mColBalanceVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceV-";>;
+float mColBalanceRM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR-";>;
+float mColBalanceGM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG-";>;
+float mColBalanceBM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB-";>;
 float mColBalance : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceGray+";>;
 float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
@@ -47,8 +47,8 @@ static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensity
 static float mColorTemperature = lerp(lerp(6400, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = mExposureMin + mExposureP * mExposureMax;
 static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
-static float3 mColorBalanceRGB = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
-static float3 mColorBalanceHSV = float3(mColBalanceHP, mColBalanceSP, 1 - mColBalanceVM);
+static float3 mColorBalanceRGBP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
+static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
