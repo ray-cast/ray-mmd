@@ -829,7 +829,17 @@ float GetSmoothness(float2 coord)
 		
 		return saturate(smoothnessValue);
 	#else
-		return smoothness;
+		float smoothnessValue = ShininessToSmoothness(MaterialPower);
+		
+		#if SMOOTHNESS_MAP_APPLY_SCALE == 1
+			smoothnessValue *= smoothness;
+		#elif SMOOTHNESS_MAP_APPLY_SCALE == 2
+			smoothnessValue = pow(smoothnessValue, smoothness);
+		#else
+			smoothnessValue = smoothness;
+		#endif
+		
+		return smoothnessValue;
 	#endif
 #else
 	return ShininessToSmoothness(MaterialPower);
