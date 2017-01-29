@@ -20,6 +20,7 @@ Download :
     - Added IES light source (25. Dec 2017)
     - Added Ambient occlusion map support (29. Dec 2017)
     - Added some default materials (25. Dec 2017)
+    - Added morph controler to set the attenuation of multiple light source (29. Dec 2017)
     - Improved SSSS and LED lighting (25. Dec 2017)
     - Improved Shadow quality (25. Dec 2017)
     - Improved Emissive Material, when luminance was less than 1, not calculate bloom effcet (25. Dec 2017)
