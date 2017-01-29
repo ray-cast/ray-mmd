@@ -22,7 +22,7 @@ float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string it
 
 static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiLightP * mLightIntensityMax;
 
 static float3 LightPosition = mPosition;

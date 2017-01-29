@@ -9,9 +9,9 @@
 #include "../../shader/arealight.fxsub"
 #include "../../shader/fog.fxsub"
 
-float mFogH :  CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
-float mFogS :  CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
-float mFogV :  CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
+float mFogR :  CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float mFogG :  CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float mFogB :  CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
 float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
@@ -20,8 +20,8 @@ float mGlossM : CONTROLOBJECT < string name="(self)"; string item = "Gloss-"; >;
 float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
 float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
 
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE) * mLightAttenuationBlub;
-static float LightIntensity = (1 - mIntensityM) * LIGHTSOURCE_MIN_INTENSITY + mIntensityP * LIGHTSOURCE_MAX_INTENSITY;
+static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float3 LightPosition = mPosition;
 
 #if VOLUMETRIC_FOG_ENABLE
@@ -104,7 +104,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.lightPosition = LightPosition;
 	param.lightRange = LightRange;
 	param.lightIntensity = LightIntensity;
-	param.lightColor = hsv2rgb(float3(mFogH, mFogS, 1 - mFogV));
+	param.lightColor = float3(mFogR, mFogG, mFogB);
 	param.eye = CameraPosition;
 	param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
 	

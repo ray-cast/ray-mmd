@@ -5,9 +5,9 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
-float mFogH :  CONTROLOBJECT < string name="(self)"; string item = "H+"; >;
-float mFogS :  CONTROLOBJECT < string name="(self)"; string item = "S+"; >;
-float mFogV :  CONTROLOBJECT < string name="(self)"; string item = "V-"; >;
+float mFogR :  CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
+float mFogG :  CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
+float mFogB :  CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 float mFogRange :  CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
 float mFogHeight :  CONTROLOBJECT < string name="(self)"; string item = "Height+"; >;
 float mFogDensity :  CONTROLOBJECT < string name="(self)"; string item = "Density+"; >;
@@ -17,7 +17,7 @@ float4 ApplyGroundFog(float distance, float3 V)
 	float3 P = mul(float4(V * distance / V.z, 1), matViewInverse).xyz;
 	float fog = 1.0 - exp(-distance * P.y * (mFogHeight / 5000));
 	float fogAmount = saturate(mFogDensity * exp(-CameraPosition.y * (mFogHeight / 5000)) * fog / P.y);
-	float3 fogColor = hsv2rgb(float3(mFogH, mFogS, 1 - mFogV));
+	float3 fogColor = float3(mFogR, mFogG, mFogB);
 	fogAmount = pow(fogAmount, max(1 - mFogRange, 0.01));
 	return float4(fogColor * fogAmount, 0);
 }

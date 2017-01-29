@@ -37,7 +37,7 @@ float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 v
 	float linearDepth = length(L);
 	
 	float depthScale = 85;
-	float depth = (PointLightFar / linearDepth) * (linearDepth - PointLightNear) / (PointLightFar - PointLightNear);
+	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
 	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
@@ -81,7 +81,7 @@ float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
 	for (int i = 0; i < stepNum; i++)
 	{
 		float3 L = stepStart - lightPos;
-		float atten = GetPhysicalLightAttenuation(L, param.lightRange);
+		float atten = GetPhysicalLightAttenuation(L, param.lightRange, 1.0);
 		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 
@@ -115,7 +115,7 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
 	for (int i = 0; i < stepNum; i++)
 	{
 		float3 L = stepStart - lightPos;
-		float atten = GetPhysicalLightAttenuation(L, param.lightRange);
+		float atten = GetPhysicalLightAttenuation(L, param.lightRange, 1.0);
 		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 		atten *= ShadowTest(param, shadowMap, shadowSize, stepStart);
