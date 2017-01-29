@@ -802,9 +802,9 @@ float GetSmoothness(float2 coord)
 		#endif
 
 		#if SMOOTHNeSS_MAP_IN_TOONMAP
-			float4 smoothnessValue = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum);
+			float4 smoothnessValues = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum);
 		#else
-			float4 smoothnessValue = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum);
+			float4 smoothnessValues = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum);
 		#endif
 		
 		#if SMOOTHNeSS_MAP_SWIZZLE == 1
