@@ -355,26 +355,26 @@ float4 StarStreakPS(
 
 float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 {
-	float4 bloom1 = tex2Dlod(BloomSamp1st, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[0]);
-	float4 bloom2 = tex2Dlod(BloomSamp2nd, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[1]);
-	float4 bloom3 = tex2Dlod(BloomSamp3rd, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[2]);
-	float4 bloom4 = tex2Dlod(BloomSamp4th, float4(coord, 0, 0)) * BloomFactor(mBloomFactors[3]);
+	float3 bloom1 = tex2Dlod(BloomSamp1st, float4(coord, 0, 0)).rgb;
+	float3 bloom2 = tex2Dlod(BloomSamp2nd, float4(coord, 0, 0)).rgb;
+	float3 bloom3 = tex2Dlod(BloomSamp3rd, float4(coord, 0, 0)).rgb;
+	float3 bloom4 = tex2Dlod(BloomSamp4th, float4(coord, 0, 0)).rgb;
 	
-	float4 bloom = 0.0f;
-	bloom += bloom1;
-	bloom += bloom2;
-	bloom += bloom3;
-	bloom += bloom4;
+	float3 bloom = 0.0f;
+	bloom += bloom1 * BloomFactor(mBloomFactors[0]);
+	bloom += bloom2 * BloomFactor(mBloomFactors[1]);
+	bloom += bloom3 * BloomFactor(mBloomFactors[2]);
+	bloom += bloom4 * BloomFactor(mBloomFactors[3]);
 	
 #if HDR_STAR_MODE > 0
 	float4 star = max(tex2Dlod(StreakSamp1st, float4(coord, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord, 0, 0)));
 #if HDR_STAR_MODE > 2
 	star = max(star, max(tex2Dlod(StreakSamp3rd, float4(coord, 0, 0)), tex2Dlod(StreakSamp4th, float4(coord, 0, 0))));
 #endif
-	bloom += star;
+	bloom += star.rgb;
 #endif
 	
-	return bloom;
+	return float4(bloom, 0.0);
 }
 
 #if HDR_FLARE_MODE > 0
