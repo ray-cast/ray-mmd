@@ -181,10 +181,7 @@ float4 ShadingTransparentPS(
 	{
 		float2 ior = mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
 		float3 fresnel = EnvironmentSpecularGlass(N, V, material.smoothness, material.specular);
-		float3 shift1 = tex2Dlod(ShadingMapTempSamp, float4(coord + ior, 0, 0)).rgb;
-		float3 shift2 = tex2Dlod(ShadingMapTempSamp, float4(coord + ior - 0.0012, 0, 0)).rgb;
-		float3 shift3 = tex2Dlod(ShadingMapTempSamp, float4(coord + ior + 0.0012, 0, 0)).rgb;
-		float3 prefilteredRefract = float3(shift2.r, shift1.g, shift3.b);
+		float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord + ior, 0, 0)).rgb;
 		lighting = lerp(prefilteredRefract * material.customDataB, lighting, fresnel * material.alpha);
 	}
 	else
