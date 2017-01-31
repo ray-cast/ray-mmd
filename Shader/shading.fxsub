@@ -42,7 +42,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 #endif
 
 	diffuse *= material.visibility * shadow;
-	specular *= material.visibility * shadow * shadow;
+	specular *= material.visibility * shadow * shadow * shadow;
 #endif
 }
 
