@@ -41,8 +41,8 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	shadow = lerp(shadow, shadowDepth.r, mEnvShadowP);
 #endif
 
-	diffuse *= shadow * material.visibility;
-	specular *= shadow * material.visibility;
+	diffuse *= material.visibility * shadow;
+	specular *= material.visibility * shadow * shadow;
 #endif
 }
 
