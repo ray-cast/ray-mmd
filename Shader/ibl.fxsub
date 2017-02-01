@@ -26,11 +26,6 @@ float EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness)
 	return min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
 }
 
-float3 EnvironmentSpecularGlass(float3 N, float3 V, float smoothness, float3 specular)
-{
-    return lerp(specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * smoothness));
-}
-
 float3 ComputeDiffuseDominantDir(float3 N, float3 V, float roughness)
 {
     float a = 1.02341f * roughness - 1.51174f; 
