@@ -18,6 +18,7 @@ Download :
     - Fewer Bugs in this version
 - Latest changes - Major allocator changes (25. Jan 2017):
     - Added IES light source (25. Jan 2017)
+    - Added IES2HDR Tool (1. Feb 2017)
     - Added Ambient occlusion map support (29. Jan 2017)
     - Added some default materials (25. Jan 2017)
     - Added morph controler to set the attenuation of multiple light source (29. Jan 2017)
