@@ -114,6 +114,20 @@ float2 CalcDualShadowCoord(float3 L, float height)
 	return coord;
 }
 
+float2 CalcFishShadowProj(float2 P, float bias)
+{
+	float dist = length(P);
+	float distortFactor = (1.0 - bias) + dist * bias;
+	return P / distortFactor;
+}
+
+float2 CalcFishShadowCoord(float2 P, float bias)
+{
+	float dist = sqrt(dot(P, P));
+	float distortFactor = (1.0 - bias) + dist * bias;
+	return P / distortFactor;
+}
+
 float CalcSplitPosition(float i)
 {
 	float p0 = mPSSMCascadeZMin + ((mPSSMCascadeZMax - mPSSMCascadeZMin) / mPSSMCascadeZMin) * (i / 4.0);
