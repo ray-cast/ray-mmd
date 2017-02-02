@@ -1,7 +1,7 @@
 #define SHADOW_BLUR_COUNT 6
 
 static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
-static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection * mLightDistance);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
