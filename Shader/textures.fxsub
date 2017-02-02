@@ -65,7 +65,7 @@ texture LightMap: OFFSCREENRENDERTARGET <
 		"TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
 		"LED*.* =./Lighting/RectangleLight/rectangle_lighting_led.fx;"
 		"RectangleLight*.* =./Lighting/RectangleLight/rectangle_lighting.fx;"
-		"IESLight*.* =./Lighting/IESLight/IES1/IES_lighting.fx;"
+		"IESLight*.* =./Lighting/IESLight/IES Light of 1/IES_lighting.fx;"
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET <
