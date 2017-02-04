@@ -117,10 +117,8 @@ sampler IESTextureSamp = sampler_state
 
 float3 ComputeIESLightProfile(float3 L, float3 Ld)
 {
-    float3 NegLightDirection = L;
-    float DotProd = dot(NegLightDirection, Ld);
-    float NormAngle = (asin(DotProd) / PI) + 0.5f;
-    return tex2Dlod(IESTextureSamp, float4(NormAngle, 0, 0, 0)).rgb;
+    float angle = (asin(dot(L, Ld)) / PI) + 0.5f;
+    return tex2Dlod(IESTextureSamp, float4(angle, 0, 0, 0)).rgb;
 }
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
