@@ -62,8 +62,6 @@ sampler IBLSpecularSampler = sampler_state {
 };
 #endif
 
-#undef SHADOW_MAP_SIZE
-
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0

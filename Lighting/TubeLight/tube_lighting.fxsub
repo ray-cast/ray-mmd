@@ -45,8 +45,6 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightLeft = mul(float4(LightLeft, 1), matView).xyz;
 static float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;
 
-#undef SHADOW_MAP_SIZE
-
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0

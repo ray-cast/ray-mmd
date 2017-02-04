@@ -1,7 +1,7 @@
 #include "../ray.conf"
 #include "../ray_advanced.conf"
 #include "../shader/common.fxsub"
-#include "../shader/shadowcommon.fxsub"
+#include "../shader/csm.fxsub"
 
 float3 LightDirection : DIRECTION < string Object = "Light";>;
 

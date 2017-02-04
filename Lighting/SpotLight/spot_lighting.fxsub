@@ -40,8 +40,6 @@ static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection)
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
 
-#undef SHADOW_MAP_SIZE
-
 #if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
 #   define SHADOW_MAP_SIZE 256

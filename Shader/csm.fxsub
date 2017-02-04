@@ -1,0 +1,146 @@
+#if SHADOW_QUALITY == 1
+#   define SHADOW_MAP_SIZE 1024
+#elif SHADOW_QUALITY == 2
+#   define SHADOW_MAP_SIZE 2048
+#elif SHADOW_QUALITY == 3
+#   define SHADOW_MAP_SIZE 4096
+#elif SHADOW_QUALITY == 4
+#   define SHADOW_MAP_SIZE 8192
+#elif SHADOW_QUALITY == 5
+#   define SHADOW_MAP_SIZE 16384
+#endif
+
+#define WARP_RANGE 8
+#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
+
+float4x4 CreateOrthoProject(float width, float height, float near, float far)
+{
+    float cx = 2.0f / width;
+    float cy = 2.0f / height;
+    float cz = 1.0f / (far - near);
+    float tz = near / (near - far);
+
+    float4x4 m;
+    m[0] = float4(cx,  0,  0, 0);
+    m[1] = float4( 0, cy,  0, 0);
+    m[2] = float4( 0,  0, cz, 0);
+    m[3] = float4( 0,  0, tz, 1);
+    
+    return m;
+}
+
+float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float LightDistance)
+{
+    const float3 up1 = float3(0, 0, 1);
+    const float3 up2 = float3(1, 0, 0);
+
+    float3 right = cross(CameraDirection, forward);
+    right = !any(right) ? cross(up1, forward) : right;
+    right = !any(right) ? cross(up2, forward) : right;
+    right = normalize(right);
+
+    float3 up = cross(forward, right);
+
+    float3x3 rotation = {right.x, up.x, forward.x,
+                         right.y, up.y, forward.y,
+                         right.z, up.z, forward.z };
+
+    return float4x4(rotation[0], 0,
+                    rotation[1], 0,
+                    rotation[2], 0,
+                    mul(-LightDirection * LightDistance, rotation), 1);
+}
+
+float CalcSplitPosition(float i)
+{
+    float p0 = mPSSMCascadeZMin + ((mPSSMCascadeZMax - mPSSMCascadeZMin) / mPSSMCascadeZMin) * (i / 4.0);
+    float p1 = mPSSMCascadeZMin * pow(mPSSMCascadeZMax / mPSSMCascadeZMin, i / 4.0);
+    return p0 * (1.0 - mPSSMCascadeScale) + p1 * mPSSMCascadeScale;
+}
+
+float4 CreateFrustumFromProjection()
+{
+    float4 r = mul(float4( 1, 0, 1, 1), matProjectInverse);
+    float4 l = mul(float4(-1, 0, 1, 1), matProjectInverse);
+    float4 t = mul(float4( 0, 1, 1, 1), matProjectInverse);
+    float4 b = mul(float4( 0,-1, 1, 1), matProjectInverse);
+    return float4(r.x / r.z, l.x / l.z, t.y / t.z, b.y / b.z);
+}
+
+float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 frustumInfo, float near, float far)
+{
+    float4 znear = float4(near.xxx, 1);
+    float4 zfar = float4(far.xxx, 1);
+
+    float4 rtn = float4(frustumInfo.xz, 1, 1) * znear;
+    float4 rtf = float4(frustumInfo.xz, 1, 1) * zfar;
+    float4 lbn = float4(frustumInfo.yw, 1, 1) * znear;
+    float4 lbf = float4(frustumInfo.yw, 1, 1) * zfar;
+
+    float4 rbn = float4(rtn.x, lbn.yzw), rbf = float4(rtf.x, lbf.yzw);
+    float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
+
+    float4 orthographicBB = float4(9999, 9999, -9999,-9999);
+
+    float2 vpos;
+    #define CalcMinMax(inV) \
+        vpos = mul(inV, matLightProjectionToCameraView).xy; \
+        orthographicBB.xy = min(orthographicBB.xy, vpos); \
+        orthographicBB.zw = max(orthographicBB.zw, vpos);
+    CalcMinMax(rtn);    CalcMinMax(rtf);    CalcMinMax(lbn);    CalcMinMax(lbf);
+    CalcMinMax(rbn);    CalcMinMax(rbf);    CalcMinMax(ltn);    CalcMinMax(ltf);
+
+    const float normalizeByBufferSize = 2.0 / SHADOW_MAP_SIZE;
+    const float scaleDuetoBlureAMT = (WARP_RANGE * 2.0 + 1) * normalizeByBufferSize * 0.5;
+
+    orthographicBB += (orthographicBB.xyzw - orthographicBB.zwxy) * scaleDuetoBlureAMT;
+    float4 unit = (orthographicBB.zwzw - orthographicBB.xyxy) * normalizeByBufferSize;
+    orthographicBB = floor(orthographicBB / unit) * unit;
+
+    float2 invBB = 1.0 / (orthographicBB.zw - orthographicBB.xy);
+    float2 endPos = -(orthographicBB.xy + orthographicBB.zw);
+    return float4(2.0, 2.0, endPos.xy) * invBB.xyxy;
+}
+
+float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
+{
+    float4 frustumInfo = CreateFrustumFromProjection();
+
+    float z0 = mPSSMCascadeZMin;
+    float z1 = CalcSplitPosition(1.0);
+    float z2 = CalcSplitPosition(2.0);
+    float z3 = CalcSplitPosition(3.0);
+    float z4 = mPSSMCascadeZMax;
+
+    return float4x4(
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z0, z1),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
+        CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
+}
+
+float CalcEdgeFalloff(float2 texCoord)
+{
+    const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
+    const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
+    float2 falloff = abs(texCoord) * (-m * 4.0) + (m - a);
+    return saturate(min(falloff.x, falloff.y));
+}
+
+float4 CalcCascadePPos(float2 uv, float2 offset, float index)
+{
+    return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
+}
+
+float CalcLight(float casterDepth, float receiverDepth, float rate)
+{
+    return 1.0 - saturate((receiverDepth - casterDepth) * rate);
+}
+
+float ShadowSlopeScaledBias(float depth)
+{
+    float dx = abs(ddx(depth));
+    float dy = abs(ddy(depth));
+    float depthSlope = min(dx, dy);
+    return depthSlope;
+}

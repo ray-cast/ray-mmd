@@ -70,8 +70,6 @@ static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight))
 	};
 #endif
 
-#undef SHADOW_MAP_SIZE
-
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0
