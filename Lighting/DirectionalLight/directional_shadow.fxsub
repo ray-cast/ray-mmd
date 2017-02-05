@@ -56,17 +56,13 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 	return position.z;
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-	technique name < string MMDPass = mmdpass; \
-	> { \
-		pass DrawObject {\
-			AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
-			VertexShader = compile vs_3_0 ShadowMapVS();\
-			PixelShader  = compile ps_3_0 ShadowMapPS();\
-		}\
+technique DepthTecSS0 <string MMDPass = "object_ss";> {
+	pass DrawObject {
+		AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;
+		VertexShader = compile vs_3_0 ShadowMapVS();
+		PixelShader  = compile ps_3_0 ShadowMapPS();
 	}
-
-OBJECT_TEC(DepthTec, "object_ss")
+}
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
