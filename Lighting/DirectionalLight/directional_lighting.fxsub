@@ -146,6 +146,28 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif  
 }
 
+float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
+{
+	float linearDepth = material.linearDepth;
+	float linearDepth2 = materialAlpha.linearDepth;
+	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
+	
+	float shadow = 1;
+
+	float3 P = V * linearDepth / V.z;
+	#if SHADOW_MAP_SOFT_QUALITY == 1
+		shadow *= ShadowPCF(P, 1);
+	#elif SHADOW_MAP_SOFT_QUALITY == 2
+		shadow *= ShadowPCF(P, 2);
+	#elif SHADOW_MAP_SOFT_QUALITY >= 3
+		shadow *= ShadowPCF(P, 3);
+	#else
+		shadow *= ShadowPCF(P, 0);
+	#endif
+
+	return shadow;
+}
+
 #endif
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
@@ -160,29 +182,6 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 
 	diffuse *= LightColor * LightIntensity * LightIntensity2;
 	specular *= LightColor * LightIntensity * LightIntensity2;
-}
-
-float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
-{
-	float linearDepth = material.linearDepth;
-	float linearDepth2 = materialAlpha.linearDepth;
-	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-	
-	float shadow = 1;
-#if SHADOW_MAP_ENABLE
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-#endif
-
-	return shadow;
 }
 
 void LightSourceVS(
@@ -237,12 +236,14 @@ void LightSourcePS(
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 	
+#if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 	
 	float shadow = ShadingShadow(material, materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
+#endif
 }
 
 void LightSourceShadowlessPS(
