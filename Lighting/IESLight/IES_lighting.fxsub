@@ -134,16 +134,8 @@ sampler IESTextureSamp = sampler_state
 float3 ComputeIESLightProfile1D(float3 L, float3 Ld)
 {
 	L = mul(L, (float3x3)matViewInverse);
-	float angle = (asin(dot(L, Ld)) / PI) + 0.5;
+	float angle = (1 - acos(dot(L, Ld)) / PI);
 	return tex2Dlod(IESTextureSamp, float4(angle, 0, 0, 0)).rgb;
-}
-
-float3 ComputeIESLightProfile2D(float3 L, float3 Ld)
-{
-	float phiCoord = L.z * 0.5 + 0.5;
-	float theta = atan2(L.y, L.x);
-	float thetaCoord = theta / PI_2;
-	return tex2Dlod(IESTextureSamp, float4(thetaCoord, phiCoord, 0, 0)).rgb;
 }
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
