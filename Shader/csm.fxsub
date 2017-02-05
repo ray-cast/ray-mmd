@@ -132,11 +132,6 @@ float4 CalcCascadePPos(float2 uv, float2 offset, float index)
     return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
 }
 
-float CalcLight(float casterDepth, float receiverDepth, float rate)
-{
-    return 1.0 - saturate((receiverDepth - casterDepth) * rate);
-}
-
 float ShadowSlopeScaledBias(float depth)
 {
     float dx = abs(ddx(depth));

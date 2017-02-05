@@ -105,3 +105,8 @@ float GaussianDistribution(float x, float y, float r)
 	g *= exp(-(x * x + y * y) / (2 * r * r));
 	return g;
 }
+
+float CalcLight(float casterDepth, float receiverDepth, float rate)
+{
+    return 1.0 - saturate((receiverDepth - casterDepth) * rate);
+}
