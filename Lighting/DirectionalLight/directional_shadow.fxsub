@@ -20,50 +20,51 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
-    texture = <DiffuseMap>;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MIPFILTER = LINEAR;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+	texture = <DiffuseMap>;
+	MINFILTER = LINEAR;
+	MAGFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	ADDRESSU  = WRAP;
+	ADDRESSV  = WRAP;
 };
 #endif
 
 void ShadowMapVS(
-    in float4 Position : POSITION,
-    in float4 Texcoord : TEXCOORD0,
-    in float4 Normal : NORMAL,
-    out float4 oTexcoord0 : TEXCOORD0,
-    out float4 oTexcoord1 : TEXCOORD1,
-    out float4 oPosition : POSITION)
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	in float3 Normal : NORMAL,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition : POSITION)
 {
-    oTexcoord0 = Texcoord;
-    oTexcoord1 = oPosition = mul(Position + Normal * 0.005, matLightViewProject);
+	float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
+	oTexcoord0 = Texcoord;
+	oTexcoord1 = oPosition = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
-    clip(!opadd - 0.001f);
-    
-    float alpha = MaterialDiffuse.a;
+	clip(!opadd - 0.001f);
+	
+	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-    if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
+	if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
 #endif
-    clip(alpha - CasterAlphaThreshold);
+	clip(alpha - CasterAlphaThreshold);
 #endif
-    return position.z;
+	return position.z;
 }
 
 #define OBJECT_TEC(name, mmdpass, tex) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-    > { \
-        pass DrawObject {\
-            AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
-            VertexShader = compile vs_3_0 ShadowMapVS();\
-            PixelShader  = compile ps_3_0 ShadowMapPS(tex);\
-        }\
-    }
+	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+	> { \
+		pass DrawObject {\
+			AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
+			VertexShader = compile vs_3_0 ShadowMapVS();\
+			PixelShader  = compile ps_3_0 ShadowMapPS(tex);\
+		}\
+	}
 
 OBJECT_TEC(DepthTecSS0, "object_ss", false)
 OBJECT_TEC(DepthTecSS1, "object_ss", true)
