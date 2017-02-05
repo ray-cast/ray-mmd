@@ -82,7 +82,9 @@ float4 ShadowMapGenPS(
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
 	
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 3);
-	shadow = min(shadow, saturate(angle + 0.1));
+	
+	if (step(0, sum(material.albedo + material.specular) - 1e-5))
+		shadow = min(shadow, saturate(angle + 0.1));
 	
 	return shadow;
 }
