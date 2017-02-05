@@ -4,7 +4,7 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float3 mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
+float mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
 float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
@@ -42,32 +42,31 @@ void ShadowMapVS(
 	oTexcoord1 = oPosition = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightViewProject);
 }
 
-float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
+float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
 	clip(!opadd - 0.001f);
 	
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-	if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
 	return position.z;
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
-	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
+#define OBJECT_TEC(name, mmdpass) \
+	technique name < string MMDPass = mmdpass; \
 	> { \
 		pass DrawObject {\
 			AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
 			VertexShader = compile vs_3_0 ShadowMapVS();\
-			PixelShader  = compile ps_3_0 ShadowMapPS(tex);\
+			PixelShader  = compile ps_3_0 ShadowMapPS();\
 		}\
 	}
 
-OBJECT_TEC(DepthTecSS0, "object_ss", false)
-OBJECT_TEC(DepthTecSS1, "object_ss", true)
+OBJECT_TEC(DepthTec, "object_ss")
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
