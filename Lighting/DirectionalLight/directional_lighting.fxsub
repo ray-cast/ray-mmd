@@ -71,7 +71,7 @@ sampler ShadowMapSamp = sampler_state {
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
-static float2 ShadowmapOffset2 = float2(1.5 / SHADOW_MAP_SIZE, 1.5 / SHADOW_MAP_SIZE);
+static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
 
 float2 DepthGradient(float2 uv, float z)
 {
