@@ -24,6 +24,22 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
 				   mul(-LightPosition, rotation), 1);
 }
 
+float4x4 CreateOrthoProject(float width, float height, float near, float far)
+{
+    float cx = 2.0f / width;
+    float cy = 2.0f / height;
+    float cz = 1.0f / (far - near);
+    float tz = near / (near - far);
+
+    float4x4 m;
+    m[0] = float4(cx,  0,  0, 0);
+    m[1] = float4( 0, cy,  0, 0);
+    m[2] = float4( 0,  0, cz, 0);
+    m[3] = float4( 0,  0, tz, 1);
+    
+    return m;
+}
+
 float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far)
 {
 	float h = 1.0f / tan(fov);
