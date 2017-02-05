@@ -124,12 +124,13 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	float linearDepth = length(L);
 	
-	float depthScale = 400;
+	float depthScale = 300;
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
 	float shadow = 0.0;
-
+	float shadowWeight = 0.0;
+	
 #if SHADOW_MAP_SOFT_QUALITY > 0
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
@@ -137,14 +138,16 @@ float ShadowPCF(float3 viewPosition, int samples)
 		[unroll]
 		for (int y = -samples; y <= samples; y++)
 		{
-			float2 pos = coord.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += saturate(exp((tex2D(ShadowMapSamp, pos).r - depth) * depthScale));
+			float2 pos = coord + float2(x, y) * ShadowmapOffset2;
+			float weight = GaussianDistribution(x, y, samples);
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).r * weight;
+			shadowWeight += weight;
 		}
 	}
 	
-	samples = samples * 2 + 1;
+	shadow = shadow / shadowWeight;
 	
-	return saturate(shadow / (samples * samples));
+	return saturate(exp((shadow - depth) * depthScale));
 #else
 	return saturate(exp((tex2D(ShadowMapSamp, coord).r - depth) * depthScale));
 #endif
