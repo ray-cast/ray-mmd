@@ -88,6 +88,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 	proj.xy += ShadowmapOffset;
 
 	float shadow = 0.0;
+	float shadowWeight = 0.0;
 
 #if SHADOW_MAP_SOFT_QUALITY > 0
 	[unroll]
@@ -97,15 +98,18 @@ float ShadowPCF(float3 viewPosition, int samples)
 		for (int y = -samples; y <= samples; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += saturate(exp((tex2D(ShadowMapSamp, pos).r - proj.z)));
+			float weight = GaussianDistribution(x, y, samples);
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).r * weight;
+			shadowWeight += weight;
 		}
 	}
 	
-	samples = samples * 2 + 1;
+	shadow = shadow / shadowWeight;
 	
-	return saturate(shadow / (samples * samples));
+	return saturate(exp((shadow - proj.z)));
 #else
-	return saturate(tex2D(ShadowMapSamp, proj.xy).r * proj.z);
+	float shadowBias = 0.001;
+	return saturate(tex2D(ShadowMapSamp, proj.xy).r + shadowBias < proj.z ? 0 : 1);
 #endif
 }
 
