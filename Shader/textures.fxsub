@@ -39,7 +39,7 @@ texture FogMap: OFFSCREENRENDERTARGET <
 	string DefaultEffect =
 		"SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
 		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
-		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
+		"GlobalFog*.*= ./Fog/GlobalFog/global_fog.fx;"
 		"* = hide;";
 >;
 sampler FogMapSamp = sampler_state {
