@@ -1,1 +1,0 @@
-#include "atmospheric_fog.fxsub"
