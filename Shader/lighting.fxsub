@@ -155,10 +155,10 @@ float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 sp
 
 float4 StandardShading(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
 {
-	float3 H = normalize(V + Ld);
+	float3 H = normalize(V + Ls);
 
 	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, Ld));
+	float nl = saturate(dot(N, Ls));
 	float vh = saturate(dot(V, H));
 	float nv = abs(dot(N, V)) + 1e-5h;
 	

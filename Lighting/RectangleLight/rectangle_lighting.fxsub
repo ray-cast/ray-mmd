@@ -206,7 +206,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 #endif
 	
 #if VIDEO_MAP_ENABLE
-	float mip = 6 * (1 - material.smoothness * material.smoothness);
+	float mip = (1 - material.smoothness * material.smoothness) * 6;
 	diffuse *= srgb2linear(GaussianBlur(VideoMapSamp, coord1, ViewportOffset2, 3, 10, mip).rgb);
 
 	if (coord2.x >= 1.0 || coord2.y >= 1.0 ||
@@ -216,7 +216,6 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	}
 	else
 	{
-		float mip = (1 - material.smoothness * material.smoothness) * 6;
 		specular *= srgb2linear(tex2Dlod(VideoMapSamp, float4(coord2 * vedioMapLoopNum, 0, mip)).rgb);
 	}
 #endif
@@ -381,7 +380,7 @@ technique MainTecBS0 < string MMDPass = "object_ss";
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = NONE;
 		VertexShader = compile vs_3_0 LightSourceVS();
-		PixelShader  = compile ps_3_0 LightSourcePS();
+		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
 	}
 }
 
