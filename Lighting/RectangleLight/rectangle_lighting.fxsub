@@ -28,11 +28,12 @@ float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "Right
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
-static float LightWidth = (1 + mWidthP * RECTANGLELIGHT_MAX_WIDTH);
-static float LightHeight = (1 + mHeightP * RECTANGLELIGHT_MAX_HEIGHT);
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+static float LightWidth = lerp(1, RECTANGLELIGHT_MAX_WIDTH, mWidthP);
+static float LightHeight = lerp(1, RECTANGLELIGHT_MAX_HEIGHT, mHeightP);
+static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
+static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
@@ -220,11 +221,8 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	}
 #endif
 
-	diffuse *= atten * LightColor * LightIntensity;
-	diffuse *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
-	
-	specular *= atten * LightColor * LightIntensity;
-	specular *= (mLightIntensityMin * saturate(1 - mMultiLightM) + mLightIntensityMax * mMultiLightP);
+	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
+	specular *= atten * LightColor * LightIntensity * LightIntensity2;
 }
 
 float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
@@ -286,9 +284,7 @@ void LightSourcePS(
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
 
 	float3 V = normalize(viewdir);
 	
@@ -336,10 +332,8 @@ void LightSourceShadowlessPS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
 	
 	float3 V = normalize(viewdir);
 	

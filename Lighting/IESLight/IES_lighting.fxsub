@@ -8,23 +8,24 @@
 #include "../../../shader/shadowcommon.fxsub"
 #include "../../../shader/arealight.fxsub"
 
-float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
-float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
-float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
-float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
-float mAttenuationBulbP : CONTROLOBJECT < string name="(self)"; string item = "AttenuationBulb+"; >;
-float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
-float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
-float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
-float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
+float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
+float mG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
+float mB : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
+float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
+float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
+float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
+float mAttenuationBulbP : CONTROLOBJECT<string name="(self)"; string item = "AttenuationBulb+";>;
+float mMultiLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MultiLight+";>;
+float mMultiLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MultiLight-";>;
 
-static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
+float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
+float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
+
+static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
-static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiLightP * mLightIntensityMax;
+static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
@@ -84,9 +85,9 @@ float ShadowPCF(float3 viewPosition, int samples)
 {
 	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
 	float3 L = worldPosition.xyz - LightPosition;
-	
+
 	float linearDepth = length(L);
-	
+
 	float depthBias = 0.01;
 	float depthScale = 300;
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
@@ -113,12 +114,32 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
 		}
 	}
-	
+
 	samples = samples * 2 + 1;
 	return saturate(shadow / (samples * samples));
 #else
 	return saturate(depth * exp((tex2D(ShadowMapSamp, coord).r - depth) * depthScale));
 #endif
+}
+
+float ShadingShadow(MaterialParam material, float3 V)
+{
+	float linearDepth = material.linearDepth;
+
+	float shadow = 1;
+
+	float3 P = V * linearDepth / V.z;
+	#if SHADOW_MAP_SOFT_QUALITY == 1
+		shadow *= ShadowPCF(P, 1);
+	#elif SHADOW_MAP_SOFT_QUALITY == 2
+		shadow *= ShadowPCF(P, 2);
+	#elif SHADOW_MAP_SOFT_QUALITY >= 3
+		shadow *= ShadowPCF(P, 3);
+	#else
+		shadow *= ShadowPCF(P, 0);
+	#endif
+
+	return shadow;
 }
 
 #endif
@@ -143,39 +164,16 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
-	
+
 	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
 	atten *= ComputeIESLightProfile1D(L2, LightDirection);
-	
+
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
 
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
 	specular *= atten * LightColor * LightIntensity * LightIntensity2;
-}
-
-float ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
-{
-	float linearDepth = material.linearDepth;
-	float linearDepth2 = materialAlpha.linearDepth;
-	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-	
-	float shadow = 1;
-#if SHADOW_MAP_ENABLE
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-#endif
-
-	return shadow;
 }
 
 void LightSourceVS(
@@ -210,7 +208,7 @@ void LightSourcePS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -218,16 +216,14 @@ void LightSourcePS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
 
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
 	
@@ -238,13 +234,15 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-	
+
+#if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-	
-	float shadow = ShadingShadow(material, materialAlpha, V);
+
+	float shadow = ShadingShadow(materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
+#endif
 }
 
 void LightSourceShadowlessPS(
@@ -265,7 +263,7 @@ void LightSourceShadowlessPS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -273,16 +271,14 @@ void LightSourceShadowlessPS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
-	   
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
 	
@@ -295,7 +291,7 @@ void LightSourceShadowlessPS(
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
 
-technique MainTech0 < string MMDPass = "object";
+technique MainTech0<string MMDPass = "object";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -312,7 +308,7 @@ technique MainTech0 < string MMDPass = "object";
 	}
 }
 
-technique MainTecBS0 < string MMDPass = "object_ss";
+technique MainTecBS0<string MMDPass = "object_ss";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -329,6 +325,6 @@ technique MainTecBS0 < string MMDPass = "object_ss";
 	}
 }
 	
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTech<string MMDPass = "shadow";> {}
+technique ZplotTec<string MMDPass = "zplot";> {}

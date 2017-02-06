@@ -28,7 +28,7 @@ static float LightSize = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE));
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
-static float LightIntensity2 = (1 - mMultiLightM) * mLightIntensityMin + mMultiLightP * mLightIntensityMax;
+static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);

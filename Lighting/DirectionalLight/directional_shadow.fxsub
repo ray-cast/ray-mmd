@@ -8,7 +8,7 @@ float mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Ra
 float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
 float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
-static float LightRange = 50 + mRange * 150;
+static float LightRange = lerp(50, 200, mRange);
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
