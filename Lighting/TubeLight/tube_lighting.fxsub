@@ -11,23 +11,24 @@
 #define TUBELIGHT_MAX_WIDTH 55
 #define TUBELIGHT_MAX_RADIUS 10
 
-float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
-float mWidthP : CONTROLOBJECT < string name="(self)"; string item = "Width+"; >;
-float mRadiusM : CONTROLOBJECT < string name="(self)"; string item = "Radius-"; >;
-float mRadiusP : CONTROLOBJECT < string name="(self)"; string item = "Radius+"; >;
-float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
-float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
-float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
-float mAttenuationBulbP : CONTROLOBJECT < string name="(self)"; string item = "AttenuationBulb+"; >;
-float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
-float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
-float3 mLeft : CONTROLOBJECT < string name="(self)"; string item = "Left"; >;
-float3 mRight : CONTROLOBJECT < string name="(self)"; string item = "Right"; >;
-float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
-float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
+float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
+float mG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
+float mB : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
+float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+float mWidthP : CONTROLOBJECT<string name="(self)"; string item = "Width+";>;
+float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
+float mRadiusM : CONTROLOBJECT<string name="(self)"; string item = "Radius-";>;
+float mRadiusP : CONTROLOBJECT<string name="(self)"; string item = "Radius+";>;
+float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
+float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
+float mAttenuationBulbP : CONTROLOBJECT<string name="(self)"; string item = "AttenuationBulb+";>;
+float mMultiLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MultiLight+";>;
+float mMultiLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MultiLight-";>;
+
+float3 mLeft : CONTROLOBJECT<string name="(self)"; string item = "Left";>;
+float3 mRight : CONTROLOBJECT<string name="(self)"; string item = "Right";>;
+float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
+float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
 static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
@@ -127,6 +128,26 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
 }
 
+float4 ShadingShadow(MaterialParam material, float3 V)
+{
+	float linearDepth = material.linearDepth;
+	
+	float shadow = 1;
+
+	float3 P = V * linearDepth / V.z;
+	#if SHADOW_MAP_SOFT_QUALITY == 1
+		shadow *= ShadowPCF(P, 1);
+	#elif SHADOW_MAP_SOFT_QUALITY == 2
+		shadow *= ShadowPCF(P, 2);
+	#elif SHADOW_MAP_SOFT_QUALITY >= 3
+		shadow *= ShadowPCF(P, 3);
+	#else
+		shadow *= ShadowPCF(P, 0);
+	#endif
+
+	return shadow;
+}
+
 #endif
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
@@ -146,29 +167,6 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
 	specular *= atten * LightColor * LightIntensity * LightIntensity2;
-}
-
-float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
-{
-	float linearDepth = material.linearDepth;
-	float linearDepth2 = materialAlpha.linearDepth;
-	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-	
-	float shadow = 1;
-#if SHADOW_MAP_ENABLE
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-#endif
-
-	return shadow;
 }
 
 void LightSourceVS(
@@ -211,9 +209,7 @@ void LightSourcePS(
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
 
 	float3 V = normalize(viewdir);
 	
@@ -231,12 +227,14 @@ void LightSourcePS(
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 	
+#if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 	
-	float shadow = ShadingShadow(material, materialAlpha, V);
+	float shadow = ShadingShadow(materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
+#endif
 }
 
 void LightSourceShadowlessPS(
@@ -266,9 +264,7 @@ void LightSourceShadowlessPS(
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
 
 	float3 V = normalize(viewdir);
 	
@@ -287,7 +283,7 @@ void LightSourceShadowlessPS(
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
 
-technique MainTech0 < string MMDPass = "object";
+technique MainTech0<string MMDPass = "object";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -304,7 +300,7 @@ technique MainTech0 < string MMDPass = "object";
 	}
 }
 
-technique MainTecBS0 < string MMDPass = "object_ss";
+technique MainTecBS0<string MMDPass = "object_ss";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -321,6 +317,6 @@ technique MainTecBS0 < string MMDPass = "object_ss";
 	}
 }
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTech<string MMDPass = "shadow";> {}
+technique ZplotTec<string MMDPass = "zplot";> {}
