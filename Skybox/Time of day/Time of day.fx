@@ -1,7 +1,9 @@
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+
 #include "shader/stars.fxsub"
 #include "shader/atmospheric.fxsub"
+#include "shader/clound.fxsub"
 
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
 float3 LightDirection : DIRECTION< string Object = "Light";>;
@@ -73,8 +75,8 @@ float4 StarsPS(
 	
 	float3 V = normalize(viewdir);
 
-	float fadeSun = pow(dot(V, LightDirection), 15);
-	float fadeStars = saturate(pow(normal.y, 1.0 / 1.5)) * step(0, normal.y);
+	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
+	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
 	
 	float meteor = CreateMeteor(V, float3(LightDirection.x, -1, LightDirection.z) + float3(0.5,0,0.0), time / PI);
 	
@@ -107,6 +109,16 @@ float4 SpherePS(
 	return diffuse;
 }
 
+float3 ACESFilmLinear(float3 x)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+	return (x * (A * x + B)) / (x * (C * x + D) + E);
+}
+
 void ScatteringVS(
 	in float4 Position    : POSITION,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -135,9 +147,25 @@ float4 ScatteringPS(in float3 Position : TEXCOORD0) : COLOR
 	setting.waveLambdaRayleigh = float3(94, 40, 18);
 	
 	float3 viewdir = normalize(Position - CameraPosition);
-	
 	float3 insctrColor = ComputeSkyScattering(setting, viewdir, LightDirection);
+
 	return linear2srgb(float4(insctrColor, 1.0));
+}
+
+void CloundVS(
+	in float4 Position    : POSITION,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oTexcoord0 = Position;
+	oPosition = mul(Position, matViewProject);
+}
+
+float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
+{
+	float3 viewdir = normalize(Position - CameraPosition);
+	float4 cound = ComputeClound(viewdir, LightSpecular);
+    return float4(cound.rgb, cound.a * cound.a);
 }
 
 #define BACKGROUND_TEC(name, mmdpass) \
@@ -183,6 +211,13 @@ float4 ScatteringPS(in float3 Position : TEXCOORD0) : COLOR
 			SrcBlend = ONE; DestBlend = ONE;\
 			VertexShader = compile vs_3_0 ScatteringVS(); \
 			PixelShader  = compile ps_3_0 ScatteringPS(); \
+		} \
+		pass DrawObject { \
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
+			VertexShader = compile vs_3_0 CloundVS(); \
+			PixelShader  = compile ps_3_0 CloundPS(); \
 		} \
 	}
 
