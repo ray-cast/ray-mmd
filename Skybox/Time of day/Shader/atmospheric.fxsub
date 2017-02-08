@@ -151,7 +151,7 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 	
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, setting.sunCutoffAngle, setting.sunSteepness, zenithAngleCos);
 	
-	float3 Lin = inscattering * (1.0 - extinction);
+	float3 Lin = inscattering * (1.0 - extinction) * 0.25;
 	return Lin;
 }
 

@@ -1,7 +1,6 @@
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "shader/stars.fxsub"
-#include "shader/clound.fxsub"
 #include "shader/atmospheric.fxsub"
 
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
@@ -139,29 +138,6 @@ float4 ScatteringPS(in float3 Position : TEXCOORD0) : COLOR
 	
 	float3 insctrColor = ComputeSkyScattering(setting, viewdir, LightDirection);
 	return linear2srgb(float4(insctrColor, 1.0));
-}
-
-void CloudVS(
-	in float4 Position    : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oPosition  : POSITION)
-{
-	oTexcoord0 = Position;
-	oPosition = mul(Position, matViewProject);
-}
-
-float4 CloudPS(in float3 Position : TEXCOORD0) : COLOR
-{
-	float3 viewdir = normalize(Position - CameraPosition);
-	clip(viewdir.y);
-	
-	float dist = distance(Position, CameraPosition);
-	float4 cloud = ComputeCloudRayMarching(CameraPosition + viewdir * 1000, viewdir, -LightDirection, dist, dist);
-	cloud.rgb *= 0.8;
-	cloud.rgb = pow(cloud.rgb, 1.0 / (1.2 + 1.2 * viewdir.y));
-	cloud.a = pow(cloud.a, 2.3333333);
-	
-	return float4(cloud.rgb, cloud.a);
 }
 
 #define BACKGROUND_TEC(name, mmdpass) \

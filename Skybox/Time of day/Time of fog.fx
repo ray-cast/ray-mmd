@@ -43,7 +43,7 @@ float4 ScatteringFogPS(
 	
 	ScatteringParams setting;
 	setting.sunRadiance = 1000.0;
-	setting.sunSteepness = 1.;
+	setting.sunSteepness = 1.5;
 	setting.sunCutoffAngle = PI / 1.95;
 	setting.mieG = 0.76;
 	setting.mieSunGloss = 0.999;
