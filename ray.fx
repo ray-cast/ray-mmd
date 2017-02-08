@@ -40,6 +40,7 @@ float3 LightDirection : DIRECTION< string Object = "Light";>;
 
 bool ExistSkybox : CONTROLOBJECT<string name = "skybox.pmx";>;
 bool ExistSkyboxHDR : CONTROLOBJECT<string name = "skybox_hdr.pmx";>;
+bool ExistTimeOfDay : CONTROLOBJECT<string name = "Time of day.pmx";>;
 
 static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);

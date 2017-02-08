@@ -1,0 +1,205 @@
+struct ScatteringParams
+{
+	float sunRadiance;
+	float sunSteepness;
+	float sunCutoffAngle;
+	
+	float mieG;
+	float mieSunGloss;
+	float mieUpsilon;
+	float mieTurbidity;
+	float mieCoefficient;
+	float mieZenithLength;
+	
+	float rayleighCoefficient;
+	float rayleighZenithLength;
+	
+	float3 waveLambda;
+	float3 waveLambdaMie;
+	float3 waveLambdaRayleigh;
+};
+
+float ComputeOpticalMass(float cosAngle)
+{
+	float cosAngleRadians = degrees(acos(cosAngle));
+	return 1.0 / (cosAngle + 0.15 * pow(abs(93.885 - cosAngleRadians), -1.253));
+}
+
+float3 ScatteringRayleigh(float3 lambda, float3 K)
+{
+	//float n = 1.0003;
+	//float N = 2.545E25;
+	//float pn = 0.035;
+	//float n2 = n * n;
+	//float pi3 = PI * PI * PI;
+	//return ((8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N * pow(lambda, 4.0))) * ((6 + 3 * pn) / (6 - 7 * pn)) * K;
+	return 0.00055 / K;
+}
+
+float3 ScatteringMie(float3 lambda, float3 K, float T, float upsilon)
+{
+	float c_pi = (0.2 * T) * 10E-18 * PI;
+	return 0.434 * c_pi * pow((2.0 * PI) / lambda, upsilon - 2.0) * K;
+}
+
+float ComputePhaseMie(float theta, float g)
+{
+	float gg = g * g;
+	float g2 = 2 * g;
+	
+	float theta2 = theta * theta;
+	
+	float leftTop = 3 * (1 - gg);
+	float leftBottom = 2 * (2 + gg);
+	float rightTop = 1.0 + theta2;
+	float rightBottom = pow(1.0 + gg - g2 * theta, 1.5);
+	
+	// return (1 - gg) / pow(1.0 - g2 * theta + gg, 1.5);
+	return (leftTop / leftBottom) * (rightTop / rightBottom);
+}
+
+float ComputePhaseRayleigh(float theta)
+{
+	float theta2 = theta * theta;
+	return (theta2 * 0.75 + 0.75);
+}
+
+float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g)
+{
+	float cosTheta = dot(V, L);
+
+	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, g);
+	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
+	
+	float3 betaTotal = (betaMie + betaRayleigh) / (4 * PI);
+	return betaTotal / (inscatteringMie + inscatteringRayleigh);
+}
+
+float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g, float g2)
+{
+	float sunTheta = dot(V, L);
+	float sunFade = pow(saturate(V.y), 1.0 / 2.2);
+	
+	float3 betaMie1 = inscatteringMie * ComputePhaseMie(sunTheta, g);
+	float3 betaMie2 = inscatteringMie * ComputePhaseMie(sunTheta, g2);
+	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(sunTheta);
+	
+	float3 betaTotal = (betaMie1 + betaMie2 * sunFade + betaRayleigh) / (4 * PI);
+	return betaTotal / (inscatteringMie + inscatteringRayleigh);
+}
+
+float3 ComputeScatteringIntensity(float3 opticalDepthMie, float3 opticalDepthRayleigh)
+{
+	return exp(-(opticalDepthRayleigh + opticalDepthMie));
+}
+
+float ComputeSunIntensity(float EE, float cutoffAngle, float steepness, float zenithAngleCos)
+{
+	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
+}
+
+float3 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
+{
+	float3 up = float3(0, 1, 0);
+	float3 sunDirection = normalize(-L);
+	
+	float zenithAngle = saturate(dot(V, up));
+	float zenithAngleCos = dot(sunDirection, up);
+	float zenithAngleMass = ComputeOpticalMass(zenithAngle);
+	
+	float3 inscatteringMie = ScatteringMie(setting.waveLambda, setting.waveLambdaMie, setting.mieTurbidity, setting.mieUpsilon);
+	float3 inscatteringRayleigh = ScatteringRayleigh(setting.waveLambda, setting.waveLambdaRayleigh);
+	
+	inscatteringMie *= setting.mieCoefficient;
+	inscatteringRayleigh *= setting.rayleighCoefficient - saturate(1.0 - exp(sunDirection.y));
+	
+	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG, setting.mieSunGloss);
+	
+	float3 opticalMie = inscatteringMie * zenithAngleMass * setting.mieZenithLength;
+	float3 opticalRayleigh = inscatteringRayleigh * zenithAngleMass * setting.rayleighZenithLength;
+	float3 extinction = ComputeScatteringIntensity(opticalMie, opticalRayleigh);	
+	
+	inscattering *= ComputeSunIntensity(setting.sunRadiance, setting.sunCutoffAngle, setting.sunSteepness, zenithAngleCos);
+
+	float3 Lin = inscattering * (1.0 - extinction) * 0.025;
+	//Lin *= lerp(1.0, pow(inscattering * extinction, 0.5), pow(1.0 - saturate(zenithAngleCos), 5.0));
+	Lin += extinction * 0.1 * saturate((abs(sunDirection.y) - sunDirection.y));
+	
+	return Lin;
+}
+
+float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 L)
+{
+	float3 up = float3(0, 1, 0);
+	float3 sunDirection = normalize(-L);
+	
+	float zenithAngle = saturate(dot(V, up));
+	float zenithAngleCos = dot(sunDirection, up);
+	float zenithAngleMass = ComputeOpticalMass(zenithAngle);
+	
+	float3 inscatteringMie = ScatteringMie(setting.waveLambda, setting.waveLambdaMie, setting.mieTurbidity, setting.mieUpsilon);
+	float3 inscatteringRayleigh = ScatteringRayleigh(setting.waveLambda, setting.waveLambdaRayleigh);
+	
+	inscatteringMie *= setting.mieCoefficient;
+	inscatteringRayleigh *= setting.rayleighCoefficient - saturate(1.0 - exp(sunDirection.y));
+	
+	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG);
+	
+	float3 scatteringMie = inscatteringMie * distance;
+	float3 scatteringRayleigh = inscatteringRayleigh * distance;
+	float3 extinction = ComputeScatteringIntensity(scatteringMie, scatteringRayleigh);
+	
+	inscattering *= ComputeSunIntensity(setting.sunRadiance, setting.sunCutoffAngle, setting.sunSteepness, zenithAngleCos);
+	
+	float3 Lin = inscattering * (1.0 - extinction);
+	return Lin;
+}
+
+float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+{
+    float3 origin = position - center;
+    float B = dot(origin, dir);
+    float C = dot(origin, origin) - radius * radius;
+    float D = B * B - C;
+
+    float2 minimaxIntersections;
+    if (D < 0)
+    {
+        minimaxIntersections = -1;
+    }
+    else
+    {
+        D = sqrt(D);
+        minimaxIntersections = float2(-B - D, -B + D);
+    }
+    
+    return minimaxIntersections;
+}
+
+void ComputeUnshadowedInscattering(float3 world, float3 eyePosition, inout float3 inscattering, inout float3 extinction)
+{
+    float3 viewdir = (world - eyePosition);
+    float rayLength = length(viewdir);
+    viewdir /= rayLength;
+
+    float earthRadius = 6360000.f;
+    float earthAtmTopRadius = 6440000.f;
+    
+    float3 earthCenter = float3(0, -earthRadius, 0);
+
+    float2 outerIntersections = ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthAtmTopRadius);
+    if (outerIntersections.y <= 0)
+    {
+        return;
+    }
+
+    float2 innerIntersections = ComputeRaySphereIntersection(eyePosition, viewdir, earthCenter, earthRadius);
+    if (innerIntersections.x > 0)
+    {
+        float3 mix = normalize(float3(innerIntersections.xy, 0));
+        outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, mix.y * mix.y);
+    }
+
+    float3 start = eyePosition + viewdir * max(0, outerIntersections.x);
+    float3 end = eyePosition + viewdir * min(rayLength, outerIntersections.y);
+}
