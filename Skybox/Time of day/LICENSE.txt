@@ -15,5 +15,5 @@
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // https://www.shadertoy.com/view/4dsXWn
 
-// SmallStars - @P_Malin, Nov 2015.
+// SmallStars. By P_Malin, Nov 2015.
 // https://www.shadertoy.com/view/Ml2XDt
