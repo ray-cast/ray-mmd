@@ -148,8 +148,8 @@ float4 ScatteringPS(
 	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
 	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	setting.earthRadius = 6360e3;
-	setting.earthAtmTopRadius = 6380e3;    
-	setting.earthCenter = float3(0, -6360e3, 0);
+	setting.earthAtmTopRadius = 6380e3;
+	setting.earthCenter = float3(0, -6361e3, 0);
 	
 	float3 V = normalize(viewdir);
 	float3 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);

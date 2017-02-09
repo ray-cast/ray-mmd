@@ -85,11 +85,6 @@ float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRay
 	return betaTotal / (inscatteringMie + inscatteringRayleigh);
 }
 
-float3 ComputeScatteringIntensity(float3 opticalDepthMie, float3 opticalDepthRayleigh)
-{
-	return exp(-(opticalDepthRayleigh + opticalDepthMie));
-}
-
 float ComputeSunIntensity(float EE, float zenithAngleCos)
 {
 	float steepness = 1.0;
@@ -116,7 +111,7 @@ float3 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
 
 	float3 opticalMie = inscatteringMie * zenithAngleMass * setting.mieHeight;
 	float3 opticalRayleigh = inscatteringRayleigh * zenithAngleMass * setting.rayleighHeight;
-	float3 extinction = ComputeScatteringIntensity(opticalMie, opticalRayleigh);	
+	float3 extinction = exp(-(opticalMie + opticalRayleigh));
 
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
@@ -143,7 +138,7 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 
 	float3 scatteringMie = inscatteringMie * distance;
 	float3 scatteringRayleigh = inscatteringRayleigh * distance;
-	float3 extinction = ComputeScatteringIntensity(scatteringMie, scatteringRayleigh);
+	float3 extinction = exp(-(scatteringMie + scatteringRayleigh));
 
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
@@ -174,10 +169,7 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
 
 void ComputeOpticalLength(ScatteringParams setting, float3 P, out float opticalMie, out float opticalRayleigh)
 {
-	float3 origin = P - setting.earthCenter;
-	float dist = length(origin);
-	float height = dist - setting.earthRadius;
-
+	float height = length(P - setting.earthCenter) - setting.earthRadius;
 	opticalMie = exp(-height / setting.mieHeight);
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 }
@@ -219,15 +211,15 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 		float stepOpticalRayleigh;
 		ComputeOpticalLength(setting, samplePos, stepOpticalMie, stepOpticalRayleigh);
 		
+		float depthLightMie = 0.0;
+		float depthLightRayleigh = 0.0;
+		ComputeLightInsctrIntegral(setting, samplePos, L, depthLightMie, depthLightRayleigh);
+		
 		stepOpticalMie *= sampleLength;
 		stepOpticalRayleigh *= sampleLength;
 		
 		depthMie += stepOpticalMie;
 		depthRayleigh += stepOpticalRayleigh;
-
-		float depthLightMie = 0.0;
-		float depthLightRayleigh = 0.0;
-		ComputeLightInsctrIntegral(setting, samplePos, L, depthLightMie, depthLightRayleigh);
 
 		float3 opticalDepthMie = setting.waveLambdaMie * (depthLightMie + depthMie);
 		float3 opticalDepthRayleigh = setting.waveLambdaRayleigh * (depthLightRayleigh + depthRayleigh);
