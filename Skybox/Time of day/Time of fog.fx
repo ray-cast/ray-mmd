@@ -42,20 +42,21 @@ float4 ScatteringFogPS(
 	float3 V = normalize(viewdir);
 	
 	ScatteringParams setting;
-	setting.sunRadiance = 250;
-	setting.sunSteepness = 1.0;
-	setting.sunCutoffAngle = PI / 1.95;
+	setting.sunSize = 0.99;
+	setting.sunRadiance = 10.0;
 	setting.mieG = 0.76;
-	setting.mieSunGloss = 0.99;
 	setting.mieUpsilon = 4.0;
 	setting.mieTurbidity = 1.0;
 	setting.mieCoefficient = 0.005;
-	setting.mieZenithLength = 1.25E3;
+	setting.mieHeight = 1.25E3;
 	setting.rayleighCoefficient = 2.0;
-	setting.rayleighZenithLength = 8.4E3;
+	setting.rayleighHeight = 8.4E3;
 	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
 	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
 	setting.waveLambdaRayleigh = float3(94, 40, 18);
+	setting.earthRadius = 6360e3;
+	setting.earthAtmTopRadius = 6380e3;    
+	setting.earthCenter = float3(0, -6360e3, 0);
 	
 	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
 	

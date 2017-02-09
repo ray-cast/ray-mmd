@@ -4,8 +4,8 @@
 #define InvPIE8 0.039788735767f
 #define InvPIE4 0.079577471535f
 
-#define PI 3.141592654f
-#define PI_2 (3.141592654f * 2.0)
+#define PI 3.1415926535f
+#define PI_2 (3.1415926535f * 2.0)
 
 #define EPSILON 1e-5f
 

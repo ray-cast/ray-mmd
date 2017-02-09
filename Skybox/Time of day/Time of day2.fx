@@ -141,18 +141,18 @@ float4 ScatteringPS(
 	setting.mieUpsilon = 4.0;
 	setting.mieTurbidity = 1.0;
 	setting.mieCoefficient = 0.005;
-	setting.mieHeight = 1.25E3;
+	setting.mieHeight = 1200.0;
 	setting.rayleighCoefficient = 2.0;
-	setting.rayleighHeight = 8.4E3;
+	setting.rayleighHeight = 8000.0;
 	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
-	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
-	setting.waveLambdaRayleigh = float3(94, 40, 18);
+	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
+	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	setting.earthRadius = 6360e3;
 	setting.earthAtmTopRadius = 6380e3;    
 	setting.earthCenter = float3(0, -6360e3, 0);
 	
 	float3 V = normalize(viewdir);
-	float3 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
+	float3 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
 
 	return linear2srgb(float4(insctrColor, 1.0));
 }
@@ -238,3 +238,6 @@ BACKGROUND_TEC(StarsTecBS0, "object_ss")
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
+
+//https://www.shadertoy.com/results?query=sky&sort=popular&from=84&num=12
+//https://www.shadertoy.com/view/ltlSWB
