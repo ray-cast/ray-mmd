@@ -1,5 +1,6 @@
 float hash(float2 p) 
-{ 
+{
+    p  = 50.0 * frac(p * 0.3183099 + float2(0.71,0.113));
     return frac(sin(p.x) + cos(p.y)); 
 }
 
@@ -7,19 +8,19 @@ float noise(float2 x)
 {
     float2 f = frac(x);
     float2 p = floor(x);
+    float2 u = f * f * (3.0 - 2.0 * f);
 
     float a = hash(p);
     float b = hash(p + float2(1.0, 0.0));
     float c = hash(p + float2(0.0, 1.0));
     float d = hash(p + float2(1.0, 1.0));
 
-    float2 u = f * f * (3.0 - 2.0 * f);
     return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
 float fbm(float2 p) 
 {
-    float f = 0; 
+    float f = 0;
     f += 0.5000 * noise(p); p = p * 2.0;
     f += 0.2500 * noise(p); p = p * 2.0;
     f += 0.1250 * noise(p); p = p * 2.0;

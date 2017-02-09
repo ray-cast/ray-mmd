@@ -131,7 +131,7 @@ void ScatteringVS(
 float4 ScatteringPS(in float3 Position : TEXCOORD0) : COLOR
 {
 	ScatteringParams setting;
-	setting.sunRadiance = 1000.0;
+	setting.sunRadiance = 25.0;
 	setting.sunSteepness = 1.0;
 	setting.sunCutoffAngle = PI / 1.95;
 	setting.mieG = 0.76;
@@ -233,3 +233,6 @@ BACKGROUND_TEC(StarsTecBS0, "object_ss")
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
+
+//https://www.shadertoy.com/results?query=sky&sort=popular&from=84&num=12
+//https://www.shadertoy.com/view/ltlSWB

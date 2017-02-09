@@ -121,10 +121,7 @@ float3 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
 	
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, setting.sunCutoffAngle, setting.sunSteepness, zenithAngleCos);
 
-	float3 Lin = inscattering * (1.0 - extinction) * 0.025;
-	//Lin *= lerp(1.0, pow(inscattering * extinction, 0.5), pow(1.0 - saturate(zenithAngleCos), 5.0));
-	Lin += extinction * 0.1 * saturate((abs(sunDirection.y) - sunDirection.y));
-	
+	float3 Lin = inscattering * (1.0 - extinction);	
 	return Lin;
 }
 
@@ -151,7 +148,7 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 	
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, setting.sunCutoffAngle, setting.sunSteepness, zenithAngleCos);
 	
-	float3 Lin = inscattering * (1.0 - extinction) * 0.25;
+	float3 Lin = inscattering * (1.0 - extinction);
 	return Lin;
 }
 

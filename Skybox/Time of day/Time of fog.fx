@@ -42,11 +42,11 @@ float4 ScatteringFogPS(
 	float3 V = normalize(viewdir);
 	
 	ScatteringParams setting;
-	setting.sunRadiance = 1000.0;
-	setting.sunSteepness = 1.5;
+	setting.sunRadiance = 250;
+	setting.sunSteepness = 1.0;
 	setting.sunCutoffAngle = PI / 1.95;
 	setting.mieG = 0.76;
-	setting.mieSunGloss = 0.999;
+	setting.mieSunGloss = 0.99;
 	setting.mieUpsilon = 4.0;
 	setting.mieTurbidity = 1.0;
 	setting.mieCoefficient = 0.005;
