@@ -4,6 +4,8 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+
+#include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
 
 float3 LightSpecular : SPECULAR< string Object = "Light";>;

@@ -22,6 +22,12 @@ struct ScatteringParams
 	float earthRadius;
 	float earthAtmTopRadius;
 	float3 earthCenter;
+	
+	float cloud;
+	float cloudNear;
+	float cloudFar;
+	float cloudFade;
+	float3 clouddir;
 };
 
 float ComputeOpticalMass(float cosAngle)
@@ -174,6 +180,32 @@ void ComputeOpticalLength(ScatteringParams setting, float3 P, out float opticalM
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 }
 
+void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out float opticalMie, out float opticalRayleigh)
+{
+	float height = length(P - setting.earthCenter) - setting.earthRadius;
+	opticalMie = exp(-height / setting.mieHeight);
+	opticalRayleigh = exp(-height / setting.rayleighHeight);
+	
+    float dist = length(float3(P.x, 0, P.z));
+	float clound = 0.0;
+	
+	if (5e3 < height && height < 8e3) 
+	{
+		P += float3(23175.7, 0.0, 0.0) + setting.clouddir;
+		clound = fbm(P * 2e-4 * 0.25, setting.cloudFade);
+		clound = smoothstep(.4+.04, .6+.04, clound) * 70.0f;
+		clound *= sin(PI * (height-5e3) / 5e3) * setting.cloud;
+	}
+
+    if (dist < setting.cloudFar) 
+    {
+        float factor = saturate(1.0 - ((setting.cloudFar - dist) / (setting.cloudFar-setting.cloudNear)));
+        clound *= factor;
+    }
+    
+    opticalMie += clound;
+}
+
 void ComputeLightInsctrIntegral(ScatteringParams setting, float3 start, float3 L, out float depthLightMie, out float depthLightRayleigh)
 {
 	float sampleLight = ComputeRaySphereIntersection(start, L, setting.earthCenter, setting.earthAtmTopRadius).y;
@@ -195,11 +227,8 @@ void ComputeLightInsctrIntegral(ScatteringParams setting, float3 start, float3 L
 	}
 }
 
-void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float3 insctrMie, out float3 insctrRayleigh)
+void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float depthMie, out float depthRayleigh, out float3 insctrMie, out float3 insctrRayleigh)
 {
-	float depthMie = 0.0;
-	float depthRayleigh = 0.0;
-
 	float sampleLength = length(end - start) / float(NUM_SAMPLES_STEP);
 	float sampleStart = sampleLength * 0.5;
 
@@ -209,7 +238,7 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 
 		float stepOpticalMie;
 		float stepOpticalRayleigh;
-		ComputeOpticalLength(setting, samplePos, stepOpticalMie, stepOpticalRayleigh);
+		ComputeOpticalLengthWithClound(setting, samplePos, stepOpticalMie, stepOpticalRayleigh);
 		
 		float depthLightMie = 0.0;
 		float depthLightRayleigh = 0.0;
@@ -232,7 +261,7 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 	}
 }
 
-float3 ComputeUnshadowedInscattering(ScatteringParams setting, float3 viewdir, float3 eyePosition, float3 L)
+float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 viewdir, float3 eyePosition, float3 L)
 {
 	float3 V = normalize(viewdir);
 
@@ -243,20 +272,24 @@ float3 ComputeUnshadowedInscattering(ScatteringParams setting, float3 viewdir, f
 
 	float3 end = eyePosition + V * ((outerIntersections.x >= 0) ? outerIntersections.x : outerIntersections.y);
 
+	float depthMie = 0.0;
+	float depthRayleigh = 0.0;
+
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
-	ComputeInsctrIntegral(setting, start, end, V, -L, insctrMie, insctrRayleigh);
+	ComputeInsctrIntegral(setting, start, end, V, -L, depthMie, depthRayleigh, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 	float phaseSun = ComputePhaseMie(phaseTheta, setting.sunSize);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+	float phaseNight = 1.0 - saturate(depthMie * EPSILON);
 
-	float3 insctrTotalSun = insctrMie * setting.waveLambdaMie * phaseSun;
+	float3 insctrTotalSun = insctrMie * setting.waveLambdaMie * phaseSun * phaseNight;
 	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
 	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 scattering = (insctrTotalSun + insctrTotalMie + insctrTotalRayleigh);
-
-	return scattering * setting.sunRadiance;
+	
+	return float4(scattering * setting.sunRadiance, phaseNight);
 }

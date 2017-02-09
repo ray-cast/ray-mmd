@@ -2,8 +2,8 @@
 #include "../../shader/common.fxsub"
 
 #include "shader/stars.fxsub"
+#include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
-#include "shader/clound.fxsub"
 
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
 float3 LightDirection : DIRECTION< string Object = "Light";>;
@@ -109,16 +109,6 @@ float4 SpherePS(
 	return diffuse;
 }
 
-float3 ACESFilmLinear(float3 x)
-{
-	const float A = 2.51f;
-	const float B = 0.03f;
-	const float C = 2.43f;
-	const float D = 0.59f;
-	const float E = 0.14f;
-	return (x * (A * x + B)) / (x * (C * x + D) + E);
-}
-
 void ScatteringVS(
 	in float4 Position    : POSITION,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -150,27 +140,16 @@ float4 ScatteringPS(
 	setting.earthRadius = 6360e3;
 	setting.earthAtmTopRadius = 6380e3;
 	setting.earthCenter = float3(0, -6361e3, 0);
-	
+	setting.cloud = 0.6;
+	setting.cloudNear = 1.0;
+	setting.cloudFar = 1e3;
+	setting.cloudFade = time;
+	setting.clouddir = float3(0,0, -3e3 * time);
+
 	float3 V = normalize(viewdir);
-	float3 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
+	float4 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
 
-	return linear2srgb(float4(insctrColor, 1.0));
-}
-
-void CloundVS(
-	in float4 Position    : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oPosition  : POSITION)
-{
-	oTexcoord0 = Position;
-	oPosition = mul(Position, matViewProject);
-}
-
-float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
-{
-	float3 viewdir = normalize(Position - CameraPosition);
-	float4 cound = ComputeClound(viewdir, LightSpecular);
-    return float4(cound.rgb, cound.a * cound.a);
+	return linear2srgb(insctrColor);
 }
 
 #define BACKGROUND_TEC(name, mmdpass) \
@@ -213,16 +192,9 @@ float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
 		pass DrawObject { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = ONE; DestBlend = ONE;\
+			SrcBlend = ONE; DestBlend = SRCALPHA;\
 			VertexShader = compile vs_3_0 ScatteringVS(); \
 			PixelShader  = compile ps_3_0 ScatteringPS(); \
-		} \
-		pass DrawObject { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
-			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 CloundVS(); \
-			PixelShader  = compile ps_3_0 CloundPS(); \
 		} \
 	}
 

@@ -2,8 +2,8 @@
 #include "../../shader/common.fxsub"
 
 #include "shader/stars.fxsub"
+#include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
-#include "shader/clound.fxsub"
 
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
 float3 LightDirection : DIRECTION< string Object = "Light";>;
@@ -169,7 +169,7 @@ void CloundVS(
 float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
 {
 	float3 viewdir = normalize(Position - CameraPosition);
-	float4 cound = ComputeClound(viewdir, LightSpecular);
+	float4 cound = ComputeCloud(viewdir, LightSpecular);
     return float4(cound.rgb, cound.a * cound.a);
 }
 

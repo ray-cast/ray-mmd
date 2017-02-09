@@ -1,7 +1,26 @@
+texture NoiseMap<string ResourceName = "shader/textures/noise.png"; int Miplevels = 0;>; 
+sampler NoiseMapSamp = sampler_state {
+    texture = <NoiseMap>;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+    ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+
+
 float hash(float2 p) 
 {
-    p  = 50.0 * frac(p * 0.3183099 + float2(0.71,0.113));
+    p = 50.0 * frac(p * 0.3183099 + float2(0.71,0.113));
     return frac(sin(p.x) + cos(p.y)); 
+}
+
+float noise(float3 x)
+{
+    float3 p = floor(x);
+    float3 f = frac(x);
+    f = f * f * (3.0 - 2.0 * f);
+
+    float2 uv = (p.xy + float2(37.0, 17.0) * p.z) + f.xy;
+    float2 rg = tex2D(NoiseMapSamp, (uv+ 0.5) / 256.0).yx;
+    return lerp(rg.x, rg.y, f.z);
 }
 
 float noise(float2 x) 
@@ -29,7 +48,19 @@ float fbm(float2 p)
     return f;
 }
 
-float4 ComputeClound(float3 V, float3 color)
+float fbm(float3 p, float bias)
+{
+    float f;
+    f = 0.5000    * noise(p); p = p * 3.02; p.y -= bias * 0.2;
+    f += 0.2500   * noise(p); p = p * 3.03; p.y += bias * 0.06;
+    f += 0.1250   * noise(p); p = p * 3.01;
+    f += 0.0625   * noise(p); p = p * 3.03;
+    f += 0.03125  * noise(p); p = p * 3.02;
+    f += 0.015625 * noise(p);
+    return f;
+}
+
+float4 ComputeCloud(float3 V, float3 color)
 {
     float3 col = 0;
     
