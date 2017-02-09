@@ -1,0 +1,105 @@
+#define InvLog2 3.32192809489f
+
+#define InvPIE 0.318309886142f
+#define InvPIE8 0.039788735767f
+#define InvPIE4 0.079577471535f
+
+#define PI 3.1415926535f
+#define PI_2 (3.1415926535f * 2.0)
+
+#define EPSILON 1e-5f
+
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+
+float3 srgb2linear(float3 rgb)
+{
+    rgb = max(6.10352e-5, rgb);
+    return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
+}
+
+float4 srgb2linear(float4 c)
+{
+    return float4(srgb2linear(c.rgb), c.a);
+}
+
+float3 linear2srgb(float3 srgb)
+{
+    srgb = max(6.10352e-5, srgb);
+    return min(srgb * 12.92, pow(max(srgb, 0.00313067), 1.0/2.4) * 1.055 - 0.055);
+}
+
+float4 linear2srgb(float4 c)
+{
+    return float4(linear2srgb(c.rgb), c.a);
+}
+
+float3 hsv2rgb(float3 hsv)
+{
+    float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
+    return hsv.z * (1.0 - hsv.y * rgb);
+}
+
+float luminance(float3 rgb)
+{
+    const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+    return dot(rgb, lumfact);
+}
+
+float pow2(float x)
+{
+    return x * x;
+}
+
+float pow5(float x)
+{
+    float xx = x * x;
+    return xx * xx * x;
+}
+
+float3x3 CreateRotate(float3 euler)
+{
+    float sj, cj, si, ci, sh, ch;
+
+    sincos(euler.x, si, ci);
+    sincos(euler.y, sj, cj);
+    sincos(euler.z, sh, ch);
+
+    float cc = ci * ch;
+    float cs = ci * sh;
+    float sc = si * ch;
+    float ss = si * sh;
+
+    float a1 = cj * ch;
+    float a2 = sj * sc - cs;
+    float a3 = sj * cc + ss;
+
+    float b1 = cj * sh;
+    float b2 = sj * ss + cc;
+    float b3 = sj * cs - sc;
+
+    float c1 = -sj;
+    float c2 = cj * si;
+    float c3 = cj * ci;
+    
+    float3x3 rotate;
+    rotate[0] = float3(a1, a2, a3);
+    rotate[1] = float3(b1, b2, b3);
+    rotate[2] = float3(c1, c2, c3);
+    
+    return rotate;
+}
+
+float SmoothCurve(float x)
+{
+    return x * x * (3.0 - 2.0 * x);
+}
+
+float TriangleWave(float x)
+{
+    return abs(frac(x + 0.5) * 2.0 - 1.0);
+}
+
+float SmoothTriangleWave(float x)
+{
+    return SmoothCurve(TriangleWave(x));
+}

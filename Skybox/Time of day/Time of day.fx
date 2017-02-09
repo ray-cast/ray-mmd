@@ -1,12 +1,8 @@
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
 #include "shader/stars.fxsub"
 #include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
-
-float3 LightSpecular : SPECULAR< string Object = "Light";>;
-float3 LightDirection : DIRECTION< string Object = "Light";>;
 
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
@@ -18,7 +14,7 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
@@ -61,19 +57,20 @@ float4 StarsPS(
 	in float3 normal  : TEXCOORD0, 
 	in float3 viewdir : TEXCOORD1) : COLOR
 {
+	float starBlink = 0.25;
+	float starDencity = 0.04;
 	float starDistance = 400;
 	float starBrightness = 0.4;
-	float starDencity = 0.04;
-	float starBlink = 0.25;
 
-	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink, time + PI);
-	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink, time + PI);
-	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
-	stars2 *= hsv2rgb(float3(dot(normal, -viewdir), 0.2, 1.5));
-	
-	float3 stars = stars1 + stars2;
-	
 	float3 V = normalize(viewdir);
+	
+	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink * time + PI);
+	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink * time + PI);
+
+	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
+	stars2 *= hsv2rgb(float3(dot(normal, -V), 0.2, 1.5));
+	
+	float3 stars = stars1 + stars2;	
 
 	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
@@ -103,36 +100,22 @@ float4 SpherePS(
 	in float3 normal : TEXCOORD1,
 	in float3 viewdir : TEXCOORD2) : COLOR
 {
-	float4 diffuse = tex2Dlod(DiffuseMapSamp, float4(coord, 0, 0));
+	float4 diffuse = tex2D(DiffuseMapSamp, coord);
 	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
 	diffuse.rgb += SpecularBRDF_GGX(normal, -LightDirection, viewdir, 1.0, 0.04, PI);
 	return diffuse;
 }
 
-float3 ACESFilmLinear(float3 x)
-{
-	const float A = 2.51f;
-	const float B = 0.03f;
-	const float C = 2.43f;
-	const float D = 0.59f;
-	const float E = 0.14f;
-	return (x * (A * x + B)) / (x * (C * x + D) + E);
-}
-
 void ScatteringVS(
 	in float4 Position    : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
-	oTexcoord0 = Position;
-	oTexcoord1 = normalize(Position.xyz - CameraPosition);
+	oTexcoord = normalize(Position.xyz - CameraPosition);
 	oPosition = mul(Position, matViewProject);
 }
 
-float4 ScatteringPS(
-	in float3 position : TEXCOORD0,
-	in float3 viewdir : TEXCOORD0) : COLOR
+float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	ScatteringParams setting;
 	setting.sunSize = 0.99;
@@ -147,30 +130,11 @@ float4 ScatteringPS(
 	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
 	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
 	setting.waveLambdaRayleigh = float3(94, 40, 18);
-	setting.earthRadius = 6360e3;
-	setting.earthAtmTopRadius = 6380e3;    
-	setting.earthCenter = float3(0, -6360e3, 0);
 	
 	float3 V = normalize(viewdir);
-	float3 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
+	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
 
-	return linear2srgb(float4(insctrColor, 1.0));
-}
-
-void CloundVS(
-	in float4 Position    : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oPosition  : POSITION)
-{
-	oTexcoord0 = Position;
-	oPosition = mul(Position, matViewProject);
-}
-
-float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
-{
-	float3 viewdir = normalize(Position - CameraPosition);
-	float4 cound = ComputeCloud(viewdir, LightSpecular);
-    return float4(cound.rgb, cound.a * cound.a);
+	return linear2srgb(insctrColor);
 }
 
 #define BACKGROUND_TEC(name, mmdpass) \
@@ -213,16 +177,9 @@ float4 CloundPS(in float3 Position : TEXCOORD0) : COLOR
 		pass DrawObject { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = ONE; DestBlend = ONE;\
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 ScatteringVS(); \
 			PixelShader  = compile ps_3_0 ScatteringPS(); \
-		} \
-		pass DrawObject { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
-			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 CloundVS(); \
-			PixelShader  = compile ps_3_0 CloundPS(); \
 		} \
 	}
 

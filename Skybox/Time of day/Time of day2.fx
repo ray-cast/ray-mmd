@@ -1,12 +1,8 @@
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
 #include "shader/stars.fxsub"
 #include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
-
-float3 LightSpecular : SPECULAR< string Object = "Light";>;
-float3 LightDirection : DIRECTION< string Object = "Light";>;
 
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
@@ -61,19 +57,20 @@ float4 StarsPS(
 	in float3 normal  : TEXCOORD0, 
 	in float3 viewdir : TEXCOORD1) : COLOR
 {
+	float starBlink = 0.25;
+	float starDencity = 0.04;
 	float starDistance = 400;
 	float starBrightness = 0.4;
-	float starDencity = 0.04;
-	float starBlink = 0.25;
 
-	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink, time + PI);
-	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink, time + PI);
-	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
-	stars2 *= hsv2rgb(float3(dot(normal, -viewdir), 0.2, 1.5));
-	
-	float3 stars = stars1 + stars2;
-	
 	float3 V = normalize(viewdir);
+	
+	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink * time + PI);
+	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink * time + PI);
+
+	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
+	stars2 *= hsv2rgb(float3(dot(normal, -V), 0.2, 1.5));
+	
+	float3 stars = stars1 + stars2;	
 
 	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
@@ -110,19 +107,15 @@ float4 SpherePS(
 }
 
 void ScatteringVS(
-	in float4 Position    : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
-	out float4 oPosition  : POSITION)
+	in float4 Position   : POSITION,
+	out float3 oTexcoord : TEXCOORD,
+	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = Position;
-	oTexcoord1 = normalize(Position.xyz - CameraPosition);
+	oTexcoord = normalize(Position.xyz - CameraPosition);
 	oPosition = mul(Position, matViewProject);
 }
 
-float4 ScatteringPS(
-	in float3 position : TEXCOORD0,
-	in float3 viewdir : TEXCOORD0) : COLOR
+float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	ScatteringParams setting;
 	setting.sunSize = 0.99;

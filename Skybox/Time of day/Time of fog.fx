@@ -56,9 +56,6 @@ float4 ScatteringFogPS(
 	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
 	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
 	setting.waveLambdaRayleigh = float3(94, 40, 18);
-	setting.earthRadius = 6360e3;
-	setting.earthAtmTopRadius = 6380e3;    
-	setting.earthCenter = float3(0, -6360e3, 0);
 	
 	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
 	
