@@ -14,7 +14,7 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
@@ -100,16 +100,16 @@ float4 SpherePS(
 	in float3 normal : TEXCOORD1,
 	in float3 viewdir : TEXCOORD2) : COLOR
 {
-	float4 diffuse = tex2Dlod(DiffuseMapSamp, float4(coord, 0, 0));
+	float4 diffuse = tex2D(DiffuseMapSamp, coord);
 	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
 	diffuse.rgb += SpecularBRDF_GGX(normal, -LightDirection, viewdir, 1.0, 0.04, PI);
 	return diffuse;
 }
 
 void ScatteringVS(
-	in float4 Position   : POSITION,
-	out float3 oTexcoord : TEXCOORD,
-	out float4 oPosition : POSITION)
+	in float4 Position    : POSITION,
+	out float3 oTexcoord : TEXCOORD0,
+	out float4 oPosition  : POSITION)
 {
 	oTexcoord = normalize(Position.xyz - CameraPosition);
 	oPosition = mul(Position, matViewProject);
@@ -124,21 +124,15 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.mieUpsilon = 4.0;
 	setting.mieTurbidity = 1.0;
 	setting.mieCoefficient = 0.005;
-	setting.mieHeight = 1200.0;
+	setting.mieHeight = 1.25E3;
 	setting.rayleighCoefficient = 2.0;
-	setting.rayleighHeight = 8000.0;
+	setting.rayleighHeight = 8.4E3;
 	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
-	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
-	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
-	setting.earthRadius = 6360e3;
-	setting.earthAtmTopRadius = 6380e3;
-	setting.earthCenter = float3(0, -6361e3, 0);
-	setting.cloud = 0.6;
-	setting.cloudBias = time * saturate(viewdir.y / 100);
-	setting.clouddir = float3(0,0, -3e3 * time / PI);
-
+	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
+	setting.waveLambdaRayleigh = float3(94, 40, 18);
+	
 	float3 V = normalize(viewdir);
-	float4 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
+	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -183,7 +177,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 		pass DrawObject { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = ONE; DestBlend = SRCALPHA;\
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 ScatteringVS(); \
 			PixelShader  = compile ps_3_0 ScatteringPS(); \
 		} \
@@ -201,6 +195,3 @@ BACKGROUND_TEC(StarsTecBS0, "object_ss")
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
-
-//https://www.shadertoy.com/results?query=sky&sort=popular&from=84&num=12
-//https://www.shadertoy.com/view/ltlSWB

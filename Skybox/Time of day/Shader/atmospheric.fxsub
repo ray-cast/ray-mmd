@@ -54,7 +54,7 @@ float ComputePhaseMie(float theta, float g)
 	float leftTop = 3.0 * (1.0 - g2);
 	float leftBottom = 2.0 * (2.0 + g2);
 	float rightTop = 1.0 + theta2;
-	float rightBottom = pow(1.0 + g2 - 2.0 * g * theta, 1.5);
+	float rightBottom = pow(saturate(1.0 + g2 - 2.0 * g * theta), 1.5);
 
 	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4.0 * PI);
 }
@@ -182,30 +182,29 @@ void ComputeOpticalLength(ScatteringParams setting, float3 P, out float opticalM
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 }
 
-void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, float3 V, out float opticalMie, out float opticalRayleigh)
+void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out float opticalMie, out float opticalRayleigh)
 {
-	float dist = length(P - setting.earthCenter);
-	float height = dist - setting.earthRadius;
+	float height = length(P - setting.earthCenter) - setting.earthRadius;
 	opticalMie = exp(-height / setting.mieHeight);
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 	
 	float cloud = 0.0;
-	
-	if (7e3 < height && height < 10e3) 
+
+	if (5e3 < height && height < 10e3) 
 	{
 		P += float3(23175.7, 0.0, 0.0) + setting.clouddir;
 		cloud = fbm(P * 2e-4 * 0.25, setting.cloudBias);
 		cloud = smoothstep(0.404, 0.604, cloud) * 70.0f;
 		cloud *= sin(PI * (height - 5e3) / 5e3) * setting.cloud;
 	}
-    
-    opticalMie = max(0, opticalMie + cloud);
+
+    opticalMie += cloud;
 }
 
 void ComputeLightInsctrIntegral(ScatteringParams setting, float3 start, float3 L, out float depthLightMie, out float depthLightRayleigh)
 {
 	float2 sampleIntersections = ComputeRaySphereIntersection(start, L, setting.earthCenter, setting.earthAtmTopRadius);
-	float3 sampleLight = start + L * (sampleIntersections.x > 0.0 ? sampleIntersections.x : sampleIntersections.y);
+	float3 sampleLight = start + L * sampleIntersections.y;
 	float3 sampleStep = (sampleLight - start) / float(NUM_SAMPLES_STEP2);
 	
 	float sampleLightLength = length(sampleStep);
@@ -231,7 +230,7 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 	{
 		float stepOpticalMie;
 		float stepOpticalRayleigh;
-		ComputeOpticalLengthWithClound(setting, samplePos, V, stepOpticalMie, stepOpticalRayleigh);
+		ComputeOpticalLengthWithClound(setting, samplePos, stepOpticalMie, stepOpticalRayleigh);
 		
 		float depthLightMie = 0.0;
 		float depthLightRayleigh = 0.0;
