@@ -24,9 +24,7 @@ struct ScatteringParams
 	float3 earthCenter;
 	
 	float cloud;
-	float cloudNear;
-	float cloudFar;
-	float cloudFade;
+	float cloudBias;
 	float3 clouddir;
 };
 
@@ -184,65 +182,56 @@ void ComputeOpticalLength(ScatteringParams setting, float3 P, out float opticalM
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 }
 
-void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out float opticalMie, out float opticalRayleigh)
+void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, float3 V, out float opticalMie, out float opticalRayleigh)
 {
-	float height = length(P - setting.earthCenter) - setting.earthRadius;
+	float dist = length(P - setting.earthCenter);
+	float height = dist - setting.earthRadius;
 	opticalMie = exp(-height / setting.mieHeight);
 	opticalRayleigh = exp(-height / setting.rayleighHeight);
 	
-    float dist = length(float3(P.x, 0, P.z));
-	float clound = 0.0;
+	float cloud = 0.0;
 	
-	if (5e3 < height && height < 8e3) 
+	if (7e3 < height && height < 10e3) 
 	{
 		P += float3(23175.7, 0.0, 0.0) + setting.clouddir;
-		clound = fbm(P * 2e-4 * 0.25, setting.cloudFade);
-		clound = smoothstep(.4+.04, .6+.04, clound) * 70.0f;
-		clound *= sin(PI * (height-5e3) / 5e3) * setting.cloud;
+		cloud = fbm(P * 2e-4 * 0.25, setting.cloudBias);
+		cloud = smoothstep(0.404, 0.604, cloud) * 70.0f;
+		cloud *= sin(PI * (height - 5e3) / 5e3) * setting.cloud;
 	}
-
-    if (dist < setting.cloudFar) 
-    {
-        float factor = saturate(1.0 - ((setting.cloudFar - dist) / (setting.cloudFar-setting.cloudNear)));
-        clound *= factor;
-    }
     
-    opticalMie += clound;
+    opticalMie = max(0, opticalMie + cloud);
 }
 
 void ComputeLightInsctrIntegral(ScatteringParams setting, float3 start, float3 L, out float depthLightMie, out float depthLightRayleigh)
 {
-	float sampleLight = ComputeRaySphereIntersection(start, L, setting.earthCenter, setting.earthAtmTopRadius).y;
-	float sampleLightLength = sampleLight / float(NUM_SAMPLES_STEP2);
-	float sampleLightStart = sampleLightLength * 0.5;
+	float2 sampleIntersections = ComputeRaySphereIntersection(start, L, setting.earthCenter, setting.earthAtmTopRadius);
+	float3 sampleLight = start + L * (sampleIntersections.x > 0.0 ? sampleIntersections.x : sampleIntersections.y);
+	float3 sampleStep = (sampleLight - start) / float(NUM_SAMPLES_STEP2);
+	
+	float sampleLightLength = length(sampleStep);
 
-	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j) 
+	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j, start += sampleStep) 
 	{
-		float3 sampleLightPos = start + L * sampleLightStart;
-		
 		float stepDepthLightMie;
 		float stepDepthLightRayleigh;
-		ComputeOpticalLength(setting, sampleLightPos, stepDepthLightMie, stepDepthLightRayleigh);
+		ComputeOpticalLength(setting, start, stepDepthLightMie, stepDepthLightRayleigh);
 		
 		depthLightMie += stepDepthLightMie * sampleLightLength;
 		depthLightRayleigh += stepDepthLightRayleigh * sampleLightLength;
-		
-		sampleLightStart += sampleLightLength;
 	}
 }
 
 void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float depthMie, out float depthRayleigh, out float3 insctrMie, out float3 insctrRayleigh)
 {
-	float sampleLength = length(end - start) / float(NUM_SAMPLES_STEP);
-	float sampleStart = sampleLength * 0.5;
+	float3 samplePos = start;
+	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP);
+	float sampleLength = length(sampleStep);
 
-	for (int i = 0; i < NUM_SAMPLES_STEP; ++i) 
+	for (int i = 0; i < NUM_SAMPLES_STEP; ++i, samplePos += sampleStep)
 	{
-		float3 samplePos = start + V * sampleStart;
-
 		float stepOpticalMie;
 		float stepOpticalRayleigh;
-		ComputeOpticalLengthWithClound(setting, samplePos, stepOpticalMie, stepOpticalRayleigh);
+		ComputeOpticalLengthWithClound(setting, samplePos, V, stepOpticalMie, stepOpticalRayleigh);
 		
 		float depthLightMie = 0.0;
 		float depthLightRayleigh = 0.0;
@@ -260,8 +249,6 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 		
 		insctrMie += opticalDepth * stepOpticalMie;
 		insctrRayleigh += opticalDepth * stepOpticalRayleigh;
-		
-		sampleStart += sampleLength;
 	}
 }
 

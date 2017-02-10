@@ -134,10 +134,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.earthAtmTopRadius = 6380e3;
 	setting.earthCenter = float3(0, -6361e3, 0);
 	setting.cloud = 0.6;
-	setting.cloudNear = 1.0;
-	setting.cloudFar = 1e3;
-	setting.cloudFade = time;
-	setting.clouddir = float3(0,0, -3e3 * time);
+	setting.cloudBias = time * saturate(viewdir.y / 100);
+	setting.clouddir = float3(0,0, -3e3 * time / PI);
 
 	float3 V = normalize(viewdir);
 	float4 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
