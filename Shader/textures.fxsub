@@ -182,7 +182,7 @@ sampler DepthMapSamp = sampler_state {
 	MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
-#if MAIN_LIGHT_ENABLE
+#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 shared texture PSSM : OFFSCREENRENDERTARGET <
 	string Description = "Cascade shadow map for ray";
 	int Width = SHADOW_MAP_SIZE;
