@@ -34,7 +34,7 @@ float3 ComputeWaveLengthMie(float density)
 float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float V)
 {
 	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
-	float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0) * K;
+	float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0);
 	return mieConst * K / pow(lambda, V - 2);
 }
 
@@ -290,24 +290,20 @@ void ComputeInsctrIntegral2(ScatteringParams setting, float3 start, float3 end, 
 
 float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float3 viewdir, float3 L)
 {
-//	float3 V = normalize(viewdir);
-//
-//	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
-//	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
-//   
-//	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
-//	   
-//	float3 start = eye + V * max(0.0, outerIntersections.x);
-//	float3 end = eye + V * (intersectionTest ? outerIntersections.y : innerIntersections.x);
-
 	float3 V = normalize(viewdir);
 
+	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
+	clip(outerIntersections.y);
+	
 	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
-	float3 start = eye + V * max(0, innerIntersections.x);
-
-	float2 outerIntersections = ComputeRaySphereIntersection(start, V, setting.earthCenter, setting.earthAtmTopRadius);
-
-	float3 end = eye + V * ((outerIntersections.x >= 0) ? outerIntersections.x : outerIntersections.y);
+    if (innerIntersections.x > 0)
+    {
+        float3 mix = normalize(float3(innerIntersections.xy, 0));
+        outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, pow5(mix.y));
+    }
+	
+	float3 start = eye + V * max(0, outerIntersections.x);
+	float3 end = eye + V * outerIntersections.y;
 	
 	setting.waveLambdaMie *= setting.mieCoefficient;
 	setting.waveLambdaRayleigh *= setting.rayleighCoefficient;
