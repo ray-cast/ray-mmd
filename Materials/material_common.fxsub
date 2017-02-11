@@ -1106,7 +1106,7 @@ GbufferParam MaterialPS(
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy * parallaxMapLoopNum);
 	coord.xy = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
