@@ -200,6 +200,3 @@ BACKGROUND_TEC(StarsTecBS0, "object_ss")
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
-
-//https://www.shadertoy.com/results?query=sky&sort=popular&from=84&num=12
-//https://www.shadertoy.com/view/ltlSWB
