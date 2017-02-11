@@ -128,17 +128,19 @@ float3 ACESFilmLinear(float3 x)
 
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
+	float scaling = 1000;
+	
 	ScatteringParams setting;
 	setting.sunSize = 0.99;
 	setting.sunRadiance = 10.0;
 	setting.mieG = 0.76;
-	setting.mieHeight = 1.2 * 1000;
-	setting.rayleighHeight = 8.0 * 1000;
+	setting.mieHeight = 1.2 * scaling;
+	setting.rayleighHeight = 8.0 * scaling;
 	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
 	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
-	setting.earthRadius = 6360 * 1000;
-	setting.earthAtmTopRadius = 6420 * 1000;
-	setting.earthCenter = float3(0, -6360, 0) * 1000;
+	setting.earthRadius = 6360 * scaling;
+	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.earthCenter = float3(0, -6361, 0) * scaling;
 	setting.cloud = 0.6;
 	setting.cloudBias = time / 20;
 	setting.clouddir = float3(0, 0, -time * 3e+3);

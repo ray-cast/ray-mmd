@@ -196,7 +196,7 @@ void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out floa
 		cloud *= sin(PI * (height - 5e3) / 5e3) * setting.cloud;
 	}
 
-    opticalLength.x += cloud;
+	opticalLength.x += cloud;
 }
 
 void ComputeOpticalInsctrIntegral(ScatteringParams setting, float3 start, float3 end, out float2 opticalLength)
@@ -280,14 +280,24 @@ void ComputeInsctrIntegral2(ScatteringParams setting, float3 start, float3 end, 
 
 float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float3 viewdir, float3 L)
 {
+//	float3 V = normalize(viewdir);
+//
+//	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
+//	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
+//   
+//	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
+//	   
+//	float3 start = eye + V * max(0.0, outerIntersections.x);
+//	float3 end = eye + V * (intersectionTest ? outerIntersections.y : innerIntersections.x);
+
 	float3 V = normalize(viewdir);
 
-	float2 innerIntersections = ComputeRaySphereIntersection(eyePosition, V, setting.earthCenter, setting.earthRadius);
-	float3 start = eyePosition + V * max(0, innerIntersections.x);
+	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
+	float3 start = eye + V * max(0, innerIntersections.x);
 
 	float2 outerIntersections = ComputeRaySphereIntersection(start, V, setting.earthCenter, setting.earthAtmTopRadius);
 
-	float3 end = eyePosition + V * ((outerIntersections.x >= 0) ? outerIntersections.x : outerIntersections.y);
+	float3 end = eye + V * ((outerIntersections.x >= 0) ? outerIntersections.x : outerIntersections.y);
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
