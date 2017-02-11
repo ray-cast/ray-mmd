@@ -49,6 +49,8 @@ void StarsVS(
 	out float4 oPosition  : POSITION)
 {
 	oTexcoord0 = normalize(Position);
+	
+	Position.xyz += CameraPosition;
 	oTexcoord1 = normalize(CameraPosition - Position.xyz);
 	oPosition = mul(Position, matViewProject);
 }
@@ -111,6 +113,7 @@ void ScatteringVS(
 	out float3 oTexcoord : TEXCOORD,
 	out float4 oPosition : POSITION)
 {
+	Position.xyz += CameraPosition;
 	oTexcoord = normalize(Position.xyz - CameraPosition);
 	oPosition = mul(Position, matViewProject);
 }
