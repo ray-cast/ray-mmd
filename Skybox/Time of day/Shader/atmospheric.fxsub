@@ -290,6 +290,6 @@ float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float
 
 	float3 scattering = (insctrTotalSun + insctrTotalMie + insctrTotalRayleigh);
 	
-	bool intersectionTest =  innerIntersections < 0.0 && innerIntersections < 0.0;
+	bool intersectionTest =  innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
 }
