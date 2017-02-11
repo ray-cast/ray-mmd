@@ -125,7 +125,6 @@ float3 ACESFilmLinear(float3 x)
 	return (x * (A * x + B)) / (x * (C * x + D) + E);
 }
 
-
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	float scaling = 1000;
@@ -135,7 +134,9 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.sunRadiance = 10.0;
 	setting.mieG = 0.76;
 	setting.mieHeight = 1.2 * scaling;
+	setting.mieCoefficient = 1.0;
 	setting.rayleighHeight = 8.0 * scaling;
+	setting.rayleighCoefficient = 1.0;
 	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
 	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	setting.earthRadius = 6360 * scaling;
@@ -147,8 +148,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 
 	float3 V = normalize(viewdir);
 	float4 insctrColor = ComputeUnshadowedInscattering(setting, CameraPosition, V, LightDirection);
-	insctrColor.rgb = ACESFilmLinear(insctrColor.rgb);
-	
+
 	return linear2srgb(insctrColor);
 }
 

@@ -121,15 +121,12 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.sunSize = 0.99;
 	setting.sunRadiance = 10.0;
 	setting.mieG = 0.76;
-	setting.mieUpsilon = 4.0;
-	setting.mieTurbidity = 1.0;
-	setting.mieCoefficient = 0.005;
 	setting.mieHeight = 1.25E3;
-	setting.rayleighCoefficient = 2.0;
+	setting.mieCoefficient = 1.0;
 	setting.rayleighHeight = 8.4E3;
-	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
-	setting.waveLambdaMie = float3(0.686, 0.678, 0.666);
-	setting.waveLambdaRayleigh = float3(94, 40, 18);
+	setting.rayleighCoefficient = 1.0;
+	setting.waveLambdaMie = float3(4e-6, 4e-6, 4e-6);
+	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	
 	float3 V = normalize(viewdir);
 	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
