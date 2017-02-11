@@ -115,16 +115,6 @@ void ScatteringVS(
 	oPosition = mul(Position, matViewProject);
 }
 
-float3 ACESFilmLinear(float3 x)
-{
-	const float A = 2.51f;
-	const float B = 0.03f;
-	const float C = 2.43f;
-	const float D = 0.59f;
-	const float E = 0.14f;
-	return (x * (A * x + B)) / (x * (C * x + D) + E);
-}
-
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	float scaling = 1000;
@@ -135,13 +125,13 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.mieG = 0.76;
 	setting.mieHeight = 1.2 * scaling;
 	setting.mieCoefficient = 1.0;
-	setting.rayleighHeight = 8.0 * scaling;
+	setting.rayleighHeight = 7.994 * scaling;
 	setting.rayleighCoefficient = 1.0;
-	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
-	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -6361, 0) * scaling;
+	setting.waveLambdaMie = 2e-5;
+	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	setting.cloud = 0.6;
 	setting.cloudBias = time / 20;
 	setting.clouddir = float3(0, 0, -time * 3e+3);

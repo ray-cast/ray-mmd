@@ -125,7 +125,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.mieCoefficient = 1.0;
 	setting.rayleighHeight = 8.4E3;
 	setting.rayleighCoefficient = 1.0;
-	setting.waveLambdaMie = float3(4e-6, 4e-6, 4e-6);
+	setting.waveLambdaMie = 2e-5;
 	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
 	
 	float3 V = normalize(viewdir);

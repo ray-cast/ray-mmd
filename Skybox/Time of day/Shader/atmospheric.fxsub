@@ -26,20 +26,27 @@ struct ScatteringParams
 	float3 clouddir;
 };
 
-float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float upsilon)
+float3 ComputeWaveLengthMie(float density)
 {
-	float c_pi = (0.2 * T) * 10E-18 * PI;
-	return 0.434 * c_pi * pow((2.0 * PI) / lambda, upsilon - 2.0) * K;
+	return 2e-5f * density;
+}
+
+float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float V)
+{
+	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
+	float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0) * K;
+	return mieConst * K / pow(lambda, V - 2);
 }
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)
 {
-	float n = 1.0003;
-	float N = 2.545E25;
-	float pn = 0.035;
-	float n2 = n * n;
-	float pi3 = PI * PI * PI;
-	return ((8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N * pow(lambda, 4.0))) * ((6 + 3 * pn) / (6 - 7 * pn));
+	static const float n = 1.0003;
+	static const float N = 2.545E25;
+	static const float pn = 0.035;
+	static const float n2 = n * n;
+	static const float pi3 = PI * PI * PI;
+	static const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
+	return rayleighConst / (lambda * lambda * lambda * lambda);
 }
 
 float ComputeOpticalMass(float cosAngle)
