@@ -115,31 +115,38 @@ void ScatteringVS(
 	oPosition = mul(Position, matViewProject);
 }
 
+float3 ACESFilmLinear(float3 x)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+	return (x * (A * x + B)) / (x * (C * x + D) + E);
+}
+
+
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	ScatteringParams setting;
 	setting.sunSize = 0.99;
 	setting.sunRadiance = 10.0;
 	setting.mieG = 0.76;
-	setting.mieUpsilon = 4.0;
-	setting.mieTurbidity = 1.0;
-	setting.mieCoefficient = 0.005;
-	setting.mieHeight = 1200.0;
-	setting.rayleighCoefficient = 2.0;
-	setting.rayleighHeight = 8000.0;
-	setting.waveLambda = float3(680E-9, 550E-9, 450E-9);
+	setting.mieHeight = 1.2 * 1000;
+	setting.rayleighHeight = 8.0 * 1000;
 	setting.waveLambdaMie = float3(21e-6, 21e-6, 21e-6);
 	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
-	setting.earthRadius = 6360e3;
-	setting.earthAtmTopRadius = 6380e3;
-	setting.earthCenter = float3(0, -6361e3, 0);
+	setting.earthRadius = 6360 * 1000;
+	setting.earthAtmTopRadius = 6420 * 1000;
+	setting.earthCenter = float3(0, -6360, 0) * 1000;
 	setting.cloud = 0.6;
 	setting.cloudBias = time / 20;
 	setting.clouddir = float3(0, 0, -time * 3e+3);
 
 	float3 V = normalize(viewdir);
-	float4 insctrColor = ComputeUnshadowedInscattering(setting, V, CameraPosition, LightDirection);
-
+	float4 insctrColor = ComputeUnshadowedInscattering(setting, CameraPosition, V, LightDirection);
+	insctrColor.rgb = ACESFilmLinear(insctrColor.rgb);
+	
 	return linear2srgb(insctrColor);
 }
 
