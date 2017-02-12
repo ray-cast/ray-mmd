@@ -110,12 +110,11 @@ float4 SpherePS(
 
 void ScatteringVS(
 	in float4 Position   : POSITION,
-	out float3 oTexcoord : TEXCOORD,
+	out float3 oTexcoord0 : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	Position.xyz += CameraPosition;
-	oTexcoord = normalize(Position.xyz - CameraPosition);
-	oPosition = mul(Position, matViewProject);
+	oTexcoord0 = normalize(Position).xyz;
+	oPosition = mul(Position + float4(CameraPosition, 0), matWorldViewProject);
 }
 
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
