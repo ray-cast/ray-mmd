@@ -6,11 +6,49 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/ibl.fxsub"
 
+#include "shader/stars.fxsub"
+#include "shader/cloud.fxsub"
+#include "shader/atmospheric.fxsub"
+
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
 float3 LightDirection : DIRECTION< string Object = "Light";>;
 
+float4 ScatteringPS(in float3 viewdir : TEXCOORD0, in float4 texcoord : TEXCOORD1)
+{
+	//float2 coord = texcoord.xy / texcoord.w;
+	//coord = PosToCoord(coord);
+	//coord += ViewportOffset;
+	//float3 V = ComputeSphereNormal(coord);
+	
+	float scaling = 1000;
+	
+	ScatteringParams setting;
+	setting.sunSize = 0.99;
+	setting.sunRadiance = 10.0;
+	setting.mieG = 0.76;
+	setting.mieHeight = 1.2 * scaling;
+	setting.mieCoefficient = 1.0;
+	setting.rayleighHeight = 7.994 * scaling;
+	setting.rayleighCoefficient = 1.0;
+	setting.earthRadius = 6360 * scaling;
+	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.earthCenter = float3(0, -6361, 0) * scaling;
+	setting.waveLambdaMie = 2e-5;
+	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
+	setting.cloud = 0.6;
+	setting.cloudBias = time / 20;
+	setting.clouddir = float3(0, 0, -time * 3e+3);
+
+	float3 V = normalize(viewdir);
+	float4 insctrColor = ComputeUnshadowedInscattering(setting, CameraPosition, V, LightDirection);
+	return insctrColor;
+}
+
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
+	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
+	
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
 	
 	float zenithFactor = saturate(-LightDirection.y);
@@ -22,9 +60,10 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	ambientColor = saturate(ambientColor * 10);
 	
 	float nl = saturate(dot(material.normal, L) * 0.5 + 0.5) * 0.5;
-	diffuse = ambientColor * nl;
+	diffuse = 0;
 
-	specular = 0.0;
+	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	specular = ScatteringPS(worldReflect, 0.0).xyz * fresnel;
 }
 
 void EnvLightingVS(

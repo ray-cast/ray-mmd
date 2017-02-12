@@ -5,10 +5,9 @@ sampler NoiseMapSamp = sampler_state {
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float hash(float2 p) 
+float noise(float2 x) 
 {
-	p = 50.0 * frac(p * 0.3183099 + float2(0.71,0.113));
-	return frac(sin(p.x) + cos(p.y)); 
+	return tex2D(NoiseMapSamp, x / 256).x;
 }
 
 float noise(float3 x)
@@ -18,32 +17,18 @@ float noise(float3 x)
 	f = f * f * (3.0 - 2.0 * f);
 
 	float2 uv = (p.xy + float2(37.0, 17.0) * p.z) + f.xy;
-	float2 rg = tex2D(NoiseMapSamp, (uv+ 0.5) / 256.0).yx;
+	float2 rg = tex2D(NoiseMapSamp, (uv + 0.5) / 256.0).yx;
 	return lerp(rg.x, rg.y, f.z);
-}
-
-float noise(float2 x) 
-{
-	float2 f = frac(x);
-	float2 p = floor(x);
-	float2 u = f * f * (3.0 - 2.0 * f);
-
-	float a = hash(p);
-	float b = hash(p + float2(1.0, 0.0));
-	float c = hash(p + float2(0.0, 1.0));
-	float d = hash(p + float2(1.0, 1.0));
-
-	return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
 float fbm(float2 p) 
 {
+	float2x2 m2 = float2x2(1.6,-1.2,1.2,1.6);
 	float f = 0;
-	f += 0.5000 * noise(p); p = p * 2.0;
-	f += 0.2500 * noise(p); p = p * 2.0;
-	f += 0.1250 * noise(p); p = p * 2.0;
-	f += 0.0625 * noise(p); p = p * 2.0;
-	f += 0.0312 * noise(p);
+	f += 0.5000 * noise( p ); p = mul(m2, p);
+	f += 0.2500 * noise( p ); p = mul(m2, p);
+	f += 0.1666 * noise( p ); p = mul(m2, p);
+	f += 0.0834 * noise( p );
 	return f;
 }
 
