@@ -13,4 +13,4 @@
 // 最da强度
 #define FOG_MAX_INTENSITY 100
 
-#include "global_fog.fxsub"
+#include "atmospheric_fog.fxsub"
