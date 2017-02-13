@@ -98,7 +98,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+		
 	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showVisibility + showCustomID + showCustomDataB + showCustomDataA + showEmissive;
 	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showVisibilityAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA + showEmissiveAlpha;
 	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM;
@@ -122,7 +122,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.emissive * showEmissiveAlpha;
 	result += materialAlpha.visibility * showVisibilityAlpha;
 	
-	result = linear2srgb(result);
+	result = pow(result, 1.0 / (2.0 + 1.0 / 3.0));
 
 	result += materialAlpha.alpha * showAlpha;
 	result += pow(material.linearDepth / 200, 0.5) * showDepth;
@@ -152,6 +152,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,1,1) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 		result += float3(1,0,1) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_GLASS)
+		result += float3(0.2,0.3,0.5) * showCustomID;
 		
 	if (materialAlpha.lightModel == SHADINGMODELID_SKIN)
 		result += float3(1,0,0) * showCustomIDAlpha;
@@ -163,6 +165,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,1,1) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_CLEAR_COAT)
 		result += float3(1,0,1) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_GLASS)
+		result += float3(0.2,0.3,0.5) * showCustomIDAlpha;
 		
 	return float4(result, 1);
 }

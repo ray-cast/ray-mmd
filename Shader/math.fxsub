@@ -52,7 +52,7 @@ float3 ycbcr2rgb(float3 YCbCr)
 {
 	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
 	float R = YCbCr.x + 1.402 * YCbCr.z;
-	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz );
+	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
 	float B = YCbCr.x + 1.772 * YCbCr.y;
 	return float3(R, G, B);
 }
