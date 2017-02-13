@@ -154,6 +154,26 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
 }
 
+float4 ShadingShadow(MaterialParam material, float3 V)
+{
+	float linearDepth = material.linearDepth;
+	
+	float shadow = 1;
+
+	float3 P = V * linearDepth / V.z;
+	#if SHADOW_MAP_SOFT_QUALITY == 1
+		shadow *= ShadowPCF(P, 1);
+	#elif SHADOW_MAP_SOFT_QUALITY == 2
+		shadow *= ShadowPCF(P, 2);
+	#elif SHADOW_MAP_SOFT_QUALITY >= 3
+		shadow *= ShadowPCF(P, 3);
+	#else
+		shadow *= ShadowPCF(P, 0);
+	#endif
+
+	return shadow;
+}
+
 #endif
 
 float4 GaussianBlur(sampler source, float2 coord, float2 offset, int radius, float sigma, float mip)
@@ -225,29 +245,6 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	specular *= atten * LightColor * LightIntensity * LightIntensity2;
 }
 
-float4 ShadingShadow(MaterialParam material, MaterialParam materialAlpha, float3 V)
-{
-	float linearDepth = material.linearDepth;
-	float linearDepth2 = materialAlpha.linearDepth;
-	linearDepth = linearDepth2 > 1.0 ? min(linearDepth, linearDepth2) : linearDepth;
-	
-	float shadow = 1;
-#if SHADOW_MAP_ENABLE
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-#endif
-
-	return shadow;
-}
-
 void LightSourceVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
@@ -302,12 +299,14 @@ void LightSourcePS(
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 	
+#if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 	
-	float shadow = ShadingShadow(material, materialAlpha, V);
+	float shadow = ShadingShadow(materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
+#endif
 }
 
 void LightSourceShadowlessPS(
@@ -365,7 +364,7 @@ technique MainTech0 < string MMDPass = "object";
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = NONE;
 		VertexShader = compile vs_3_0 LightSourceVS();
-		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+		PixelShader  = compile ps_3_0 LightSourcePS();
 	}
 }
 
@@ -382,7 +381,7 @@ technique MainTecBS0 < string MMDPass = "object_ss";
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = NONE;
 		VertexShader = compile vs_3_0 LightSourceVS();
-		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+		PixelShader  = compile ps_3_0 LightSourcePS();
 	}
 }
 
