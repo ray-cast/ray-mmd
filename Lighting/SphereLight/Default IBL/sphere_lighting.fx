@@ -19,4 +19,4 @@
 #define IBLDIFF_MAP_FILE "texture/skydiff_hdr.dds"
 #define IBLSPEC_MAP_FILE "texture/skyspec_hdr.dds"
 
-#include "sphere_lighting.fxsub"
+#include "../sphere_lighting.fxsub"
