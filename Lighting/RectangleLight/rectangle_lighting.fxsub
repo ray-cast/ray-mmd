@@ -1,12 +1,15 @@
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/lighting.fxsub"
-#include "../../shader/shadowcommon.fxsub"
-#include "../../shader/arealight.fxsub"
+#include "../../../ray.conf"
+#include "../../../ray_advanced.conf"
+#include "../../../shader/math.fxsub"
+#include "../../../shader/common.fxsub"
+#include "../../../shader/gbuffer.fxsub"
+#include "../../../shader/gbuffer_sampler.fxsub"
+#include "../../../shader/lighting.fxsub"
+#include "../../../shader/arealight.fxsub"
+
+#if SHADOW_MAP_ENABLE
+#	include "../../../shader/shadowcommon.fxsub"
+#endif
 
 #define RECTANGLELIGHT_MAX_WIDTH 50
 #define RECTANGLELIGHT_MAX_HEIGHT 50
@@ -28,9 +31,9 @@ float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "Right
 float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
 float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
 
+static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightWidth = lerp(1, RECTANGLELIGHT_MAX_WIDTH, mWidthP);
 static float LightHeight = lerp(1, RECTANGLELIGHT_MAX_HEIGHT, mHeightP);
-static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
@@ -102,17 +105,14 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
-		"*.pmx = rectangle_shadow.fx;"
-		"*.pmd = rectangle_shadow.fx;"
+		"*.pmx = ../rectangle_shadow.fx;"
+		"*.pmd = ../rectangle_shadow.fx;"
 		"* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
@@ -154,7 +154,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
 }
 
-float4 ShadingShadow(MaterialParam material, float3 V)
+float ShadingShadow(MaterialParam material, float3 V)
 {
 	float linearDepth = material.linearDepth;
 	
