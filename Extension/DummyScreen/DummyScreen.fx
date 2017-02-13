@@ -8,15 +8,15 @@ shared texture2D DummyScreenTex : RenderColorTarget
 	string Format= "A2B10G10R10";
 >;
 
-texture DiffuseMap : MATERIALTEXTURE;
-sampler DiffuseMapSamp = sampler_state
+texture ScreenMap : MATERIALTEXTURE;
+sampler ScreenMapSamp = sampler_state
 {
-	texture = <DiffuseMap>;
-	MINFILTER = LINEAR;
-	MAGFILTER = LINEAR;
-	MIPFILTER = LINEAR;
-	ADDRESSU  = WRAP;
-	ADDRESSV  = WRAP;
+	texture = <ScreenMap>;
+	MINFILTER = POINT;
+	MAGFILTER = POINT;
+	MIPFILTER = NONE;
+	ADDRESSU  = CLAMP;
+	ADDRESSV  = CLAMP;
 };
 
 void DummyScreenVS(
@@ -31,7 +31,7 @@ void DummyScreenVS(
 
 float4 DummyScreenPS(in float2 coord : TEXCOORD0) : COLOR 
 {
-	return tex2D(DiffuseMapSamp, coord);
+	return tex2Dlod(ScreenMapSamp, float4(coord, 0, 0));
 }
 
 float Script : STANDARDSGLOBAL <
