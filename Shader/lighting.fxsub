@@ -89,7 +89,7 @@ float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothne
 	float3 f0 = max(0.02, specular);
 	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
 	
-	return D * G * fresnel * nl;
+	return D * G * fresnel / PI * nl;
 }
 
 float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
