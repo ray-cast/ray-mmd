@@ -184,7 +184,10 @@ float4 ShadingTransparentPS(
 		float2 ior = mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
 		float3 fresnel = lerp(material.specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * material.smoothness));
 		float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord + ior, 0, 0)).rgb;
-		lighting = lerp(prefilteredRefract * material.customDataB, lighting, fresnel * material.alpha);
+		lighting = lerp(prefilteredRefract * material.albedo, lighting, fresnel * material.alpha);
+		
+		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
+		lighting += material.customDataA * material.customDataB * trans * saturate(dot(N, -L));
 	}
 	else
 	{

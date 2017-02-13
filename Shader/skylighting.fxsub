@@ -116,7 +116,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLaye
 	
 	float3 dependentSplit = 0.5;
 	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
-	scattering *=  material.customDataB * dependentSplit * mEnvIntensitySSS;
+	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
 	scattering += prefilteredDiffuse * mEnvIntensityDiff;
 	
 	return scattering;
@@ -155,7 +155,9 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 		specular *= (1 - specular2.a);
 		specular += specular2.rgb;
 	}
-	else if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+	else if (material.lightModel == SHADINGMODELID_SKIN || 
+			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
+			 material.lightModel == SHADINGMODELID_GLASS)
 	{
 		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
 	}
