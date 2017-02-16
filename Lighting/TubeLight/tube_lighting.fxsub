@@ -66,10 +66,10 @@ static float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-	string Description = "Shadow Rendering for TubeLight";
+	string Description = "Shadow Rendering for PointLight";
 	int Width = SHADOW_MAP_WIDTH;
 	int Height = SHADOW_MAP_HEIGHT;
-	string Format = "R32F";
+	string Format = "G32R32F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
 	int MipLevels = 1;
@@ -94,44 +94,68 @@ float ShadowPCF(float3 viewPosition, int samples)
 {
 	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
 	float3 L = worldPosition.xyz - LightPosition;
-	
+
 	float linearDepth = length(L);
-	
-	float depthScale = 85;
+
+	float depthBias = 0.01;
+	float depthScale = 300;
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
-	depth = exp(depth * -depthScale);
+#if SHADOW_MAP_PCF_FILTER
+	depth -= depth * 0.001;
+#endif
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
-	float shadow = 0.0;
-
 #if SHADOW_MAP_SOFT_QUALITY > 0
+	float2 shadow = 0.0;
+	float shadowWeight = 0.0;
+	
+	static const float width = 7;
+	float radius = (width - 1) / 2;
+	float kernel[width];
+
+	float3 incrementalGaussian = IncrementalGaussianCofficent(width);
+
 	[unroll]
-	for (int x = -samples; x <= samples; x++) 
+	for (int i = 0; i <= radius; ++i)
+	{
+		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
+		kernel[radius - i] = incrementalGaussian.x;
+		kernel[radius + i] = incrementalGaussian.x;
+	}
+	
+	[unroll]
+	for (int i = 0; i < width; ++i)
+	{
+		shadowWeight += kernel[i];
+	}
+	
+	[unroll]
+	for (int x = -radius; x <= radius; x++) 
 	{
 		[unroll]
-		for (int y = -samples; y <= samples; y++)
+		for (int y = -radius; y <= radius; y++)
 		{
-			float2 pos = coord.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += saturate(exp(tex2D(ShadowMapSamp, pos).r * depthScale) * depth);
+			float2 pos = coord + float2(x, y) * ShadowmapOffset2;
+			float weight = kernel[radius+x] * kernel[radius+y];
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
 	
-	samples = samples * 2 + 1;
+	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	return saturate(shadow / (samples * samples));
+	return ChebyshevUpperBound(shadow, depth, 0.0, 0.1);
 #else
-	return saturate(depth * exp(tex2D(ShadowMapSamp, coord).r * depthScale));
+	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
+	return ChebyshevUpperBound(shadow, depth, 0.0, 0.1);
 #endif
 }
 
-float4 ShadingShadow(MaterialParam material, float3 V)
+float ShadingShadow(MaterialParam material, float3 V)
 {
-	float linearDepth = material.linearDepth;
-	
-	float shadow = 1;
+	float3 P = V * material.linearDepth / V.z;
 
-	float3 P = V * linearDepth / V.z;
+	float shadow = 1;
 	#if SHADOW_MAP_SOFT_QUALITY == 1
 		shadow *= ShadowPCF(P, 1);
 	#elif SHADOW_MAP_SOFT_QUALITY == 2

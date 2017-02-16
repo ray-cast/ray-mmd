@@ -10,11 +10,8 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
     texture = <DiffuseMap>;
-    MINFILTER = POINT;
-    MAGFILTER = POINT;
-    MIPFILTER = POINT;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+    ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
 
 void ShadowMapGenVS(
@@ -36,7 +33,6 @@ float4 ShadowMapGenPS(
     in float2 coord : TEXCOORD0,
     in float3 view : TEXCOORD1,
     in float4 proj : TEXCOORD2,
-    uniform bool useTexture, 
     uniform float face) : COLOR
 {
     clip(proj.y * face);
@@ -47,31 +43,26 @@ float4 ShadowMapGenPS(
     clip(!opadd - 0.001f);
     float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-    if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord).a;
+    if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord).a;
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-
-    return proj.z / proj.w;
+    return ComputeMoments(proj.z / proj.w).xyxy;
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
-    technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-    > { \
-        pass DrawObjectF {\
-            AlphaBlendEnable = FALSE;\
-            VertexShader = compile vs_3_0 ShadowMapGenVS(1);\
-            PixelShader  = compile ps_3_0 ShadowMapGenPS(true, 1);\
-        }\
-        pass DrawObjectB {\
-            AlphaBlendEnable = FALSE;\
-            VertexShader = compile vs_3_0 ShadowMapGenVS(-1);\
-            PixelShader  = compile ps_3_0 ShadowMapGenPS(true, -1);\
-        }\
+technique DepthTecSS < string MMDPass = "object_ss";
+> {
+    pass DrawObjectF {
+        AlphaBlendEnable = FALSE;
+        VertexShader = compile vs_3_0 ShadowMapGenVS(1);
+        PixelShader  = compile ps_3_0 ShadowMapGenPS(1);
     }
-
-OBJECT_TEC(DepthTecSS0, "object_ss", false)
-OBJECT_TEC(DepthTecSS1, "object_ss", true)
+    pass DrawObjectB {
+        AlphaBlendEnable = FALSE;
+        VertexShader = compile vs_3_0 ShadowMapGenVS(-1);
+        PixelShader  = compile ps_3_0 ShadowMapGenPS(-1);
+    }
+}
 
 technique DepthTec0 < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
