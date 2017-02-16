@@ -10,11 +10,8 @@ texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
     texture = <DiffuseMap>;
-    MINFILTER = POINT;
-    MAGFILTER = POINT;
-    MIPFILTER = POINT;
-    ADDRESSU  = WRAP;
-    ADDRESSV  = WRAP;
+    MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+    ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
 
 void ShadowMapGenVS(

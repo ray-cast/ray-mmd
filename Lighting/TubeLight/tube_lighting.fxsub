@@ -1,12 +1,12 @@
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/lighting.fxsub"
-#include "../../shader/shadowcommon.fxsub"
-#include "../../shader/arealight.fxsub"
+#include "../../../ray.conf"
+#include "../../../ray_advanced.conf"
+#include "../../../shader/math.fxsub"
+#include "../../../shader/common.fxsub"
+#include "../../../shader/gbuffer.fxsub"
+#include "../../../shader/gbuffer_sampler.fxsub"
+#include "../../../shader/lighting.fxsub"
+#include "../../../shader/shadowcommon.fxsub"
+#include "../../../shader/arealight.fxsub"
 
 #define TUBELIGHT_MAX_WIDTH 55
 #define TUBELIGHT_MAX_RADIUS 10
@@ -66,7 +66,7 @@ static float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-	string Description = "Shadow Rendering for PointLight";
+	string Description = "Shadow Rendering for TubeLight";
 	int Width = SHADOW_MAP_WIDTH;
 	int Height = SHADOW_MAP_HEIGHT;
 	string Format = "R32F";
@@ -77,17 +77,14 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
-		"*.pmx = tube_shadow.fx;"
-		"*.pmd = tube_shadow.fx;"
+		"*.pmx = ../tube_shadow.fx;"
+		"*.pmd = ../tube_shadow.fx;"
 		"* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);

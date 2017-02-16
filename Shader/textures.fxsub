@@ -62,7 +62,7 @@ texture LightMap: OFFSCREENRENDERTARGET <
 		"SpotLight*.* =./Lighting/SpotLight/Default/spot_lighting.fx;"
 		"PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
 		"SphereLight*.* =./Lighting/SphereLight/Default/sphere_lighting.fx;"
-		"TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"
+		"TubeLight*.* =./Lighting/TubeLight/Default/tube_lighting.fx;"
 		"LED*.* =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
 		"RectangleLight*.* =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
 		"IESLight*.* =./Lighting/IESLight/IES Light of 1/IES_lighting.fx;"
