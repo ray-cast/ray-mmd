@@ -106,6 +106,32 @@ float GaussianDistribution(float x, float y, float r)
 	return g;
 }
 
+float ReduceLightBleeding(float p_max, float amount)
+{
+    return smoothstep(amount, 1, p_max);
+}
+
+float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
+{
+    float p = (t < moments.x);
+    float variance = max(moments.y - (moments.x * moments.x), minVariance);
+    float d = t - moments.x;
+    float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);    
+    return max(p, p_max);
+}
+
+float2 ComputeMoments(float depth)
+{
+    float dx = ddx(depth);
+    float dy = ddy(depth);
+    
+    float2 moments;
+    moments.x = depth;
+    moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
+
+    return moments;
+}
+
 float CalcLight(float casterDepth, float receiverDepth, float rate)
 {
     return 1.0 - saturate((receiverDepth - casterDepth) * rate);

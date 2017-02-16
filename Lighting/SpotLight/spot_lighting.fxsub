@@ -39,7 +39,8 @@ static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matVi
 static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
-static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
+static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
 #if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
@@ -58,7 +59,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for SpotLight";
 	int Width = SHADOW_MAP_SIZE;
 	int Height = SHADOW_MAP_SIZE;
-	string Format = "R32F";
+	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	int MipLevels = 1;
@@ -72,11 +73,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
@@ -84,14 +82,14 @@ static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_
 
 float ShadowPCF(float3 viewPosition, int samples) 
 {
-	float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
-
-	float shadow = 0.0;
-	float shadowWeight = 0.0;
-
+	
 #if SHADOW_MAP_SOFT_QUALITY > 0
+	float2 shadow = 0.0;
+	float shadowWeight = 0.0;
+	
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
 	{
@@ -100,17 +98,19 @@ float ShadowPCF(float3 viewPosition, int samples)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
 			float weight = GaussianDistribution(x, y, samples);
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).r * weight;
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 			shadowWeight += weight;
 		}
 	}
 	
 	shadow = shadow / shadowWeight;
 	
-	return saturate(exp((shadow - proj.z)));
+	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #else
-	float shadowBias = 0.001;
-	return saturate(tex2D(ShadowMapSamp, proj.xy).r + shadowBias<proj.z ? 0 : 1);
+	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
+	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #endif
 }
 

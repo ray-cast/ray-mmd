@@ -23,11 +23,8 @@ texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
 	texture = <DiffuseMap>;
-	MINFILTER = LINEAR;
-	MAGFILTER = LINEAR;
-	MIPFILTER = LINEAR;
-	ADDRESSU  = WRAP;
-	ADDRESSV  = WRAP;
+	MINFILTER = LINEAR;	MAGFILTER = LINEAR;	MIPFILTER = LINEAR;
+	ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
 #endif
 
@@ -43,37 +40,31 @@ void ShadowMapVS(
 	float distanceSqr = sqrt(distance(Position, CameraPosition));
 	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
+	oTexcoord1 = oPosition = mul(Position , matLightViewProject);
 }
 
-float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1, uniform bool useTexture) : COLOR
+float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
-	clip(!opadd - 0.001f);
-	
+	clip(!opadd - 0.001f);	
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-	if ( useTexture ) alpha *= tex2D(DiffuseMapSamp, coord).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord).a;
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return position.z;
+	return float4(ComputeMoments(position.z), 0, 0);
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
-	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-	> { \
-		pass DrawObject {\
-			AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;\
-			VertexShader = compile vs_3_0 ShadowMapVS();\
-			PixelShader  = compile ps_3_0 ShadowMapPS(tex);\
-		}\
+technique DepthTecSS < string MMDPass = "object_ss";> {
+	pass DrawObject {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		VertexShader = compile vs_3_0 ShadowMapVS();
+		PixelShader  = compile ps_3_0 ShadowMapPS();
 	}
+}
 
-OBJECT_TEC(DepthTecSS0, "object_ss", false)
-OBJECT_TEC(DepthTecSS1, "object_ss", true)
-
-technique DepthTec0 < string MMDPass = "object"; >{}
+technique DepthTec < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
