@@ -1,11 +1,14 @@
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/lighting.fxsub"
-#include "../../shader/shadowcommon.fxsub"
+#include "../../../ray.conf"
+#include "../../../ray_advanced.conf"
+#include "../../../shader/math.fxsub"
+#include "../../../shader/common.fxsub"
+#include "../../../shader/gbuffer.fxsub"
+#include "../../../shader/gbuffer_sampler.fxsub"
+#include "../../../shader/lighting.fxsub"
+
+#if SHADOW_MAP_ENABLE
+#	include "../../../shader/shadowcommon.fxsub"
+#endif
 
 float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
 float mG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
@@ -61,8 +64,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
-		"*.pmx = directional_shadow.fx;"
-		"*.pmd = directional_shadow.fx;"
+		"*.pmx = ../directional_shadow.fx;"
+		"*.pmd = ../directional_shadow.fx;"
 		"* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {

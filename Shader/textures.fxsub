@@ -57,8 +57,8 @@ texture LightMap: OFFSCREENRENDERTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
-		"AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
-		"DirectionalLight*.* =./Lighting/DirectionalLight/directional_lighting.fx;"
+		"AmbientLight*.* =./Lighting/AmbientLight/Default/ambient_lighting.fx;"
+		"DirectionalLight*.* =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
 		"SpotLight*.* =./Lighting/SpotLight/Default/spot_lighting.fx;"
 		"PointLight*.* =./Lighting/PointLight/Default/point_lighting.fx;"
 		"SphereLight*.* =./Lighting/SphereLight/Default/sphere_lighting.fx;"

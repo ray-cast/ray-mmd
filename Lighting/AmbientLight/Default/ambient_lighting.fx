@@ -4,4 +4,4 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 2
 
-#include "ambient_lighting.fxsub"
+#include "../ambient_lighting.fxsub"
