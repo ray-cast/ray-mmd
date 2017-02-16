@@ -59,7 +59,7 @@ texture LightMap: OFFSCREENRENDERTARGET <
 	string DefaultEffect =
 		"AmbientLight*.* =./Lighting/AmbientLight/ambient_lighting.fx;"
 		"DirectionalLight*.* =./Lighting/DirectionalLight/directional_lighting.fx;"
-		"SpotLight*.* =./Lighting/SpotLight/spot_lighting.fx;"
+		"SpotLight*.* =./Lighting/SpotLight/Default/spot_lighting.fx;"
 		"PointLight*.* =./Lighting/PointLight/point_lighting.fx;"
 		"SphereLight*.* =./Lighting/SphereLight/Default/sphere_lighting.fx;"
 		"TubeLight*.* =./Lighting/TubeLight/tube_lighting.fx;"

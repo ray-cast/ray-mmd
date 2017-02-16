@@ -12,4 +12,4 @@
 #define SHADOW_MAP_QUALITY 3 // (0 ~ 3)
 #define SHADOW_MAP_SOFT_QUALITY 3 // (0 ~ 3)
 
-#include "spot_lighting.fxsub"
+#include "../spot_lighting.fxsub"

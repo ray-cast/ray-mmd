@@ -8,8 +8,8 @@
 #define LIGHTSOURCE_MAX_INTENSITY 2000
 
 // 阴影
-#define SHADOW_MAP_ENABLE 1
-#define SHADOW_MAP_QUALITY 1 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 2 // (0 ~ 3)
+#define SHADOW_MAP_ENABLE 0
+#define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
+#define SHADOW_MAP_SOFT_QUALITY 0 // (0 ~ 3)
 
-#include "spot_lighting.fxsub"
+#include "../spot_lighting.fxsub"

@@ -1,14 +1,14 @@
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/lighting.fxsub"
-#include "../../shader/arealight.fxsub"
+#include "../../../ray.conf"
+#include "../../../ray_advanced.conf"
+#include "../../../shader/math.fxsub"
+#include "../../../shader/common.fxsub"
+#include "../../../shader/gbuffer.fxsub"
+#include "../../../shader/gbuffer_sampler.fxsub"
+#include "../../../shader/lighting.fxsub"
+#include "../../../shader/arealight.fxsub"
 
 #if SHADOW_MAP_ENABLE
-#	include "../../shader/shadowcommon.fxsub"
+#	include "../../../shader/shadowcommon.fxsub"
 #endif
 
 float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
@@ -70,8 +70,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
-		"*.pmx = spot_shadow.fx;"
-		"*.pmd = spot_shadow.fx;"
+		"*.pmx = ../spot_shadow.fx;"
+		"*.pmd = ../spot_shadow.fx;"
 		"* = hide";
 >;
 sampler ShadowMapSamp = sampler_state {
@@ -80,8 +80,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
-static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
+static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
 float ShadowPCF(float3 viewPosition, int samples) 
 {
@@ -93,20 +93,39 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
 	
+	static const float width = 7;
+	float radius = (width - 1) / 2;
+	float kernel[width];
+
+	float3 incrementalGaussian = IncrementalGaussianCofficent(width);
+
 	[unroll]
-	for (int x = -samples; x <= samples; x++) 
+	for (int i = 0; i <= radius; ++i)
+	{
+		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
+		kernel[radius - i] = incrementalGaussian.x;
+		kernel[radius + i] = incrementalGaussian.x;
+	}
+	
+	[unroll]
+	for (int i = 0; i < width; ++i)
+	{
+		shadowWeight += kernel[i];
+	}
+	
+	[unroll]
+	for (int x = -radius; x <= radius; x++) 
 	{
 		[unroll]
-		for (int y = -samples; y <= samples; y++)
+		for (int y = -radius; y <= radius; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			float weight = GaussianDistribution(x, y, samples);
+			float weight = kernel[radius+x] * kernel[radius+y];
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
-			shadowWeight += weight;
 		}
 	}
 	
-	shadow = shadow / shadowWeight;
+	shadow = shadow / (shadowWeight * shadowWeight);
 	
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
 	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
