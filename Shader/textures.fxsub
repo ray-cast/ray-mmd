@@ -327,6 +327,12 @@ texture ShadingMapTemp : RENDERCOLORTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
+texture ShadingMapTempSpecular : RENDERCOLORTARGET <
+	float2 ViewPortRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+	int Miplevels = 1;
+	bool AntiAlias = false;
+>;
 sampler ShadingMapSamp = sampler_state {
 	texture = <ShadingMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
@@ -335,5 +341,10 @@ sampler ShadingMapSamp = sampler_state {
 sampler ShadingMapTempSamp = sampler_state {
 	texture = <ShadingMapTemp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
+};
+sampler ShadingMapTempSpecularSamp = sampler_state {
+	texture = <ShadingMapTempSpecular>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };

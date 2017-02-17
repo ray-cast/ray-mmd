@@ -151,7 +151,10 @@ technique DeferredLighting<
 #endif
 #endif
 
-	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacity;"
+	"RenderColorTarget0=ShadingMapTemp;"
+	"RenderColorTarget1=ShadingMapTempSpecular;"
+	"Pass=ShadingOpacity;"
+	"RenderColorTarget1=;"
 	
 #if SSSS_QUALITY > 0
 	"RenderDepthStencilTarget=DepthBuffer;"
@@ -160,6 +163,8 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;     Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
+	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
+#else
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #endif
 
