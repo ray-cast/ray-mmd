@@ -50,6 +50,7 @@ float3 Overlay(float3 a, float3 b)
 float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
 {
 	float noiseIntensity = mFilmGrain;
+	coord *= 2;
 	coord.x *= (ViewportSize.y / ViewportSize.x);
 	coord.x += time * 6;
 	
