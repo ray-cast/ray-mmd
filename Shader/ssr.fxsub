@@ -104,7 +104,7 @@ sampler SSRLightX4SampTemp = sampler_state {
 	AddressU  = CLAMP; AddressV  = CLAMP;
 };
 
-bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float smoothness, out float2 hitPixel)
+bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float smoothness, float jitter, out float2 hitPixel)
 {   
 	float3 startPosition = viewPosition;
 	float3 endPosition = viewPosition + viewReflect * maxDistance;
@@ -124,24 +124,25 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 	float4 deltaScreenPos = endScreenPos - startScreenPos;
 	float4 deltaTexcoord = endTexcoord - startTexcoord;
 	
-	int numSamples = SSR_SAMPLER_COUNT;
+	float intervalSize = maxDistance / (SSR_SAMPLER_COUNT * 1.6) * mSSRThreshold;
 	
-	float stepSize = 1.0 / numSamples;
-	float intervalSize = maxDistance / (numSamples * 1.6) * mSSRThreshold;
+	float stepSize = 1.0 / SSR_SAMPLER_COUNT;	
+	float stepLength = jitter * stepSize + stepSize;
 	
-	float len = stepSize;
 	float bestLen = 0;
 	
-	for (int i = 0; i < numSamples; i++, len += stepSize)
+	for (int i = 0; i < SSR_SAMPLER_COUNT; i++, stepLength += stepSize)
 	{
-		float4 projPos = startScreenPos + deltaScreenPos * len;
+		float4 projPos = startScreenPos + deltaScreenPos * stepLength;
 		projPos.xy /= projPos.w;
 		
 		float depth = tex2Dlod(Gbuffer8Map, float4(projPos.xy, 0, 0)).r;
 		
-		if (abs(depth - projPos.z) < intervalSize)
+		float depthDiff = projPos.z - depth;
+		bool Hit = abs(depthDiff + intervalSize) < intervalSize;
+		if (Hit)
 		{
-			bestLen = len;
+			bestLen = stepLength;
 			break;
 		}
 	}
@@ -159,12 +160,12 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 	return bestLen > 0 ? 1 : 0;
 }
 
-float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
+float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
 {
-	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord.xy, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord.xy, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord.xy, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
@@ -192,7 +193,9 @@ float4 SSRConeTracingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	}
 	
 	float2 hitPixel = 0;
-	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, hitPixel);
+	
+	float jitter = GetJitterOffset(coord.zw);
+	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, jitter, hitPixel);
 	
 	float2 boundary = abs(hitPixel.xy - float2(0.5f, 0.5f)) * 2.0f;
 	
