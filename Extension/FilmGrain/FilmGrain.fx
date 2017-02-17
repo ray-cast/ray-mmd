@@ -1,4 +1,4 @@
-texture2D NoiseMap<string ResourceName = "noise.png";>; 
+texture3D NoiseMap<string ResourceName = "noise.dds";>; 
 texture2D ScnMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
@@ -24,7 +24,7 @@ sampler ScnSamp2 = sampler_state {
 sampler NoiseMapSamp = sampler_state
 {
 	texture = NoiseMap;
-	MINFILTER = NONE; MAGFILTER = NONE; ADDRESSU = WRAP; ADDRESSV = WRAP;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 float time : TIME;
@@ -51,10 +51,9 @@ float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
 {
 	float noiseIntensity = mFilmGrain;
 	coord *= 2;
-	coord.x *= (ViewportSize.y / ViewportSize.x);
-	coord.x += time * 6;
+	coord.x *= ViewportSize.x / ViewportSize.y;
 	
-	float noise = tex2D(NoiseMapSamp, coord).r;
+	float noise = tex3Dlod(NoiseMapSamp, float4(coord, time, 0)).r;
 	float exposureFactor = exposure / 2.0;
 	exposureFactor = sqrt(exposureFactor);
 	float t = lerp(3.5 * noiseIntensity, 1.13 * noiseIntensity, exposureFactor);
@@ -78,9 +77,9 @@ float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
 {
 	float L = length(coord * 2 - 1);
 	L = 1 - smoothstep(outer, inner, L);
-	float3 color = tex2D(source, coord).rgb;
-	color.g = tex2D(source, coord - ViewportOffset2 * L * (mDispersion * 8)).g;
-	color.b = tex2D(source, coord + ViewportOffset2 * L * (mDispersion * 8)).b;
+	float3 color = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	color.g = tex2Dlod(source, float4(coord - ViewportOffset2 * L * (mDispersion * 8), 0, 0)).g;
+	color.b = tex2Dlod(source, float4(coord + ViewportOffset2 * L * (mDispersion * 8), 0, 0)).b;
 	return color;
 }
 
@@ -107,7 +106,7 @@ float4 FimicGrainPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Po
 float4 FimicLoopPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
 	float2 loop = floor(1 + float2(mFilmLoop + mFilmLoopX, mFilmLoop + mFilmLoopY) * 10);
-	return float4(tex2D(ScnSamp2, coord * loop));
+	return float4(tex2Dlod(ScnSamp2, float4(coord * loop, 0, 0)));
 }
 
 float Script : STANDARDSGLOBAL <
