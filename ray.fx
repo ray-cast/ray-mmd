@@ -427,7 +427,7 @@ technique DeferredLighting<
 	pass SSRFinalCombie < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
+		SrcBlend = ONE; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
