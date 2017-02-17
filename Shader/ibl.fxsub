@@ -28,66 +28,66 @@ float EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness)
 
 float3 ComputeDiffuseDominantDir(float3 N, float3 V, float roughness)
 {
-    float a = 1.02341f * roughness - 1.51174f; 
-    float b = -0.511705f * roughness + 0.755868f; 
-    return normalize(lerp(N, V, saturate((dot(N, V) * a + b) * roughness)));
+	float a = 1.02341f * roughness - 1.51174f; 
+	float b = -0.511705f * roughness + 0.755868f; 
+	return normalize(lerp(N, V, saturate((dot(N, V) * a + b) * roughness)));
 }
 
 float3 ComputeSpecularDominantDir(float3 N, float3 R, float roughness) 
 {
-    float smoothness = saturate(1 - roughness);
-    float lerpFactor = smoothness * (sqrt(smoothness) + roughness);
-    return normalize(lerp(N, R, lerpFactor));
+	float smoothness = saturate(1 - roughness);
+	float lerpFactor = smoothness * (sqrt(smoothness) + roughness);
+	return normalize(lerp(N, R, lerpFactor));
 }
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
 {
-    return saturate(pow(abs(nv + ao), smoothness) - 1 + ao);
+	return saturate(pow(abs(nv + ao), smoothness) - 1 + ao);
 }
 
 float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
 {
-    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
 
-    color1 = rgb2ycbcr(color1);
-    color2 = rgb2ycbcr(color2);
+	color1 = rgb2ycbcr(color1);
+	color2 = rgb2ycbcr(color2);
 
-    float4 result = 0.0f;
-    result.r = color1.r;
-    result.g = (pattern) ? color1.g: color1.b;
-    result.b = color2.r;
-    result.a = (pattern) ? color2.g: color2.b;
-    return result;   
+	float4 result = 0.0f;
+	result.r = color1.r;
+	result.g = (pattern) ? color1.g: color1.b;
+	result.b = color2.r;
+	result.a = (pattern) ? color2.g: color2.b;
+	return result;   
 }
 
 float EdgeFilter(float2 center, float2 a0, float2 a1, float2 a2, float2 a3)
 {
-    const float THRESH = 30./255.;
-    float4 lum = float4(a0.x, a1.x , a2.x, a3.x);
-    float4 w = 1.0 - step(THRESH, abs(lum - center.x));
-    float W = w.x + w.y + w.z + w.w;
-    w.x = (W == 0.0) ? 1.0 : w.x;
-    W   = (W == 0.0) ? 1.0 : W;
-    return (w.x * a0.y + w.y * a1.y + w.z * a2.y + w.w * a3.y) / W;
+	const float THRESH = 30./255.;
+	float4 lum = float4(a0.x, a1.x , a2.x, a3.x);
+	float4 w = 1.0 - step(THRESH, abs(lum - center.x));
+	float W = w.x + w.y + w.z + w.w;
+	w.x = (W == 0.0) ? 1.0 : w.x;
+	W   = (W == 0.0) ? 1.0 : W;
+	return (w.x * a0.y + w.y * a1.y + w.z * a2.y + w.w * a3.y) / W;
 }
 
 void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
 {
-    float4 packed = tex2Dlod(source, float4(coord, 0, 0));
-    
-    float4 env2 = tex2Dlod(source, float4(coord + float2(offset.x, 0.0), 0, 0));
-    float4 env3 = tex2Dlod(source, float4(coord - float2(offset.x, 0.0), 0, 0));
-    float4 env4 = tex2Dlod(source, float4(coord + float2(0.0, offset.y), 0, 0));
-    float4 env5 = tex2Dlod(source, float4(coord - float2(0.0, offset.y), 0, 0));
-    
-    env2.rg = EdgeFilter(packed.rg, env2.rg, env3.rg, env4.rg, env5.rg);
-    env2.ba = EdgeFilter(packed.ba, env2.ba, env3.ba, env4.ba, env5.ba);
+	float4 packed = tex2Dlod(source, float4(coord, 0, 0));
 
-    bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
-    
-    color1 = (pattern) ? float3(packed.rg, env2.g) : float3(packed.r, env2.g, packed.g);
-    color2 = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+	float4 env2 = tex2Dlod(source, float4(coord + float2(offset.x, 0.0), 0, 0));
+	float4 env3 = tex2Dlod(source, float4(coord - float2(offset.x, 0.0), 0, 0));
+	float4 env4 = tex2Dlod(source, float4(coord + float2(0.0, offset.y), 0, 0));
+	float4 env5 = tex2Dlod(source, float4(coord - float2(0.0, offset.y), 0, 0));
 
-    color1 = ycbcr2rgb(color1);
-    color2 = ycbcr2rgb(color2);
+	env2.rg = EdgeFilter(packed.rg, env2.rg, env3.rg, env4.rg, env5.rg);
+	env2.ba = EdgeFilter(packed.ba, env2.ba, env3.ba, env4.ba, env5.ba);
+
+	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+
+	color1 = (pattern) ? float3(packed.rg, env2.g) : float3(packed.r, env2.g, packed.g);
+	color2 = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+
+	color1 = ycbcr2rgb(color1);
+	color2 = ycbcr2rgb(color2);
 }

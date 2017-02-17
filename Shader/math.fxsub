@@ -54,7 +54,7 @@ float3 ycbcr2rgb(float3 YCbCr)
 	float R = YCbCr.x + 1.402 * YCbCr.z;
 	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
 	float B = YCbCr.x + 1.772 * YCbCr.y;
-	return float3(R, G, B);
+	return max(0, float3(R, G, B));
 }
 
 float luminance(float3 rgb)

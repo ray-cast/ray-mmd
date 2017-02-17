@@ -265,24 +265,27 @@ float4 GlareDetectionPS(
 	in float2 coord5 : TEXCOORD4,
 	uniform sampler source) : COLOR
 {
-	float4 color = tex2Dlod(source, float4(coord1, 0, 0));
-	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)));
-	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)));
-	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)));
-	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)));
+	float3 color = tex2Dlod(source, float4(coord1, 0, 0)).rgb;
+	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)).rgb);
+	//color = clamp(color, 0, 65535);
 
-	float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);
+	float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);	
 
 #if HDR_BLOOM_MODE == 1
-	float4 bloom = max(0, color - threshold);
+	float3 bloom = max(0, color - threshold);
 #elif HDR_BLOOM_MODE == 2
-	float4 bloom = saturate(color - threshold);
+	float3 bloom = saturate(color - threshold);
 #elif HDR_BLOOM_MODE == 3
-	float4 bloom = saturate(color * saturate(luminance(color.rgb) - threshold));
+	float lum = luminance(color);
+	float3 bloom = saturate(color * (lum - threshold));
 #elif HDR_BLOOM_MODE == 4
-	color.rgb *= mExposure;
-	float4 bloom = saturate(color * saturate(luminance(color.rgb) - threshold));
+	float lum = luminance(color) * mExposure;
+	float3 bloom = saturate(color * (lum - threshold));
 #endif
+
 	bloom *= lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensity);
 
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
@@ -293,9 +296,9 @@ float4 GlareDetectionPS(
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
 
-	bloom.rgb += max(0.0, lerp(emissive0, emissive1, MRT8.a) - 1.0);
+	bloom += max(0.0, lerp(emissive0, emissive1, MRT8.a) - 1.0);
 
-	return bloom;
+	return float4(bloom, 0);
 }
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
