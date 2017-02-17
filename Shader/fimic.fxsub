@@ -270,7 +270,7 @@ float4 GlareDetectionPS(
 	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)).rgb);
 	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)).rgb);
 	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)).rgb);
-	//color = clamp(color, 0, 65535);
+	color = clamp(color, 0, 65535);
 
 	float threshold = (1.0 - mBloomThreshold) / (mBloomThreshold + EPSILON);	
 
