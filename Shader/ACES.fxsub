@@ -72,16 +72,28 @@ float3 ACESToneMapping(float3 color)
 #endif
 }
 
-float3 ACESOutputDevice(float3 color)
+float3 noise3(float2 seed)
+{
+    return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
+}
+
+float3 ApplyDithering(float3 color, float2 uv)
+{
+    float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
+    color += noise / 255.0;
+    return color;
+}
+
+float3 ACESOutputDevice(float3 color, float2 uv)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
-	return linear2srgb(color);
+	return ApplyDithering(linear2srgb(color), uv);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	return linear2rec709(color);
+	return ApplyDithering(linear2rec709(color), uv);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
 	return color;
 #else
-	return linear2srgb(color);
+	return ApplyDithering(linear2srgb(color), uv);
 #endif
 }
 

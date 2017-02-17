@@ -109,9 +109,9 @@ if(doneNP){if(!doneN)lumaEndN=FxaaLuma(FxaaTexTop(tex,posN.xy));if(!doneP)lumaEn
 #endif
 }FxaaFloat dstN=posM.x-posN.x,dstP=posP.x-posM.x;if(!horzSpan)dstN=posM.y-posN.y;if(!horzSpan)dstP=posP.y-posM.y;FxaaBool goodSpanN=lumaEndN<0.!=lumaMLTZero;FxaaFloat spanLength=dstP+dstN;FxaaBool goodSpanP=lumaEndP<0.!=lumaMLTZero;FxaaFloat spanLengthRcp=1./spanLength;FxaaBool directionN=dstN<dstP;FxaaFloat dst=min(dstN,dstP);FxaaBool goodSpan=directionN?goodSpanN:goodSpanP;FxaaFloat subpixG=subpixF*subpixF,pixelOffset=dst*-spanLengthRcp+.5,subpixH=subpixG*fxaaQualitySubpix,pixelOffsetGood=goodSpan?pixelOffset:0.,pixelOffsetSubpix=max(pixelOffsetGood,subpixH);if(!horzSpan)posM.x+=pixelOffsetSubpix*lengthSign;if(horzSpan)posM.y+=pixelOffsetSubpix*lengthSign;return FxaaFloat4(FxaaTexTop(tex,posM).xyz,lumaM);}}
 
-float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : COLOR
+float4 FXAA3(in float2 coord : TEXCOORD0, uniform sampler2D decal, uniform float2 texelStep) : COLOR
 {
-	float4 color = FxaaPixelShader(coord.xy,
+	float4 color = FxaaPixelShader(coord,
 				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
 				decal,
 				decal,
@@ -128,5 +128,5 @@ float4 FXAA3(in float4 coord : TEXCOORD0, uniform sampler2D decal, uniform float
 				0.0f,
 				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
 			);
-	return float4(ACESOutputDevice(color.rgb), 1);
+	return float4(ACESOutputDevice(color.rgb, coord), 1);
 }
