@@ -503,7 +503,7 @@ float4 SMAANeighborhoodBlendingPS(
 	if (sum(a) < EPSILON) 
 	{
 		float4 color = tex2Dlod(source, float4(coord0, 0, 0));
-		return srgb ? float4(ACESOutputDevice(color.rgb, coord0), 1) : float4(color.rgb, luminance(color.rgb));
+		return srgb ? ACESOutputDevice(color.rgb, coord0) : float4(color.rgb, luminance(color.rgb));
 	}
 	else 
 	{
@@ -519,6 +519,6 @@ float4 SMAANeighborhoodBlendingPS(
 		color += blendingWeight.x * tex2Dlod(source, float4(coord0 + ViewportOffset2 * blendingOffset.xy, 0, 0));
 		color += blendingWeight.y * tex2Dlod(source, float4(coord0 - ViewportOffset2 * blendingOffset.zw, 0, 0));
 
-		return srgb ? float4(ACESOutputDevice(color.rgb, coord0), 1) : float4(color.rgb, luminance(color.rgb));
+		return srgb ? ACESOutputDevice(color.rgb, coord0) : float4(color.rgb, luminance(color.rgb));
 	}
 }

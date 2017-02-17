@@ -128,5 +128,5 @@ float4 FXAA3(in float2 coord : TEXCOORD0, uniform sampler2D decal, uniform float
 				0.0f,
 				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
 			);
-	return float4(ACESOutputDevice(color.rgb, coord), 1);
+	return ACESOutputDevice(color.rgb, coord);
 }

@@ -43,10 +43,10 @@ float4 FilmicTonemap(float4 x)
 
 float3 TonemapFilmic_Hejl2015(float3 hdr, float whitePt) 
 {
-    float4 vh = float4(hdr, whitePt);
-    float4 va = 1.425 * vh + 0.05;
-    float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
-    return vf.rgb / vf.www;
+	float4 vh = float4(hdr, whitePt);
+	float4 va = 1.425 * vh + 0.05;
+	float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
+	return vf.rgb / vf.www;
 }
 
 float3 ACESToneMapping(float3 color)
@@ -74,36 +74,37 @@ float3 ACESToneMapping(float3 color)
 
 float3 noise3(float2 seed)
 {
-    return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
+	return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
 }
 
-float3 ApplyDithering(float3 color, float2 uv)
+float3 ColorBanding(float2 uv)
 {
-    float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
-    color += noise / 255.0;
-    return color;
+	float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
+	return noise / 255.0;
 }
 
-float3 ACESOutputDevice(float3 color, float2 uv)
+float4 ACESOutputDevice(float3 color, float2 uv)
 {
-#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
-	return ApplyDithering(linear2srgb(color), uv);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	return ApplyDithering(linear2rec709(color), uv);
+#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
+	color = linear2rec709(color);
+	color += ColorBanding(uv * (time + PI));
+	return float4(color, 1);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
-	return color;
+	return EncodeRGBT(color);
 #else
-	return ApplyDithering(linear2srgb(color), uv);
+	color = linear2srgb(color);
+	color += ColorBanding(uv * (time + PI));
+	return float4(color, 1);
 #endif
 }
 
 float3 WihteBalance(float3 color, float kelvin)
 {
-    float temp = kelvin / 100;
-    float temp60 = max(0, temp - 60);
-    float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
-    float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
-    float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
-    float3 balance = saturate(float3(red, green, blue) / 255);
-    return color * balance;
+	float temp = kelvin / 100;
+	float temp60 = max(0, temp - 60);
+	float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
+	float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
+	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
+	float3 balance = saturate(float3(red, green, blue) / 255);
+	return color * balance;
 }
