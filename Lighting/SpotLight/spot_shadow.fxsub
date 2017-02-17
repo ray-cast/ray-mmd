@@ -53,7 +53,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return float4(ComputeMoments(position.z), 0, 0);
+	return ComputeMoments(position.z).xyxy;
 }
 
 technique DepthTecSS < string MMDPass = "object_ss";> {

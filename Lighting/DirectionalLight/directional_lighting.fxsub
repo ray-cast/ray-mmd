@@ -34,10 +34,13 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
-static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, mLightZMin, mLightZMax);
-static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
-static float4x4 matLightViewProject = mul(matLightView, matLightProject);
-static float4x4 matLightProjectToCameraView = mul(matViewInverse, matLightViewProject);
+#if SHADOW_MAP_ENABLE
+	static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, mLightZMin, mLightZMax);
+	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
+	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+	static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
+#endif
 
 #if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
@@ -56,7 +59,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for DirectionalLight";
 	int Width = SHADOW_MAP_SIZE;
 	int Height = SHADOW_MAP_SIZE;
-	string Format = "R32F";
+	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	int MipLevels = 1;
@@ -77,38 +80,11 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
 static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
 
-float2 DepthGradient(float2 uv, float z)
-{
-	float2 dz_duv = 0;
-
-	float3 duvdist_dx = ddx(float3(uv,z));
-	float3 duvdist_dy = ddy(float3(uv,z));
-
-	dz_duv.x = duvdist_dy.y * duvdist_dx.z;
-	dz_duv.x -= duvdist_dx.y * duvdist_dy.z;
-
-	dz_duv.y = duvdist_dx.x * duvdist_dy.z;
-	dz_duv.y -= duvdist_dy.x * duvdist_dx.z;
-
-	float det = (duvdist_dx.x * duvdist_dy.y) - (duvdist_dx.y * duvdist_dy.x);
-	dz_duv /= det;
-
-	return dz_duv;
-}
-
-float BiasedZ(float z0, float2 dz_duv, float2 offset)
-{
-	return z0 + dot(dz_duv, offset);
-}
-
 float ShadowPCF(float3 viewPosition, int samples) 
 {
-	float4 proj = mul(float4(viewPosition, 1), matLightProjectToCameraView);
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
-	
-	float slopeBias = saturate(1 - dot(viewLightDirection, normalize(viewPosition - viewLightPosition)));
-	float2 bias = DepthGradient(proj.xy, proj.z / mLightZMax);
 	
 	if (proj.x <= 0.0 || proj.x >= 1.0 ||
 		proj.y <= 0.0 || proj.y >= 1.0)
@@ -123,25 +99,50 @@ float ShadowPCF(float3 viewPosition, int samples)
 	}
 
 #if SHADOW_MAP_SOFT_QUALITY > 0
-	float shadow = 0.0;
-	float threshold = (30000.0 / (4 + slopeBias * 20) - 0.05);
+	float2 shadow = 0.0;
+	float shadowWeight = 0.0;
+	
+	static const float width = 7;
+	float radius = (width - 1) / 2;
+	float kernel[width];
+
+	float3 incrementalGaussian = IncrementalGaussianCofficent(width);
+
+	[unroll]
+	for (int i = 0; i <= radius; ++i)
+	{
+		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
+		kernel[radius - i] = incrementalGaussian.x;
+		kernel[radius + i] = incrementalGaussian.x;
+	}
 	
 	[unroll]
-	for (int x = -samples; x <= samples; x++) 
+	for (int i = 0; i < width; ++i)
+	{
+		shadowWeight += kernel[i];
+	}
+	
+	[unroll]
+	for (int x = -radius; x <= radius; x++) 
 	{
 		[unroll]
-		for (int y = -samples; y <= samples; y++)
+		for (int y = -radius; y <= radius; y++)
 		{
-			float2 offset = float2(x, y) * ShadowmapOffset2;
-			shadow += CalcLight(BiasedZ(tex2Dlod(ShadowMapSamp, float4(proj.xy + offset, 0, 0)).r, bias, offset), proj.z, threshold);
+			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
+			float weight = kernel[radius+x] * kernel[radius+y];
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
 	
-	return saturate(shadow / pow2(samples * 2 + 1));
+	shadow = shadow / (shadowWeight * shadowWeight);
+	
+	float4 linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.0, 0.1);
 #else
-	float sdrate = 30000.0 / 4.0 - 0.05;
-	return CalcLight(tex2D(ShadowMapSamp, proj.xy).r, proj.z, sdrate);
-#endif  
+	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
+	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.0, 0.1);
+#endif
 }
 
 float ShadingShadow(MaterialParam material, float3 V)
