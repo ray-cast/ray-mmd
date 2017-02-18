@@ -7,9 +7,6 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 2000
 
-// 双面光照
-#define RECTANGLELIGHT_TWOSIDE_LIGHTING 0
-
 // 视频贴图
 #define VIDEO_MAP_ENABLE 1
 #define VIDEO_MAP_IN_TEXTURE 0

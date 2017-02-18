@@ -232,10 +232,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
 	float3 L2 = normalize(Lw);
 	float atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
-
-#if RECTANGLELIGHT_TWOSIDE_LIGHTING == 0
 	atten *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
-#endif
 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
