@@ -219,22 +219,20 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float jitter = GetJitterOffset(coord.zw);
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, jitter, hitPixel);
 	
-	float2 boundary = abs(hitPixel.xy - float2(0.5f, 0.5f)) * 2.0f;
+	float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).r);
 	
+	float2 boundary = abs(coord.xy * 2 - 1);
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
 	float fadeOnBorder = 1.0f - saturate((boundary.x - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
 	
-	float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).r);
-	
 	float fadeOnPerpendicular = saturate(atten * 2);
-	float fadeOnRoughness = material.smoothness;
 	float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
-	float totalFade = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular * fadeOnRoughness;
+	float fadeOnTotal = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular;
 
 	float4 totalColor = tex2Dlod(ShadingMapSamp, float4(hitPixel.xy, 0, 0));
-	return float4(totalColor.rgb, totalFade) * (hitTest ? 1 : 0);
+	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
 }
 
 float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR

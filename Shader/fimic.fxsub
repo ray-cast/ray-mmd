@@ -454,7 +454,7 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 float3 ApplyVignette(float3 color, float2 coord)
 {
 	float L = length(coord * 2 - 1);
-	return color * smoothstep(mVignetteOuter - mVignette, mVignetteInner - mVignette, L);
+	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);
 }
 
 float3 ColorCorrect(float3 color, float contrast, float3 colorGrainRGBP, float3 colorGrainRGBM)
