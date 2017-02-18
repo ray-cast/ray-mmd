@@ -265,6 +265,7 @@ float4 GlareDetectionPS(
 	in float2 coord5 : TEXCOORD4,
 	uniform sampler source) : COLOR
 {
+#if HDR_BLOOM_MODE > 0
 	float3 color = tex2Dlod(source, float4(coord1, 0, 0)).rgb;
 	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)).rgb);
 	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)).rgb);
@@ -285,6 +286,9 @@ float4 GlareDetectionPS(
 #endif
 
 	bloom *= mBloomIntensity;
+#else
+	float3 bloom = 0;
+#endif
 
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
 	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
