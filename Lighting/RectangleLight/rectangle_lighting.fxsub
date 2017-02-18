@@ -172,10 +172,10 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	return ChebyshevUpperBound(shadow, depth, 0.0, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
-	return ChebyshevUpperBound(shadow, depth, 0.0, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
 #endif
 }
 
