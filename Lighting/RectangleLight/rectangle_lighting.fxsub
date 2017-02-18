@@ -48,6 +48,14 @@ static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matVi
 static float3 viewLightRight = normalize(mul((mRightTop + mRightBottom) / 2 - LightPosition, (float3x3)matView));
 static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight));
 
+#if SHADOW_MAP_ENABLE
+	static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
+	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
+	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+	static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
+#endif
+
 #if VIDEO_MAP_ENABLE && VIDEO_MAP_IN_TEXTURE != 1
 	#if VIDEO_MAP_IN_SCREEN_MAP
 		shared texture2D DummyScreenTex : RenderColorTarget;
@@ -77,28 +85,23 @@ static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight))
 #if SHADOW_MAP_ENABLE
 
 #if SHADOW_MAP_QUALITY == 0
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
+#   define SHADOW_MAP_SIZE 256
 #elif SHADOW_MAP_QUALITY == 1
-#   define SHADOW_MAP_WIDTH 512
-#   define SHADOW_MAP_HEIGHT 1024
+#   define SHADOW_MAP_SIZE 512
 #elif SHADOW_MAP_QUALITY >= 2
-#   define SHADOW_MAP_WIDTH 1024
-#   define SHADOW_MAP_HEIGHT 2048
+#   define SHADOW_MAP_SIZE 1024
 #elif SHADOW_MAP_QUALITY >= 3
-#   define SHADOW_MAP_WIDTH 2048
-#   define SHADOW_MAP_HEIGHT 4096
+#   define SHADOW_MAP_SIZE 2048
 #else
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
+#   define SHADOW_MAP_SIZE 256
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-	string Description = "Shadow Rendering for PointLight";
-	int Width = SHADOW_MAP_WIDTH;
-	int Height = SHADOW_MAP_HEIGHT;
+	string Description = "Shadow Rendering for SpotLight";
+	int Width = SHADOW_MAP_SIZE;
+	int Height = SHADOW_MAP_SIZE;
 	string Format = "G32R32F";
-	float4 ClearColor = { 1, 1, 1, 1 };
+	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	int MipLevels = 1;
 	string DefaultEffect = 
@@ -111,29 +114,19 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = LINEAR;	MagFilter = LINEAR;	MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
-static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
+static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
 float ShadowPCF(float3 viewPosition, int samples) 
 {
-	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-	float3 L = worldPosition.xyz - LightPosition;
-
-	float linearDepth = length(L);
-
-	float depthBias = 0.01;
-	float depthScale = 300;
-	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
-#if SHADOW_MAP_PCF_FILTER
-	depth -= depth * 0.001;
-#endif
-
-	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
-
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
+	proj.xy = PosToCoord(proj.xy / proj.w);
+	proj.xy += ShadowmapOffset;
+	
 #if SHADOW_MAP_SOFT_QUALITY > 0
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
@@ -164,7 +157,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 		[unroll]
 		for (int y = -radius; y <= radius; y++)
 		{
-			float2 pos = coord + float2(x, y) * ShadowmapOffset2;
+			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
 			float weight = kernel[radius+x] * kernel[radius+y];
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
@@ -172,18 +165,22 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #else
-	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
+	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #endif
 }
 
-float ShadingShadow(MaterialParam material, float3 V)
+float4 ShadingShadow(MaterialParam material, float3 V)
 {
-	float3 P = V * material.linearDepth / V.z;
-
+	float linearDepth = material.linearDepth;
+	
 	float shadow = 1;
+
+	float3 P = V * linearDepth / V.z;
 	#if SHADOW_MAP_SOFT_QUALITY == 1
 		shadow *= ShadowPCF(P, 1);
 	#elif SHADOW_MAP_SOFT_QUALITY == 2
@@ -378,7 +375,7 @@ technique MainTech0 < string MMDPass = "object";
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = NONE;
 		VertexShader = compile vs_3_0 LightSourceVS();
-		PixelShader  = compile ps_3_0 LightSourcePS();
+		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
 	}
 }
 

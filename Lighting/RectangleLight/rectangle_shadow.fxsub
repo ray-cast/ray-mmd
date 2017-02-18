@@ -4,67 +4,64 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float3 LightPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
+float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
+float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
-texture DiffuseMap: MATERIALTEXTURE;
+static float3 LightDirection = normalize(mDirection - mPosition);
+static float3 LightPosition = mPosition;
+
+static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+
+#if CASTER_ALPHA_MAP_ENABLE
+texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
     texture = <DiffuseMap>;
     MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
     ADDRESSU  = WRAP; ADDRESSV  = WRAP;
 };
+#endif
 
-void ShadowMapGenVS(
-    in float4 Position : POSITION, 
-    in float2 Texcoord : TEXCOORD0, 
-    out float2 oTexcoord0 : TEXCOORD0,
+void ShadowMapVS(
+    in float4 Position : POSITION,
+    in float4 Texcoord : TEXCOORD0,
+    in float3 Normal   : NORMAL,
+    out float4 oTexcoord0 : TEXCOORD0,
     out float4 oTexcoord1 : TEXCOORD1,
-    out float4 oTexcoord2 : TEXCOORD2,
-    out float4 oPosition  : POSITION,
-    uniform float face)
+    out float4 oPosition : POSITION)
 {
+    float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
+    float distanceSqr = sqrt(distance(Position, CameraPosition));
+    float distanceBias = cosAngle * distanceSqr * 0.00001;
     oTexcoord0 = Texcoord;
-    oTexcoord1 = mul(Position, matWorld);
-    oTexcoord2 = mul(oTexcoord1, CreateDualViewMatrix(LightPosition, face));
-    oTexcoord2 = oPosition = mul(oTexcoord2, CreateDualProjMatrix(oTexcoord2, mPointLightNear, mPointLightFar, face));
+    oTexcoord1 = mul(Position + float4(Normal * distanceBias, 0), matLightView);
+    oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
 }
 
-float4 ShadowMapGenPS(
-    in float2 coord : TEXCOORD0,
-    in float3 view : TEXCOORD1,
-    in float4 proj : TEXCOORD2,
-    uniform float face) : COLOR
+float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
 {
-    clip(proj.y * face);
-    float3 viewdir = normalize(view);
-    clip(0.7f - dot(viewdir, float3(0.0f,0.0f,-1.0f)));
-
 #if CASTER_ALPHA_ENABLE
-    clip(!opadd - 0.001f);
+    clip(!opadd - 0.001f);  
     float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
     if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord).a;
 #endif
     clip(alpha - CasterAlphaThreshold);
 #endif
-    return ComputeMoments(proj.z / proj.w).xyxy;
+    return ComputeMoments(position.z).xyxy;
 }
 
-technique DepthTecSS < string MMDPass = "object_ss";
-> {
-    pass DrawObjectF {
-        AlphaBlendEnable = FALSE;
-        VertexShader = compile vs_3_0 ShadowMapGenVS(1);
-        PixelShader  = compile ps_3_0 ShadowMapGenPS(1);
-    }
-    pass DrawObjectB {
-        AlphaBlendEnable = FALSE;
-        VertexShader = compile vs_3_0 ShadowMapGenVS(-1);
-        PixelShader  = compile ps_3_0 ShadowMapGenPS(-1);
+technique DepthTecSS < string MMDPass = "object_ss";> {
+    pass DrawObject {
+        AlphaBlendEnable = false; AlphaTestEnable = false;
+        VertexShader = compile vs_3_0 ShadowMapVS();
+        PixelShader  = compile ps_3_0 ShadowMapPS();
     }
 }
 
-technique DepthTec0 < string MMDPass = "object"; >{}
+technique DepthTec < string MMDPass = "object"; >{}
 technique EdgeTec < string MMDPass = "edge"; > {}
 technique ShadowTec < string MMDPass = "shadow"; > {}
 technique ZplotTec < string MMDPass = "zplot"; > {}
