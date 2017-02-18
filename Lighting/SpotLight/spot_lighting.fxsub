@@ -130,11 +130,11 @@ float ShadowPCF(float3 viewPosition, int samples)
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
 #endif
 }
 
