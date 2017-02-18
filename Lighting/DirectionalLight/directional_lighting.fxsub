@@ -32,7 +32,7 @@ static float3 LightDirection = normalize(mDirection - mPosition);
 static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
-static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
+static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_ENABLE
 	static float4x4 matLightProject = CreateOrthoProject(LightRange, LightRange, mLightZMin, mLightZMax);
@@ -80,7 +80,7 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_SIZE, 0.5 / SHADOW_MAP_SIZE);
 static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE);
 
-float ShadowPCF(float3 viewPosition, int samples) 
+float ShadowPCF(float3 viewPosition) 
 {
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
@@ -137,29 +137,29 @@ float ShadowPCF(float3 viewPosition, int samples)
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
 #endif
 }
 
 float ShadingShadow(MaterialParam material, float3 V)
 {
-	float shadow = 1;
-	float linearDepth = material.linearDepth;
+	float3 P = V * material.linearDepth / V.z;
 
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
+	float angle = saturate(dot(material.normal, viewLightDirection));
+	if (angle < 0.1)
+	{
+		clip(-1);
+	}
+		
+	float shadow = ShadowPCF(P);		
+	if (angle < 0.2)
+	{
+		shadow = max(shadow, (angle - 0.1) * 10.0);			
+	}
 
 	return shadow;
 }
@@ -169,7 +169,7 @@ float ShadingShadow(MaterialParam material, float3 V)
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
 {
 	float3 P = V * material.linearDepth / V.z;
-	float3 L = -viewLightDirection;
+	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
 	
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
