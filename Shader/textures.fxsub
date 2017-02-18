@@ -158,7 +158,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 	string Format = "R32F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int MipLevels = 1;
+	int MipLevels = 0;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -179,7 +179,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 >;
 sampler DepthMapSamp = sampler_state {
 	texture = <DepthMap>;
-	MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
+	MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = LINEAR;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
@@ -272,7 +272,7 @@ shared texture Gbuffer7RT: RENDERCOLORTARGET <
 shared texture Gbuffer8RT: RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	int Miplevels = 1;
+	int Miplevels = 0;
 	bool AntiAlias = false;
 >;
 sampler Gbuffer1Map = sampler_state {

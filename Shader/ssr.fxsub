@@ -128,6 +128,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 	
 	float stepSize = 1.0 / SSR_SAMPLER_COUNT;	
 	float stepLength = jitter * stepSize + stepSize;
+	float stepLevel = 0;
 	
 	float bestLen = 0;
 	
@@ -146,24 +147,25 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 		samplePos4.xy /= samplePos4.w;
 		
 		float4 sampleDepth;
-		sampleDepth.r = tex2Dlod(Gbuffer8Map, float4(samplePos1.xy, 0, 0)).r;
-		sampleDepth.g = tex2Dlod(Gbuffer8Map, float4(samplePos2.xy, 0, 0)).r;
-		sampleDepth.b = tex2Dlod(Gbuffer8Map, float4(samplePos3.xy, 0, 0)).r;
-		sampleDepth.a = tex2Dlod(Gbuffer8Map, float4(samplePos4.xy, 0, 0)).r;
+		sampleDepth.r = tex2Dlod(DepthMapSamp, float4(samplePos1.xy, 0, stepLevel)).r;
+		sampleDepth.g = tex2Dlod(DepthMapSamp, float4(samplePos2.xy, 0, stepLevel)).r;
+		sampleDepth.b = tex2Dlod(DepthMapSamp, float4(samplePos3.xy, 0, stepLevel)).r;
+		sampleDepth.a = tex2Dlod(DepthMapSamp, float4(samplePos4.xy, 0, stepLevel)).r;
 		
-		float4 depthDiff = samplePosZ - sampleDepth;
+		float4 depthDiff = samplePosZ - abs(sampleDepth);
 		
-		bool4 Hit = abs(depthDiff + intervalSize) < intervalSize;
-		if (any(Hit))
+		bool4 hit = abs(depthDiff + intervalSize) < intervalSize;
+		if (any(hit))
 		{
-			float HitIndex = 3;
-			HitIndex = Hit[2] ? 2 : HitIndex;
-			HitIndex = Hit[1] ? 1 : HitIndex;
-			HitIndex = Hit[0] ? 0 : HitIndex;
-			bestLen = stepLength + stepSize * HitIndex;
+			float hitIndex = 3;
+			hitIndex = hit[2] ? 2 : hitIndex;
+			hitIndex = hit[1] ? 1 : hitIndex;
+			hitIndex = hit[0] ? 0 : hitIndex;
+			bestLen = stepLength + stepSize * hitIndex;
 			break;
 		}
 		
+		stepLevel += (1 - smoothness) * (16.0 / SSR_SAMPLER_COUNT);
 		stepLength += stepSize * 4;
 	}
 	
