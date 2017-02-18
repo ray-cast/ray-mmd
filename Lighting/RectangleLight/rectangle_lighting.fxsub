@@ -174,23 +174,16 @@ float ShadowPCF(float3 viewPosition, int samples)
 #endif
 }
 
-float4 ShadingShadow(MaterialParam material, float3 V)
+float ShadingShadow(MaterialParam material, float3 V)
 {
-	float linearDepth = material.linearDepth;
-	
-	float shadow = 1;
-
-	float3 P = V * linearDepth / V.z;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-
+	float angle = saturate(dot(material.normal, -viewLightDirection));
+	if (angle < 0.0)
+	{
+		clip(-1);
+	}
+		
+	float3 P = V * material.linearDepth / V.z;
+	float shadow = ShadowPCF(P, 0);
 	return shadow;
 }
 
