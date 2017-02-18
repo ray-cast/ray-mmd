@@ -41,7 +41,7 @@ static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matV
 
 #if SHADOW_MAP_ENABLE
 	static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
-	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
+	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 	static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);

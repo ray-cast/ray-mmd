@@ -11,11 +11,11 @@ float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item =
 float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
 
 static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mDirection;
 
 static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
-static float4x4 matLightView = CreateLightViewMatrix(LightDirection, mDirection);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
 #if CASTER_ALPHA_MAP_ENABLE
