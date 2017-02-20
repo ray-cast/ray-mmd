@@ -53,12 +53,12 @@ float4 ShadowMapGenPS(
 technique DepthTecSS < string MMDPass = "object_ss";
 > {
 	pass DrawObjectF {
-		AlphaBlendEnable = FALSE;
+		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapGenVS(1);
 		PixelShader  = compile ps_3_0 ShadowMapGenPS(1);
 	}
 	pass DrawObjectB {
-		AlphaBlendEnable = FALSE;
+		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapGenVS(-1);
 		PixelShader  = compile ps_3_0 ShadowMapGenPS(-1);
 	}
