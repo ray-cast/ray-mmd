@@ -54,7 +54,7 @@ static float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matVi
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-	string Description = "Shadow Rendering for PointLight";
+	string Description = "Shadow Rendering for PointLightIES";
 	int Width = SHADOW_MAP_WIDTH;
 	int Height = SHADOW_MAP_HEIGHT;
 	string Format = "G32R32F";
