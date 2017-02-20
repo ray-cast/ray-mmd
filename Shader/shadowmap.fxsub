@@ -1,5 +1,3 @@
-#define SHADOW_BLUR_COUNT 6
-
 static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
@@ -48,7 +46,7 @@ float4 ShadowMapGenPS(
 	float4 proj = mul(viewPosition, matLightProjectFromCameraView);
 	proj.xy /= proj.w;
 
-	const float2 scale = float2(0.25, -0.25);
+	static const float2 scale = float2(0.25, -0.25);
 
 	float4 LightPPos01, LightPPos23;
 	LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
@@ -80,8 +78,7 @@ float4 ShadowMapGenPS(
 	receiverDepth -= (viewPosition.z / mLightZMax + depthSlope) * 0.01;
 
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
-	
-	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 3);
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, SHADOW_SAMPLE_COUNT);
 	
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = min(shadow, saturate(angle + 0.1));
@@ -97,6 +94,7 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 	float totalWeight = 1;
 	float totalColor = tex2Dlod(source, float4(coord, 0, 0)).r;
 	
+#if SHADOW_BLUR_COUNT
 	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
 	float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, saturate(center_d / mSSAOBlurFalloff));
 
@@ -121,6 +119,7 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 		offset1 += offset;
 		offset2 -= offset;
 	}
+#endif
 
 	return totalColor / totalWeight;
 }
