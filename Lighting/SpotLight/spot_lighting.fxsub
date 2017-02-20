@@ -90,11 +90,11 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
-	
+
 #if SHADOW_MAP_SOFT_QUALITY > 0
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
-	
+
 	static const float width = 7;
 	float radius = (width - 1) / 2;
 	float kernel[width];
@@ -108,13 +108,13 @@ float ShadowPCF(float3 viewPosition, int samples)
 		kernel[radius - i] = incrementalGaussian.x;
 		kernel[radius + i] = incrementalGaussian.x;
 	}
-	
+
 	[unroll]
 	for (int i = 0; i < width; ++i)
 	{
 		shadowWeight += kernel[i];
 	}
-	
+
 	[unroll]
 	for (int x = -radius; x <= radius; x++) 
 	{
@@ -126,9 +126,9 @@ float ShadowPCF(float3 viewPosition, int samples)
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
-	
+
 	shadow = shadow / (shadowWeight * shadowWeight);
-	
+
 	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
 #else
@@ -145,7 +145,7 @@ float ShadingShadow(MaterialParam material, float3 V)
 	{
 		clip(-1);
 	}
-		
+
 	float3 P = V * material.linearDepth / V.z;
 	float shadow = ShadowPCF(P, 0);
 	return shadow;
@@ -158,7 +158,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
-	
+
 	float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
 
@@ -182,7 +182,7 @@ void LightSourceVS(
 	{
 		Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightSpotAngle), LightSpotAngle);
 	}
-	
+
 	Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange / 2;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord1 = -mul(Position, matView);
@@ -206,7 +206,7 @@ void LightSourcePS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -214,17 +214,17 @@ void LightSourcePS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+
 	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
 
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else
@@ -232,10 +232,10 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-	
+
 #if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-	
+
 	float shadow = ShadingShadow(materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
@@ -261,7 +261,7 @@ void LightSourceShadowlessPS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -273,13 +273,13 @@ void LightSourceShadowlessPS(
 	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
 
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else
@@ -322,7 +322,7 @@ technique MainTecBS0<string MMDPass = "object_ss";
 		PixelShader  = compile ps_3_0 LightSourcePS();
 	}
 }
-	
+
 technique EdgeTec<string MMDPass = "edge"; > {}
 technique ShadowTech<string MMDPass = "shadow";  > {}
 technique ZplotTec<string MMDPass = "zplot"; > {}
