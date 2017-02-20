@@ -17,6 +17,7 @@ float mB : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
 float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
 float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mAngleM : CONTROLOBJECT<string name="(self)"; string item = "Angle-";>;
+float mHardnessP : CONTROLOBJECT<string name="(self)"; string item = "Hardness";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name="(self)"; string item = "AttenuationBulb+";>;
@@ -28,6 +29,7 @@ float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction
 
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightSpotAngle = lerp(60.0f / 180.0f * PI, 0.0f, mAngleM);
+static float LightHardness = lerp(0.15, 0.5, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
@@ -130,11 +132,11 @@ float ShadowPCF(float3 viewPosition, int samples)
 	shadow = shadow / (shadowWeight * shadowWeight);
 
 	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
-	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
+	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
 	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
-	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
+	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
 #endif
 }
 

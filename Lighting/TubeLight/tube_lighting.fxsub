@@ -19,6 +19,7 @@ float mWidthP : CONTROLOBJECT<string name="(self)"; string item = "Width+";>;
 float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mRadiusM : CONTROLOBJECT<string name="(self)"; string item = "Radius-";>;
 float mRadiusP : CONTROLOBJECT<string name="(self)"; string item = "Radius+";>;
+float mHardnessP : CONTROLOBJECT<string name="(self)"; string item = "Hardness";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name="(self)"; string item = "AttenuationBulb+";>;
@@ -32,6 +33,7 @@ float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction
 
 static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
 static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
+static float LightHardness = lerp(0.15, 0.5, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
@@ -96,13 +98,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float3 L = worldPosition.xyz - LightPosition;
 
 	float linearDepth = length(L);
-
-	float depthBias = 0.01;
-	float depthScale = 300;
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
-#if SHADOW_MAP_PCF_FILTER
-	depth -= depth * 0.001;
-#endif
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
@@ -144,10 +140,10 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
 #endif
 }
 
