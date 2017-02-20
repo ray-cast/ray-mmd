@@ -16,14 +16,14 @@ Download :
 - About alpha version :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
-- Latest changes - Major allocator changes (25. Jan 2017):
+- Latest changes - Major allocator changes (20. Feb 2017):
     - Added IES light source (25. Jan 2017)
     - Added IES2HDR Tool (1. Feb 2017)
     - Added Ambient occlusion map support (29. Jan 2017)
     - Added some default materials (25. Jan 2017)
     - Added morph controler to set the attenuation of multiple light source (29. Jan 2017)
-    - Improved SSSS and LED lighting (25. Jan 2017)
-    - Improved Shadow quality (25. Jan 2017)
+    - Improved SSSS and LED (25. Jan 2017)
+    - Improved quality of shadow (20. Feb 2017)
     - Improved Emissive Material, when luminance was less than 1, not calculate bloom effect (25. Jan 2017)
     - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
     - Fixed some minor bugs (29. Jan 2017)
