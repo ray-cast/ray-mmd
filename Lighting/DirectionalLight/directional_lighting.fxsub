@@ -85,7 +85,7 @@ float ShadowPCF(float3 viewPosition)
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
-	
+
 	if (proj.x <= 0.0 || proj.x >= 1.0 ||
 		proj.y <= 0.0 || proj.y >= 1.0)
 	{
@@ -101,7 +101,7 @@ float ShadowPCF(float3 viewPosition)
 #if SHADOW_MAP_SOFT_QUALITY > 0
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
-	
+
 	static const float width = 7;
 	float radius = (width - 1) / 2;
 	float kernel[width];
@@ -115,13 +115,13 @@ float ShadowPCF(float3 viewPosition)
 		kernel[radius - i] = incrementalGaussian.x;
 		kernel[radius + i] = incrementalGaussian.x;
 	}
-	
+
 	[unroll]
 	for (int i = 0; i < width; ++i)
 	{
 		shadowWeight += kernel[i];
 	}
-	
+
 	[unroll]
 	for (int x = -radius; x <= radius; x++) 
 	{
@@ -133,33 +133,28 @@ float ShadowPCF(float3 viewPosition)
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
-	
+
 	shadow = shadow / (shadowWeight * shadowWeight);
-	
+
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.2);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.1);
+	return ChebyshevUpperBound(shadow, linearDepth, 0.1, 0.2);
 #endif
 }
 
 float ShadingShadow(MaterialParam material, float3 V)
 {
 	float angle = saturate(dot(material.normal, viewLightDirection));
-	if (angle < 0.1)
+	if (angle < 0.0)
 	{
 		clip(-1);
 	}
 
 	float3 P = V * material.linearDepth / V.z;
 	float shadow = ShadowPCF(P);
-	if (angle < 0.2)
-	{
-		shadow = max(shadow, (angle - 0.1) * 10.0);
-	}
-
 	return shadow;
 }
 
@@ -170,7 +165,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
-	
+
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
@@ -205,7 +200,7 @@ void LightSourcePS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -213,17 +208,17 @@ void LightSourcePS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+
 	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
 
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else
@@ -231,10 +226,10 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-	
+
 #if SHADOW_MAP_ENABLE
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-	
+
 	float shadow = ShadingShadow(materialAlpha, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
@@ -256,7 +251,7 @@ void LightSourceShadowlessPS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -264,17 +259,17 @@ void LightSourceShadowlessPS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+
 	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
-	
+
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha;
 	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else

@@ -4,9 +4,9 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float mRange : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
-float3 mPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Direction"; >;
+float mRange : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Range+";>;
+float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
+float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
 static float LightRange = lerp(50, 200, mRange);
 static float3 LightPosition = mPosition;
@@ -21,8 +21,8 @@ texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
 {
 	texture = <DiffuseMap>;
-	MINFILTER = LINEAR;	MAGFILTER = LINEAR;	MIPFILTER = LINEAR;
-	ADDRESSU  = WRAP; ADDRESSV  = WRAP;
+	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 #endif
 
@@ -35,9 +35,11 @@ void ShadowMapVS(
 	out float4 oPosition : POSITION)
 {
 	float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
+	float distanceSqr = sqrt(distance(Position, CameraPosition));
+	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightView);
-	oPosition = mul(Position + float4(Normal * cosAngle * 0.05, 0), matLightViewProject);
+	oTexcoord1 = mul(Position + float4(Normal * distanceBias, 0), matLightView);
+	oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
@@ -53,7 +55,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 	return ComputeMoments(position.z).xyxy;
 }
 
-technique DepthTecSS < string MMDPass = "object_ss";> {
+technique DepthTecSS<string MMDPass = "object_ss";> {
 	pass DrawObject {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapVS();
@@ -61,7 +63,7 @@ technique DepthTecSS < string MMDPass = "object_ss";> {
 	}
 }
 
-technique DepthTec < string MMDPass = "object"; >{}
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTec < string MMDPass = "shadow"; > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique DepthTec<string MMDPass = "object";>{}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

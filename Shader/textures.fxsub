@@ -57,15 +57,16 @@ texture LightMap: OFFSCREENRENDERTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
-		"AmbientLight*.* =./Lighting/AmbientLight/Default/ambient_lighting.fx;"
-		"DirectionalLight*.* =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
-		"SpotLight*.* =./Lighting/SpotLight/Default/spot_lighting.fx;"
-		"PointLight*.* =./Lighting/PointLight/Default/point_lighting.fx;"
-		"SphereLight*.* =./Lighting/SphereLight/Default/sphere_lighting.fx;"
-		"TubeLight*.* =./Lighting/TubeLight/Default/tube_lighting.fx;"
-		"LED*.* =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
-		"RectangleLight*.* =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
-		"IESLight*.* =./Lighting/IESLight/IES Light of 1/IES_lighting.fx;"
+		"AmbientLight.pmx =./Lighting/AmbientLight/Default/ambient_lighting.fx;"
+		"DirectionalLight.pmx =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
+		"PointLight.pmx =./Lighting/PointLight/Default/point_lighting.fx;"
+		"PointLightIES.pmx =./Lighting/PointLightIES/IES Light of 1/IES_lighting.fx;"
+		"SpotLight.pmx =./Lighting/SpotLight/Default/spot_lighting.fx;"
+		"SpotLightIES.pmx =./Lighting/SpotLightIES/IES Light of 1/IES_lighting.fx;"
+		"SphereLight.pmx =./Lighting/SphereLight/Default/sphere_lighting.fx;"
+		"TubeLight.pmx =./Lighting/TubeLight/Default/tube_lighting.fx;"
+		"LED.pmx =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
+		"RectangleLight.pmx =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET <
