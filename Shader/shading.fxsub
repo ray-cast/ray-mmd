@@ -178,5 +178,13 @@ float4 ShadingTransparentPS(
 	lighting += fog.rgb;
 #endif
 
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
+	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+	
+	lighting += lerp(emissive0, emissive1, MRT8.a);
+
 	return float4(lighting, material.linearDepth);
 }

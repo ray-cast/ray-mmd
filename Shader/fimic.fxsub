@@ -428,7 +428,6 @@ float4 GhostImagePS(
 
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
-#if DISPERSION_MODE == 1
 	float L = length(coord * 2 - 1);
 	L = 1 - smoothstep(outer, inner, L);
 	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * BloomScale1;
@@ -436,23 +435,6 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 	float3 shift2 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
 	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
 	return float3(shift1.r, shift2.g, shift3.b);
-#elif DISPERSION_MODE == 2
-	float3 coeff = lerp(1.0, float3(1.0, 1.03, 1.06), mDispersion);
-	float3 R = float3(coord * 2 - 1, 1.0);
-	float3 N = float3(0.0, 0.0, -1.0);
-	float3 offset1 = refract(R, N, coeff.r);
-	float3 offset2 = refract(R, N, coeff.g);
-	float3 offset3 = refract(R, N, coeff.b);
-	float2 coord1 = (offset1 / offset1.z).xy * 0.5 + 0.5;
-	float2 coord2 = (offset2 / offset2.z).xy * 0.5 + 0.5;
-	float2 coord3 = (offset3 / offset3.z).xy * 0.5 + 0.5;
-	float3 shift1 = tex2Dlod(source, float4(coord1, 0, 0)).rgb;
-	float3 shift2 = tex2Dlod(source, float4(coord2, 0, 0)).rgb;
-	float3 shift3 = tex2Dlod(source, float4(coord3, 0, 0)).rgb;
-	return float3(shift1.r, shift2.g, shift3.b);
-#else
-	return tex2Dlod(source, float4(coord, 0, 0)).rgb;
-#endif
 }
 
 float3 ApplyVignette(float3 color, float2 coord)
@@ -473,16 +455,6 @@ float3 ColorCorrect(float3 color, float contrast, float3 colorGrainRGBP, float3 
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
 	float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
-
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-	
-	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
-	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-	
-	color += lerp(emissive0, emissive1, MRT8.a);
 	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
