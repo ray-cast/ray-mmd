@@ -65,7 +65,7 @@ float4x4 CreateDualViewMatrix(float3 LightPosition, float face)
 
 float4x4 CreateDualProjMatrix(float4 P, float near, float far, float face)
 {
-	float L = length(P.xyz);
+	float L = length(P);
 	float vL = 1.0f / L;
 	float z = far * vL * (L - near) / (far - near);
 	return float4x4( vL, 0.0f, 0.0f,  0.0f,
@@ -79,8 +79,7 @@ float2 CalcDualShadowCoord(float3 L, float height)
 	bool face = (L.z >= 0) ? true : false;
 	if (!face) L.yz = -L.yz;
 	float2 coord = L.xy / (1.0f + L.z);
-	coord.y = -coord.y;
-	coord = (coord + 1.0f) * 0.5f;
+    coord = PosToCoord(coord);
 	coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / height;
 	return coord;
 }
