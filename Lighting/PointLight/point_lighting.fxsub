@@ -85,12 +85,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 	float linearDepth = length(L);
 
-	float depthBias = 0.01;
-	float depthScale = 300;
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
-#if SHADOW_MAP_PCF_FILTER
-	depth -= depth * 0.001;
-#endif
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
@@ -132,10 +127,10 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.2);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
-	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.1);
+	return ChebyshevUpperBound(shadow, depth, 1e-4, 0.2);
 #endif
 }
 
