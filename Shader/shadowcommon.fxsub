@@ -3,41 +3,41 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
    float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
    float3 up;
 
-   if (any(right))
-   {
-	   right = normalize(right);
-	   up = cross(forward, right);
-   }
-   else
-   {
-	   right = float3(1.0f, 0.0f, 0.0f);
-	   up = float3(0.0f, 0.0f, -sign(forward.y));
-   }
+	if (any(right))
+	{
+		right = normalize(right);
+		up = cross(forward, right);
+	}
+	else
+	{
+		right = float3(1.0f, 0.0f, 0.0f);
+		up = float3(0.0f, 0.0f, -sign(forward.y));
+	}
 
-   float3x3 rotation = { right.x, up.x, forward.x,
+	float3x3 rotation = { right.x, up.x, forward.x,
 						 right.y, up.y, forward.y,
 						 right.z, up.z, forward.z };
 
-   return float4x4(rotation[0], 0,
-				   rotation[1], 0,
-				   rotation[2], 0,
-				   mul(-LightPosition, rotation), 1);
+	return float4x4(rotation[0], 0,
+					rotation[1], 0,
+					rotation[2], 0,
+					mul(-LightPosition, rotation), 1);
 }
 
 float4x4 CreateOrthoProject(float width, float height, float near, float far)
 {
-    float cx = 2.0f / width;
-    float cy = 2.0f / height;
-    float cz = 1.0f / (far - near);
-    float tz = near / (near - far);
+	float cx = 2.0f / width;
+	float cy = 2.0f / height;
+	float cz = 1.0f / (far - near);
+	float tz = near / (near - far);
 
-    float4x4 m;
-    m[0] = float4(cx,  0,  0, 0);
-    m[1] = float4( 0, cy,  0, 0);
-    m[2] = float4( 0,  0, cz, 0);
-    m[3] = float4( 0,  0, tz, 1);
-    
-    return m;
+	float4x4 m;
+	m[0] = float4(cx,  0,  0, 0);
+	m[1] = float4( 0, cy,  0, 0);
+	m[2] = float4( 0,  0, cz, 0);
+	m[3] = float4( 0,  0, tz, 1);
+	
+	return m;
 }
 
 float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far)
@@ -79,7 +79,7 @@ float2 CalcDualShadowCoord(float3 L, float height)
 	bool face = (L.z >= 0) ? true : false;
 	if (!face) L.yz = -L.yz;
 	float2 coord = L.xy / (1.0f + L.z);
-    coord = PosToCoord(coord);
+	coord = PosToCoord(coord);
 	coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / height;
 	return coord;
 }
@@ -107,31 +107,31 @@ float GaussianDistribution(float x, float y, float r)
 
 float ReduceLightBleeding(float p_max, float amount)
 {
-    return smoothstep(amount, 1, p_max);
+	return smoothstep(amount, 1, p_max);
 }
 
 float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
 {
-    float p = (t < moments.x);
-    float variance = max(moments.y - (moments.x * moments.x), minVariance);
-    float d = t - moments.x;
-    float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);    
-    return max(p, p_max);
+	float p = (t < moments.x);
+	float variance = max(moments.y - (moments.x * moments.x), minVariance);
+	float d = t - moments.x;
+	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);    
+	return max(p, p_max);
 }
 
 float2 ComputeMoments(float depth)
 {
-    float dx = ddx(depth);
-    float dy = ddy(depth);
-    
-    float2 moments;
-    moments.x = depth;
-    moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
+	float dx = ddx(depth);
+	float dy = ddy(depth);
+	
+	float2 moments;
+	moments.x = depth;
+	moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
 
-    return moments;
+	return moments;
 }
 
 float CalcLight(float casterDepth, float receiverDepth, float rate)
 {
-    return 1.0 - saturate((receiverDepth - casterDepth) * rate);
+	return 1.0 - saturate((receiverDepth - casterDepth) * rate);
 }

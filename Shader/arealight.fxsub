@@ -98,7 +98,7 @@ float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V
 }
 
 float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{   
+{
 	float3 Ld = L1 - L0;
 	float t = dot(-L0, Ld) / dot(Ld, Ld);
 	float3 d = (L0 + Ld * saturate(t));
@@ -106,7 +106,7 @@ float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, fl
 }
 
 float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
-{      
+{
 	float3 Ld = L1 - L0;
 	float3 R = reflect(V, N);
 	

@@ -1,14 +1,14 @@
 #if SSAO_QUALITY == 1 || SSAO_QUALITY == 4
-#   define SSAO_SAMPLER_COUNT 8
-#   define SSAO_BLUR_RADIUS 8
+#	define SSAO_SAMPLER_COUNT 8
+#	define SSAO_BLUR_RADIUS 8
 #elif SSAO_QUALITY == 2 || SSAO_QUALITY == 5
-#   define SSAO_SAMPLER_COUNT 12
-#   define SSAO_BLUR_RADIUS 8
+#	define SSAO_SAMPLER_COUNT 12
+#	define SSAO_BLUR_RADIUS 8
 #elif SSAO_QUALITY >= 3 || SSAO_QUALITY == 6
-#   define SSAO_SAMPLER_COUNT 16
-#   define SSAO_BLUR_RADIUS 8
+#	define SSAO_SAMPLER_COUNT 16
+#	define SSAO_BLUR_RADIUS 8
 #else
-#   define SSAO_SAMPLER_COUNT 8
+#	define SSAO_SAMPLER_COUNT 8
 #   define SSAO_BLUR_RADIUS 8
 #endif
 
@@ -17,9 +17,9 @@ shared texture SSAOMap : RENDERCOLORTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-    string Format = "A8R8G8B8";
+	string Format = "A8R8G8B8";
 #else
-    string Format = "L8";
+	string Format = "L8";
 #endif
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET <
@@ -27,9 +27,9 @@ texture SSAOMapTemp : RENDERCOLORTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-    string Format = "A8R8G8B8";
+	string Format = "A8R8G8B8";
 #else
-    string Format = "L8";
+	string Format = "L8";
 #endif
 >;
 sampler SSAOMapSamp = sampler_state {
@@ -160,11 +160,11 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 		sampleWeight += sum(falloff);
 		
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-        sampleAmbient.x += sum(occlustion);
-        sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
-        sampleAmbient.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
-        sampleAmbient.yzw += occlustion[2] * sampleDirection[2] * sampleLength[2];
-        sampleAmbient.yzw += occlustion[3] * sampleDirection[3] * sampleLength[3];
+		sampleAmbient.x += sum(occlustion);
+		sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
+		sampleAmbient.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
+		sampleAmbient.yzw += occlustion[2] * sampleDirection[2] * sampleLength[2];
+		sampleAmbient.yzw += occlustion[3] * sampleDirection[3] * sampleLength[3];
 #else
 		sampleAmbient += sum(occlustion);
 #endif

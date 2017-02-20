@@ -98,7 +98,7 @@ float4 ScreenSpaceQuadVS(
 	oTexcoord0 = Texcoord;
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
-	oTexcoord1 = -mul(Position, matProjectInverse).xyz;    
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
 	return Position;
 }
 

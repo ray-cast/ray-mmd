@@ -1,11 +1,11 @@
 #if SSR_QUALITY == 1
-#   define SSR_SAMPLER_COUNT 32
+#	define SSR_SAMPLER_COUNT 32
 #elif SSR_QUALITY == 2
-#   define SSR_SAMPLER_COUNT 64
+#	define SSR_SAMPLER_COUNT 64
 #elif SSR_QUALITY >= 3
-#   define SSR_SAMPLER_COUNT 128
+#	define SSR_SAMPLER_COUNT 128
 #else
-#   define SSR_SAMPLER_COUNT 32
+#	define SSR_SAMPLER_COUNT 32
 #endif
 
 static float SSRScale1 = ((ViewportSize.x * 1.0)   / (mSSRBlurScale * 1.0));
@@ -105,7 +105,7 @@ sampler SSRLightX4SampTemp = sampler_state {
 };
 
 bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float smoothness, float jitter, out float2 hitPixel)
-{   
+{
 	float3 startPosition = viewPosition;
 	float3 endPosition = viewPosition + viewReflect * maxDistance;
 
