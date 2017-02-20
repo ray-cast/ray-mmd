@@ -27,7 +27,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
-static float LightSpotAngle = radians(lerp(60.0f, 0.0f, mAngleM));
+static float LightSpotAngle = lerp(60.0f / 180.0f * PI, 0.0f, mAngleM);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
@@ -129,11 +129,11 @@ float ShadowPCF(float3 viewPosition, int samples)
 	
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
-	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
 #else
 	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
-	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
+	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 0.05, 0.2);
 #endif
 }
