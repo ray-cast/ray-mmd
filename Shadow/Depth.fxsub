@@ -5,8 +5,8 @@
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
-	MinFilter = POINT;  MagFilter = POINT;  MipFilter = POINT;
-	ADDRESSU  = WRAP;   ADDRESSV  = WRAP;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = POINT;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 #endif
 
@@ -20,13 +20,13 @@ void DepthObjectVS(
 	oTexcoord = float3(Texcoord.xy, oPosition.w);
 }
 
-float4 DepthObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
+float4 DepthObjectPS(float3 coord : TEXCOORD0) : COLOR
 {
 #if RECIEVER_ALPHA_ENABLE
 	clip(!opadd - 0.001f);
 	float alpha = MaterialDiffuse.a;
 #if RECIEVER_ALPHA_MAP_ENABLE
-	if (useTexture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
 	clip(alpha - 0.01);
 #endif
@@ -38,22 +38,20 @@ float4 DepthObjectPS(float3 coord : TEXCOORD0, uniform bool useTexture) : COLOR
 	return coord.z;
 }
 
-#define OBJECT_TEC(name, mmdpass, tex) \
-	technique name < string MMDPass = mmdpass; bool UseTexture = tex; \
-	>{ \
-		pass DrawObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 DepthObjectVS(); \
-			PixelShader  = compile ps_3_0 DepthObjectPS(tex); \
-		} \
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	>{\
+		pass DrawObject {\
+			AlphaTestEnable = false; AlphaBlendEnable = false;\
+			VertexShader = compile vs_3_0 DepthObjectVS();\
+			PixelShader  = compile ps_3_0 DepthObjectPS();\
+		}\
 	}
 
-OBJECT_TEC(DepthTec2, "object", false)
-OBJECT_TEC(DepthTec3, "object", true)
-OBJECT_TEC(DepthTecBS2, "object_ss", false)
-OBJECT_TEC(DepthTecBS3, "object_ss", true)
+OBJECT_TEC(DepthTec, "object")
+OBJECT_TEC(DepthTecBS, "object_ss")
 
-technique DepthTec0 < string MMDPass = "object"; >{}
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTec < string MMDPass = "shadow"; > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique DepthTec0<string MMDPass = "object";>{}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
