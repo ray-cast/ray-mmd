@@ -55,7 +55,7 @@ float4 SSSGuassBlurPS(
 
 	float sssAmount = material.customDataA;
 	float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
-	float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1.0;
+	float sssStrength = sssAmount;
 	float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
 	
 	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
