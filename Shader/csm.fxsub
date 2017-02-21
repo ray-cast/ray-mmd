@@ -31,8 +31,8 @@ float4x4 CreateOrthoProject(float width, float height, float near, float far)
 
 float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float LightDistance)
 {
-	const float3 up1 = float3(0, 0, 1);
-	const float3 up2 = float3(1, 0, 0);
+	static const float3 up1 = float3(0, 0, 1);
+	static const float3 up2 = float3(1, 0, 0);
 
 	float3 right = cross(CameraDirection, forward);
 	right = !any(right) ? cross(up1, forward) : right;
@@ -48,7 +48,7 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float Ligh
 	return float4x4(rotation[0], 0,
 					rotation[1], 0,
 					rotation[2], 0,
-					mul(-LightDirection * LightDistance, rotation), 1);
+					mul(CameraPosition -LightDirection * LightDistance, rotation), 1);
 }
 
 float CalcSplitPosition(float i)
@@ -104,7 +104,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
 
 float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 {
-	float4 frustumInfo = CreateFrustumFromProjection();
+	static const float4 frustumInfo = CreateFrustumFromProjection();
 
 	float z0 = mPSSMCascadeZMin;
 	float z1 = CalcSplitPosition(1.0);
@@ -119,11 +119,11 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
 }
 
-float CalcEdgeFalloff(float2 texCoord)
+float CalcEdgeFalloff(float2 coord)
 {
-	const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
-	const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
-	float2 falloff = abs(texCoord) * (-m * 4.0) + (m - a);
+	static const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
+	static const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
+	float2 falloff = abs(coord) * (-m * 4.0) + (m - a);
 	return saturate(min(falloff.x, falloff.y));
 }
 
