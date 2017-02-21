@@ -98,7 +98,7 @@ float4 ACESOutputDevice(float3 color, float2 uv)
 #endif
 }
 
-float3 WihteBalance(float3 color, float kelvin)
+float3 WhiteBalance(float3 color, float kelvin)
 {
 	float temp = kelvin / 100;
 	float temp60 = max(0, temp - 60);
