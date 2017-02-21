@@ -59,8 +59,7 @@ float3 ycbcr2rgb(float3 YCbCr)
 
 float luminance(float3 rgb)
 {
-	const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-	return dot(rgb, lumfact);
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
 }
 
 float pow2(float x)
@@ -122,25 +121,6 @@ float length2(float4 v)
 float3 DecodeRGBM(float4 rgbm, float range)
 {
 	return rgbm.rgb * rgbm.a * range;
-}
-
-float4 EncodeRGBT(float3 color, float range = 1024)
-{
-	float value = 0;
-	value = max(max(color.r, color.g), max(color.b, 1e-6f));
-	value = min(value, range);
-
-	float4 encode;
-	encode[3] = (range + 1) / range *  value / (1 + value);
-	encode[3] = ceil(encode[3] * 255.0) / 255.0;
-	
-	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
-
-	encode[0] = color.r * rcp;
-	encode[1] = color.g * rcp;
-	encode[2] = color.b * rcp;
-
-	return encode;
 }
 
 float3 DecodeRGBT(float4 rgbt, float range)

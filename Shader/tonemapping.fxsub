@@ -49,24 +49,39 @@ float3 TonemapFilmic_Hejl2015(float3 hdr, float whitePt)
 	return vf.rgb / vf.www;
 }
 
+float3 TonemapFilmicALU(float3 color)
+{
+	color = max(0, color - 0.004f);
+	color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f)+ 0.06f);
+	return color;
+}
+
+float3 LumaBasedReinhardToneMapping(float3 color)
+{
+	float luma = luminance(color);
+	float toneMappedLuma = luma / (1. + luma);
+	color *= toneMappedLuma / luma;
+	return color;
+}
+
 float3 ACESToneMapping(float3 color)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
 	float3 curr = ACESFilmLinear(color);
-	return saturate(lerp(curr, color, mTonemapping));
+	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	float3 curr = ACESFilmLinear(color);
-	return saturate(lerp(curr, color, mTonemapping));
+	float3 curr = TonemapFilmicALU(color);
+	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
-	float3 curr = ACESFilmRec2020(color);
+	float3 curr = LumaBasedReinhardToneMapping(color);
 	return lerp(curr, color, mTonemapping);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
 	float4 curr = FilmicTonemap(float4(color * 2, 11.2));
 	curr = curr / curr.w;
-	return saturate(lerp(curr, color, mTonemapping));
+	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
 	float3 curr = TonemapFilmic_Hejl2015(color, 11.2);
-	return saturate(lerp(curr, color, mTonemapping));
+	return saturate(curr);
 #else
 	return saturate(color);
 #endif
@@ -86,11 +101,8 @@ float3 ColorBanding(float2 uv)
 float4 ACESOutputDevice(float3 color, float2 uv)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	color = linear2rec709(color);
 	color += ColorBanding(uv * (time + PI));
 	return float4(color, 1);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
-	return EncodeRGBT(color);
 #else
 	color = linear2srgb(color);
 	color += ColorBanding(uv * (time + PI));

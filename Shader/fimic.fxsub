@@ -443,11 +443,12 @@ float3 ApplyVignette(float3 color, float2 coord)
 	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);
 }
 
-float3 ColorCorrect(float3 color, float contrast, float3 colorGrainRGBP, float3 colorGrainRGBM)
+float3 ColorCorrect(float3 color, float contrast, float saturation, float gamma, float3 colorGrainRGBP, float3 colorGrainRGBM)
 {
 	float3 lum = luminance(color);
-	color = lerp(color, lum, mColBalance);
+	color = max(0, lerp(lum, color, saturation));
 	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
+	color = pow(color, gamma);
 	color *= colorGrainRGBP + (1.0 - colorGrainRGBM);
 	return color;
 }
@@ -462,7 +463,7 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 #endif
 
 	color = WhiteBalance(color, mColorTemperature);
-	color = ColorCorrect(color, mContrast, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
 	color = ApplyVignette(color, coord);
 	color = ACESToneMapping(color * mExposure);
 	

@@ -23,15 +23,15 @@ float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string 
 float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
 float mBloomTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomTonemapping";>;
 float mTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Tonemapping";>;
-float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast+";>;
-float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
+float mContrastCoff : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast";>;
+float mSaturationCoff : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Saturation";>;
+float mGammaCoff : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Gamma";>;
 float mColBalanceRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR+";>;
 float mColBalanceGP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG+";>;
 float mColBalanceBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB+";>;
 float mColBalanceRM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR-";>;
 float mColBalanceGM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceG-";>;
 float mColBalanceBM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceB-";>;
-float mColBalance : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceGray+";>;
 float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
 
@@ -47,7 +47,9 @@ static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6400, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = mExposureMin + mExposureP * mExposureMax;
-static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
+static float mContrast = lerp(lerp(1, 2, saturate(mContrastCoff * 2)), 0.5, saturate(mContrastCoff - 0.5) * 2);
+static float mSaturation = lerp(lerp(1, 2, saturate(mSaturationCoff * 2)), 0.0, saturate(mSaturationCoff - 0.5) * 2);
+static float mGamma = lerp(lerp(1, 0.45, saturate(mGammaCoff * 2)), 2.2, saturate(mGammaCoff - 0.5) * 2);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mBloomIntensity = lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP);
 static float3 mColorBalanceRGBP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
@@ -58,7 +60,7 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #include "shader/textures.fxsub"
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
-#include "shader/ACES.fxsub"
+#include "shader/tonemapping.fxsub"
 #include "shader/fimic.fxsub"
 #include "shader/ibl.fxsub"
 
