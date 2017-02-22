@@ -39,8 +39,7 @@ void ShadowMapVS(
 	float distanceSqr = sqrt(distance(Position, CameraPosition));
 	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = mul(Position + float4(Normal * distanceBias, 0), matLightView);
-	oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
+	oTexcoord1 = oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
@@ -53,7 +52,7 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return ComputeMoments(position.z).xyxy;
+	return ComputeMoments(position.w).xyxy;
 }
 
 technique DepthTecSS<string MMDPass = "object_ss";> {
