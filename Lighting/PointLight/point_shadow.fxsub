@@ -4,7 +4,7 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float3 LightPosition : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Position"; >;
+float3 LightPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 
 texture DiffuseMap: MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state 
@@ -50,7 +50,7 @@ float4 ShadowMapGenPS(
 	return ComputeMoments(proj.z / proj.w).xyxy;
 }
 
-technique DepthTecSS < string MMDPass = "object_ss";
+technique DepthTecSS<string MMDPass = "object_ss";
 > {
 	pass DrawObjectF {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -64,7 +64,7 @@ technique DepthTecSS < string MMDPass = "object_ss";
 	}
 }
 
-technique DepthTec0 < string MMDPass = "object"; >{}
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTec < string MMDPass = "shadow"; > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique DepthTec0<string MMDPass = "object";>{}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
