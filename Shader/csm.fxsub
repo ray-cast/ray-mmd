@@ -40,15 +40,16 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float Ligh
 	right = normalize(right);
 
 	float3 up = cross(forward, right);
+	float3 pos = min(LightDirection, CameraPosition);
 
 	float3x3 rotation = {right.x, up.x, forward.x,
 						 right.y, up.y, forward.y,
-						 right.z, up.z, forward.z };
+						 right.z, up.z, forward.z};
 
 	return float4x4(rotation[0], 0,
 					rotation[1], 0,
 					rotation[2], 0,
-					mul(CameraPosition -LightDirection * LightDistance, rotation), 1);
+					mul(pos -LightDirection * LightDistance, rotation), 1);
 }
 
 float CalcSplitPosition(float i)
@@ -129,7 +130,7 @@ float CalcEdgeFalloff(float2 coord)
 
 float4 CalcCascadePPos(float2 uv, float2 offset, float index)
 {
-	return float4(uv + ((0.5 + offset) * 0.5 + (0.5 / SHADOW_MAP_SIZE)), index, CalcEdgeFalloff(uv));
+	return float4(uv + 0.25 + offset * 0.5 + (0.5 / SHADOW_MAP_SIZE), index, CalcEdgeFalloff(uv));
 }
 
 float ShadowSlopeScaledBias(float depth)

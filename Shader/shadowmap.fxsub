@@ -42,19 +42,16 @@ float4 ShadowMapGenPS(
 
 	float3 V = normalize(viewdir);
 	float4 viewPosition = float4(V * linearDepth / V.z, 1);
-
 	float4 proj = mul(viewPosition, matLightProjectFromCameraView);
-	proj.xy /= proj.w;
 
-	static const float2 scale = float2(0.25, -0.25);
-
-	float4 LightPPos01, LightPPos23;
-	LightPPos01.xy = (proj.xy * lightParam[0].xy + lightParam[0].zw);
-	LightPPos01.zw = (proj.xy * lightParam[1].xy + lightParam[1].zw);
-	LightPPos23.xy = (proj.xy * lightParam[2].xy + lightParam[2].zw);
-	LightPPos23.zw = (proj.xy * lightParam[3].xy + lightParam[3].zw);
-	LightPPos01 *= scale.xyxy;
-	LightPPos23 *= scale.xyxy;
+	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
+	float4 LightPPos23 = proj.xyxy * float4(lightParam[2].xy, lightParam[3].xy);
+	
+	LightPPos01 += float4(lightParam[0].zw, lightParam[1].zw);
+	LightPPos23 += float4(lightParam[2].zw, lightParam[3].zw);
+	
+	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
+	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
 	
 	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
 	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
