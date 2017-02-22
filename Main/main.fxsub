@@ -1,104 +1,36 @@
 #include "../ray.conf"
 #include "../shader/math.fxsub"
 #include "../shader/common.fxsub"
-#include "../shader/gbuffer.fxsub"
-#include "../shader/lighting.fxsub"
 
-float3  LightDirection : DIRECTION<string Object = "Light"; >;
-float3  LightSpecular  : SPECULAR <string Object = "Light"; >;
-
-bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
-
-texture DiffuseMap: MATERIALTEXTURE;
+texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
-	MINFILTER = ANISOTROPIC;
-	MAGFILTER = ANISOTROPIC;
-	MIPFILTER = POINT;
 	MAXANISOTROPY = 16;
-	ADDRESSU  = WRAP;
-	ADDRESSV  = WRAP;
+	MINFILTER = ANISOTROPIC; MAGFILTER = ANISOTROPIC; MIPFILTER = POINT;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
-
-float4 GetTextureColor(float4 albedo, float2 uv)
-{
-	if (use_texture)
-	{
-		float4 TexColor = tex2D(DiffuseMapSamp, uv);
-		TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
-		albedo *= TexColor;
-	}
-
-	return srgb2linear(albedo);
-}
-
-float ShininessToSmoothness(float spec)
-{
-	return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
-}
-
-float RoughnessToShininess(float roughness)
-{
-	return 2.0f / (roughness * roughness + 0.0001) - 2.0f;
-}
 
 void DrawObjectVS(
 	in float4 Position : POSITION,
-	in float3 Normal   : NORMAL,
 	in float4 Texcoord : TEXCOORD0,
 	out float4 oTexcoord  : TEXCOORD0,
-	out float3 oNormal    : TEXCOORD1,
-	out float3 oViewdir   : TEXCOORD2,
 	out float4 oPosition  : POSITION)
 {
-	oNormal = Normal;
 	oTexcoord = Texcoord;
-	oViewdir = CameraPosition - Position.xyz;
 	oPosition = mul(Position, matWorldViewProject);
 }
 
-float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float3 normal : TEXCOORD1, float3 viewdir : TEXCOORD2) : COLOR
+float4 DrawObjectPS(float4 texcoord : TEXCOORD0) : COLOR
 {
-#if EXIST_RAY
-	#if DISCARD_ALPHA_ENABLE
-		float alpha = MaterialDiffuse.a;
-	#if DISCARD_ALPHA_MAP_ENABLE
-		if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
-	#endif
-		clip(alpha - DiscardAlphaThreshold);
-	#endif
-		return 0;
-#else
-	if (ExistRay)
-	{
 #if DISCARD_ALPHA_ENABLE
-		float alpha = MaterialDiffuse.a;
+	float alpha = MaterialDiffuse.a;
 #if DISCARD_ALPHA_MAP_ENABLE
-		if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
 #endif
-		clip(alpha - DiscardAlphaThreshold);
+	clip(alpha - DiscardAlphaThreshold);
 #endif
-		return 0;
-	}
-	else
-	{
-		float4 albedo = GetTextureColor(MaterialDiffuse, texcoord.xy);
-		
-		float3 L = normalize(-LightDirection);
-		float3 V = normalize(viewdir);
-		float3 N = normalize(normal);
-
-		float MaterialRoughness = SmoothnessToRoughness(ShininessToSmoothness(MaterialPower));
-
-		float4 lighting = albedo;
-		lighting.rgb *= DiffuseBRDF(N, L, V, MaterialRoughness);
-		lighting.rgb += SpecularBRDF_GGX(N, L, V, MaterialRoughness, 0.04, 1.0);
-		lighting.rgb *= LightSpecular;
-
-		return linear2srgb(lighting);
-	}
-#endif
+	return 0;
 }
 
 #define OBJECT_TEC(name, mmdpass) \
@@ -115,5 +47,5 @@ OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";>{}
-technique ShadowTech<string MMDPass = "shadow"; >{}
+technique ShadowTech<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
