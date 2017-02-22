@@ -169,7 +169,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
 	float4 energy = SphereAreaLightEnergy(material, material.normal, L, V, LightSize, roughness, material.specular);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V);
 	float3 specular = energy.gba;
 	
 #if IBL_ENABLE

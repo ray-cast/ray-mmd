@@ -119,7 +119,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V);
 	float3 specular = energy.gba;
 
 	float4 lighting = MultiSurfaceShading(material, diffuse, specular, float3(mR, mG, mB));

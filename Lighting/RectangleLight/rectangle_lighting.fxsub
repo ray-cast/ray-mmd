@@ -203,7 +203,7 @@ float4 ShadingMaterial(MaterialParam material, float3 V)
 	#endif
 
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
-	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V);
 	float3 specular = energy.gba;
 	
 #if VIDEO_MAP_ENABLE
