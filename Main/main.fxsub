@@ -33,14 +33,14 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0) : COLOR
 	return 0;
 }
 
-#define OBJECT_TEC(name, mmdpass) \
+#define OBJECT_TEC(name, mmdpass)\
 	technique name<string MMDPass = mmdpass;\
-	> { \
-		pass DrawObject { \
-			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
-			VertexShader = compile vs_3_0 DrawObjectVS(); \
-			PixelShader  = compile ps_3_0 DrawObjectPS(); \
-		} \
+	>{\
+		pass DrawObject {\
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
+			VertexShader = compile vs_3_0 DrawObjectVS();\
+			PixelShader = compile ps_3_0 DrawObjectPS();\
+		}\
 	}
 
 OBJECT_TEC(MainTec0, "object")
