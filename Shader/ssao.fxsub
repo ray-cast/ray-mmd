@@ -89,7 +89,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	
 	float depth = linearizeDepth(coord.xy);
 	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = -viewdir * abs(depth);
+	float3 viewPosition = ReconstructPos(coord.xy, matProjectInverse, depth);
 	   
 	float sampleWeight = 0.0f;
 	float sampleNoise = GetJitterOffset(coord.zw);
