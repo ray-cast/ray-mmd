@@ -10,7 +10,7 @@
 #define ALBEDO_MAP_APPLY_COLOR 0
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "TDA/face.png"
+#define ALBEDO_MAP_FILE "textures/face.png"
 
 const float3 albedo = 1;
 const float albedoMapLoopNum = 1.0;
@@ -41,7 +41,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_MAP_SUB_ENABLE 1
 #define NORMAL_MAP_SUB_UV_FLIP 0
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
-#define NORMAL_MAP_SUB_FILE "../_MaterialMap/skin.png"
+#define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
 
 const float normalMapSubScale = 1.5;
 const float normalMapSubLoopNum = 25.0;
@@ -121,7 +121,7 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_UV_FLIP 1
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define CUSTOM_A_MAP_FILE "TDA/curvature_face.png"
+#define CUSTOM_A_MAP_FILE "textures/curvature_face.png"
 
 const float customA = 0.6;
 const float customAMapLoopNum = 1.0;
@@ -130,9 +130,9 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_UV_FLIP 1
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_COLOR 1
-#define CUSTOM_B_MAP_FILE "TDA/thickness_face.png"
+#define CUSTOM_B_MAP_FILE "textures/thickness_face.png"
 
 const float3 customB = float3(0.9,0.0,0.0);
 const float customBMapLoopNum = 1.0;
 
-#include "../material_common.fxsub"
+#include "../../material_common.fxsub"
