@@ -130,8 +130,3 @@ float2 ComputeMoments(float depth)
 
 	return moments;
 }
-
-float CalcLight(float casterDepth, float receiverDepth, float rate)
-{
-	return 1.0 - saturate((receiverDepth - casterDepth) * rate);
-}
