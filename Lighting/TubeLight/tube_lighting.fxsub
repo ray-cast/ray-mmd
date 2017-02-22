@@ -36,7 +36,7 @@ float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction
 
 static float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
 static float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
-static float LightHardness = lerp(0.15, 0.5, mHardnessP);
+static float LightHardness = lerp(0.2, 0.995, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightRange = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);

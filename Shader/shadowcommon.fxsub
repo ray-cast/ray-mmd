@@ -1,7 +1,7 @@
 float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
 {
-   float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
-   float3 up;
+	float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
+	float3 up;
 
 	if (any(right))
 	{
@@ -107,7 +107,7 @@ float GaussianDistribution(float x, float y, float r)
 
 float ReduceLightBleeding(float p_max, float amount)
 {
-	return smoothstep(amount, 1, p_max);
+	return clamp((p_max - amount) / (1 - amount), 0, 1);
 }
 
 float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
@@ -115,7 +115,7 @@ float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amou
 	float p = (t < moments.x);
 	float variance = max(moments.y - (moments.x * moments.x), minVariance);
 	float d = t - moments.x;
-	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);    
+	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);
 	return max(p, p_max);
 }
 

@@ -27,7 +27,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
-static float LightHardness = lerp(0.15, 0.5, mHardnessP);
+static float LightHardness = lerp(0.2, 0.995, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
