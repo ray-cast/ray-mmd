@@ -67,7 +67,7 @@ float4 ShadowMapGenPS(
 	float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
 	float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
-	float receiverDepth = length(mul(viewPosition, matLightViewFromCameraView));
+	float receiverDepth = proj.z;
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	

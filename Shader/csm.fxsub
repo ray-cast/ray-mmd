@@ -23,8 +23,8 @@ float4x4 CreateOrthoProject(float width, float height, float near, float far)
 	float4x4 m;
 	m[0] = float4(cx,  0,  0, 0);
 	m[1] = float4( 0, cy,  0, 0);
-	m[2] = float4( 0,  0, cz, 0);
-	m[3] = float4( 0,  0, tz, 1);
+	m[2] = float4( 0,  0,  1, 0);
+	m[3] = float4( 0,  0,  0, 1);
 	
 	return m;
 }
@@ -68,7 +68,7 @@ float4 CreateFrustumFromProjection()
 	return float4(r.x / r.z, l.x / l.z, t.y / t.z, b.y / b.z);
 }
 
-float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 frustumInfo, float near, float far)
+float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frustumInfo, float near, float far)
 {
 	float4 znear = float4(near.xxx, 1);
 	float4 zfar = float4(far.xxx, 1);
@@ -85,7 +85,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
 
 	float2 vpos;
 	#define CalcMinMax(inV) \
-		vpos = mul(inV, matLightProjectionToCameraView).xy; \
+		vpos = mul(inV, matLightViewFromCameraView).xy; \
 		orthographicBB.xy = min(orthographicBB.xy, vpos); \
 		orthographicBB.zw = max(orthographicBB.zw, vpos);
 	CalcMinMax(rtn);    CalcMinMax(rtf);    CalcMinMax(lbn);    CalcMinMax(lbf);
@@ -103,7 +103,7 @@ float4 CreateLightProjParameter(float4x4 matLightProjectionToCameraView, float4 
 	return float4(2.0, 2.0, endPos.xy) * invBB.xyxy;
 }
 
-float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
+float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView)
 {
 	static const float4 frustumInfo = CreateFrustumFromProjection();
 
@@ -114,10 +114,10 @@ float4x4 CreateLightProjParameters(float4x4 matLightProjectionToCameraView)
 	float z4 = mPSSMCascadeZMax;
 
 	return float4x4(
-		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z0, z1),
-		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z1, z2),
-		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z2, z3),
-		CreateLightProjParameter(matLightProjectionToCameraView, frustumInfo, z3, z4));
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z0, z1),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z1, z2),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z2, z3),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z3, z4));
 }
 
 float CalcEdgeFalloff(float2 coord)

@@ -30,16 +30,14 @@ void CascadeShadowMapVS(
 	out float4 oPosition : POSITION,
 	uniform int3 offset)
 {
-	float angle = 1 - saturate(dot(Normal, -LightDirection));
-	float dist = sqrt(distance(Position, CameraPosition));
-	
-	oPosition = mul(Position, matLightViewProject);
-	oPosition.xy = oPosition.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
-	oPosition.xy = oPosition.xy * 0.5 + (offset.xy * 0.5f);
-
 	oTexcoord0 = float4(Texcoord, offset.xy);
-	oTexcoord1 = oPosition;
-	oTexcoord1.z = length(mul(Position, matLightView));
+
+	oTexcoord1 = mul(Position, matLightViewProject);
+	oTexcoord1.xy = oTexcoord1.xy * lightParam[offset.z].xy + lightParam[offset.z].zw;
+	oTexcoord1.xy = oTexcoord1.xy * 0.5 + offset.xy * 0.5f;
+
+	oPosition = oTexcoord1;
+	oPosition.z /= mLightZMax;
 }
 
 float4 CascadeShadowMapPS(
