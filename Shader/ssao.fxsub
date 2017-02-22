@@ -173,7 +173,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	sampleAmbient /= sampleWeight;
 	sampleAmbient.x *= depth < 0.0 ? 0.25 : 1.0;
 
-	float ao = saturate(1 - sampleAmbient.x * pow2(1 - sampleAmbient.x) * mSSAOScale);
+	float ao = saturate(1 - sampleAmbient.x * mSSAOScale);
 	
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
