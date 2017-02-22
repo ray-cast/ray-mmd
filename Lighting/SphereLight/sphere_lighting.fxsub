@@ -199,7 +199,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
 	float4 energy = SphereAreaLightEnergy(material, material.normal, L, V, LightSize, roughness, material.specular);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V).rgb;
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
 	
 #if LIGHTSOURCE_DIFFUSE_ONLY

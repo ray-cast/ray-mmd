@@ -231,30 +231,32 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V).rgb;
+	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
+	
 #if LIGHTSOURCE_DIFFUSE_ONLY
 	specular = 0.0;
 #else
 	specular = energy.gba;
-#endif
-
-#if VIDEO_MAP_UV_FLIP
-	coord1.x = 1 - coord1.x;
-	coord2.x = 1 - coord2.x;
+	specular *= atten * LightColor * LightIntensity * LightIntensity2;
 #endif
 
 #if VIDEO_MAP_ENABLE
+	#if VIDEO_MAP_UV_FLIP
+		coord1.x = 1 - coord1.x;
+		coord2.x = 1 - coord2.x;
+	#endif
+
 	float mip = (1 - material.smoothness * material.smoothness) * 4;
 
 	float3 prefilterDiffuse = FastBlur(VideoMapSamp, coord1, ViewportOffset2, 2).rgb;
-	float3 prefilterSpecular = FastBlur(VideoMapSamp, coord2, ViewportOffset2, mip).rgb;
-
 	diffuse *= prefilterDiffuse;
+	
+#if LIGHTSOURCE_DIFFUSE_ONLY == 0
+	float3 prefilterSpecular = FastBlur(VideoMapSamp, coord2, ViewportOffset2, mip).rgb;
 	specular *= prefilterSpecular;
 #endif
-
-	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
-	specular *= atten * LightColor * LightIntensity * LightIntensity2;
+#endif
 }
 
 void LightSourceVS(

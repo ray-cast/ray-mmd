@@ -182,7 +182,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	atten *= ComputeIESLightProfile1D(L2, LightDirection);
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V);
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
 
 #if LIGHTSOURCE_DIFFUSE_ONLY
