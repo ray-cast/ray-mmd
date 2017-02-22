@@ -170,10 +170,14 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
-	specular = energy.gba;
-
 	diffuse *= LightColor * LightIntensity * LightIntensity2;
+
+#if LIGHTSOURCE_DIFFUSE_ONLY
+	specular = 0;
+#else
+	specular = energy.gba;
 	specular *= LightColor * LightIntensity * LightIntensity2;
+#endif
 }
 
 void LightSourceVS(

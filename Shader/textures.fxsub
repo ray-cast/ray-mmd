@@ -57,7 +57,6 @@ texture LightMap: OFFSCREENRENDERTARGET <
 	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
-		"AmbientLight.pmx =./Lighting/AmbientLight/Default/ambient_lighting.fx;"
 		"DirectionalLight.pmx =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
 		"PointLight.pmx =./Lighting/PointLight/Default/point_lighting.fx;"
 		"PointLightIES.pmx =./Lighting/PointLightIES/IES Light of 1/IES_lighting.fx;"
@@ -139,7 +138,6 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"skybox*.* = ./materials/material_skybox.fx;"
-		"AmbientLight*.* =hide;"
 		"LED*.pmx =./materials/lighting/material_led.fx;"
 		"DirectionalLight*.* =./materials/lighting/material_lighting.fx;"
 		"SpotLight*.* =./materials/lighting/material_lighting.fx;"
@@ -165,7 +163,6 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"skybox*.* =shadow/Depth_noalpha.fx;"
-		"AmbientLight*.* =hide;"
 		"DirectionalLight*.* =shadow/Depth_noalpha.fx;"
 		"PointLight*.*=shadow/Depth_noalpha.fx;"
 		"SpotLight*.*=shadow/Depth_noalpha.fx;"
@@ -197,7 +194,6 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"skybox*.* =shadow/PSSM_noalpha.fx;"
-		"AmbientLight*.* =hide;"
 		"DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
 		"PointLight*.*=shadow/PSSM_noalpha.fx;"
 		"SpotLight*.*=shadow/PSSM_noalpha.fx;"

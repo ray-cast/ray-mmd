@@ -7,6 +7,9 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 2000
 
+// 是否启用镜面光
+#define LIGHTSOURCE_DIFFUSE_ONLY 0
+
 // 视频贴图
 #define VIDEO_MAP_ENABLE 0
 #define VIDEO_MAP_IN_TEXTURE 0

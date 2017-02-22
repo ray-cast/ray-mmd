@@ -7,6 +7,9 @@
 // 最大强度
 #define LIGHTSOURCE_MAX_INTENSITY 2000
 
+// 是否启用镜面光
+#define LIGHTSOURCE_SPECULAR_ENABLE 1
+
 // 阴影
 #define SHADOW_MAP_ENABLE 1
 #define SHADOW_MAP_QUALITY 1 // (0 ~ 3)

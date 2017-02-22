@@ -232,7 +232,11 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+#if LIGHTSOURCE_DIFFUSE_ONLY
+	specular = 0.0;
+#else
 	specular = energy.gba;
+#endif
 
 #if VIDEO_MAP_UV_FLIP
 	coord1.x = 1 - coord1.x;

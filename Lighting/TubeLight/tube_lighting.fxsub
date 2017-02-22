@@ -5,8 +5,11 @@
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/lighting.fxsub"
-#include "../../../shader/shadowcommon.fxsub"
 #include "../../../shader/arealight.fxsub"
+
+#if SHADOW_MAP_ENABLE
+#	include "../../../shader/shadowcommon.fxsub"
+#endif
 
 #define TUBELIGHT_MAX_WIDTH 55
 #define TUBELIGHT_MAX_RADIUS 10
@@ -180,10 +183,14 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	
 	float4 energy = TubeLightEnergy(material, P, material.normal, V, L2, L0, L1, LightWidth, LightRadius, roughness, material.specular);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
-	specular = energy.gba;
-
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
+
+#if LIGHTSOURCE_SPECULAR_ENABLE
+	specular = energy.gba;
 	specular *= atten * LightColor * LightIntensity * LightIntensity2;
+#else
+	specular = 0;
+#endif
 }
 
 void LightSourceVS(
