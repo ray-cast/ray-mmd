@@ -28,7 +28,8 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
-static float LightSpotAngle = lerp(60.0f / 180.0f * PI, 0.0f, mAngleM);
+static float LightAngle = radians(lerp(60.0f, 45.0f, mAngleM));
+static float LightPlaneFar = lerp(1, mLightPlaneFar, mRangeP);
 static float LightHardness = lerp(0.15, 0.5, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
@@ -42,7 +43,7 @@ static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_ENABLE
-	static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
+	static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, LightPlaneFar);
 	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
@@ -177,7 +178,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 L2 = normalize(L);
 
 	float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
-	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightSpotAngle), 2);
+	atten *= GetSpotLightAttenuation(L2, viewLightDirection, cos(LightAngle), 2);
 	atten *= ComputeIESLightProfile1D(L2, LightDirection);
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);

@@ -10,11 +10,12 @@ float mIntensityM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = 
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float LightSpotAngle = lerp(60.0f / 180.0f * PI, 0.0f, mAngleM);
+static float LightAngle = radians(lerp(60.0f, 45.0f, mAngleM));
+static float LightPlaneFar = lerp(1, mLightPlaneFar, mRangeP);
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
-static float4x4 matLightProject = CreatePerspectiveProject(LightSpotAngle, 1, mLightPlaneNear, mLightPlaneFar);
+static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, LightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 

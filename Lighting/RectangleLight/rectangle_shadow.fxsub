@@ -4,13 +4,16 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
+float mRangeP : CONTROLOBJECT < string name="(OffscreenOwner)"; string item = "Range+"; >;
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightPosition = mPosition;
+static float LightPlaneFar = lerp(1, mLightPlaneFar, mRangeP);
 
-static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
+static float3 LightPosition = mPosition;
+static float3 LightDirection = normalize(mDirection - mPosition);
+
+static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, LightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
