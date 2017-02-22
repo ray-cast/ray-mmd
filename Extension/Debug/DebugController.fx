@@ -125,8 +125,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result = pow(result, 1.0 / (2.0 + 1.0 / 3.0));
 
 	result += materialAlpha.alpha * showAlpha;
-	result += pow(material.linearDepth / 200, 0.5) * showDepth;
-	result += pow(materialAlpha.linearDepth / 200, 0.5) * showDepthAlpha;
+	result += pow(saturate(material.linearDepth / 200), 0.5) * showDepth;
+	result += pow(saturate(materialAlpha.linearDepth / 200), 0.5) * showDepthAlpha;
 
 	#if SSAO_QUALITY > 0
 		float4 ssao = tex2D(SSAOMapSamp, coord);
@@ -139,7 +139,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	#endif
 
 	#if SHADOW_QUALITY > 0
-		result += pow(tex2D(PSSMsamp, coord).r * 4, 10) * showPSSM;
+		result += pow(saturate(tex2D(PSSMsamp, coord).r / 1500), 2) * showPSSM;
 	#endif
 	
 	if (material.lightModel == SHADINGMODELID_SKIN)
