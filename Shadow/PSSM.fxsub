@@ -39,10 +39,11 @@ void CascadeShadowMapVS(
 
 	oTexcoord0 = float4(Texcoord, offset.xy);
 	oTexcoord1 = oPosition;
+	oTexcoord1.z = length(mul(Position + float4(Normal * angle * dist * 0.001, 0), matLightView));
 }
 
 float4 CascadeShadowMapPS(
-	in float4 coord0   : TEXCOORD0,
+	in float4 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1) : COLOR
 {
 	float2 clipUV = (coord1.xy - SHADOW_MAP_OFFSET) * coord0.zw;

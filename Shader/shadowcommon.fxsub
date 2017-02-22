@@ -105,9 +105,14 @@ float GaussianDistribution(float x, float y, float r)
 	return g;
 }
 
+float linstep(float a, float b, float v)
+{
+    return saturate((v - a) / (b - a));
+}
+
 float ReduceLightBleeding(float p_max, float amount)
 {
-	return clamp((p_max - amount) / (1 - amount), 0, 1);
+	return linstep(amount, 1.0, p_max);
 }
 
 float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
