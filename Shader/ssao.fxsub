@@ -87,46 +87,53 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 		float2(-0.622, -0.415)
 	};
 	
-	float depth = linearizeDepth(coord.xy);
+	float linearDepth = linearizeDepth(coord.xy);
 
 	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = ReconstructPos(coord.xy, matProjectInverse, depth);
+	float3 viewPosition = ReconstructPos(coord.xy, matProjectInverse, linearDepth);
 
-	float sampleWeight = 0.0f;
-	float sampleNoise = GetJitterOffset(coord.zw);
-	float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius;
-	float sampleScale = saturate((mSSAOBiasFalloff * 0.25) / viewPosition.z);
-	float sampleBias = viewPosition.z * mSSAOBiasFar + saturate(1 - viewPosition.z / mSSAOBiasFalloff) * mSSAOBiasNear;
+	float4 SSDOParams = float4(ViewportSize.x / ViewportSize * 2, ViewportOffset2.x * 20, 0.5);
 	
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-	float4 sampleAmbient = 0.0f;
-#else
-	float sampleAmbient = 0.0f;
-#endif
+	float maxRadius = SSDOParams.w;
+	float sampleJitter = GetJitterOffset(coord.zw);
+	float sampleBias = 0;
+	sampleBias += mSSAOBiasFar * (linearDepth / mSSAOBiasFalloffFar);
+	sampleBias += mSSAOBiasNear * (1 - saturate(linearDepth / mSSAOBiasFalloffNear));
+
+	if (fmod(coord.z, 2) > 0) maxRadius *= 0.5;
+	if (fmod(coord.w, 2) > 0) maxRadius *= 0.5;
+	
+	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth, SSDOParams.z, maxRadius);
+	float2 radius1 = clamp(SSDOParams.xy / linearDepth, SSDOParams.z, maxRadius);
 
 	float2 sampleRotate[16];
-	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / 24) / ViewportSize) * sampleScale;
+	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
+	float4 sampleOcclustion = 0.0f;
+	float4 sampleWeight = 0;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
-	
+
 	[unroll]
 	for (int i = 0; i < SSAO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(kernel[i + 0].xy, sampleRotMat) * sampleDiskRadius;
-		sampleRotate[i + 1] = mul(kernel[i + 1].xy, sampleRotMat) * sampleDiskRadius;
-		sampleRotate[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius;
-		sampleRotate[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius;
+		sampleRotate[i + 0] = mul(kernel[i + 0].xy, sampleRotMat);
+		sampleRotate[i + 1] = mul(kernel[i + 1].xy, sampleRotMat);
+		sampleRotate[i + 2] = mul(kernel[i + 2].xy, sampleRotMat);
+		sampleRotate[i + 3] = mul(kernel[i + 3].xy, sampleRotMat);
 	}
-	
+
 	[unroll]
 	for (int j = 0; j < SSAO_SAMPLER_COUNT; j+=4)
 	{
+		bool narrowBand = i < (SSAO_SAMPLER_COUNT / 2);
+
+		float2 radius = narrowBand ? radius0 : radius1;
+
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[j + 0];
-		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
-		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
-		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
+		sampleOffset[0] = coord.xy + sampleRotate[j + 0] * radius;
+		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
+		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
+		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
 
 		float3 samplePosition[4];
 		samplePosition[0] = GetPosition(sampleOffset[0]);
@@ -146,41 +153,36 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
+		sampleDirection[0] = normalize(sampleDirection[0]);
+		sampleDirection[1] = normalize(sampleDirection[1]);
+		sampleDirection[2] = normalize(sampleDirection[2]);
+		sampleDirection[3] = normalize(sampleDirection[3]);
+
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
 			dot(sampleDirection[1], viewNormal),
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
 
-		float4 sampleLength = rsqrt(sampleLength2 + EPSILON);
+		float emitterScale = narrowBand ? 0.5 : 2.5;
+		float emitterRadius = (radius.x * linearDepth) / matProjectInverse._22;
+		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
-		float4 f = max(0.0, sampleRadius2 - sampleLength2);
-		float4 falloff = f * f * f + EPSILON;
-		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
-
-		sampleWeight += sum(falloff);
-
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-		sampleAmbient.x += sum(occlustion);
-		sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
-		sampleAmbient.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
-		sampleAmbient.yzw += occlustion[2] * sampleDirection[2] * sampleLength[2];
-		sampleAmbient.yzw += occlustion[3] * sampleDirection[3] * sampleLength[3];
-#else
-		sampleAmbient += sum(occlustion);
-#endif
+		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
+		
+		sampleOcclustion.x += sum(sh);
+		sampleOcclustion.yzw += sh.x * sampleDirection[0];
+		sampleOcclustion.yzw += sh.y * sampleDirection[1];
+		sampleOcclustion.yzw += sh.z * sampleDirection[2];
+		sampleOcclustion.yzw += sh.w * sampleDirection[3];
 	}
 
-	sampleAmbient /= sampleWeight;
-	sampleAmbient.x *= depth < 0.0 ? 0.25 : 1.0;
+	sampleOcclustion /= SSAO_SAMPLER_COUNT;
+	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
-	float ao = saturate(1 - sampleAmbient.x * (1 - sampleAmbient.x) * mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
-#else
-	return ao;
-#endif
+	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }
 
 float4 SSAOBlur(
@@ -189,15 +191,10 @@ float4 SSAOBlur(
 	uniform sampler source, 
 	uniform float2 offset) : COLOR
 {
+	float total_w = 1.0f;
 	float center_d = linearizeDepth2(coord);
-
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-	float total_w = 1.0f;
+	
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
-#else
-	float total_w = 1.0f;
-	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
-#endif
 
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
@@ -213,20 +210,15 @@ float4 SSAOBlur(
 	{
 		float depth1 = linearizeDepth2(offset1);
 		float depth2 = linearizeDepth2(offset2);
-		
+
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
-#else
-		total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
-		total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
-#endif
 
 		total_w += bilateralWeight1;
 		total_w += bilateralWeight2;
