@@ -222,7 +222,9 @@ float4 ScreenSpaceDirOccBlurPS(
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
 	float falloff = saturate(center_d / mSSAOBlurFalloff);
-	float sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
+	float sharpness = 0;
+	sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
+	sharpness = lerp(mSSAOBlurSharpnessMax, sharpness, saturate(center_d / mSSAOBiasFalloffNear));
 
 	[unroll]
 	for (int r = 1; r <= SSAO_BLUR_RADIUS; r++)
@@ -232,9 +234,6 @@ float4 ScreenSpaceDirOccBlurPS(
 
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
-
-		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
-		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
