@@ -100,24 +100,25 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		float2(-0.622, -0.415)
 	};
 	
-	float linearDepth = linearizeDepth(coord.xy);    
+	float linearDepth = linearizeDepth(coord.xy);
+	float linearDepth2 = abs(linearDepth);
 
 	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth);
+	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
 
 	float4 SSDOParams = float4(ViewportSize.x / ViewportSize * 2, ViewportOffset2.x * 20, 0.5);
 	
 	float maxRadius = SSDOParams.w;
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleBias = 0;
-	sampleBias += mSSAOBiasFar * (linearDepth / mSSAOBiasFalloffFar);
-	sampleBias += mSSAOBiasNear * (1 - saturate(linearDepth / mSSAOBiasFalloffNear));
+	sampleBias += mSSAOBiasFar * (linearDepth2 / mSSAOBiasFalloffFar);
+	sampleBias += mSSAOBiasNear * (1 - saturate(linearDepth2 / mSSAOBiasFalloffNear));
 
 	if (fmod(coord.z, 2) > 0) maxRadius *= 0.5;
 	if (fmod(coord.w, 2) > 0) maxRadius *= 0.5;
 	
-	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth, SSDOParams.z, maxRadius);
-	float2 radius1 = clamp(SSDOParams.xy / linearDepth, SSDOParams.z, maxRadius);
+	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth2, SSDOParams.z, maxRadius);
+	float2 radius1 = clamp(SSDOParams.xy / linearDepth2, SSDOParams.z, maxRadius);
 
 	float2 sampleRotate[16];
 	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
@@ -184,7 +185,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 			dot(sampleDirection[3], viewNormal));
 
 		float emitterScale = narrowBand ? 0.5 : 2.5;
-		float emitterRadius = (radius.x * linearDepth) * projConstant.x;
+		float emitterRadius = (radius.x * linearDepth2) * projConstant.x;
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
@@ -197,7 +198,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	}
 
 	sampleOcclustion /= SSAO_SAMPLER_COUNT;
-	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
+	sampleOcclustion.x *= linearDepth < 0.0 ? 0.5 : 1.0;
 
 	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
 
@@ -212,7 +213,7 @@ float4 ScreenSpaceDirOccBlurPS(
 {
 	float total_w = 1.0f;
 	float center_d = linearizeDepth2(coord);
-	
+
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
 
 	float2 offset1 = coord + offset;
