@@ -154,7 +154,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 		float4 sampleLength = rsqrt(sampleLength2);
 		
 		float4 f = max(0.0, sampleRadius2 - sampleLength2);
-		float4 falloff = f * f * f;
+		float4 falloff = f * f * f + EPSILON;
 		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
 		sampleWeight += sum(falloff);
