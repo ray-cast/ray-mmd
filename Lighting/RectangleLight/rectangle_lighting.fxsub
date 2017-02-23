@@ -34,7 +34,6 @@ float3 mRightTop : CONTROLOBJECT < string name="(self)"; string item = "RightTop
 float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "RightBottom"; >;
 
 static float LightHardness = lerp(0.15, 0.5, mHardnessP);
-static float LightPlaneFar = lerp(1, mLightPlaneFar, mRangeP);
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
 static float LightWidth = lerp(1, RECTANGLELIGHT_MAX_WIDTH, mWidthP);
 static float LightHeight = lerp(1, RECTANGLELIGHT_MAX_HEIGHT, mHeightP);
@@ -53,7 +52,7 @@ static float3 viewLightRight = normalize(mul((mRightTop + mRightBottom) / 2 - Li
 static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight));
 
 #if SHADOW_MAP_ENABLE
-	static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, LightPlaneFar);
+	static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
 	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
