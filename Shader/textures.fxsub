@@ -177,8 +177,8 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 >;
 sampler DepthMapSamp = sampler_state {
 	texture = <DepthMap>;
-	MinFilter = LINEAR;   MagFilter = LINEAR; MipFilter = LINEAR;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = LINEAR;
+	AddressU  = CLAMP; AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 shared texture PSSM : OFFSCREENRENDERTARGET <

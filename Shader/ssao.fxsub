@@ -99,7 +99,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		float2(-0.338, -0.684),
 		float2(-0.622, -0.415)
 	};
-	
+
 	float linearDepth = linearizeDepth(coord.xy);
 	float linearDepth2 = abs(linearDepth);
 
@@ -107,7 +107,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
 
 	float4 SSDOParams = float4(ViewportSize.x / ViewportSize * 2, ViewportOffset2.x * 20, 0.5);
-	
+
 	float maxRadius = SSDOParams.w;
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleBias = 0;
@@ -116,7 +116,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 
 	if (fmod(coord.z, 2) > 0) maxRadius *= 0.5;
 	if (fmod(coord.w, 2) > 0) maxRadius *= 0.5;
-	
+
 	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth2, SSDOParams.z, maxRadius);
 	float2 radius1 = clamp(SSDOParams.xy / linearDepth2, SSDOParams.z, maxRadius);
 
@@ -148,7 +148,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
 		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
-		
+				
 		float4 sampleDepths;
 		sampleDepths[0] = linearizeDepth2(sampleOffset[0]);
 		sampleDepths[1] = linearizeDepth2(sampleOffset[1]);
