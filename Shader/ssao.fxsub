@@ -198,7 +198,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	}
 
 	sampleOcclustion /= SSAO_SAMPLER_COUNT;
-	sampleOcclustion.x *= linearDepth < 0.0 ? 0.5 : 1.0;
+	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
 	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
 
