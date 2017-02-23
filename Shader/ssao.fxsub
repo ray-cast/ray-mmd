@@ -88,9 +88,10 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	};
 	
 	float depth = linearizeDepth(coord.xy);
+
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = ReconstructPos(coord.xy, matProjectInverse, depth);
-	   
+
 	float sampleWeight = 0.0f;
 	float sampleNoise = GetJitterOffset(coord.zw);
 	float sampleRadius2 = mSSAOSpaceRadius * mSSAOSpaceRadius;
@@ -105,17 +106,17 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 
 	float2 sampleRotate[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / 24) / ViewportSize);
-	
+	float2 sampleDiskRadius = ((ViewportSize.x / 24) / ViewportSize) * sampleScale;
+
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 	
 	[unroll]
 	for (int i = 0; i < SSAO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(kernel[i + 0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		sampleRotate[i + 1] = mul(kernel[i + 1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		sampleRotate[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		sampleRotate[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		sampleRotate[i + 0] = mul(kernel[i + 0].xy, sampleRotMat) * sampleDiskRadius;
+		sampleRotate[i + 1] = mul(kernel[i + 1].xy, sampleRotMat) * sampleDiskRadius;
+		sampleRotate[i + 2] = mul(kernel[i + 2].xy, sampleRotMat) * sampleDiskRadius;
+		sampleRotate[i + 3] = mul(kernel[i + 3].xy, sampleRotMat) * sampleDiskRadius;
 	}
 	
 	[unroll]
@@ -126,13 +127,13 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
 		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
-		
+
 		float3 samplePosition[4];
 		samplePosition[0] = GetPosition(sampleOffset[0]);
 		samplePosition[1] = GetPosition(sampleOffset[1]);
 		samplePosition[2] = GetPosition(sampleOffset[2]);
 		samplePosition[3] = GetPosition(sampleOffset[3]);
-		
+
 		float3 sampleDirection[4];
 		sampleDirection[0] = samplePosition[0] - viewPosition;
 		sampleDirection[1] = samplePosition[1] - viewPosition;
@@ -144,21 +145,21 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 			dot(sampleDirection[1], sampleDirection[1]),
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
-			   
+
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
 			dot(sampleDirection[1], viewNormal),
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
-		
-		float4 sampleLength = rsqrt(sampleLength2);
-		
+
+		float4 sampleLength = rsqrt(sampleLength2 + EPSILON);
+
 		float4 f = max(0.0, sampleRadius2 - sampleLength2);
 		float4 falloff = f * f * f + EPSILON;
 		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
 		sampleWeight += sum(falloff);
-		
+
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		sampleAmbient.x += sum(occlustion);
 		sampleAmbient.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
@@ -174,7 +175,7 @@ float4 SSAO(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
 	sampleAmbient.x *= depth < 0.0 ? 0.25 : 1.0;
 
 	float ao = saturate(1 - sampleAmbient.x * (1 - sampleAmbient.x) * mSSAOScale);
-	
+
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleAmbient.yzw * 0.5 + 0.5);
 #else
@@ -200,13 +201,13 @@ float4 SSAOBlur(
 
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
-	
+
 	float3 normal = GetNormal(coord);
-	
+
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
 	float falloff = saturate(center_d / mSSAOBlurFalloff);
 	float sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
-	
+
 	[unroll]
 	for (int r = 1; r <= SSAO_BLUR_RADIUS; r++)
 	{
