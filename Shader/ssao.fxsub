@@ -101,7 +101,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	};
 
 	float linearDepth = linearizeDepth(coord.xy);
-	float linearDepth2 = abs(linearDepth);
+	float linearDepth2 = linearizeDepth2(coord.xy);
 
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
