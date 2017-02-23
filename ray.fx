@@ -297,20 +297,20 @@ technique DeferredLighting<
 	pass SSAO < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSAO();
+		VertexShader = compile vs_3_0 ScreenSpaceDirOccPassVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccPassPS();
 	}
 	pass SSAOBlurX < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
 	}
 	pass SSAOBlurY < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSAOBlur(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 	pass ShadingOpacity < string Script= "Draw=Buffer;"; > {

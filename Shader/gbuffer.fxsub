@@ -119,6 +119,16 @@ float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 	return emissive * intensity * any(lightModel == SHADINGMODELID_EMISSIVE);
 }
 
+float4 GetProjConstant()
+{
+	return float4(2, -2, -1, 1) / float2(matProject._11, matProject._22).xyxy;
+}
+
+float3 GetViewPosition(float4 projConstant, float2 coord, float depth)
+{
+	return float3((coord * projConstant.xy + projConstant.zw) * depth, depth);
+}
+
 float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
 {
 	float3 v = mul(float4(CoordToPos(Tex), 0, 1), matProjectInverse).xyz;
