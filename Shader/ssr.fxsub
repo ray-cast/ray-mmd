@@ -189,18 +189,18 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 	float linearDepth = material.linearDepth;
 
-	float3 V = normalize(-viewdir);    
+	float3 V = normalize(viewdir);
 	float3 viewPosition = V * linearDepth / V.z;
-	float3 viewReflect = normalize(reflect(V, material.normal));
+	float3 viewReflect = normalize(reflect(-V, material.normal));
 
-	float maxDistance = viewPosition.z * (1.5 + mSSRRangeP - mSSRRangeM);
+	float maxDistance = linearDepth * (1.5 + mSSRRangeP - mSSRRangeM);
 #if SSR_QUALITY == 2
-	maxDistance += viewPosition.z * 0.35;
+	maxDistance += viewPosition.z * 0.35 + 100 * pow5(1 - saturate(dot(V, material.normal)));
 #elif SSR_QUALITY == 3
-	maxDistance += viewPosition.z * 0.45;
+	maxDistance += viewPosition.z * 0.45 + 100 * pow5(1 - saturate(dot(V, material.normal)));
 #endif
 
-	float atten = dot(viewReflect, V);
+	float atten = dot(viewReflect, -V);
 	if (atten <= 0)
 	{
 		clip(-1);
@@ -219,7 +219,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
 
-	float fadeOnPerpendicular = saturate(atten * 2);
+	float fadeOnPerpendicular = saturate(atten);
 	float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
 	float fadeOnTotal = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular;
 
