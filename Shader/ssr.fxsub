@@ -251,7 +251,7 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
 		weight += 2 * incrementalGaussian.x;
 	}
 
-	return color;// / weight;
+	return color * weight;
 }
 
 float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
