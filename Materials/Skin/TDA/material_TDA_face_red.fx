@@ -121,9 +121,10 @@ const float parallaxMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_UV_FLIP 1
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
+#define CUSTOM_A_MAP_APPLY_SCALE 1
 #define CUSTOM_A_MAP_FILE "textures/curvature_face.png"
 
-const float customA = 0.6;
+const float customA = 1.2;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 1
