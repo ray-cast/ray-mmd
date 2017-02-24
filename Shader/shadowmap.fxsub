@@ -1,3 +1,5 @@
+#define SHADOW_BLUR_COUNT 6
+
 static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
@@ -8,7 +10,6 @@ static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraVie
 float ShadowPCF(float2 coord, float receiverDepth, int samples) 
 {
 	float shadow = 0.0;
-	float s = 1.25 / SHADOW_MAP_SIZE;
 
 	[unroll]
 	for (int x = -samples; x <= samples; x++) 
@@ -16,7 +17,7 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples)
 		[unroll]
 		for (int y = -samples; y <= samples; y++)
 		{
-			float2 pos = coord + float2(x, y) * s;
+			float2 pos = coord + float2(x, y) * SHADOW_MAP_OFFSET;
 			shadow += tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x < receiverDepth ? 0 : 1;
 		}
 	}
@@ -75,7 +76,7 @@ float4 ShadowMapGenPS(
 	receiverDepth -= saturate(viewPosition.z / mLightZMax + depthSlope) * mLightZMax * 0.003;
 
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
-	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, SHADOW_SAMPLE_COUNT);
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 3);
 	
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = min(shadow, saturate(angle + 0.1));
