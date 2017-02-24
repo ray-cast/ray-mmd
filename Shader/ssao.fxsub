@@ -53,12 +53,6 @@ float linearizeDepth2(float2 uv)
 	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
 }
 
-float3 GetPosition(float2 uv)
-{
-	float depth = linearizeDepth2(uv);
-	return ReconstructPos(uv, matProjectInverse, depth);
-}
-
 float3 GetNormal(float2 uv)
 {
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
@@ -219,9 +213,9 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 }
 
 float4 ScreenSpaceDirOccBlurPS(
-	in float2 coord   : TEXCOORD0, 
-	in float3 viewdir : TEXCOORD1, 
-	uniform sampler source, 
+	in float2 coord   : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	uniform sampler source,
 	uniform float2 offset) : COLOR
 {
 	float center_d = linearizeDepth2(coord);
