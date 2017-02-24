@@ -73,10 +73,10 @@ float4 ShadowMapGenPS(
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax);
-	receiverDepth -= saturate(viewPosition.z / mLightZMax + depthSlope) * mLightZMax * 0.003;
+	receiverDepth -= saturate(viewPosition.z / mLightZMax + depthSlope) * mLightZMax * 0.01;
 
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
-	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 3);
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 2);
 	
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = min(shadow, saturate(angle + 0.1));
