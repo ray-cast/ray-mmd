@@ -122,8 +122,13 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 
 	float2 sampleRotate[16];
 	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
-	float4 sampleOcclustion = 0.0f;
 	float4 sampleWeight = 0;
+
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+	float4 sampleOcclustion = 0.0f;
+#else
+	float sampleOcclustion = 0.0f;
+#endif
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
@@ -189,12 +194,16 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
-		
+
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		sampleOcclustion.x += sum(sh);
 		sampleOcclustion.yzw += sh.x * sampleDirection[0];
 		sampleOcclustion.yzw += sh.y * sampleDirection[1];
 		sampleOcclustion.yzw += sh.z * sampleDirection[2];
 		sampleOcclustion.yzw += sh.w * sampleDirection[3];
+#else
+		sampleOcclustion += sum(sh);
+#endif
 	}
 
 	sampleOcclustion /= SSAO_SAMPLER_COUNT;
@@ -202,7 +211,11 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 
 	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
 
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
+#else
+	return ao;
+#endif
 }
 
 float4 ScreenSpaceDirOccBlurPS(
@@ -211,10 +224,15 @@ float4 ScreenSpaceDirOccBlurPS(
 	uniform sampler source, 
 	uniform float2 offset) : COLOR
 {
-	float total_w = 1.0f;
 	float center_d = linearizeDepth2(coord);
-
+	
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
+#else
+	float total_w = 1.0f;
+	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
+#endif
 
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
@@ -236,8 +254,13 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
+#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
+#else
+		total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
+		total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
+#endif
 
 		total_w += bilateralWeight1;
 		total_w += bilateralWeight2;
