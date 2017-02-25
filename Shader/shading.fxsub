@@ -170,7 +170,7 @@ float4 ShadingTransparentPS(
 	else
 	{
 		float3 prefilteredRefract = tex2Dlod(ShadingMapTempSamp, float4(coord, 0, 0)).rgb;
-		lighting = lerp(prefilteredRefract, lighting, material.alpha);
+		lighting = lerp(prefilteredRefract * (1 - material.alpha), lighting, material.alpha);
 	}
 
 #if FOG_ENABLE
