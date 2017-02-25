@@ -24,6 +24,8 @@ float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
 {
 #if STEREOSCOPIC_MODE == 4
 	float2 coord = tex.x < 0.5 ? tex * float2(2,1) : float2((tex.x - 0.5f) * 2, tex.y);
+#elif STEREOSCOPIC_MODE == 5
+	float2 coord = tex.y < 0.5 ? tex * float2(1,2) : float2(tex.x, (tex.y - 0.5f) * 2);
 #else
 	float2 coord = tex;
 #endif
@@ -40,6 +42,8 @@ float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
 	return float4(dot(left.gb, float2(0.7f, 0.3f)), right.rg, 1);
 #elif STEREOSCOPIC_MODE == 4 // Horizontal
 	return float4(tex.x < 0.5 ? left : right, 1);
+#elif STEREOSCOPIC_MODE == 5 // Horizontal
+	return float4(tex.y < 0.5 ? left : right, 1);
 #else
 	return stereo;
 #endif
