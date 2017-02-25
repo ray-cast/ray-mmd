@@ -18,7 +18,7 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples)
 		for (int y = -samples; y <= samples; y++)
 		{
 			float2 pos = coord + float2(x, y) * SHADOW_MAP_OFFSET;
-			shadow += tex2Dlod(PSSMsamp, float4(pos, 0, 0)).x < receiverDepth ? 0 : 1;
+			shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(PSSMsamp, float4(pos, 0, 0)).r)));
 		}
 	}
 	
@@ -72,9 +72,6 @@ float4 ShadowMapGenPS(
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 	
-	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax);
-	receiverDepth -= saturate(viewPosition.z / mLightZMax + depthSlope) * mLightZMax * 0.01;
-
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 2);
 	
