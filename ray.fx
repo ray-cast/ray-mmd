@@ -93,6 +93,10 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #   include "shader/smaa.fxsub"
 #endif
 
+#if STEREOSCOPIC_MODE > 0
+#	include "shader/stereoscopic.fxsub"
+#endif
+
 #include "shader/shading.fxsub"
 
 float4 ScreenSpaceQuadVS(
@@ -251,7 +255,11 @@ technique DeferredLighting<
 #endif
 
 #if AA_QUALITY == 1
-	"RenderColorTarget=;"
+	#if STEREOSCOPIC_MODE == 0
+		"RenderColorTarget=;"
+	#else
+		"RenderColorTarget=ShadingMap;"
+	#endif
 	"RenderDepthStencilTarget=;"
 	"Pass=FXAA;"
 #endif
@@ -259,7 +267,11 @@ technique DeferredLighting<
 #if AA_QUALITY == 2 || AA_QUALITY == 3
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
-	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
+	#if STEREOSCOPIC_MODE == 0
+		"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
+	#else
+		"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlending;"
+	#endif
 #endif
 
 #if AA_QUALITY == 4 || AA_QUALITY == 5
@@ -269,7 +281,17 @@ technique DeferredLighting<
 	
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection2x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
-	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
+	#if STEREOSCOPIC_MODE == 0
+		"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
+	#else
+		"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlendingFinal;"
+	#endif
+#endif
+
+#if STEREOSCOPIC_MODE > 0
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=Stereoscopic;"
 #endif
 ;>
 {
@@ -739,6 +761,14 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, 1);
+	}
+#endif
+#if STEREOSCOPIC_MODE
+	pass Stereoscopic < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 StereoscopicPS(ShadingMapSamp);
 	}
 #endif
 }

@@ -147,7 +147,6 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel;
 	
-#if LIGHTMODEL_BRDF >= 1
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
@@ -166,12 +165,6 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 		float4 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect, roughness);
 		specular = lerp(specular, prefilteredSpeculr * specular2.rgb, specular2.a);
 	}
-#else
-	if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
-	{
-		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
-	}
-#endif
 
 	specular *= mEnvIntensitySpec;
 	specular *= step(0, sum(material.specular) - 1e-5);

@@ -1,0 +1,46 @@
+float4 ComputeStereoCoord(sampler depth, float2 coord, float maxSeparation, float ZPD)
+{
+	const float samples[3] = { 0.5f, 0.66f, 1.0f };
+
+	float minDepthL = 1;
+	float minDepthR = 1;
+
+	float2 uv = 0;
+
+	for (int i = 0; i < 3; ++ i)
+	{
+		uv.x = samples[i] * maxSeparation;
+		minDepthL = min(minDepthL, tex2Dlod(depth, float4(coord + uv, 0, 0)).r);
+		minDepthR = min(minDepthR, tex2Dlod(depth, float4(coord - uv, 0, 0)).r);
+	}
+
+	float parallaxL = maxSeparation * (1 - ZPD / minDepthL);
+	float parallaxR = maxSeparation * (1 - ZPD / minDepthR);
+
+	return float4(coord + float2(parallaxL, 0), coord - float2(parallaxR, 0));
+}
+
+float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
+{
+#if STEREOSCOPIC_MODE == 4
+	float2 coord = tex.x < 0.5 ? tex * float2(2,1) : float2((tex.x - 0.5f) * 2, tex.y);
+#else
+	float2 coord = tex;
+#endif
+
+	float4 stereo = ComputeStereoCoord(DepthMapSamp, coord, 0.01, 0.3);
+	float3 left = tex2Dlod(source, float4(stereo.xy, 0, 0)).rgb;
+	float3 right = tex2Dlod(source, float4(stereo.zw, 0, 0)).rgb;
+
+#if STEREOSCOPIC_MODE == 1 // RedGreen
+	return float4(float3(right.r, left.gb), 1);	
+#elif STEREOSCOPIC_MODE == 2 // YellowBlue
+	return float4(float3(left.rg, right.b), 1);
+#elif STEREOSCOPIC_MODE == 3 // RedCyan
+	return float4(dot(left.gb, float2(0.7f, 0.3f)), right.rg, 1);
+#elif STEREOSCOPIC_MODE == 4 // Horizontal
+	return float4(tex.x < 0.5 ? left : right, 1);
+#else
+	return stereo;
+#endif
+}
