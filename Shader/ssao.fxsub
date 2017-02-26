@@ -149,10 +149,11 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
 				
 		float4 sampleDepths;
-		sampleDepths[0] = abs(linearizeDepth(sampleOffset[0]));
-		sampleDepths[1] = abs(linearizeDepth(sampleOffset[1]));
-		sampleDepths[2] = abs(linearizeDepth(sampleOffset[2]));
-		sampleDepths[3] = abs(linearizeDepth(sampleOffset[3]));
+		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
+		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
+		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
+		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
+		sampleDepths = abs(sampleDepths);
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3((sampleOffset[0] * projConstant.xy + projConstant.zw) * sampleDepths[0], sampleDepths[0]);
