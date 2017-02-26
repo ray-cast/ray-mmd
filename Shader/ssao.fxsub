@@ -95,7 +95,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	};
 
 	float linearDepth = linearizeDepth(coord.xy);
-	float linearDepth2 = linearizeDepth2(coord.xy);
+	float linearDepth2 = abs(linearDepth);
 
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
@@ -149,10 +149,10 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
 				
 		float4 sampleDepths;
-		sampleDepths[0] = linearizeDepth2(sampleOffset[0]);
-		sampleDepths[1] = linearizeDepth2(sampleOffset[1]);
-		sampleDepths[2] = linearizeDepth2(sampleOffset[2]);
-		sampleDepths[3] = linearizeDepth2(sampleOffset[3]);
+		sampleDepths[0] = abs(linearizeDepth(sampleOffset[0]));
+		sampleDepths[1] = abs(linearizeDepth(sampleOffset[1]));
+		sampleDepths[2] = abs(linearizeDepth(sampleOffset[2]));
+		sampleDepths[3] = abs(linearizeDepth(sampleOffset[3]));
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3((sampleOffset[0] * projConstant.xy + projConstant.zw) * sampleDepths[0], sampleDepths[0]);
@@ -172,39 +172,31 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		float3 sampleDirection2[4];
-		sampleDirection2[0] = normalize(sampleDirection[0]);
-		sampleDirection2[1] = normalize(sampleDirection[1]);
-		sampleDirection2[2] = normalize(sampleDirection[2]);
-		sampleDirection2[3] = normalize(sampleDirection[3]);
-			
-		float4 sampleAngle1 = float4(
+		sampleDirection[0] = normalize(sampleDirection[0]);
+		sampleDirection[1] = normalize(sampleDirection[1]);
+		sampleDirection[2] = normalize(sampleDirection[2]);
+		sampleDirection[3] = normalize(sampleDirection[3]);
+
+		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
 			dot(sampleDirection[1], viewNormal),
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
-			
-		float4 sampleAngle2 = float4(
-			dot(sampleDirection2[0], viewNormal),
-			dot(sampleDirection2[1], viewNormal),
-			dot(sampleDirection2[2], viewNormal),
-			dot(sampleDirection2[3], viewNormal));
 
 		float emitterScale = narrowBand ? 0.5 : 2.5;
 		float emitterRadius = (radius.x * linearDepth2) * projConstant.x;
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
-		float4 sh1 = emitterArea * saturate(sampleAngle1 - sampleBias) / (sampleLength2 + emitterArea);
-		float4 sh2 = emitterArea * saturate(sampleAngle2 - sampleBias) / (sampleLength2 + emitterArea);
+		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
 		
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-		sampleOcclustion.x += sum(sh2);
-		sampleOcclustion.yzw += sh1.x * sampleDirection2[0];
-		sampleOcclustion.yzw += sh1.y * sampleDirection2[1];
-		sampleOcclustion.yzw += sh1.z * sampleDirection2[2];
-		sampleOcclustion.yzw += sh1.w * sampleDirection2[3];
+		sampleOcclustion.x += sum(sh);
+		sampleOcclustion.yzw += sh.x * sampleDirection[0];
+		sampleOcclustion.yzw += sh.y * sampleDirection[1];
+		sampleOcclustion.yzw += sh.z * sampleDirection[2];
+		sampleOcclustion.yzw += sh.w * sampleDirection[3];
 #else
-		sampleOcclustion += sum(sh1);
+		sampleOcclustion += sum(sh);
 #endif
 	}
 
