@@ -57,8 +57,12 @@ float4 SSSGuassBlurPS(
 	float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
 	float sssStrength = sssAmount;
 	float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
-	
+
+#if SSSS_QUALITY == 2
+	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth * 1.5);
+#else
 	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * mSSSSWidth);
+#endif
 
 	float3 blurFalloff = -1.0f / (2 * profileVarArr[sssIndex]);
 
