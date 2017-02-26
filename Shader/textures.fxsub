@@ -157,7 +157,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 	string Format = "R32F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int MipLevels = 0;
+	int MipLevels = 1;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -177,7 +177,7 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 >;
 sampler DepthMapSamp = sampler_state {
 	texture = <DepthMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = LINEAR;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU  = CLAMP; AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
