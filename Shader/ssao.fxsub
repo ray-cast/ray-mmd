@@ -100,7 +100,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
 
-	float4 SSDOParams = float4(2 * float2(1, ViewportAspect), ViewportOffset2 * float2(30, 90) / projConstant.x);
+	float4 SSDOParams = float4(2 * float2(1, ViewportAspect), ViewportOffset2 * float2(30, 100) / projConstant.x);
 
 	float maxRadius = SSDOParams.w;
 	float sampleJitter = GetJitterOffset(coord.zw);
