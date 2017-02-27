@@ -789,7 +789,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 	
 	return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
 #else
-	return N;
+	return N * (normalMapScale >= 0 ? 1 : float3(-1,1,1));
 #endif
 }
 
