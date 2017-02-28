@@ -10,6 +10,8 @@ float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
 
+float time : TIME;
+
 bool use_texture;
 bool use_subtexture;
 bool use_spheremap;
@@ -21,6 +23,25 @@ float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
 float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
 
 static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
+#endif
+
+#if EMISSIVE_APPLY_BLINK
+float SmoothCurve(float x)
+{
+	return x * x * (3.0 - 2.0 * x);
+}
+
+float TriangleWave(float x)
+{
+	return abs(frac(x + 0.5) * 2.0 - 1.0);
+}
+
+float SmoothTriangleWave(float x)
+{
+	return SmoothCurve(TriangleWave(x));
+}
+
+static float LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
 #endif
 
 #if EMISSIVE_APPLY_MORPH_INTENSITY
@@ -672,11 +693,23 @@ float3 GetEmissiveColor(float3 albedo, float2 uv, bool useTexture)
 			emissiveColor *= MorphColor;
 		#endif
 		
+		#if EMISSIVE_APPLY_BLINK
+			emissiveColor *= LightBlink;
+		#endif
+		
 		return emissiveColor;
 	#elif EMISSIVE_APPLY_MORPH_COLOR
-		return MorphColor;
+		#if EMISSIVE_APPLY_BLINK
+			return MorphColor * LightBlink;
+		#else
+			return MorphColor;
+		#endif
 	#else
-		return emissive.rgb;
+		#if EMISSIVE_APPLY_BLINK
+			return emissive * LightBlink;
+		#else
+			return emissive.rgb;
+		#endif
 	#endif
 #else
 	return 0;

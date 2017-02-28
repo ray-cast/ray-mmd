@@ -97,9 +97,11 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_APPLY_COLOR 0
 #define EMISSIVE_APPLY_MORPH_COLOR 0     // Light color for multi-light-source
 #define EMISSIVE_APPLY_MORPH_INTENSITY 0 // Light intensity for multi-light-source
+#define EMISSIVE_APPLY_BLINK 0           // Light blink
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
+const float emissiveBlink = 1.0; // 0 ~10
 const float emissiveIntensity = 1.0;
 const float emissiveMapLoopNum = 1.0;
 
