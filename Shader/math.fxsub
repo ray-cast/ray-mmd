@@ -13,8 +13,7 @@
 
 float3 srgb2linear(float3 rgb)
 {
-	rgb = max(6.10352e-5, rgb);
-	return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
+	return pow(rgb, 2.2);
 }
 
 float4 srgb2linear(float4 c)
