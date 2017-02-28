@@ -340,6 +340,11 @@ sampler ShadingMapTempSamp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+sampler ShadingMapTempPointSamp = sampler_state {
+	texture = <ShadingMapTemp>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
 sampler ShadingMapTempSpecularSamp = sampler_state {
 	texture = <ShadingMapTempSpecular>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
