@@ -459,17 +459,13 @@ float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) :
 	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
-	color += lerp(bloom, 0, mBloomTonemapping);
+	color += bloom;
 #endif
 
 	color = WhiteBalance(color, mColorTemperature);
 	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
 	color = ApplyVignette(color, coord);
 	color = ACESToneMapping(color * mExposure);
-	
-#if HDR_ENABLE && HDR_BLOOM_MODE > 0
-	color += lerp(0, bloom, mBloomTonemapping);
-#endif
 	
 #if AA_QUALITY > 0
 	return float4(color, luminance(color));

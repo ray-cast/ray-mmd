@@ -20,9 +20,9 @@ float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item 
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
 float mBloomThresholdP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold";>;
 float mBloomRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius";>;
-float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity";>;
+float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity+";>;
+float mBloomIntensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity-";>;
 float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
-float mBloomTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomTonemapping";>;
 float mTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Tonemapping";>;
 float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast+";>;
 float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
@@ -55,7 +55,7 @@ static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
 static float mGamma = lerp(lerp(1, 0.45, mGammaP), 2.2, mGammaM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
-static float mBloomIntensity = lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP);
+static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
 static float3 mColorBalanceRGBP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
 static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
 
