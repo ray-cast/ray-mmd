@@ -24,7 +24,7 @@ texture2D ScnMap : RENDERCOLORTARGET<
 >;
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
-	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if FOG_ENABLE
@@ -44,7 +44,7 @@ texture FogMap: OFFSCREENRENDERTARGET<
 >;
 sampler FogMapSamp = sampler_state {
 	texture = <FogMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
@@ -82,17 +82,17 @@ shared texture LightAlphaMap : RENDERCOLORTARGET<
 >;
 sampler LightSpecMapSamp = sampler_state {
 	texture = <LightSpecMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler LightMapSamp = sampler_state {
 	texture = <LightMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler LightAlphaMapSamp = sampler_state {
 	texture = <LightAlphaMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if IBL_QUALITY
@@ -116,12 +116,12 @@ shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
 >;
 sampler EnvLightMapSamp = sampler_state {
 	texture = <EnvLightMap>;
-	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler EnvLightAlphaMapSamp = sampler_state {
 	texture = <EnvLightAlphaMap>;
-	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
@@ -216,17 +216,17 @@ texture2D ShadowmapMapTemp : RENDERCOLORTARGET<
 >;
 sampler PSSMsamp = sampler_state {
 	texture = <PSSM>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowmapSamp = sampler_state {
 	texture = <ShadowmapMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowmapSampTemp = sampler_state {
 	texture = <ShadowmapMapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
