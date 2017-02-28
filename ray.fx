@@ -65,7 +65,7 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
 #include "shader/tonemapping.fxsub"
-#include "shader/fimic.fxsub"
+#include "shader/bloom.fxsub"
 #include "shader/ibl.fxsub"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
