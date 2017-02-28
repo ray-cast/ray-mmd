@@ -34,12 +34,12 @@ texture SSAOMapTemp : RENDERCOLORTARGET <
 >;
 sampler SSAOMapSamp = sampler_state {
 	texture = <SSAOMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler SSAOMapSampTemp = sampler_state {
 	texture = <SSAOMapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
@@ -223,10 +223,10 @@ float4 ScreenSpaceDirOccBlurPS(
 	
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	float total_w = 1.0f;
-	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
+	float4 total_c = tex2D(source, coord);
 #else
 	float total_w = 1.0f;
-	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
+	float total_c = tex2D(source, coord).r;
 #endif
 
 	float2 offset1 = coord + offset;
@@ -250,11 +250,11 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
 
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
-		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
+		total_c += tex2D(source, offset1) * bilateralWeight1;
+		total_c += tex2D(source, offset2) * bilateralWeight2;
 #else
-		total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
-		total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
+		total_c += tex2D(source, offset1).r * bilateralWeight1;
+		total_c += tex2D(source, offset2).r * bilateralWeight2;
 #endif
 
 		total_w += bilateralWeight1;
