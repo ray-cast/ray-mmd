@@ -32,7 +32,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0      // Texture can be create from a sph map.
 #define NORMAL_MAP_IS_COMPRESSED 0     // RG normal map to RGB normal.
-#define NORMAL_MAP_UV_FLIP 0
+#define NORMAL_MAP_UV_FLIP 0           // Set to 2 : Flip normal x-axis (ignore map)
 #define NORMAL_MAP_UV_REPETITION 0
 #define NORMAL_MAP_FILE "normal.png"
 

@@ -787,6 +787,9 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 		float3 tangentNormal = GetSubNormal(coord);
 	#endif
 	
+	#if NORMAL_MAP_UV_FLIP == 2
+		N.x *= -1;
+	#endif
 	return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
 #else
 	return N;
