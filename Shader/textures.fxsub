@@ -10,13 +10,13 @@
 #	define SHADOW_MAP_SIZE 16384
 #endif
 
-texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET <
+texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "D24S8";
 >;
-texture2D ScnMap : RENDERCOLORTARGET <
+texture2D ScnMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
@@ -25,10 +25,10 @@ texture2D ScnMap : RENDERCOLORTARGET <
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if FOG_ENABLE
-texture FogMap: OFFSCREENRENDERTARGET <
+texture FogMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
@@ -45,10 +45,10 @@ texture FogMap: OFFSCREENRENDERTARGET <
 sampler FogMapSamp = sampler_state {
 	texture = <FogMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
-texture LightMap: OFFSCREENRENDERTARGET <
+texture LightMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi light source map for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
@@ -68,13 +68,13 @@ texture LightMap: OFFSCREENRENDERTARGET <
 		"RectangleLight.pmx =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
 		"* = hide;";
 >;
-shared texture LightSpecMap : RENDERCOLORTARGET <
+shared texture LightSpecMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A16B16G16R16F";
 >;
-shared texture LightAlphaMap : RENDERCOLORTARGET <
+shared texture LightAlphaMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
@@ -83,20 +83,20 @@ shared texture LightAlphaMap : RENDERCOLORTARGET <
 sampler LightSpecMapSamp = sampler_state {
 	texture = <LightSpecMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler LightMapSamp = sampler_state {
 	texture = <LightMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler LightAlphaMapSamp = sampler_state {
 	texture = <LightAlphaMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if IBL_QUALITY
-texture EnvLightMap: OFFSCREENRENDERTARGET <
+texture EnvLightMap: OFFSCREENRENDERTARGET<
 	string Description = "Image-based-lighting map for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
@@ -108,7 +108,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET <
 		"skybox*.*=./Skybox/skylighting_none.fx;"
 		"*= hide;";
 >;
-shared texture EnvLightAlphaMap: RENDERCOLORTARGET <
+shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 1;
@@ -116,16 +116,16 @@ shared texture EnvLightAlphaMap: RENDERCOLORTARGET <
 >;
 sampler EnvLightMapSamp = sampler_state {
 	texture = <EnvLightMap>;
-	MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler EnvLightAlphaMapSamp = sampler_state {
 	texture = <EnvLightAlphaMap>;
-	MinFilter = NONE;   MagFilter = NONE;   MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
-shared texture MaterialMap: OFFSCREENRENDERTARGET <
+shared texture MaterialMap: OFFSCREENRENDERTARGET<
 	string Description = "Material cache map for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
 	float4 ClearColor = { 0, 0, 0, 0 };
@@ -151,7 +151,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET <
 		"*.x = hide;"
 		"* = hide;";
 >;
-texture DepthMap : OFFSCREENRENDERTARGET <
+texture DepthMap : OFFSCREENRENDERTARGET<
 	string Description = "SSAO and shadow rendering for ray";
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "R32F";
@@ -178,10 +178,10 @@ texture DepthMap : OFFSCREENRENDERTARGET <
 sampler DepthMapSamp = sampler_state {
 	texture = <DepthMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
-shared texture PSSM : OFFSCREENRENDERTARGET <
+shared texture PSSM : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int Width = SHADOW_MAP_SIZE;
 	int Height = SHADOW_MAP_SIZE;
@@ -206,67 +206,67 @@ shared texture PSSM : OFFSCREENRENDERTARGET <
 		"*.pmd=shadow/PSSM.fx;"
 		"*.x=hide;";
 >;
-shared texture2D ShadowmapMap : RENDERCOLORTARGET <
+shared texture2D ShadowmapMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
-texture2D ShadowmapMapTemp : RENDERCOLORTARGET <
+texture2D ShadowmapMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
 sampler PSSMsamp = sampler_state {
 	texture = <PSSM>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowmapSamp = sampler_state {
 	texture = <ShadowmapMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowmapSampTemp = sampler_state {
 	texture = <ShadowmapMapTemp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
-shared texture Gbuffer2RT: RENDERCOLORTARGET <
+shared texture Gbuffer2RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8" ;
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-shared texture Gbuffer3RT: RENDERCOLORTARGET <
+shared texture Gbuffer3RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-shared texture Gbuffer4RT: RENDERCOLORTARGET <
+shared texture Gbuffer4RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F" ;
 	bool AntiAlias = false;
 	int MipLevels = 1;
 >;
-shared texture Gbuffer5RT: RENDERCOLORTARGET <
+shared texture Gbuffer5RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-shared texture Gbuffer6RT: RENDERCOLORTARGET <
+shared texture Gbuffer6RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-shared texture Gbuffer7RT: RENDERCOLORTARGET <
+shared texture Gbuffer7RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-shared texture Gbuffer8RT: RENDERCOLORTARGET <
+shared texture Gbuffer8RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 0;
@@ -275,56 +275,56 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET <
 sampler Gbuffer1Map = sampler_state {
 	texture = <MaterialMap>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer2Map = sampler_state {
 	texture = <Gbuffer2RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer3Map = sampler_state {
 	texture = <Gbuffer3RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer4Map = sampler_state {
 	texture = <Gbuffer4RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer5Map = sampler_state {
 	texture = <Gbuffer5RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer6Map = sampler_state {
 	texture = <Gbuffer6RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer7Map = sampler_state {
 	texture = <Gbuffer7RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler Gbuffer8Map = sampler_state {
 	texture = <Gbuffer8RT>;
-	MinFilter = NONE;   MagFilter = NONE; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
-texture ShadingMap : RENDERCOLORTARGET <
+texture ShadingMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-texture ShadingMapTemp : RENDERCOLORTARGET <
+texture ShadingMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
-texture ShadingMapTempSpecular : RENDERCOLORTARGET <
+texture ShadingMapTempSpecular : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 1;
@@ -333,15 +333,15 @@ texture ShadingMapTempSpecular : RENDERCOLORTARGET <
 sampler ShadingMapSamp = sampler_state {
 	texture = <ShadingMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadingMapTempSamp = sampler_state {
 	texture = <ShadingMapTemp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadingMapTempSpecularSamp = sampler_state {
 	texture = <ShadingMapTempSpecular>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };

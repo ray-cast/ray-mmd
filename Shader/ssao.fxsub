@@ -12,7 +12,7 @@
 #   define SSAO_BLUR_RADIUS 6
 #endif
 
-shared texture SSAOMap : RENDERCOLORTARGET <
+shared texture SSAOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
@@ -22,7 +22,7 @@ shared texture SSAOMap : RENDERCOLORTARGET <
 	string Format = "L8";
 #endif
 >;
-texture SSAOMapTemp : RENDERCOLORTARGET <
+texture SSAOMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	int Miplevels = 1;
 	bool AntiAlias = false;
@@ -147,7 +147,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
 		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
-				
+
 		float4 sampleDepths;
 		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
 		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
@@ -189,7 +189,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
-		
+
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		sampleOcclustion.x += sum(sh);
 		sampleOcclustion.yzw += sh.x * sampleDirection[0];
