@@ -446,7 +446,7 @@ float3 ApplyVignette(float3 color, float2 coord)
 float3 ColorCorrect(float3 color, float contrast, float saturation, float gamma, float3 colorGrainRGBP, float3 colorGrainRGBM)
 {
 	float3 lum = luminance(color);
-	color = max(0, lerp(lum, color, saturation));
+	color = lerp(lum, color, saturation);
 	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
 	color = pow(color, gamma);
 	color *= colorGrainRGBP + (1.0 - colorGrainRGBM);
