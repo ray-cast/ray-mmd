@@ -34,12 +34,12 @@ texture SSAOMapTemp : RENDERCOLORTARGET<
 >;
 sampler SSAOMapSamp = sampler_state {
 	texture = <SSAOMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler SSAOMapSampTemp = sampler_state {
 	texture = <SSAOMapTemp>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 
