@@ -426,8 +426,37 @@ float4 GhostImagePS(
 }
 #endif
 
+#if POST_DISPERSION_MODE == 2
+float3 SampleSpectrum(float x)
+{
+    float t = 3.0 * x - 1.5;
+    return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset)
+{
+	const int samples = 7;
+
+	float3 totalColor = 0.0;
+	float3 totalWeight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i <= samples; i++, coord += delta)
+	{
+		float3 w = SampleSpectrum(float(i) / samples);
+		
+		totalWeight += w;
+		totalColor += w * tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	}
+	
+	return totalColor / totalWeight;
+}
+#endif
+
 float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 {
+#if POST_DISPERSION_MODE == 1
 	float L = length(coord * 2 - 1);
 	L = 1 - smoothstep(outer, inner, L);
 	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * BloomScale1;
@@ -435,6 +464,14 @@ float3 AppleDispersion(sampler source, float2 coord, float inner, float outer)
 	float3 shift2 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
 	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
 	return float3(shift1.r, shift2.g, shift3.b);
+#elif POST_DISPERSION_MODE == 2
+	float L = 1 - smoothstep(outer, inner, length(coord * 2 - 1));
+	float2 dist = ViewportOffset2 * L * (mDispersion * 12) * BloomScale1;
+	float2 offset = (coord * 2 - 1.0) * dist;
+	return ChromaticAberration(source, coord, offset);
+#else
+	return tex2Dlod(source, float4(coord, 0, 0));
+#endif
 }
 
 float3 ApplyVignette(float3 color, float2 coord)
@@ -455,7 +492,7 @@ float3 ColorCorrect(float3 color, float contrast, float saturation, float gamma,
 
 float4 FilmicToneMappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
-	float3 color = AppleDispersion(source, coord, mDispersionRadius, 1 + mDispersionRadius);
+	float3 color = AppleDispersion(source, coord, mDispersionRadius, 1.0 + mDispersionRadius);
 	
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
