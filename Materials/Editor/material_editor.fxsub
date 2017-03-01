@@ -1,0 +1,45 @@
+float mAlbedoH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoH";>;
+float mAlbedoS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoS";>;
+float mAlbedoV : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoV";>;
+float mAlbedoLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoLoops";>;
+float mEmissiveH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveH";>;
+float mEmissiveS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveS";>;
+float mEmissiveV : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveV";>;
+float mEmissiveBlinkP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveBlink";>;
+float mEmissiveIntensityP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveIntensity";>;
+float mEmissiveLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveLoops";>;
+float mNormalScaleP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalScale+";>;
+float mNormalScaleM : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalScale-";>;
+float mNormalLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalLoops";>;
+float mNormalSubScaleP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalSubScale+";>;
+float mNormalSubScaleM : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalSubScale-";>;
+float mNormalSubLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "NormalSubLoops";>;
+float mSmoothness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Smoothness";>;
+float mSmoothnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SmoothnessLoops";>;
+float mMetalness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Metalness";>;
+float mMetalnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MetalnessLoops";>;
+float mMelanin : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Melanin";>;
+float mMelaninLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MelaninLoops";>;
+
+float3 hsv2rgb(float3 hsv)
+{
+	float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
+	return hsv.z * (1.0 - hsv.y * rgb);
+}
+
+static const float3 mAlbedoColor = hsv2rgb(float3(mAlbedoH, mAlbedoS, 1 - mAlbedoV));
+static const float3 mEmissiveColor = hsv2rgb(float3(mEmissiveH, mEmissiveS, 1 - mEmissiveV));
+
+static const float mAlbedoLoops = lerp(1, 10, mAlbedoLoopsP);
+static const float mEmissiveLoops = lerp(1, 10, mEmissiveLoopsP);
+static const float mNormalLoops = lerp(1, 10, mNormalLoopsP);
+static const float mNormalSubLoops = lerp(1, 10, mNormalSubLoopsP);
+static const float mSmoothnessLoops = lerp(1, 10, mSmoothnessLoopsP);
+static const float mMetalnessLoops = lerp(1, 10, mMetalnessLoopsP);
+static const float mMelaninLoops = lerp(1, 10, mMelaninLoopsP);
+
+static const float mNormalScale = lerp(lerp(1, 20, mNormalScaleP), -20, mNormalScaleM);
+static const float mNormalSubScale = lerp(lerp(1, 20, mNormalSubScaleP), -20, mNormalSubScaleM);
+
+static const float mEmissiveBlink = lerp(0, 10, mEmissiveBlinkP);
+static const float mEmissiveIntensity = lerp(1, 8, mEmissiveIntensityP);

@@ -23,6 +23,7 @@ Download :
     - Added some default materials (25. Jan 2017)
     - Added stereo image (25. Feb 2017)
     - Added emissive blink (1. Mar 2017)
+    - Added material editor (2. Mar 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_editor.jpg)\].
     - Added morph controler to set the attenuation of multiple light source (29. Jan 2017)
     - Improved SSSS and LED (25. Jan 2017)
     - Improved quality of SSAO (23. Feb 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ssao.jpg)\].
