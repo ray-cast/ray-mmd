@@ -17,8 +17,8 @@ Download :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
 - Latest changes - Major allocator changes (1. Mar 2017):
-    - Added IES light source (25. Jan 2017)
-    - Added IES2HDR Tool (1. Feb 2017)
+    - Added IES light source (25. Jan 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ies.jpg)\].
+    - Added IES2HDR Tool (1. Feb 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ies_tools.jpg)\].
     - Added Ambient occlusion map support (29. Jan 2017)
     - Added some default materials (25. Jan 2017)
     - Added stereo image (25. Feb 2017)
