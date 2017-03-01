@@ -17,6 +17,7 @@ float mNormalSubLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item 
 float mSmoothness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Smoothness";>;
 float mSmoothnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SmoothnessLoops";>;
 float mMetalness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Metalness";>;
+float mMetalnessBaseSpecularP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "BaseSpecular";>;
 float mMetalnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MetalnessLoops";>;
 float mMelanin : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Melanin";>;
 float mMelaninLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MelaninLoops";>;
@@ -43,3 +44,5 @@ static const float mNormalSubScale = lerp(lerp(1, 20, mNormalSubScaleP), -20, mN
 
 static const float mEmissiveBlink = lerp(0, 10, mEmissiveBlinkP);
 static const float mEmissiveIntensity = lerp(1, 8, mEmissiveIntensityP);
+
+static const float mMetalnessBaseSpecular = lerp(0.04, 1.0, mMetalnessBaseSpecularP);

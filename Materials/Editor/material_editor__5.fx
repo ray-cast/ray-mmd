@@ -69,7 +69,7 @@ static const float smoothnessMapLoopNum = mSmoothnessLoops;
 
 static const float metalness = mMetalness;
 static const float metalnessMapLoopNum = mMetalnessLoops;
-static const float metalnessBaseSpecular = 0.04;
+static const float metalnessBaseSpecular = mMetalnessBaseSpecular;
 
 #define MELANIN_MAP_ENABLE 0
 #define MELANIN_MAP_IN_TOONMAP 0
