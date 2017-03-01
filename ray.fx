@@ -93,7 +93,7 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #	include "shader/smaa.fxsub"
 #endif
 
-#if STEREOSCOPIC_MODE > 0
+#if POST_STEREOSCOPIC_MODE > 0
 #	include "shader/stereoscopic.fxsub"
 #endif
 
@@ -255,7 +255,7 @@ technique DeferredLighting<
 #endif
 
 #if AA_QUALITY == 1
-	#if STEREOSCOPIC_MODE == 0
+	#if POST_STEREOSCOPIC_MODE == 0
 		"RenderColorTarget=;"
 	#else
 		"RenderColorTarget=ShadingMap;"
@@ -267,7 +267,7 @@ technique DeferredLighting<
 #if AA_QUALITY == 2 || AA_QUALITY == 3
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
-	#if STEREOSCOPIC_MODE == 0
+	#if POST_STEREOSCOPIC_MODE == 0
 		"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
 	#else
 		"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlending;"
@@ -281,14 +281,14 @@ technique DeferredLighting<
 	
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection2x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
-	#if STEREOSCOPIC_MODE == 0
+	#if POST_STEREOSCOPIC_MODE == 0
 		"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
 	#else
 		"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlendingFinal;"
 	#endif
 #endif
 
-#if STEREOSCOPIC_MODE > 0
+#if POST_STEREOSCOPIC_MODE > 0
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
 	"Pass=Stereoscopic;"
@@ -763,7 +763,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, 1);
 	}
 #endif
-#if STEREOSCOPIC_MODE
+#if POST_STEREOSCOPIC_MODE
 	pass Stereoscopic < string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
