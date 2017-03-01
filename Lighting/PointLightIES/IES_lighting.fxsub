@@ -70,6 +70,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
 		"*.pmx = ../ies_shadow.fx;"
 		"*.pmd = ../ies_shadow.fx;"
 		"* = hide";

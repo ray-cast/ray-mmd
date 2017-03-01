@@ -16,21 +16,21 @@ Download :
 - About alpha version :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
-- Latest changes - Major allocator changes (1. Mar 2017):
+- Latest changes - Major allocator changes:
     - Added IES light source (25. Jan 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ies.jpg)\].
     - Added IES2HDR Tool (1. Feb 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ies_tools.jpg)\].
     - Added Ambient occlusion map support (29. Jan 2017)
     - Added some default materials (25. Jan 2017)
-    - Added stereo image (25. Feb 2017)
+    - Added stereo image (25. Feb 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_stereo.jpg)\].
     - Added emissive blink (1. Mar 2017)
     - Added material editor (2. Mar 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_editor.jpg)\].
     - Added morph controler to set the attenuation of multiple light source (29. Jan 2017)
-    - Improved SSSS and LED (25. Jan 2017)
+    - Improved SSSS and LED (1. Mar 2017)
     - Improved quality of SSAO (23. Feb 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_ssao.jpg)\].
-    - Improved quality of shadow (20. Feb 2017)
+    - Improved quality of shadow (1. Mar 2017) \[[Preview](https://github.com/ray-cast/images/raw/master/130_shadow.jpg)\].
     - Improved Emissive Material, when luminance was less than 1, not calculate bloom effect (25. Jan 2017)
     - Material description can now be used with ShadingMaterialID 4 (25. Jan 2017)
-    - Fixed some minor bugs (29. Jan 2017)
+    - Fixed some minor bugs (1. Mar 2017)
 
 Requirement :
 ------------

@@ -69,6 +69,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 		"self = hide;"
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
 		"*.pmx = ../directional_shadow.fx;"
 		"*.pmd = ../directional_shadow.fx;"
 		"* = hide";
