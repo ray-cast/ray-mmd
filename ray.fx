@@ -64,8 +64,8 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #include "shader/textures.fxsub"
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
-#include "shader/tonemapping.fxsub"
 #include "shader/bloom.fxsub"
+#include "shader/tonemapping.fxsub"
 #include "shader/ibl.fxsub"
 
 #if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
@@ -245,13 +245,18 @@ technique DeferredLighting<
 #endif
 #endif
 
+#if POST_COLORGRADING_MODE
+	"RenderColorTarget=ColorGradingLUT;"
+	"Pass=GenerateColorLUT;"
+#endif
+
 #if AA_QUALITY == 0
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
-	"Pass=FimicToneMapping;"
+	"Pass=HDRTonemappingPS;"
 #else
 	"RenderColorTarget=ShadingMapTemp;"
-	"Pass=FimicToneMapping;"
+	"Pass=HDRTonemappingPS;"
 #endif
 
 #if AA_QUALITY == 1
@@ -691,11 +696,19 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}
 #endif
-	pass FimicToneMapping < string Script= "Draw=Buffer;";>{
+#if POST_COLORGRADING_MODE
+	pass GenerateColorLUT < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = False; ZWriteEnable = False;
+		VertexShader = compile vs_3_0 GenerateColorLUT_VS();
+		PixelShader  = compile ps_3_0 GenerateColorLUT_PS();
+	}
+#endif
+	pass HDRTonemappingPS < string Script= "Draw=Buffer;";>{
 		 AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 FilmicToneMappingPS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 HDRTonemappingPS(ShadingMapPointSamp);
 	}
 #if AA_QUALITY == 1
 	pass FXAA < string Script= "Draw=Buffer;";>{

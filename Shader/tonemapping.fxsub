@@ -1,3 +1,8 @@
+#define LUT_SIZE 32
+#define LUT_LINEAR_RANGE 14
+#define LUT_LINEAR_GREY 0.18
+#define LUT_EXPOSURE_GREY 444
+
 float3 ACESFilmLinear(float3 x)
 {
 	const float A = 2.51f;
@@ -76,16 +81,16 @@ float3 ColorBanding(float2 uv)
 	return noise / 255.0;
 }
 
-float4 ACESOutputDevice(float3 color, float2 uv)
+float4 ColorDithering(float3 color, float2 uv)
 {
-#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
 	color += ColorBanding(uv * (time + PI));
 	return float4(color, 1);
-#else
-	color = linear2srgb(color);
-	color += ColorBanding(uv * (time + PI));
-	return float4(color, 1);
-#endif
+}
+
+float3 ColorVignette(float3 color, float2 coord)
+{
+	float L = length(coord * 2 - 1);
+	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);
 }
 
 float3 WhiteBalance(float3 color, float kelvin)
@@ -97,4 +102,176 @@ float3 WhiteBalance(float3 color, float kelvin)
 	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
 	float3 balance = saturate(float3(red, green, blue) / 255);
 	return color * balance;
+}
+
+float3 ColorCorrect(float3 color, float contrast, float saturation, float gamma, float3 colorGrainRGBP, float3 colorGrainRGBM)
+{
+	float3 lum = luminance(color);
+	color = lerp(lum, color, saturation);
+	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
+	color = pow(color, gamma);
+	color *= colorGrainRGBP + (1.0 - colorGrainRGBM);
+	return color;
+}
+
+#if POST_DISPERSION_MODE == 2
+float3 SampleSpectrum(float x)
+{
+	float t = 3.0 * x - 1.5;
+	return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset)
+{
+	const int samples = 8;
+
+	float3 totalColor = 0.0;
+	float3 totalWeight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i <= samples; i++, coord += delta)
+	{
+		float3 w = SampleSpectrum(float(i) / samples);
+
+		totalWeight += w;
+		totalColor += w * tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	}
+
+	return totalColor / totalWeight;
+}
+#endif
+
+float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
+{
+#if POST_DISPERSION_MODE == 1
+	float L = length(coord * 2 - 1);
+	L = 1 - smoothstep(outer, inner, L);
+	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * BloomScale1;
+	float3 shift1 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
+	float3 shift2 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
+	return float3(shift1.r, shift2.g, shift3.b);
+#elif POST_DISPERSION_MODE == 2
+	float L = 1 - smoothstep(outer, inner, length(coord * 2 - 1));
+	float2 dist = ViewportOffset2 * L * (mDispersion * 16) * BloomScale1;
+	float2 offset = (coord * 2 - 1.0) * dist;
+	return ChromaticAberration(source, coord, offset);
+#else
+	return tex2Dlod(source, float4(coord, 0, 0));
+#endif
+}
+
+#if POST_COLORGRADING_MODE
+
+texture ColorGradingLUT : RENDERCOLORTARGET<
+	int2 Dimensions = {1024, 32};
+	int MipLevels = 1;
+	bool AntiAlias = false;
+	string Format = "A2B10G10R10";
+>;
+sampler ColorGradingLUTSamp = sampler_state {
+	texture = <ColorGradingLUT>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+float3 log2lin(float3 color)
+{
+	return exp2((color - LUT_EXPOSURE_GREY / 1023.0) * LUT_LINEAR_RANGE) * LUT_LINEAR_GREY;
+}
+
+float3 lin2log(float3 LinearColor)
+{
+	float3 color = log2(LinearColor) / LUT_LINEAR_RANGE - log2(LUT_LINEAR_GREY) / LUT_LINEAR_RANGE + LUT_EXPOSURE_GREY / 1023.0;
+	return saturate(color);
+}
+
+float3 CreateColorSpectrum(float2 coord, float size = LUT_SIZE)
+{
+	float3 rgb;
+	rgb.r = frac(coord.x * size);
+	rgb.b = coord.x - rgb.r / size;
+	rgb.g = coord.y;
+	return log2lin(rgb * size / (size - 1));
+}
+
+float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
+{
+	color = lin2log(color);
+	color = color * ((size - 1) / size) + (0.5f / size);
+
+	float slice = color.z * size - 0.5;
+	float s = frac(slice);
+	slice -= s;
+
+	float u = (color.x + slice) / size;
+	float v = color.y;
+
+	float2 uv0 = float2(u, v);
+	float2 uv1 = float2(u + 1.0f / size, v);
+
+	float4 col0 = tex2Dlod(lut, float4(uv0, 0, 0));
+	float4 col1 = tex2Dlod(lut, float4(uv1, 0, 0));
+
+	return lerp(col0, col1, s) * 1.05;
+}
+
+void GenerateColorLUT_VS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oTexcoord = Texcoord;
+	oPosition = Position;
+}
+
+float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR 
+{
+	float3 color = CreateColorSpectrum(coord.xy);
+
+	color = WhiteBalance(color, mColorTemperature);
+	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ACESToneMapping(color);
+	color = linear2srgb(color);
+
+	return float4(color / 1.05, 0);
+}
+#endif
+
+float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
+{
+	float3 color = ColorDispersion(source, coord, mDispersionRadius, 1.0 + mDispersionRadius);
+
+#if HDR_ENABLE && HDR_BLOOM_MODE > 0
+	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
+	color += bloom;
+#endif
+
+#if POST_COLORGRADING_MODE == 0
+	color *= mExposure;
+	color = WhiteBalance(color, mColorTemperature);
+	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ColorVignette(color, coord);
+	color = ACESToneMapping(color);
+	color = linear2srgb(color);
+#else
+	color = ColorVignette(color, coord);
+	color = ColorLookupTable2D(ColorGradingLUTSamp, color * mExposure).rgb;
+#endif
+
+#if POST_COLORGRADING_MODE == 2
+	if (coord.x <= 0.7 && coord.y >= 0.95)
+	{
+		coord = float2(coord.x / 0.7, (coord.y - 0.95) / 0.05);
+		return tex2Dlod(ColorGradingLUTSamp, float4(coord, 0, 0));
+	}
+#endif
+
+#if AA_QUALITY > 0
+	return float4(color, luminance(color));
+#else
+	return ColorDithering(color, coord);
+#endif
 }
