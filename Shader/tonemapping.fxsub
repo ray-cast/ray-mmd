@@ -1,4 +1,5 @@
 #define LUT_SIZE 32
+#define LUT_WIDTH 1024
 #define LUT_LINEAR_RANGE 14
 #define LUT_LINEAR_GREY 0.18
 #define LUT_EXPOSURE_GREY 444
@@ -47,7 +48,7 @@ float3 LumaBasedReinhardToneMapping(float3 color)
 	return color;
 }
 
-float3 ACESToneMapping(float3 color)
+float3 ColorToneMapping(float3 color)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
 	float3 curr = ACESFilmLinear(color);
@@ -93,7 +94,7 @@ float3 ColorVignette(float3 color, float2 coord)
 	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);
 }
 
-float3 WhiteBalance(float3 color, float kelvin)
+float3 ColorTemperature(float3 color, float kelvin)
 {
 	float temp = kelvin / 100;
 	float temp60 = max(0, temp - 60);
@@ -165,7 +166,7 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 #if POST_COLORGRADING_MODE
 
 texture ColorGradingLUT : RENDERCOLORTARGET<
-	int2 Dimensions = {1024, 32};
+	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
 	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A2B10G10R10";
@@ -231,12 +232,11 @@ float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR
 {
 	float3 color = CreateColorSpectrum(coord.xy);
 
-	color = WhiteBalance(color, mColorTemperature);
+	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
-	color = ACESToneMapping(color);
-	color = linear2srgb(color);
+	color = ColorToneMapping(color);
 
-	return float4(color / 1.05, 0);
+	return float4(linear2srgb(color) / 1.05, 0);
 }
 #endif
 
@@ -251,10 +251,12 @@ float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : CO
 
 #if POST_COLORGRADING_MODE == 0
 	color *= mExposure;
-	color = WhiteBalance(color, mColorTemperature);
+
+	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
 	color = ColorVignette(color, coord);
-	color = ACESToneMapping(color);
+	color = ColorToneMapping(color);
+
 	color = linear2srgb(color);
 #else
 	color = ColorVignette(color, coord);
