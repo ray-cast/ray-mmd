@@ -1,5 +1,5 @@
-#define LUT_SIZE 32
-#define LUT_WIDTH 1024
+#define LUT_SIZE 16
+#define LUT_WIDTH 256
 #define LUT_LINEAR_RANGE 14
 #define LUT_LINEAR_GREY 0.18
 #define LUT_EXPOSURE_GREY 444
@@ -264,9 +264,12 @@ float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : CO
 #endif
 
 #if POST_COLORGRADING_MODE == 2
-	if (coord.x <= 0.7 && coord.y >= 0.95)
+	float tileX = LUT_SIZE / 50.0;
+	float tileY = 1 - tileX / LUT_SIZE * ViewportAspect;
+
+	if (coord.x <= tileX && coord.y >= tileY)
 	{
-		coord = float2(coord.x / 0.7, (coord.y - 0.95) / 0.05);
+		coord = float2(coord.x / tileX, (coord.y - tileY) / (1 - tileY));
 		return tex2Dlod(ColorGradingLUTSamp, float4(coord, 0, 0));
 	}
 #endif
