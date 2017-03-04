@@ -42,6 +42,10 @@ float4 GlobalFogPS(float2 coord : TEXCOORD0) : COLOR
 	float fogAmount = 1 - exp(-material.linearDepth / FogDensity);
 	fogAmount = pow(fogAmount, FogRange);
 
+#if FOG_DISCARD_SKY
+	fogAmount *=  step(0, sum(material.albedo + material.specular) - 1e-5);
+#endif
+
 	return float4(FogColor * fogAmount * FogIntensity, 0);
 }
 

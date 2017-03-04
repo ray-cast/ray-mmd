@@ -14,6 +14,6 @@
 #define FOG_MAX_INTENSITY 100
 
 // 取消天空
-#define FOG_DISCARD_SKY 0
+#define FOG_DISCARD_SKY 1
 
 #include "atmospheric_fog.fxsub"
