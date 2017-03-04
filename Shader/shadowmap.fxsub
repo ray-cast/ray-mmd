@@ -21,9 +21,9 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples)
 			shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(PSSMsamp, float4(pos, 0, 0)).r)));
 		}
 	}
-	
+
 	samples = samples * 2 + 1;
-	
+
 	return saturate(shadow / (samples * samples));
 }
 
@@ -47,10 +47,10 @@ float4 ShadowMapGenPS(
 
 	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
 	float4 LightPPos23 = proj.xyxy * float4(lightParam[2].xy, lightParam[3].xy);
-	
+
 	LightPPos01 += float4(lightParam[0].zw, lightParam[1].zw);
 	LightPPos23 += float4(lightParam[2].zw, lightParam[3].zw);
-	
+
 	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
 	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
 	
@@ -77,12 +77,12 @@ float4 ShadowMapGenPS(
 	
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 2);
-	
+
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
-		shadow = min(shadow, saturate(angle * 3));
+		shadow = min(shadow, saturate(angle * 2));
 	else if (abs(material.linearDepth - linearDepth) < 10)
 		shadow = 1;
-	
+
 	return shadow;
 }
 
@@ -90,10 +90,10 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 {
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
-	
+
 	float totalWeight = 1;
 	float totalColor = tex2Dlod(source, float4(coord, 0, 0)).r;
-	
+
 #if SHADOW_BLUR_COUNT
 	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
 	float sharpness = lerp(mSSAOBlurSharpnessMax + 2, mSSAOBlurSharpnessMin, saturate(center_d / mSSAOBlurFalloff));
@@ -115,7 +115,7 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 
 		totalWeight += bilateralWeight1;
 		totalWeight += bilateralWeight2;
-		
+
 		offset1 += offset;
 		offset2 -= offset;
 	}
