@@ -25,7 +25,7 @@ float4x4 CreateOrthoProject(float width, float height, float near, float far)
 	m[1] = float4( 0, cy,  0, 0);
 	m[2] = float4( 0,  0,  1, 0);
 	m[3] = float4( 0,  0,  0, 1);
-	
+
 	return m;
 }
 

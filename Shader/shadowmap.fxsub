@@ -53,7 +53,7 @@ float4 ShadowMapGenPS(
 
 	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
 	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
-	
+
 	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
 	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
 	float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
@@ -64,17 +64,17 @@ float4 ShadowMapGenPS(
 	if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
 	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
 	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
-	
+
 	float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
 	float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = proj.z;
-	
+
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax) * mLightZMax;
 	receiverDepth -= (linearDepth + depthSlope) * 0.003 + max(0, linearDepth - 100) * 0.007;
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
-	
+
 	float angle = dot(mul(material.normal, (float3x3)matViewInverse), -LightDirection);
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 2);
 
@@ -103,10 +103,10 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 	{
 		float shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).r;
 		float shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).r;
-		
+
 		float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
 		float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
-		
+
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, sharpness);
 

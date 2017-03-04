@@ -28,8 +28,8 @@ float EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness)
 
 float3 ComputeDiffuseDominantDir(float3 N, float3 V, float roughness)
 {
-	float a = 1.02341f * roughness - 1.51174f; 
-	float b = -0.511705f * roughness + 0.755868f; 
+	float a = 1.02341f * roughness - 1.51174f;
+	float b = -0.511705f * roughness + 0.755868f;
 	return normalize(lerp(N, V, saturate((dot(N, V) * a + b) * roughness)));
 }
 
@@ -57,7 +57,7 @@ float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
 	result.g = (pattern) ? color1.g: color1.b;
 	result.b = color2.r;
 	result.a = (pattern) ? color2.g: color2.b;
-	return result;   
+	return result;  
 }
 
 float EdgeFilter(float2 center, float2 a0, float2 a1, float2 a2, float2 a3)

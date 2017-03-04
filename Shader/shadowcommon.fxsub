@@ -51,7 +51,7 @@ float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far
 	m[1] = float4( 0, h,  0, 0);
 	m[2] = float4( 0,  0, q, 1);
 	m[3] = float4( 0,  0, -near * q, 0);
-	
+
 	return m;
 }
 
@@ -107,7 +107,7 @@ float GaussianDistribution(float x, float y, float r)
 
 float linstep(float a, float b, float v)
 {
-    return saturate((v - a) / (b - a));
+	return saturate((v - a) / (b - a));
 }
 
 float ReduceLightBleeding(float p_max, float amount)
@@ -128,7 +128,7 @@ float2 ComputeMoments(float depth)
 {
 	float dx = ddx(depth);
 	float dy = ddy(depth);
-	
+
 	float2 moments;
 	moments.x = depth;
 	moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);

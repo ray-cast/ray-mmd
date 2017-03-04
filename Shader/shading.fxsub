@@ -4,7 +4,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
-	
+
 #if SHADOW_QUALITY
 	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
 	diffuse *= shadow;
@@ -14,7 +14,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 	float3 lightColor = LightSpecular * mMainLightIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
 	diffuse *= lightColor;
 	specular *= lightColor;
-	
+
 #if SSAO_QUALITY > 3
 	float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).gba;
 	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
@@ -64,8 +64,8 @@ void ShadingOpacityPS(
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
-	
-	float3 diffuse = tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;	
+
+	float3 diffuse = tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 	float3 specular = tex2Dlod(LightSpecMapSamp, float4(coord, 0, 0)).rgb;
 
 #if MAIN_LIGHT_ENABLE
@@ -110,9 +110,9 @@ float4 ShadingOpacityAlbedoPS(in float2 coord: TEXCOORD0) : COLOR
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	clip(sum(material.albedo + material.specular) - 1e-5);
-	
+
 	return float4(material.albedo, 0);
 }
 
@@ -131,14 +131,14 @@ float4 ShadingTransparentPS(
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
 	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-	
+
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
 	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
-	
+
 	float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 
 #if MAIN_LIGHT_ENABLE
@@ -158,7 +158,7 @@ float4 ShadingTransparentPS(
 	prefilteredRefract += srgb2linear(tex2Dlod(ScnSamp, float4(coord + ior, 0, 0)).rgb);
 
 	if (material.lightModel == SHADINGMODELID_GLASS)
-	{		
+	{
 		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
 		float3 fresnel = lerp(material.specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * material.smoothness));
 
@@ -180,7 +180,7 @@ float4 ShadingTransparentPS(
 
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-	
+
 	lighting += lerp(emissive0, emissive1, MRT8.a);
 
 	return float4(lighting, material.linearDepth);

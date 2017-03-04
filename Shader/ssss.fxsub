@@ -6,7 +6,7 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 	{
 		clip(-1);
 	}
-	
+
 	return 1;
 }
 
@@ -24,9 +24,9 @@ float4 SSSGuassBlurPS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float4 color = tex2Dlod(source, float4(coord, 0, 0));
-	
+
 	float3 V = normalize(viewdir);
 	float3 P = V * material.linearDepth / V.z;
 	float3 N = material.normal;
@@ -84,11 +84,11 @@ float4 SSSGuassBlurPS(
 	}
 
 	totalColor /= totalWeight;
-	
+
 	if (direction.y > 0.01)
 	{
 		totalColor = lerp(totalColor, tex2Dlod(original, float4(coord, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
 	}
-	
+
 	return float4(totalColor, color.a);
 }

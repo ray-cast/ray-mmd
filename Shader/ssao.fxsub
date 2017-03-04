@@ -9,7 +9,7 @@
 #	define SSAO_BLUR_RADIUS 6
 #else
 #	define SSAO_SAMPLER_COUNT 8
-#   define SSAO_BLUR_RADIUS 6
+#	define SSAO_BLUR_RADIUS 6
 #endif
 
 shared texture SSAOMap : RENDERCOLORTARGET<
@@ -35,12 +35,12 @@ texture SSAOMapTemp : RENDERCOLORTARGET<
 sampler SSAOMapSamp = sampler_state {
 	texture = <SSAOMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP;  AddressV = CLAMP;
 };
 sampler SSAOMapSampTemp = sampler_state {
 	texture = <SSAOMapTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
+	AddressU = CLAMP;  AddressV = CLAMP;
 };
 
 float linearizeDepth(float2 uv)

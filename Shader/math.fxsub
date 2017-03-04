@@ -34,7 +34,7 @@ float4 linear2srgb(float4 c)
 
 float3 hsv2rgb(float3 hsv)
 {
-    float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
+	float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
 	return hsv.z * (1.0 - hsv.y * rgb);
 }
 

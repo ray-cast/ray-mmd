@@ -16,7 +16,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 }
 
 float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float scale)
-{   
+{
 	float spotAngle = dot(L, Ld);
 	float lightAngleScale = 1.0f / max(0.001f, cosAngle);
 	float lightAngleOffset = cosAngle * scale;
@@ -109,14 +109,14 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 {
 	float3 Ld = L1 - L0;
 	float3 R = reflect(V, N);
-	
+
 	float rl0 = dot(R, L0);
 	float rld = dot(R, Ld);
 	float T = (rl0 * rld - dot(L0, Ld)) / (dot(Ld, Ld) - rld * rld);
-	
+
 	float3 closestPoint = L0 + Ld * saturate(T);
 	float3 centerToRay = dot(closestPoint, R) * R - closestPoint;
-	
+
 	return closestPoint + centerToRay * saturate(radius / length(centerToRay));
 }
 

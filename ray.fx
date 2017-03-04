@@ -165,7 +165,7 @@ technique DeferredLighting<
 	"RenderColorTarget1=ShadingMapTempSpecular;"
 	"Pass=ShadingOpacity;"
 	"RenderColorTarget1=;"
-	
+
 #if SSSS_QUALITY > 0
 	"RenderDepthStencilTarget=DepthBuffer;"
 	"Clear=Depth;"
@@ -179,14 +179,14 @@ technique DeferredLighting<
 #endif
 
 	"RenderColorTarget=ShadingMap; Pass=ShadingTransparent;"
-	
+
 #if SSR_QUALITY > 0
 	"RenderColorTarget=SSRLightX1Map;"
 	"RenderDepthStencilTarget=DepthBuffer;"
 	"Clear=Depth;"
 	"Clear=Color;"
 	"Pass=SSRConeTracing;"
-		  
+
 	"RenderColorTarget=SSRLightX1MapTemp; Pass=SSRGaussionBlurX1;"
 	"RenderColorTarget=SSRLightX1Map;	  Pass=SSRGaussionBlurY1;"
 	"RenderColorTarget=SSRLightX2MapTemp; Pass=SSRGaussionBlurX2;"
@@ -195,7 +195,7 @@ technique DeferredLighting<
 	"RenderColorTarget=SSRLightX3Map;	  Pass=SSRGaussionBlurY3;"
 	"RenderColorTarget=SSRLightX4MapTemp; Pass=SSRGaussionBlurX4;"
 	"RenderColorTarget=SSRLightX4Map;	  Pass=SSRGaussionBlurY4;"
-	
+
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"    
 #endif
 
@@ -283,7 +283,7 @@ technique DeferredLighting<
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection1x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
 	"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlending;"
-	
+
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection2x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
 	#if POST_STEREOSCOPIC_MODE == 0

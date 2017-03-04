@@ -187,7 +187,7 @@ sampler GhostMaskMapSamp = sampler_state
 {
 	texture = <GhostMaskMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV = CLAMP;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 texture GhostImageMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {0.5, 0.5};
@@ -218,9 +218,9 @@ void HDRDownsampleVS(
 }
 
 float4 HDRDownsample4XPS(
-	in float2 coord1 : TEXCOORD0, 
-	in float2 coord2 : TEXCOORD1, 
-	in float2 coord3 : TEXCOORD2, 
+	in float2 coord1 : TEXCOORD0,
+	in float2 coord2 : TEXCOORD1,
+	in float2 coord3 : TEXCOORD2,
 	in float2 coord4 : TEXCOORD3,
 	uniform sampler source) : COLOR
 {
@@ -307,10 +307,10 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform 
 {
 	static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
 	static const float weightSum = 262106.0;
-	
+
 	float4 color = 0;
 	float2 coords = coord - offset * 7.0;
-	
+
 	for (int i = 0; i < 15; ++i)
 	{
 		color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
@@ -367,13 +367,13 @@ float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 	float3 bloom2 = tex2Dlod(BloomSamp2nd, float4(coord, 0, 0)).rgb;
 	float3 bloom3 = tex2Dlod(BloomSamp3rd, float4(coord, 0, 0)).rgb;
 	float3 bloom4 = tex2Dlod(BloomSamp4th, float4(coord, 0, 0)).rgb;
-	
+
 	float3 bloom = 0.0f;
 	bloom += bloom1 * BloomFactor(mBloomFactors[0]);
 	bloom += bloom2 * BloomFactor(mBloomFactors[1]);
 	bloom += bloom3 * BloomFactor(mBloomFactors[2]);
 	bloom += bloom4 * BloomFactor(mBloomFactors[3]);
-	
+
 #if HDR_STAR_MODE > 0
 	float4 star = max(tex2Dlod(StreakSamp1st, float4(coord, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord, 0, 0)));
 #if HDR_STAR_MODE > 2
@@ -381,7 +381,7 @@ float4 GlareLightCompPS(in float2 coord : TEXCOORD0) : COLOR
 #endif
 	bloom += star.rgb;
 #endif
-	
+
 	return float4(bloom, 0.0);
 }
 

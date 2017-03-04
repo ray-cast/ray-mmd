@@ -1,15 +1,15 @@
-#define SHADINGMODELID_DEFAULT      0
-#define SHADINGMODELID_SKIN         1
-#define SHADINGMODELID_EMISSIVE     2
-#define SHADINGMODELID_HAIR         3
-#define SHADINGMODELID_GLASS        4
-#define SHADINGMODELID_CLOTH        5
-#define SHADINGMODELID_CLEAR_COAT   6
-#define SHADINGMODELID_SUBSURFACE   7
-#define SHADINGMODELID_MASK         8
+#define SHADINGMODELID_DEFAULT    0
+#define SHADINGMODELID_SKIN       1
+#define SHADINGMODELID_EMISSIVE   2
+#define SHADINGMODELID_HAIR       3
+#define SHADINGMODELID_GLASS      4
+#define SHADINGMODELID_CLOTH      5
+#define SHADINGMODELID_CLEAR_COAT 6
+#define SHADINGMODELID_SUBSURFACE 7
+#define SHADINGMODELID_MASK       8
 
-#define MAX_FRACTIONAL_8_BIT        (255.0f / 256.0f)
-#define TWO_BITS_EXTRACTION_FACTOR  (3.0f + MAX_FRACTIONAL_8_BIT)
+#define MAX_FRACTIONAL_8_BIT       (255.0f / 256.0f)
+#define TWO_BITS_EXTRACTION_FACTOR (3.0f + MAX_FRACTIONAL_8_BIT)
 
 struct MaterialParam
 {
@@ -65,16 +65,16 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.normal = DecodeNormal(buffer2.xyz);
 	material.emissive = 0;
 	material.emissiveIntensity = 0;
-	
+
 	material.customDataA = buffer2.w;
 	material.customDataB = 0;
-	
+
 	material.alpha = buffer4.w;
-	
+
 	material.linearDepth = buffer4.x;
 	material.visibility = frac(buffer4.y) + 1e-5;
 	material.lightModel = (int)floor(abs(buffer4.z));
-	
+
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_GLASS ||
