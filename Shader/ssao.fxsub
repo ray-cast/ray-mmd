@@ -222,7 +222,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	uniform float2 offset) : COLOR
 {
 	float center_d = linearizeDepth2(coord);
-	
+
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
@@ -261,7 +261,7 @@ float4 ScreenSpaceDirOccBlurPS(
 
 		total_w += bilateralWeight1;
 		total_w += bilateralWeight2;
-		
+
 		offset1 += offset;
 		offset2 -= offset;
 	}

@@ -3,9 +3,9 @@ float4x4 matWorld : WORLD;
 float4x4 matWorldView : WORLDVIEW;
 float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
 
-float4 MaterialDiffuse : DIFFUSE  < string Object = "Geometry"; >;
-float3 MaterialSpecular : SPECULAR < string Object = "Geometry"; >;
-float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
+float4 MaterialDiffuse : DIFFUSE<string Object = "Geometry";>;
+float3 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
+float  MaterialPower : SPECULARPOWER<string Object = "Geometry";>;
 
 float4 TextureAddValue : ADDINGTEXTURE;
 float4 TextureMulValue : MULTIPLYINGTEXTURE;
@@ -18,35 +18,35 @@ bool use_spheremap;
 bool use_toon;
 
 #if EMISSIVE_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
-float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
+float MorphRed   : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
+float MorphGreen : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
+float MorphBlue  : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
 
 static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
 #endif
 
 #if EMISSIVE_APPLY_BLINK
-float SmoothCurve(float x)
+float3 SmoothCurve(float3 x)
 {
 	return x * x * (3.0 - 2.0 * x);
 }
 
-float TriangleWave(float x)
+float3 TriangleWave(float3 x)
 {
 	return abs(frac(x + 0.5) * 2.0 - 1.0);
 }
 
-float SmoothTriangleWave(float x)
+float3 SmoothTriangleWave(float3 x)
 {
 	return SmoothCurve(TriangleWave(x));
 }
 
-static float LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
+static float3 LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
 #endif
 
 #if EMISSIVE_APPLY_MORPH_INTENSITY
-float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
-float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
+float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
+float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 
 static float emissiveIntensityMin = log(50);
 static float emissiveIntensityMax = log(2100);
@@ -57,15 +57,15 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define TEXTURE_MIP_FILTER ANISOTROPIC
 #define TEXTURE_ANISOTROPY_LEVEL 16
 
-#define SHADINGMODELID_DEFAULT      0
-#define SHADINGMODELID_SKIN         1
-#define SHADINGMODELID_EMISSIVE     2
-#define SHADINGMODELID_HAIR         3
-#define SHADINGMODELID_GLASS        4
-#define SHADINGMODELID_CLOTH        5
-#define SHADINGMODELID_CLEAR_COAT   6
-#define SHADINGMODELID_SUBSURFACE   7
-#define SHADINGMODELID_MASK         0xF
+#define SHADINGMODELID_DEFAULT    0
+#define SHADINGMODELID_SKIN       1
+#define SHADINGMODELID_EMISSIVE   2
+#define SHADINGMODELID_HAIR       3
+#define SHADINGMODELID_GLASS      4
+#define SHADINGMODELID_CLOTH      5
+#define SHADINGMODELID_CLEAR_COAT 6
+#define SHADINGMODELID_SUBSURFACE 7
+#define SHADINGMODELID_MASK       0xF
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
@@ -89,7 +89,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
 	#if ALBEDO_MAP_IN_SCREEN_MAP == 0
 		#if ALBEDO_MAP_ANIMATION_ENABLE
-			texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE; float speed=ALBEDO_MAP_ANIMATION_ENABLE;>;
+			texture AlbedoMap : ANIMATEDTEXTURE<string ResourceName = ALBEDO_MAP_FILE;>;
 		#else
 			texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
 		#endif
@@ -111,7 +111,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	#if ALPHA_MAP_ANIMATION_ENABLE == 0
 		texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
 	#else
-		texture AlphaMap : ANIMATEDTEXTURE <string ResourceName = ALPHA_MAP_FILE; float speed=ALPHA_MAP_ANIMATION_ENABLE;>;
+		texture AlphaMap : ANIMATEDTEXTURE<string ResourceName = ALPHA_MAP_FILE;>;
 	#endif
 	sampler AlphaMapSamp = sampler_state
 	{
@@ -213,7 +213,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #if USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE && EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_TEXTURE != 1
 	#if EMISSIVE_MAP_IN_SCREEN_MAP == 0
 		#if EMISSIVE_MAP_ANIMATION_ENABLE
-			texture EmissiveMap : ANIMATEDTEXTURE <string ResourceName = EMISSIVE_MAP_FILE; float speed=EMISSIVE_MAP_ANIMATION_SPEED;>;
+			texture EmissiveMap : ANIMATEDTEXTURE<string ResourceName = EMISSIVE_MAP_FILE;>;
 		#else
 			texture EmissiveMap<string ResourceName = EMISSIVE_MAP_FILE;>; 
 		#endif
@@ -398,11 +398,11 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
 	float2 curTexcoord = coord;
 
 	[unroll]
-	for (int i = 0; i < numSteps; i++)
+	for (int i = 0; i<numSteps; i++)
 	{
 		if (curHeight <= curLayerHeight)
 			break;
-			
+
 		curLayerHeight += step; 
 		curTexcoord -= delta;
 		curHeight = tex2D(heightMap, curTexcoord).r;
@@ -415,7 +415,7 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
 	curLayerHeight -= deltaHeight;
 
 	[unroll]
-	for (int j = 0; j < 5; j++)
+	for (int j = 0; j<5; j++)
 	{
 		deltaTexcoord *= 0.5;
 		deltaHeight *= 0.5;
@@ -1202,7 +1202,7 @@ GbufferParam Material2PS(
 
 	float3 albedoColor = GetAlbedo(coord.xy, use_texture);
 	albedoColor = ColorSynthesis(albedoColor, GetMelanin(coord.xy));
-   
+
 	float3 MaterialMetalness = GetMetalness(coord.xy);
 
 	MaterialParam material = (MaterialParam)0;
@@ -1234,7 +1234,7 @@ GbufferParam Material2PS(
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-	technique name < string MMDPass = mmdpass; \
+	technique name<string MMDPass = mmdpass; \
 	string Script = \
 		"RenderColorTarget0=;" \
 		"RenderColorTarget1=Gbuffer2RT;" \
@@ -1263,6 +1263,6 @@ GbufferParam Material2PS(
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTech<string MMDPass = "shadow";> {}
+technique ZplotTec<string MMDPass = "zplot";> {}
