@@ -9,16 +9,16 @@
 #include "../../shader/arealight.fxsub"
 #include "../../shader/fog.fxsub"
 
-float mFogR :  CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float mFogG :  CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float mFogB :  CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
-float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
-float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
-float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
-float mGlossP : CONTROLOBJECT < string name="(self)"; string item = "Gloss+"; >;
-float mGlossM : CONTROLOBJECT < string name="(self)"; string item = "Gloss-"; >;
-float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
-float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
+float mFogR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
+float mFogG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
+float mFogB : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
+float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
+float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
+float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
+float mGlossP : CONTROLOBJECT<string name="(self)"; string item = "Gloss+";>;
+float mGlossM : CONTROLOBJECT<string name="(self)"; string item = "Gloss-";>;
+float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
 
 static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
@@ -27,20 +27,20 @@ static float3 LightPosition = mPosition;
 #if VOLUMETRIC_FOG_ENABLE
 
 #if VOLUMETRIC_FOG_QUALITY == 0
-#   define VOLUMETRIC_FOG_WIDTH 256
-#   define VOLUMETRIC_FOG_HEIGHT 512
+#	define VOLUMETRIC_FOG_WIDTH 256
+#	define VOLUMETRIC_FOG_HEIGHT 512
 #elif VOLUMETRIC_FOG_QUALITY == 1
-#   define VOLUMETRIC_FOG_WIDTH 512
-#   define VOLUMETRIC_FOG_HEIGHT 1024
+#	define VOLUMETRIC_FOG_WIDTH 512
+#	define VOLUMETRIC_FOG_HEIGHT 1024
 #elif VOLUMETRIC_FOG_QUALITY >= 2
-#   define VOLUMETRIC_FOG_WIDTH 1024
-#   define VOLUMETRIC_FOG_HEIGHT 2048
+#	define VOLUMETRIC_FOG_WIDTH 1024
+#	define VOLUMETRIC_FOG_HEIGHT 2048
 #elif VOLUMETRIC_FOG_QUALITY >= 3
-#   define VOLUMETRIC_FOG_WIDTH 2048
-#   define VOLUMETRIC_FOG_HEIGHT 4096
+#	define VOLUMETRIC_FOG_WIDTH 2048
+#	define VOLUMETRIC_FOG_HEIGHT 4096
 #else
-#   define VOLUMETRIC_FOG_WIDTH 256
-#   define VOLUMETRIC_FOG_HEIGHT 512
+#	define VOLUMETRIC_FOG_WIDTH 256
+#	define VOLUMETRIC_FOG_HEIGHT 512
 #endif
 
 texture VolumetricFog: OFFSCREENRENDERTARGET <
@@ -61,11 +61,8 @@ texture VolumetricFog: OFFSCREENRENDERTARGET <
 >;
 sampler VolumetricFogSamp = sampler_state {
 	texture = <VolumetricFog>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = NONE;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
 
@@ -88,7 +85,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	float2 coord = texcoord.xy / texcoord.w;
 	coord = PosToCoord(coord);
 	coord += ViewportOffset;
-	   
+
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -97,9 +94,9 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 P = mul(float4(position, 1), matView).xyz;
+	float3 P = mul(float4(position, 1), matView).xyz
 	float3 V = normalize(-P);
-	
+
 	LightParam param;
 	param.lightPosition = LightPosition;
 	param.lightRange = LightRange;
@@ -107,7 +104,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.lightColor = float3(mFogR, mFogG, mFogB);
 	param.eye = CameraPosition;
 	param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
-	
+
 #if VOLUMETRIC_FOG_ENABLE
 	#if VOLUMETRIC_FOG_QUALITY == 0
 		return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), 64);
@@ -124,7 +121,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-	technique name < string MMDPass = mmdpass;>{\
+	technique name<string MMDPass = mmdpass;>{\
 		pass DrawObject {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
@@ -137,7 +134,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
-	
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

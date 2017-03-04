@@ -5,12 +5,12 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
-float mFogH :  CONTROLOBJECT<string name="(self)"; string item = "H+";>;
-float mFogS :  CONTROLOBJECT<string name="(self)"; string item = "S+";>;
-float mFogV :  CONTROLOBJECT<string name="(self)"; string item = "V-";>;
-float mFogRange :  CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
-float mFogHeight :  CONTROLOBJECT<string name="(self)"; string item = "Height+";>;
-float mFogDensity :  CONTROLOBJECT<string name="(self)"; string item = "Density+";>;
+float mFogH : CONTROLOBJECT<string name="(self)"; string item = "H+";>;
+float mFogS : CONTROLOBJECT<string name="(self)"; string item = "S+";>;
+float mFogV : CONTROLOBJECT<string name="(self)"; string item = "V-";>;
+float mFogRange : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
+float mFogHeight : CONTROLOBJECT<string name="(self)"; string item = "Height+";>;
+float mFogDensity : CONTROLOBJECT<string name="(self)"; string item = "Density+";>;
 
 static float3 FogColor = hsv2rgb(float3(mFogH, mFogS, 1 - mFogV));
 
@@ -29,7 +29,7 @@ void GroundFogVS(
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
-	out float4 oPosition  : POSITION)
+	out float4 oPosition : POSITION)
 {
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
 	oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
@@ -37,7 +37,7 @@ void GroundFogVS(
 }
 
 float4 GroundFogPS(float2 coord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
-{   
+{
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -46,7 +46,7 @@ float4 GroundFogPS(float2 coord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 V = normalize(viewdir);    
+	float3 V = normalize(viewdir);
 	return ApplyGroundFog(material.linearDepth, V);
 }
 
@@ -64,7 +64,7 @@ float4 GroundFogPS(float2 coord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
-	
+
 technique EdgeTec<string MMDPass = "edge";> {}
 technique ShadowTech<string MMDPass = "shadow";> {}
 technique ZplotTec<string MMDPass = "zplot";> {}
