@@ -33,6 +33,8 @@ Resources
 - Text editor
     - Notepad++ \[[link](https://notepad-plus-plus.org)\].
     - Visual studio code \[[link](http://code.visualstudio.com/Download)\].
+- Materials
+    - Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
 
 Tutroial:
 ------------
