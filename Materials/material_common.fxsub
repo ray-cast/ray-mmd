@@ -804,6 +804,13 @@ float3 GetSubNormal(float2 coord)
 #endif
 }
 
+float3 RNMBlendUnpacked(float3 n1, float3 n2)
+{
+	n1 += float3( 0,  0, 1);
+	n2 *= float3(-1, -1, 1);
+	return n1 * dot(n1, n2) / n1.z - n2;
+}
+
 float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 {
 #if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
@@ -812,7 +819,7 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 
 		#if NORMAL_MAP_SUB_ENABLE
 			float3 tangentSubNormal = GetSubNormal(coord);        
-			tangentNormal.rg += tangentSubNormal.rg;
+			tangentNormal = RNMBlendUnpacked(tangentNormal, tangentSubNormal);
 			tangentNormal = normalize(tangentNormal);
 		#endif
 	#elif NORMAL_MAP_SUB_ENABLE

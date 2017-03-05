@@ -29,9 +29,9 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_IS_COMPRESSED 0
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_UV_REPETITION 0
-#define NORMAL_MAP_FILE "prchpapr_Normal.png"
+#define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapScale = -1.0;
+const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
 
 #define NORMAL_MAP_SUB_ENABLE 0

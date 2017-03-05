@@ -100,3 +100,4 @@ Digging Deeper
 * Convert Temperature to RGB \[[link](https://github.com/davidf2281/ColorTempToRGB)\].
 * Texture repetition \[[link](http://www.iquilezles.org/www/articles/texturerepetition/texturerepetition.htm)\].
 * Pre-Integrated Skin Shading \[[link](http://simonstechblog.blogspot.com/2015/02/pre-integrated-skin-shading.html)\]
+* Normal Blending in Detail \[[link](http://blog.selfshadow.com/publications/blending-in-detail/)\]
