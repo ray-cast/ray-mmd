@@ -49,10 +49,10 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
-#define SMOOTHNESS_MAP_APPLY_SCALE 2
+#define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "../_MaterialMap/worn_metal.png"
 
-const float smoothness = 0.8;
+const float smoothness = 1.0;
 const float smoothnessMapLoopNum = 2.0;
 
 #define METALNESS_MAP_ENABLE 0
