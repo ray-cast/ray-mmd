@@ -83,8 +83,8 @@ float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R
 {
 	float nv = max(abs(dot(N, V)), 0.1);
 
-	float3 f0 = max(0.02, material.customDataB);
-	float3 fresnel = lerp(material.specular, 1.0, pow2(1 - nv) / (5 - 4 * roughness));
+	float3 f9 = max(0.04, material.customDataB);
+	float3 fresnel = lerp(material.specular, f9, pow(1 - nv, 5) / (5 - 4 * roughness));
 
 	return fresnel / PI;
 }
@@ -142,7 +142,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	else if (material.lightModel == SHADINGMODELID_CLOTH)
 	{
 		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect, roughness);
-		specular = lerp(specular, luminance(prefilteredSpeculr) * specular2, material.customDataA);
+		specular = lerp(specular, prefilteredSpeculr * specular2, material.customDataA);
 	}
 
 	specular *= mEnvIntensitySpec;
