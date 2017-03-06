@@ -41,5 +41,5 @@ float fbm(float3 p, float bias)
 	f += 0.0625   * noise(p); p = p * 3.03;
 	f += 0.03125  * noise(p); p = p * 3.02;
 	f += 0.015625 * noise(p);
-	return f;
+	return saturate(f);
 }
