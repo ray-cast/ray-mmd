@@ -110,8 +110,8 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	sampleBias += mSSAOBiasFar * linearDepth2;
 	sampleBias += mSSAOBiasNear * (1 - saturate(linearDepth2 / mSSAOBiasFalloffNear));
 
-	if (fmod(coord.z, 2) > 0) maxRadius *= 0.5;
-	if (fmod(coord.w, 2) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
 	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth2, SSDOParams.z, maxRadius);
 	float2 radius1 = clamp(SSDOParams.xy / linearDepth2, SSDOParams.z, maxRadius);
