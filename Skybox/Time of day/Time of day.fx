@@ -31,8 +31,8 @@ static float mMiePhase = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
 
 static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias = time * lerp(lerp(0.25, 1, mCloudBiasP), 0, mCloudBiasM);
-static float mCloudSpeed = time * lerp(lerp(0.25, 1, mCloudSpeedP), 0, mCloudSpeedM);
+static float mCloudBias = time * lerp(lerp(0.05, 0.2, mCloudBiasP), 0, mCloudBiasM);
+static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
 
 static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;

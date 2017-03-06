@@ -106,37 +106,6 @@ float ComputeSunIntensity(float EE, float zenithAngleCos)
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
 }
 
-float4 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
-{
-	float3 up = float3(0, 1, 0);
-	float3 sunDirection = normalize(-L);
-
-	float zenithAngle = saturate(dot(V, up));
-	float zenithAngleCos = dot(sunDirection, up);
-	float zenithAngleMass = ComputeOpticalMass(zenithAngle);
-
-	float3 inscatteringMie = setting.waveLambdaMie;
-	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
-
-	inscatteringMie *= setting.mieCoefficient;
-	inscatteringRayleigh *= setting.rayleighCoefficient - saturate(1.0 - exp(sunDirection.y));
-
-	float cloud = ComputeCloud(V);
-	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG, setting.sunSize, cloud);
-
-	float3 opticalMie = inscatteringMie * zenithAngleMass * setting.mieHeight + cloud;
-	float3 opticalRayleigh = inscatteringRayleigh * zenithAngleMass * setting.rayleighHeight;
-	
-	float3 extinction = exp(-(opticalMie + opticalRayleigh));
-
-	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
-
-	float3 Lin = inscattering * (1.0 - extinction);	
-	// Lin *= lerp(1.0, pow(inscattering * extinction, 0.5), pow(1.0 - zenithAngleCos, 5.0)) * 0.025;
-	
-	return float4(Lin, saturate(cloud));
-}
-
 float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 L)
 {
 	float3 up = float3(0, 1, 0);
@@ -202,7 +171,7 @@ void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out floa
 	{
 		P += float3(23175.7, 0.0, 0.0) + setting.clouddir;
 		cloud = fbm(P * 2e-4 * 0.25, setting.cloudBias);
-		cloud = smoothstep(0.404, 0.604, cloud) * 70.0f;
+		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
 		cloud *= sin(PI * (height - 5e3) / 5e3) * setting.cloud;
 	}
 
@@ -239,13 +208,13 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 		float2 sampleLightIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthAtmTopRadius);	
 		float3 sampleLight = samplePos + L * sampleLightIntersections.y;
 		
-		float2 depthLight = 0.0;
-		ComputeOpticalInsctrIntegral(setting, samplePos, sampleLight, depthLight);
+		float2 stepOpticalLight = 0.0;
+		ComputeOpticalInsctrIntegral(setting, samplePos, sampleLight, stepOpticalLight);
 		
 		opticalLength += stepOpticalLength;
 
-		float3 opticalDepthMie = setting.waveLambdaMie * (depthLight.x + opticalLength.x);
-		float3 opticalDepthRayleigh = setting.waveLambdaRayleigh * (depthLight.y + opticalLength.y);
+		float3 opticalDepthMie = setting.waveLambdaMie * (stepOpticalLight.x + opticalLength.x);
+		float3 opticalDepthRayleigh = setting.waveLambdaRayleigh * (stepOpticalLight.y + opticalLength.y);
 		float3 opticalDepth = exp(-(opticalDepthMie + opticalDepthRayleigh));
 		
 		insctrMie += opticalDepth * stepOpticalLength.x;
