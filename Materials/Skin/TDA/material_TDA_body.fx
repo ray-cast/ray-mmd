@@ -34,8 +34,8 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "normal.png"
 
-const float normalMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
+const float normalMapLoopNum = 1.0;
 
 // 子法线贴图
 #define NORMAL_MAP_SUB_ENABLE 1
@@ -43,7 +43,7 @@ const float normalMapScale = 1.0;
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0 // RG normal map to RGB normal.
 #define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
 
-const float normalMapSubScale = 1.0;
+const float normalMapSubScale = 2.0;
 const float normalMapSubLoopNum = 60.0;
 
 // 光滑度
@@ -64,7 +64,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define METALNESS_MAP_FILE "metalness.png"
 
-const float metalness = 0.0;
+const float metalness = 0.05;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
 
@@ -75,7 +75,7 @@ const float metalnessBaseSpecular = 0.04;
 #define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
 #define MELANIN_MAP_FILE "melanin.png"
 
-const float melanin = 0.0;
+const float melanin = 0.1;
 const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
