@@ -63,16 +63,24 @@ float4 ScreenSpaceDirOccPassVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2) : POSITION
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
-	oTexcoord1 = GetProjConstant();
+	oTexcoord1 = GetProjConstant();	
+	oTexcoord2 = float4(float2(1, ViewportAspect), ViewportOffset2 * float2(30, 100));
+	oTexcoord2.xy *= oTexcoord1.x;
+	oTexcoord2.zw /= oTexcoord1.x;
+
 	return Position;
 }
 
-float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConstant : TEXCOORD1) : COLOR
+float4 ScreenSpaceDirOccPassPS(
+	in float4 coord : TEXCOORD0,
+	in float4 SSDOParams1 : TEXCOORD1,
+	in float4 SSDOParams2 : TEXCOORD2) : COLOR
 {
 	const float2 kernel[16] = 
 	{
@@ -98,13 +106,9 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	float linearDepth2 = abs(linearDepth);
 
 	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = GetViewPosition(projConstant, coord.xy, linearDepth2);
+	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
 
-	float4 SSDOParams = float4(float2(1, ViewportAspect), ViewportOffset2 * float2(30, 100));
-	SSDOParams.xy *= projConstant.x;
-	SSDOParams.zw /= projConstant.x;
-
-	float maxRadius = SSDOParams.w;
+	float maxRadius = SSDOParams2.w;
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleBias = 0;
 	sampleBias += mSSAOBiasFar * linearDepth2;
@@ -113,8 +117,8 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
 	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
-	float2 radius0 = clamp(SSDOParams.xy * 0.15 / linearDepth2, SSDOParams.z, maxRadius);
-	float2 radius1 = clamp(SSDOParams.xy / linearDepth2, SSDOParams.z, maxRadius);
+	float2 radius0 = clamp(SSDOParams2.xy * 0.15 / linearDepth2, SSDOParams2.z, maxRadius);
+	float2 radius1 = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
 	float2 sampleRotate[16];
 	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
@@ -158,10 +162,10 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 		sampleDepths = abs(sampleDepths);
 
 		float3 samplePosition[4];
-		samplePosition[0] = float3((sampleOffset[0] * projConstant.xy + projConstant.zw) * sampleDepths[0], sampleDepths[0]);
-		samplePosition[1] = float3((sampleOffset[1] * projConstant.xy + projConstant.zw) * sampleDepths[1], sampleDepths[1]);
-		samplePosition[2] = float3((sampleOffset[2] * projConstant.xy + projConstant.zw) * sampleDepths[2], sampleDepths[2]);
-		samplePosition[3] = float3((sampleOffset[3] * projConstant.xy + projConstant.zw) * sampleDepths[3], sampleDepths[3]);
+		samplePosition[0] = float3((sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw) * sampleDepths[0], sampleDepths[0]);
+		samplePosition[1] = float3((sampleOffset[1] * SSDOParams1.xy + SSDOParams1.zw) * sampleDepths[1], sampleDepths[1]);
+		samplePosition[2] = float3((sampleOffset[2] * SSDOParams1.xy + SSDOParams1.zw) * sampleDepths[2], sampleDepths[2]);
+		samplePosition[3] = float3((sampleOffset[3] * SSDOParams1.xy + SSDOParams1.zw) * sampleDepths[3], sampleDepths[3]);
 
 		float3 sampleDirection[4];
 		sampleDirection[0] = samplePosition[0] - viewPosition;
@@ -187,7 +191,7 @@ float4 ScreenSpaceDirOccPassPS(in float4 coord : TEXCOORD0, in float4 projConsta
 			dot(sampleDirection[3], viewNormal));
 
 		float emitterScale = narrowBand ? 0.5 : 2.5;
-		float emitterRadius = (radius.x * linearDepth2) * projConstant.x;
+		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
