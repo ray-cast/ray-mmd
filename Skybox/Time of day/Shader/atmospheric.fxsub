@@ -180,19 +180,53 @@ void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out floa
 	opticalLength = float3(exp(-height / float2(setting.mieHeight, setting.rayleighHeight)), cloud);
 }
 
-void ComputeOpticalInsctrIntegral(ScatteringParams setting, float3 start, float3 end, out float3 opticalLength)
+void ComputeOpticalInsctrIntegral(ScatteringParams setting, float3 start, float3 end, out float2 opticalLength)
 {
 	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP2);
 	float3 samplePos = start;
 
 	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j, samplePos += sampleStep) 
 	{
-		float3 stepDepthLight;
-		ComputeOpticalLengthWithClound(setting, samplePos, stepDepthLight);
+		float2 stepDepthLight;
+		ComputeOpticalLength(setting, samplePos, stepDepthLight);
 		opticalLength += stepDepthLight;
 	}
 	
 	opticalLength *= length(sampleStep);
+}
+
+float ComputeClound(ScatteringParams setting, float3 P)
+{
+	float cloud = 0.0;
+	float height = length(P - setting.earthCenter) - setting.earthRadius;
+
+	if (setting.cloudBottom < height && setting.cloudTop > height) 
+	{
+		float3 P2 = P + float3(23175.7, 0.0, 0.0) + setting.clouddir;
+		cloud = fbm(P2 * 2e-5, setting.cloudBias);
+
+		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
+		cloud *= sin(PI * (height - setting.cloudBottom) / setting.cloudBottom);
+		cloud *= setting.cloud;
+	}
+
+	return cloud;
+}
+
+float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 end)
+{
+	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP2);
+	float3 samplePos = start;
+
+	float thickness = 0;
+
+	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j, samplePos += sampleStep) 
+	{
+		float stepDepthLight = ComputeClound(setting, samplePos);
+		thickness += stepDepthLight;
+	}
+	
+	return thickness * length(sampleStep);
 }
 
 void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float2 opticalLength, out float3 insctrMie, out float3 insctrRayleigh)
@@ -211,9 +245,15 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 		float2 sampleLightIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthAtmTopRadius);
 		float3 sampleLight = samplePos + L * sampleLightIntersections.y;
 		
-		float3 stepOpticalLight = 0.0;
+		float2 stepOpticalLight = 0.0;
 		ComputeOpticalInsctrIntegral(setting, samplePos, sampleLight, stepOpticalLight);
-		stepOpticalLight.x += stepOpticalLight.z * any(stepOpticalLength.z);
+		
+		if (any(stepOpticalLength.z))
+		{
+			float2 sampleCloudsIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthRadius + setting.cloudTop);
+			float3 sampleClouds = samplePos + L * sampleCloudsIntersections.y;
+			stepOpticalLight.x += ComputeCloudInsctrIntegral(setting, samplePos, sampleClouds);
+		}
 		
 		opticalLength += stepOpticalLength.xy;
 

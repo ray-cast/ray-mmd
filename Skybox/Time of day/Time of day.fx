@@ -23,7 +23,8 @@ float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias
 float mRayleightH : CONTROLOBJECT<string name="(self)"; string item = "RayleighH";>;
 float mRayleightS : CONTROLOBJECT<string name="(self)"; string item = "RayleighS";>;
 float mRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
-float mRayleightVM : CONTROLOBJECT<string name="(self)"; string item = "RayleighV-";>;
+
+float mSkyNightP : CONTROLOBJECT<string name="(self)"; string item = "SkyNight+";>;
 
 static float mSunRadius = lerp(lerp(0.99, 1.0, mSunRadiusM), 0.65, mSunRadiusP);
 static float mSunRadiance = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
@@ -36,7 +37,7 @@ static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpee
 
 static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
-static float3 mRayleightColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 - mRayleightVM + mRayleightVP));
+static float3 mRayleightColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 + mRayleightVP));
 
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
@@ -106,14 +107,15 @@ float4 StarsPS(
 	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
 	stars2 *= hsv2rgb(float3(dot(normal, -V), 0.2, 1.5));
 
-	float3 stars = stars1 + stars2;	
-
 	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
 
 	float meteor = CreateMeteor(V, float3(LightDirection.x, -1, LightDirection.z) + float3(0.5,0,0.0), time / PI);
-
-	return float4(lerp(stars * fadeStars + meteor, 0, fadeSun), 1);
+	
+	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
+	start = lerp(0, start, mSkyNightP);
+	
+	return float4(start, 1);
 }
 
 void SphereVS(
@@ -170,7 +172,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
-    setting.cloudTop = 8 * scaling;
+    setting.cloudTop = 7 * scaling;
     setting.cloudBottom = 4 * scaling;
 	setting.clouddir = float3(0, 0, -3e+3 * mCloudSpeed);
 
