@@ -162,9 +162,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
 	setting.mieHeight = 1.2 * scaling;
-	setting.mieCoefficient = 1.0;
-	setting.rayleighHeight = 7.994 * scaling;
-	setting.rayleighCoefficient = 1.0;
+	setting.rayleighHeight = 8 * scaling;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -6361, 0) * scaling;

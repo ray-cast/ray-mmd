@@ -7,10 +7,8 @@ struct ScatteringParams
 	float sunRadiance;
 
 	float mieG;
-	float mieCoefficient;
 	float mieHeight;
 
-	float rayleighCoefficient;
 	float rayleighHeight;
 
 	float3 waveLambda;
@@ -118,10 +116,7 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 	float zenithAngleMass = ComputeOpticalMass(zenithAngle);
 
 	float3 inscatteringMie = setting.waveLambdaMie;
-	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
-
-	inscatteringMie *= setting.mieCoefficient;
-	inscatteringRayleigh *= setting.rayleighCoefficient - saturate(1.0 - exp(sunDirection.y));
+	float3 inscatteringRayleigh = setting.waveLambdaRayleigh - saturate(1.0 - exp(sunDirection.y));
 
 	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG);
 
@@ -281,9 +276,6 @@ float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float
 	
 	float3 start = eye + V * max(0, outerIntersections.x);
 	float3 end = eye + V * outerIntersections.y;
-	
-	setting.waveLambdaMie *= setting.mieCoefficient;
-	setting.waveLambdaRayleigh *= setting.rayleighCoefficient;
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
@@ -307,5 +299,6 @@ float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float
 	float3 scattering = (insctrTotalSun + insctrTotalMie + insctrTotalRayleigh);
 	
 	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
+
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
 }
