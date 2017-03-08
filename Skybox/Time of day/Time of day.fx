@@ -170,8 +170,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
-    setting.cloudTop = 8000;
-    setting.cloudBottom = 4000;
+    setting.cloudTop = 8 * scaling;
+    setting.cloudBottom = 4 * scaling;
 	setting.clouddir = float3(0, 0, -3e+3 * mCloudSpeed);
 
 	float3 V = normalize(viewdir);

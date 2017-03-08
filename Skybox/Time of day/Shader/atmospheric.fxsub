@@ -169,9 +169,9 @@ void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out floa
 
 	if (setting.cloudBottom < height && setting.cloudTop > height) 
 	{
-		float3 P2 = P + setting.clouddir;
+		float3 P2 = P + float3(23175.7, 0.0, 0.0) + setting.clouddir;
 		cloud = fbm(P2 * 2e-5, setting.cloudBias);
-			   
+
 		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
 		cloud *= sin(PI * (height - setting.cloudBottom) / setting.cloudBottom);
 		cloud *= setting.cloud;
