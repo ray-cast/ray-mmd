@@ -154,7 +154,7 @@ void ScatteringVS(
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	float scaling = 1000;
-		
+
 	ScatteringParams setting;
 	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
@@ -170,6 +170,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
+    setting.cloudTop = 8000;
+    setting.cloudBottom = 4000;
 	setting.clouddir = float3(0, 0, -3e+3 * mCloudSpeed);
 
 	float3 V = normalize(viewdir);

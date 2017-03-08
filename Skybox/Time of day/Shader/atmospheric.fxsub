@@ -23,6 +23,8 @@ struct ScatteringParams
 	
 	float cloud;
 	float cloudBias;
+	float cloudTop;
+	float cloudBottom;
 	float3 clouddir;
 };
 
@@ -163,14 +165,16 @@ void ComputeOpticalLength(ScatteringParams setting, float3 P, out float2 optical
 void ComputeOpticalLengthWithClound(ScatteringParams setting, float3 P, out float3 opticalLength)
 {
 	float cloud = 0.0;
-	float height = length(P - setting.earthCenter) - setting.earthRadius;	
+	float height = length(P - setting.earthCenter) - setting.earthRadius;
 
-	if (5e3 < height && height < 10e3) 
+	if (setting.cloudBottom < height && setting.cloudTop > height) 
 	{
-		P += float3(23175.7, 0.0, 0.0) + setting.clouddir;
-		cloud = fbm(P * 2e-4 * 0.25, setting.cloudBias);
+		float3 P2 = P + setting.clouddir;
+		cloud = fbm(P2 * 2e-5, setting.cloudBias);
+			   
 		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
-		cloud *= sin(PI * (height - 5e3) / 5e3) * setting.cloud;
+		cloud *= sin(PI * (height - setting.cloudBottom) / setting.cloudBottom);
+		cloud *= setting.cloud;
 	}
 
 	opticalLength = float3(exp(-height / float2(setting.mieHeight, setting.rayleighHeight)), cloud);
@@ -184,7 +188,7 @@ void ComputeOpticalInsctrIntegral(ScatteringParams setting, float3 start, float3
 	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j, samplePos += sampleStep) 
 	{
 		float3 stepDepthLight;
-		ComputeOpticalLengthWithClound(setting, samplePos, stepDepthLight);		
+		ComputeOpticalLengthWithClound(setting, samplePos, stepDepthLight);
 		opticalLength += stepDepthLight;
 	}
 	
@@ -200,11 +204,11 @@ void ComputeInsctrIntegral(ScatteringParams setting, float3 start, float3 end, f
 	for (int i = 0; i < NUM_SAMPLES_STEP; ++i, samplePos += sampleStep)
 	{
 		float3 stepOpticalLength;
-		ComputeOpticalLengthWithClound(setting, samplePos, stepOpticalLength);		
+		ComputeOpticalLengthWithClound(setting, samplePos, stepOpticalLength);
 		stepOpticalLength.x += stepOpticalLength.z;
 		stepOpticalLength *= sampleLength;
 		
-		float2 sampleLightIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthAtmTopRadius);	
+		float2 sampleLightIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthAtmTopRadius);
 		float3 sampleLight = samplePos + L * sampleLightIntersections.y;
 		
 		float3 stepOpticalLight = 0.0;
@@ -230,11 +234,10 @@ float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float
 	clip(outerIntersections.y);
 	
 	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
-    if (innerIntersections.x > 0)
-    {
-        float3 mix = normalize(float3(innerIntersections.xy, 0));
-        outerIntersections.y = lerp(outerIntersections.y, innerIntersections.x, pow5(mix.y));
-    }
+	if (innerIntersections.x > 0)
+	{
+		outerIntersections.y = innerIntersections.x;
+	}
 	
 	float3 start = eye + V * max(0, outerIntersections.x);
 	float3 end = eye + V * outerIntersections.y;
@@ -247,18 +250,22 @@ float4 ComputeUnshadowedInscattering(ScatteringParams setting, float3 eye, float
 	float2 insctrOpticalLength = 0.0;
 	ComputeInsctrIntegral(setting, start, end, V, -L, insctrOpticalLength, insctrMie, insctrRayleigh);
 	
+	float3 opticalDepthMie  = setting.waveLambdaMie * insctrOpticalLength.x;
+	float3 opticalDepthRayleigh = setting.waveLambdaRayleigh * insctrOpticalLength.y;
+	float3 extinction = exp(-(opticalDepthMie + opticalDepthRayleigh));
+	
 	float phaseTheta = dot(V, -L);
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 	float phaseSun = ComputePhaseMie(phaseTheta, setting.sunSize);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
-	float3 insctrTotalSun = insctrMie * setting.waveLambdaMie * phaseSun * phaseNight;
+	float3 insctrTotalSun = insctrMie * setting.waveLambdaMie * phaseSun;
 	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
 	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 scattering = (insctrTotalSun + insctrTotalMie + insctrTotalRayleigh);
 	
-	bool intersectionTest =  innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
+	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
 }
