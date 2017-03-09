@@ -20,6 +20,7 @@ struct ScatteringParams
 	float3 earthCenter;
 
 	float cloud;
+	float cloudMie;
 	float cloudBias;
 	float cloudTop;
 	float cloudBottom;
@@ -345,6 +346,7 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 vi
 	float phaseTheta = dot(V, -L);
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 	float phaseSun = ComputePhaseMie(phaseTheta, setting.sunSize);
+	float phaseCloud = ComputePhaseMie(phaseTheta, setting.cloudMie);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
@@ -352,8 +354,8 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 vi
 	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
 	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
-	float3 sky = (insctrTotalSun + insctrTotalMie + insctrTotalRayleigh);
-	float3 cloud = cloudsMie * phaseMie * setting.sunRadiance * (insctrTotalRayleigh + insctrTotalMie);
+	float3 sky = insctrTotalSun + insctrTotalMie + insctrTotalRayleigh;
+	float3 cloud = cloudsMie * phaseCloud * setting.sunRadiance * (insctrTotalRayleigh + insctrTotalMie);
 	
 	float3 scattering = lerp(cloud, sky, exp(-0.0000001 * cloudsOpticalLength));
 	scattering = lerp(sky, scattering, viewdir.y * viewdir.y);
