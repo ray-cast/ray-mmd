@@ -228,7 +228,7 @@ float4 HDRDownsample4XPS(
 	color += tex2Dlod(source, float4(coord2, 0, 0));
 	color += tex2Dlod(source, float4(coord3, 0, 0));
 	color += tex2Dlod(source, float4(coord4, 0, 0));
-	return color / 4;
+	return color * 0.25;
 }
 
 float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
@@ -311,6 +311,7 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform 
 	float4 color = 0;
 	float2 coords = coord - offset * 7.0;
 
+	[unroll]
 	for (int i = 0; i < 15; ++i)
 	{
 		color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
