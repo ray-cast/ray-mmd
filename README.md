@@ -19,6 +19,7 @@ Download :
 - Latest changes - Major allocator changes:
     - Improve bloom
     - Improve SSAO
+    - Optimize skybox loading speed
 
 Requirement :
 ------------
