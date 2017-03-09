@@ -223,7 +223,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
 	float fadeOnTotal = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular;
 
-	float4 totalColor = tex2Dlod(ShadingMapSamp, float4(hitPixel.xy, 0, 0));
+	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel.xy, 0, 0));
 	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
 }
 
