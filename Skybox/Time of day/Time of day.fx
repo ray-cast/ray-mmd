@@ -165,7 +165,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.rayleighHeight = 8 * scaling;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
-	setting.earthCenter = float3(0, -6361, 0) * scaling;
+	setting.earthCenter = float3(0, -6360, 0) * scaling;
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
@@ -176,7 +176,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
 
 	float3 V = normalize(viewdir);
-	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition, V, LightDirection);
+	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
 	return linear2srgb(insctrColor);
 }
