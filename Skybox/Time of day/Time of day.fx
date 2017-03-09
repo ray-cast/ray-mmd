@@ -170,12 +170,12 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
-    setting.cloudTop = 7 * scaling;
-    setting.cloudBottom = 4 * scaling;
-	setting.clouddir = float3(0, 0, -3e+3 * mCloudSpeed);
+    setting.cloudTop = 8 * scaling;
+    setting.cloudBottom = 5 * scaling;
+	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
 
 	float3 V = normalize(viewdir);
-	float4 insctrColor = ComputeUnshadowedInscattering(setting, CameraPosition, V, LightDirection);
+	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition, V, LightDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -235,6 +235,6 @@ SKYBOX_TEC(ScatteringTecBS0, "object_ss")
 BACKGROUND_TEC(StarsTec0, "object")
 BACKGROUND_TEC(StarsTecBS0, "object_ss")
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTec < string MMDPass = "shadow"; > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTec<string MMDPass = "shadow";> {}
+technique ZplotTec<string MMDPass = "zplot";> {}

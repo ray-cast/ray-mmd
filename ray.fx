@@ -143,7 +143,7 @@ technique DeferredLighting<
 	"Clear=Color;"
 	"Pass=ShadowMapGen;"
 	"RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurX;"
-	"RenderColorTarget=ShadowmapMap;	  Pass=ShadowBlurY;"
+	"RenderColorTarget=ShadowmapMap;	 Pass=ShadowBlurY;"
 	"ClearSetColor=BackColor;"
 #endif
 
@@ -154,10 +154,10 @@ technique DeferredLighting<
 	"ScriptExternal=Color;"
 
 #if SSAO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
-	"RenderColorTarget=SSAOMap;  Pass=SSAO;"
+	"RenderColorTarget=SSAOMap; Pass=SSAO;"
 #if SSAO_BLUR_RADIUS > 0
 	"RenderColorTarget=SSAOMapTemp; Pass=SSAOBlurX;"
-	"RenderColorTarget=SSAOMap;	  Pass=SSAOBlurY;"
+	"RenderColorTarget=SSAOMap;	    Pass=SSAOBlurY;"
 #endif
 #endif
 
