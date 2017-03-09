@@ -6,7 +6,7 @@
 #define ALBEDO_MAP_ANIMATION_ENABLE 0
 #define ALBEDO_MAP_UV_FLIP 0
 #define ALBEDO_MAP_UV_REPETITION 0  // loop mode : 1 : tile, 2 : no tile mode1, 3 : no tile mode2
-#define ALBEDO_MAP_APPLY_COLOR 0
+#define ALBEDO_MAP_APPLY_COLOR 0    // Map values to multiply with the (1 = color*albedo, 2 = color^albedo).
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"

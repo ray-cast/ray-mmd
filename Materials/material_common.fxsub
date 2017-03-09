@@ -637,8 +637,10 @@ float3 GetAlbedo(float2 uv, bool useTexture)
 
 		albedoColor = srgb2linear(albedoColor);
 
-		#if ALBEDO_MAP_APPLY_COLOR
-			albedoColor *= albedo.rgb;
+		#if ALBEDO_MAP_APPLY_COLOR == 1
+			albedoColor *= albedo;
+		#elif ALBEDO_MAP_APPLY_COLOR == 2
+			albedoColor = pow(albedoColor, albedo);
 		#endif
 
 		#if ALBEDO_APPLY_MORPH_COLOR
@@ -1070,8 +1072,10 @@ float3 GetCustomDataB(float2 coord)
 			customData = 1 - customData;
 		#endif
 
-		#if CUSTOM_B_MAP_APPLY_COLOR
+		#if CUSTOM_B_MAP_APPLY_COLOR == 1
 			customData *= customB;
+		#elif CUSTOM_B_MAP_APPLY_COLOR == 2
+			customData = pow(customData, customB);
 		#endif
 	#endif
 
