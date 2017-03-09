@@ -17,6 +17,8 @@ Download :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
 - Latest changes - Major allocator changes:
+    - Improve bloom
+    - Improve SSAO
 
 Requirement :
 ------------
