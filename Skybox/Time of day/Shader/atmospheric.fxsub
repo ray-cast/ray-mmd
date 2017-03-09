@@ -210,12 +210,12 @@ float ComputeClound(ScatteringParams setting, float3 P)
 
 float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 end)
 {
-	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP2);
+	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP);
 	float3 samplePos = start;
 
 	float thickness = 0;
 
-	for (int j = 0; j < NUM_SAMPLES_STEP2; ++j, samplePos += sampleStep) 
+	for (int j = 0; j < NUM_SAMPLES_STEP; ++j, samplePos += sampleStep) 
 	{
 		float stepDepthLight = ComputeClound(setting, samplePos);
 		thickness += stepDepthLight;
