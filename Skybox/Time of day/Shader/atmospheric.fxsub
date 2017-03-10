@@ -267,19 +267,21 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, out float3 transmittance, out float3 insctrMie, out float3 insctrRayleigh)
 {
 	bool neg = true;
+
+	eye += float3(0,setting.earthRadius,0);
 	
-	float2 outerIntersections = ComputeRaySphereIntersection(eye + float3(0,setting.earthRadius,0), V, 0, setting.earthAtmTopRadius);
+	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, 0, setting.earthAtmTopRadius);
 	clip(outerIntersections.y);
 
-	float2 innerIntersections = ComputeRaySphereIntersection(eye + float3(0,setting.earthRadius,0), V, 0, setting.earthRadius);
+	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, 0, setting.earthRadius);
 	if (innerIntersections.x > 0)
 	{
 		neg = false;
 		outerIntersections.y = innerIntersections.x;
 	}
 
-	float3 start = eye + float3(0,setting.earthRadius,0) + V * max(0, outerIntersections.x);
-	float3 end = eye + float3(0,setting.earthRadius,0) + V * outerIntersections.y;
+	float3 start = eye + V * max(0, outerIntersections.x);
+	float3 end = eye + V * outerIntersections.y;
 
 	AerialPerspective(setting, start, end, V, -L, neg, transmittance, insctrMie, insctrRayleigh);
 	
