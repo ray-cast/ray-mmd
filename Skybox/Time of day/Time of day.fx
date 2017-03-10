@@ -4,41 +4,6 @@
 #include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
 
-float mSunRadiusP : CONTROLOBJECT<string name="(self)"; string item = "SunRadius+";>;
-float mSunRadiusM : CONTROLOBJECT<string name="(self)"; string item = "SunRadius-";>;
-float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance+";>;
-float mSunRadianceM : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance-";>;
-float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
-float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
-float mMieTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
-float mMieTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
-
-float mCloudP : CONTROLOBJECT<string name="(self)"; string item = "Cloud+";>;
-float mCloudM : CONTROLOBJECT<string name="(self)"; string item = "Cloud-";>;
-float mCloudSpeedP : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed+";>;
-float mCloudSpeedM : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed-";>;
-float mCloudBiasP : CONTROLOBJECT<string name="(self)"; string item = "CloudBias+";>;
-float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias-";>;
-
-float mRayleightH : CONTROLOBJECT<string name="(self)"; string item = "RayleighH";>;
-float mRayleightS : CONTROLOBJECT<string name="(self)"; string item = "RayleighS";>;
-float mRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
-
-float mSkyNightP : CONTROLOBJECT<string name="(self)"; string item = "SkyNight+";>;
-
-static float mSunRadius = lerp(lerp(0.99, 1.0, mSunRadiusM), 0.65, mSunRadiusP);
-static float mSunRadiance = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
-static float mMiePhase = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
-static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
-
-static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias = time * lerp(lerp(0.05, 0.2, mCloudBiasP), 0, mCloudBiasM);
-static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
-
-static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
-static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
-static float3 mRayleightColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 + mRayleightVP));
-
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
 
