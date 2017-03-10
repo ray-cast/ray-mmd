@@ -155,6 +155,8 @@ void ScatteringVS(
 
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
+	float3 V = normalize(viewdir);
+	
 	float scaling = 1000;
 
 	ScatteringParams setting;
@@ -162,20 +164,19 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
 	setting.mieHeight = 1.2 * scaling;
-	setting.rayleighHeight = 8 * scaling;
+	setting.rayleighHeight = 15 * scaling;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
-	setting.earthCenter = float3(0, -6360, 0) * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
+	setting.earthCenter = float3(0, -setting.earthRadius, 0);
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudMie = 0.5;
 	setting.cloudBias = mCloudBias;
-    setting.cloudTop = 3 * scaling;
-    setting.cloudBottom = 1.5 * scaling;
+    setting.cloudTop = 8 * scaling;
+    setting.cloudBottom = 5 * scaling;
 	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
 
-	float3 V = normalize(viewdir);
 	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
 	return linear2srgb(insctrColor);
