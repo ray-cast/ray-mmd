@@ -1,9 +1,11 @@
-// Sky Scattering & Stars By Ray-MMD
+// Sky Scattering By Ray-MMD
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // https://github.com/ray-cast/ray-mmd
+
 // References :
-// Accurate Atmospheric Scattering - GPU Gems2
 // A Practical Analytic Model for Daylight
+// Accurate Atmospheric Scattering - GPU Gems2
+// An Approximation to the Chapman Grazing-Incidence Function for Atmospheric Scattering
 
 // Based on other shaders,
 
