@@ -1,6 +1,6 @@
 #define NUMS_SAMPLES_SUN 8
-#define NUMS_SAMPLES_CLOUD 8
-#define NUMS_SAMPLES_CLOUD2 8
+#define NUMS_SAMPLES_CLOUD 16
+#define NUMS_SAMPLES_CLOUD2 4
 
 struct ScatteringParams
 {
@@ -175,17 +175,17 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 {
 	bool neg = true;
 
-	eye += float3(0,setting.earthRadius,0);
-
-	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, 0, setting.earthAtmTopRadius);
+	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthAtmTopRadius);
 	clip(outerIntersections.y);
 
-	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, 0, setting.earthRadius);
+	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
 	if (innerIntersections.x > 0)
 	{
 		neg = false;
 		outerIntersections.y = innerIntersections.x;
 	}
+
+	eye -= setting.earthCenter;
 
 	float3 start = eye + V * max(0, outerIntersections.x);
 	float3 end = eye + V * outerIntersections.y;
@@ -256,8 +256,8 @@ void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 
 			
 			float stepOpticalLight = ComputeCloudInsctrIntegral(setting, samplePos, sampleClouds);
 			
-			opticalDepthMie += stepOpticalDensity * ComputeDensity(setting, stepOpticalLight) * ComputeDensity(setting, opticalDepth);
 			opticalDepth += stepOpticalDensity;
+			opticalDepthMie += stepOpticalDensity * ComputeDensity(setting, stepOpticalLight) * ComputeDensity(setting, opticalDepth);
 		}
 	}
 
