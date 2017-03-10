@@ -19,109 +19,104 @@ static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEn
 #if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
-    texture = <ShadowmapMap>;
-    MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-    AddressU  = CLAMP;  AddressV = CLAMP;
+	texture = <ShadowmapMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 #endif
 
 #if SKYBOX_BLUR_ENABLE
-texture IBLSpecularTexture<string ResourceName = SKYBOX_BLUR_MAP_FILE;>; 
-sampler IBLSpecularSampler = sampler_state {
-    texture = <IBLSpecularTexture>;
-    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-    ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+texture SkyboxBlurMap<string ResourceName = SKYBOX_BLUR_MAP_FILE;>; 
+sampler SkyboxBlurMapSamp = sampler_state {
+	texture = <SkyboxBlurMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 #endif
 
 #if SKYBOX_BLUR_ENABLE == 0
-    #if SKYBOX_HDR_ENABLE
-        texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE;>; 
-    #else
-        texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE;>; 
-    #endif
-    sampler SkyboxMapSamp = sampler_state
-    {
-        texture = <SkyboxMap>;
-        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-        ADDRESSU = CLAMP; ADDRESSV = CLAMP;
-    };
+	#if SKYBOX_HDR_ENABLE
+		texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE;>; 
+	#else
+		texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE;>; 
+	#endif
+	sampler SkyboxMapSamp = sampler_state
+	{
+		texture = <SkyboxMap>;
+		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	};
 #endif
 
 float3 ApplyColorBalance(float3 color)
 {
-    float3 lum = luminance(color);
-    color = lerp(lum, color, 1 - mColBalance);
-    color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
-    return color;
+	float3 lum = luminance(color);
+	color = lerp(lum, color, 1 - mColBalance);
+	color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+	return color;
 }
 
 void SkyboxVS(
-    in float4 Position : POSITION,
-    out float4 oNormal   : TEXCOORD0,
-    out float4 oPosition : SV_Position)
+	in float4 Position : POSITION,
+	out float4 oNormal   : TEXCOORD0,
+	out float4 oPosition : SV_Position)
 {
 #if SKYDOME_ENABLE
-    oNormal = normalize(Position);
-    oNormal.y = oNormal.y<-0.05 ? -0.05 : oNormal.y;
-    oNormal.y += 0.04999;
-    oPosition = mul(float4(oNormal.xyz * length(Position), 1) , matViewProject);
-    oNormal.y -= 0.04999;
+	oNormal = normalize(Position);
+	oNormal.y = oNormal.y<-0.05 ? -0.05 : oNormal.y;
+	oNormal.y += 0.04999;
+	oPosition = mul(float4(oNormal.xyz * length(Position), 1) , matViewProject);
+	oNormal.y -= 0.04999;
 #else
-    oNormal = normalize(Position);
-    oPosition = mul(Position, matViewProject);
+	oNormal = normalize(Position);
+	oPosition = mul(Position, matViewProject);
 #endif
 }
 
 float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
-    float3 N = normalize(mul(matTransform, normal));
-    
-    float2 uv = ComputeSphereCoord(N);
-    
+	float3 N = normalize(mul(matTransform, normal));
+	
+	float2 uv = ComputeSphereCoord(N);
+	
 #if SKYBOX_BLUR_ENABLE
-    float4 color = tex2Dlod(IBLSpecularSampler, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
-    #if SKYBOX_BLUR_COLOR_RANGE == 1024
-        color.rgb = DecodeRGBT(color, 1024);
-    #elif SKYBOX_BLUR_COLOR_RANGE == 24
-        color.rgb = DecodeRGBM(color, 24);
-    #else
-        color.rgb = DecodeRGBM(color, 6);
-    #endif
+	float4 color = tex2Dlod(SkyboxBlurMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
+	#if SKYBOX_BLUR_COLOR_RANGE == 1024
+		color.rgb = DecodeRGBT(color, 1024);
+	#elif SKYBOX_BLUR_COLOR_RANGE == 24
+		color.rgb = DecodeRGBM(color, 24);
+	#else
+		color.rgb = DecodeRGBM(color, 6);
+	#endif
 #else
-    float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0));
+	float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0));
 #endif
 
 #if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
-    if (ExistRay)
-    {
-        color *= lerp(1, tex2Dlod(ShadowmapSamp, float4(screenPosition.xy / ViewportSize + ViewportOffset, 0, 0)).r, 0.5);
-    }
+	if (ExistRay)
+	{
+		color *= lerp(1, tex2Dlod(ShadowmapSamp, float4(screenPosition.xy / ViewportSize + ViewportOffset, 0, 0)).r, 0.5);
+	}
 #endif
-    
-    color.rgb = ApplyColorBalance(color.rgb);
-    
+	
+	color.rgb = ApplyColorBalance(color.rgb);
+	
 #if SKYBOX_HDR_ENABLE
-    return float4(linear2srgb(color.rgb), 1);
+	return float4(linear2srgb(color.rgb), 1);
 #else
-    return color;
+	return color;
 #endif
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-    technique name<string MMDPass = mmdpass; \
-    string Script = \
-        "RenderColorTarget0=;" \
-        "RenderDepthStencilTarget=;" \
-        "Pass=DrawObject;" \
-    ; \
-    > { \
-        pass DrawObject { \
-            AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
-            VertexShader = compile vs_3_0 SkyboxVS(); \
-            PixelShader  = compile ps_3_0 SkyboxPS(); \
-        } \
-    }
+	technique name<string MMDPass = mmdpass; \
+	> { \
+		pass DrawObject { \
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
+			VertexShader = compile vs_3_0 SkyboxVS(); \
+			PixelShader  = compile ps_3_0 SkyboxPS(); \
+		} \
+	}
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTec1, "object_ss")

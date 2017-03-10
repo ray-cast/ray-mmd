@@ -142,8 +142,10 @@ technique DeferredLighting<
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
 	"Pass=ShadowMapGen;"
+#if SHADOW_BLUR_COUNT
 	"RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurX;"
 	"RenderColorTarget=ShadowmapMap;	 Pass=ShadowBlurY;"
+#endif
 	"ClearSetColor=BackColor;"
 #endif
 
