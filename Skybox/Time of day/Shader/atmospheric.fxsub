@@ -153,41 +153,10 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
 	return minimaxIntersections;
 }
 
-float fastSin(float x)
-{
-	float3 c = float3(1, -0.1666666, 0.0083333);
-	float x2 = x * x;
-
-	float3 p;
-	p.x = x;
-	p.y = x * x2;
-	p.z = p.y * x2;
-
-	return dot(p, c);
-}
-
-float fastExp2(float x)
-{
-	const float3 c = float3(5.79525, 12.52461, -2.88611);
-	int e = round(x);
-	float t = x - e;
-	float m = (t * t + c.x*t + c.y) / (c.z * t + c.y);
-	return ldexp(m, e);
-}
-
-float3 fastExp2(float3 x)
-{
-	const float3 c = float3(5.79525, 12.52461, -2.88611);
-	int3 e = round(x);
-	float3 t = x - e;
-	float3 m = (t * t + c.x*t + c.y) / (c.z * t + c.y);
-	return ldexp(m, e);
-}
-
 float ChapmanApproximation(float X, float h, float cosZenith)
 {
 	float c = sqrt(X + h);
-	float c_exp_h = c * fastExp2(-h);
+	float c_exp_h = c * exp2(-h);
 
 	if (cosZenith >= 0)
 	{
@@ -198,7 +167,7 @@ float ChapmanApproximation(float X, float h, float cosZenith)
 		float x0 = sqrt(1 - cosZenith * cosZenith) * (X + h);
 		float c0 = sqrt(x0);
 
-		return 2 * c0 * fastExp2(X - x0) - c_exp_h / (1 - c * cosZenith);
+		return 2 * c0 * exp2(X - x0) - c_exp_h / (1 - c * cosZenith);
 	}
 }
 
@@ -249,13 +218,13 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
-		float3 segment_s = fastExp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
-		float3 segment_t = fastExp2(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
+		float3 segment_s = exp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
+		float3 segment_t = exp2(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
 		
 		transmittance = transmittance * segment_t;
 		
 		scattering = scattering * segment_t;
-		scattering += fastExp2(-h / setting.rayleighHeight) * length(sampleStep) * segment_s;
+		scattering += exp2(-h / setting.rayleighHeight) * length(sampleStep) * segment_s;
 
 		lastOpticalDepth = opticalDepth;
 	}
