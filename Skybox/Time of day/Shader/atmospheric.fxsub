@@ -1,6 +1,6 @@
-#define SKY_NUM_SAMPLES_STEP 8
-#define CLOUD_NUM_SAMPLES_STEP 8
-#define CLOUD_NUM_SAMPLES_STEP2 8
+#define NUMS_SAMPLES_SUN 8
+#define NUMS_SAMPLES_CLOUD 8
+#define NUMS_SAMPLES_CLOUD2 8
 
 struct ScatteringParams
 {
@@ -42,19 +42,13 @@ float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float V)
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)
 {
-	static const float n = 1.0003;
-	static const float N = 2.545E25;
-	static const float pn = 0.035;
-	static const float n2 = n * n;
-	static const float pi3 = PI * PI * PI;
-	static const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
+	const float n = 1.0003;
+	const float N = 2.545E25;
+	const float pn = 0.035;
+	const float n2 = n * n;
+	const float pi3 = PI * PI * PI;
+	const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
 	return rayleighConst / (lambda * lambda * lambda * lambda);
-}
-
-float ComputeOpticalMass(float cosAngle)
-{
-	float cosAngleRadians = degrees(acos(cosAngle));
-	return 1.0 / (cosAngle + 0.15 * pow(abs(93.885 - cosAngleRadians), -1.253));
 }
 
 float ComputePhaseMie(float theta, float g)
@@ -66,7 +60,7 @@ float ComputePhaseMie(float theta, float g)
 	float leftTop = 3.0 * (1.0 - g2);
 	float leftBottom = 2.0 * (2.0 + g2);
 	float rightTop = 1.0 + theta2;
-	float rightBottom = pow(saturate(1.0 + g2 - 2.0 * g * theta), 1.5);
+	float rightBottom = pow(1.0 + g2 - 2.0 * g * theta, 1.5);
 
 	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4.0 * PI);
 }
@@ -75,61 +69,6 @@ float ComputePhaseRayleigh(float theta)
 {
 	float theta2 = theta * theta;
 	return (theta2 * 0.75 + 0.75) / (4.0 * PI);
-}
-
-float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g)
-{
-	float cosTheta = dot(V, L);
-
-	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, g);
-	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
-
-	float3 betaTotal = (betaMie + betaRayleigh);
-	return betaTotal / (inscatteringMie + inscatteringRayleigh);
-}
-
-float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g, float g2, float clound)
-{
-	float sunTheta = dot(V, L);
-	float sunFade = pow(saturate(V.y), 1.0 / 2.2);
-
-	float3 betaMie1 = inscatteringMie * ComputePhaseMie(sunTheta, g);
-	float3 betaMie2 = inscatteringMie * ComputePhaseMie(sunTheta, g2) * (1 - saturate(clound));
-	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(sunTheta);
-
-	float3 betaTotal = (betaMie1 + betaMie2 * sunFade + betaRayleigh);
-	return betaTotal / (inscatteringMie + inscatteringRayleigh);
-}
-
-float ComputeSunIntensity(float EE, float zenithAngleCos)
-{
-	float steepness = 1.0;
-	float cutoffAngle = PI / 1.95;
-	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
-}
-
-float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 L)
-{
-	float3 up = float3(0, 1, 0);
-	float3 sunDirection = normalize(-L);
-
-	float zenithAngle = saturate(dot(V, up));
-	float zenithAngleCos = dot(sunDirection, up);
-	float zenithAngleMass = ComputeOpticalMass(zenithAngle);
-
-	float3 inscatteringMie = setting.waveLambdaMie;
-	float3 inscatteringRayleigh = setting.waveLambdaRayleigh - saturate(1.0 - exp(sunDirection.y));
-
-	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG);
-
-	float3 scatteringMie = inscatteringMie * distance;
-	float3 scatteringRayleigh = inscatteringRayleigh * distance;
-	float3 extinction = exp(-(scatteringMie + scatteringRayleigh));
-
-	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
-
-	float3 Lin = inscattering * (1.0 - extinction) * (4 * PI);
-	return Lin;
 }
 
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
@@ -182,7 +121,7 @@ float3 Transmittance(ScatteringParams setting, float3 r, float3 V)
 	float h = (rl - setting.earthRadius) / setting.rayleighHeight;
 	float cosZenith = dot(r / rl, V);
 	float ch = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cosZenith);
-	return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
+	return exp2(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
 }
 
 float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 V, float3 L, float neg)
@@ -196,7 +135,7 @@ float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 
 
 	float opticalDepthSun = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_sun);
 	float opticalDepthCamera = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_ray) * neg;
-	
+
 	return float2(opticalDepthSun, opticalDepthCamera);
 }
 
@@ -204,18 +143,17 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 {
 	float inf_neg = infinite ? 1 : -1;
 
-	float3 sampleStep = (end - start) / SKY_NUM_SAMPLES_STEP;
+	float3 sampleStep = (end - start) / NUMS_SAMPLES_SUN;
 	float3 samplePoint = end - sampleStep;
 	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh;
-	
+
+	float sampleLength = length(sampleStep);
+
 	float3 scattering = 0;
 	float2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);
-	
-	for (int i = (SKY_NUM_SAMPLES_STEP - 1); i > 0; i--, samplePoint -= sampleStep)
-	{   
-		float radius = length(samplePoint);
-		float h = radius - setting.earthRadius;
 
+	for (int i = 1; i < NUMS_SAMPLES_SUN; i++, samplePoint -= sampleStep)
+	{
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
 		float3 segment_s = exp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
@@ -224,11 +162,11 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 		transmittance = transmittance * segment_t;
 		
 		scattering = scattering * segment_t;
-		scattering += exp2(-h / setting.rayleighHeight) * length(sampleStep) * segment_s;
+		scattering += exp2(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
 
 		lastOpticalDepth = opticalDepth;
 	}
-	
+
 	insctrMie = scattering;
 	insctrRayleigh = scattering;
 }
@@ -238,7 +176,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	bool neg = true;
 
 	eye += float3(0,setting.earthRadius,0);
-	
+
 	float2 outerIntersections = ComputeRaySphereIntersection(eye, V, 0, setting.earthAtmTopRadius);
 	clip(outerIntersections.y);
 
@@ -253,7 +191,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	float3 end = eye + V * outerIntersections.y;
 
 	AerialPerspective(setting, start, end, V, -L, neg, transmittance, insctrMie, insctrRayleigh);
-	
+
 	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return intersectionTest;
 }
@@ -283,12 +221,12 @@ float ComputeClound(ScatteringParams setting, float3 P)
 
 float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 end)
 {
-	float3 sampleStep = (end - start) / float(CLOUD_NUM_SAMPLES_STEP2);
+	float3 sampleStep = (end - start) / float(NUMS_SAMPLES_CLOUD2);
 	float3 samplePos = start + sampleStep;
 
 	float thickness = 0;
 
-	for (int j = 0; j < CLOUD_NUM_SAMPLES_STEP2; ++j, samplePos += sampleStep) 
+	for (int j = 0; j < NUMS_SAMPLES_CLOUD2; ++j, samplePos += sampleStep) 
 	{
 		float stepDepthLight = ComputeClound(setting, samplePos);
 		thickness += stepDepthLight;
@@ -299,14 +237,14 @@ float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 
 
 void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float opticalDepth, out float3 insctrMie)
 {
-	float3 sampleStep = (end - start) / float(CLOUD_NUM_SAMPLES_STEP);
+	float3 sampleStep = (end - start) / float(NUMS_SAMPLES_CLOUD);
 	float3 samplePos = start + sampleStep * 0.5;
-	
+
 	float sampleLength = length(sampleStep);
 
 	float3 opticalDepthMie = 0.0;
 
-	for (int i = 0; i < CLOUD_NUM_SAMPLES_STEP; ++i, samplePos += sampleStep)
+	for (int i = 0; i < NUMS_SAMPLES_CLOUD; ++i, samplePos += sampleStep)
 	{
 		float stepOpticalDensity = ComputeClound(setting, samplePos);
 		stepOpticalDensity *= sampleLength;
@@ -361,8 +299,8 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 
 	float3 sky = insctrTotalSun + insctrTotalMie + insctrTotalRayleigh;
 	float3 cloud = cloudsMie * (insctrTotalRayleigh + insctrTotalMie);
-	
-	float3 scattering = lerp(cloud, sky, exp(-0.0000001 * cloudsOpticalLength) * saturate((1 - phaseMie)));
+
+	float3 scattering = lerp(cloud, sky, exp(-0.0000001 * cloudsOpticalLength));
 	scattering = lerp(sky, scattering, V.y * V.y);
 
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
