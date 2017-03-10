@@ -4,24 +4,26 @@
 
 bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
 
-float mEnvRotateX : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateX"; >;
-float mEnvRotateY : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateY"; >;
-float mEnvRotateZ : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "EnvRotateZ"; >;
-float mColBalanceRP : CONTROLOBJECT < string name="(self)"; string item = "BalanceR+"; >;
-float mColBalanceGP : CONTROLOBJECT < string name="(self)"; string item = "BalanceG+"; >;
-float mColBalanceBP : CONTROLOBJECT < string name="(self)"; string item = "BalanceB+"; >;
-float mColBalanceRM : CONTROLOBJECT < string name="(self)"; string item = "BalanceR-"; >;
-float mColBalanceGM : CONTROLOBJECT < string name="(self)"; string item = "BalanceG-"; >;
-float mColBalanceBM : CONTROLOBJECT < string name="(self)"; string item = "BalanceB-"; >;
-float mColBalance  :  CONTROLOBJECT < string name="(self)"; string item = "BalanceGray+"; >;
+float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
+float mColBalanceRP : CONTROLOBJECT<string name="(self)"; string item = "BalanceR+";>;
+float mColBalanceGP : CONTROLOBJECT<string name="(self)"; string item = "BalanceG+";>;
+float mColBalanceBP : CONTROLOBJECT<string name="(self)"; string item = "BalanceB+";>;
+float mColBalanceRM : CONTROLOBJECT<string name="(self)"; string item = "BalanceR-";>;
+float mColBalanceGM : CONTROLOBJECT<string name="(self)"; string item = "BalanceG-";>;
+float mColBalanceBM : CONTROLOBJECT<string name="(self)"; string item = "BalanceB-";>;
+float mColBalance  :  CONTROLOBJECT<string name="(self)"; string item = "BalanceGray+";>;
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
+#if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
 sampler ShadowmapSamp = sampler_state {
     texture = <ShadowmapMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+    MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
     AddressU  = CLAMP;  AddressV = CLAMP;
 };
+#endif
 
 #if SKYBOX_BLUR_ENABLE
 texture IBLSpecularTexture<string ResourceName = SKYBOX_BLUR_MAP_FILE;>; 
@@ -30,20 +32,19 @@ sampler IBLSpecularSampler = sampler_state {
     MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
     ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
-#else
+#endif
+
+#if SKYBOX_BLUR_ENABLE == 0
     #if SKYBOX_HDR_ENABLE
-    texture2D decal<string ResourceName = SKYBOX_HDR_FILE;>; 
+        texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE;>; 
     #else
-    texture2D decal<string ResourceName = SKYBOX_MAP_FILE;>; 
+        texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE;>; 
     #endif
-    sampler decalMap = sampler_state
+    sampler SkyboxMapSamp = sampler_state
     {
-        texture = <decal>;
-        MINFILTER = LINEAR;
-        MAGFILTER = LINEAR;
-        MIPFILTER = NONE;
-        ADDRESSU  = CLAMP;
-        ADDRESSV  = CLAMP;
+        texture = <SkyboxMap>;
+        MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+        ADDRESSU = CLAMP; ADDRESSV = CLAMP;
     };
 #endif
 
@@ -62,7 +63,7 @@ void SkyboxVS(
 {
 #if SKYDOME_ENABLE
     oNormal = normalize(Position);
-    oNormal.y = oNormal.y < -0.05 ? -0.05 : oNormal.y;
+    oNormal.y = oNormal.y<-0.05 ? -0.05 : oNormal.y;
     oNormal.y += 0.04999;
     oPosition = mul(float4(oNormal.xyz * length(Position), 1) , matViewProject);
     oNormal.y -= 0.04999;
@@ -88,10 +89,10 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
         color.rgb = DecodeRGBM(color, 6);
     #endif
 #else
-    float4 color = tex2Dlod(decalMap, float4(uv, 0, 0));
+    float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0));
 #endif
 
-#if SKYDOME_ENABLE
+#if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
     if (ExistRay)
     {
         color *= lerp(1, tex2Dlod(ShadowmapSamp, float4(screenPosition.xy / ViewportSize + ViewportOffset, 0, 0)).r, 0.5);
@@ -108,7 +109,7 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-    technique name < string MMDPass = mmdpass; \
+    technique name<string MMDPass = mmdpass; \
     string Script = \
         "RenderColorTarget0=;" \
         "RenderDepthStencilTarget=;" \
@@ -125,6 +126,6 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTec1, "object_ss")
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTec < string MMDPass = "shadow"; > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

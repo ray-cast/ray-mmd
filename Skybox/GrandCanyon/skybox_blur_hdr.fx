@@ -1,4 +1,5 @@
-// 输入的纹理是HDR文件时启用
+#define SKYDOME_ENABLE 0
+
 #define SKYBOX_HDR_ENABLE 1
 #define SKYBOX_HDR_FILE "texture/skybox.hdr"
 
@@ -10,4 +11,4 @@
 #define SKYBOX_BLUR_COLOR_RANGE 1024
 #define SKYBOX_BLUR_MAP_FILE "texture/skyspec_hdr.dds"
 
-#include "skybox.fxsub"
+#include "../../shader/skybox.fxsub"
