@@ -246,12 +246,12 @@ float3 ComputeDensity(ScatteringParams setting, float depth)
 float ComputeClound(ScatteringParams setting, float3 P)
 {
 	float cloud = 0.0;
-	float height = length(P - setting.earthCenter) - setting.earthRadius;
+	float height = P.y;
 
 	if (setting.cloudBottom < height && setting.cloudTop > height) 
 	{
-		float3 P2 = P + float3(23175.7, 0.0, 0.0) + setting.clouddir;
-		cloud = fbm(P2 * 2e-5, setting.cloudBias);
+		float3 P2 = P + setting.clouddir;
+		cloud = fbm(P2 * 2e-4, setting.cloudBias);
 
 		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
 		cloud *= sin(PI * (height - setting.cloudBottom) / setting.cloudBottom);
@@ -264,7 +264,7 @@ float ComputeClound(ScatteringParams setting, float3 P)
 float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 end)
 {
 	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP);
-	float3 samplePos = start;
+	float3 samplePos = start + sampleStep;
 
 	float thickness = 0;
 
@@ -279,8 +279,9 @@ float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 
 
 void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float opticalDepth, out float3 insctrMie)
 {
-	float3 samplePos = start;
 	float3 sampleStep = (end - start) / float(NUM_SAMPLES_STEP);
+	float3 samplePos = start + sampleStep * 0.5;
+	
 	float sampleLength = length(sampleStep);
 
 	float3 opticalDepthMie = 0.0;

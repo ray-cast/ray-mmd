@@ -70,8 +70,8 @@ float4 ShadowMapGenPS(
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = proj.z;
 
-	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax) * mLightZMax;
-	receiverDepth -= (linearDepth + depthSlope) * 0.003 + max(0, linearDepth - 100) * 0.007;
+	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax) * mLightZMax * 0.003;
+	receiverDepth -= linearDepth * 0.002 + depthSlope + max(0, linearDepth - 100) * 0.007;
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 

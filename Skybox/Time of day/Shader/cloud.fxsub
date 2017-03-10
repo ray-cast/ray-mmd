@@ -5,11 +5,6 @@ sampler NoiseMapSamp = sampler_state {
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float noise(float2 x) 
-{
-	return tex2Dlod(NoiseMapSamp, float4(x / 256, 0, 0)).x;
-}
-
 float noise(float3 x)
 {
 	float3 p = floor(x);
@@ -19,17 +14,6 @@ float noise(float3 x)
 	float2 uv = (p.xy + float2(37.0, 17.0) * p.z) + f.xy;
 	float2 rg = tex2Dlod(NoiseMapSamp, float4((uv + 0.5) / 256.0, 0, 0)).yx;
 	return lerp(rg.x, rg.y, f.z);
-}
-
-float fbm(float2 p) 
-{
-	float2x2 m2 = float2x2(1.6,-1.2,1.2,1.6);
-	float f = 0;
-	f += 0.5000 * noise(p); p = mul(m2, p);
-	f += 0.2500 * noise(p); p = mul(m2, p);
-	f += 0.1666 * noise(p); p = mul(m2, p);
-	f += 0.0834 * noise(p);
-	return f;
 }
 
 float fbm(float3 p, float bias)
