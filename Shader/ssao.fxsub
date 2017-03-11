@@ -192,7 +192,7 @@ float4 ScreenSpaceDirOccPassPS(
 
 		float emitterScale = narrowBand ? 0.5 : 2.5;
 		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
-		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSAO_SAMPLER_COUNT / 2);
+		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) * 0.25;
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
 
