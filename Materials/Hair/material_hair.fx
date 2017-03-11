@@ -134,4 +134,4 @@ const float customAMapLoopNum = 1.0;
 const float3 customB = 0.0;
 const float2 customBMapLoopNum = 1.0;
 
-#include "material_common.fxsub"
+#include "../material_common.fxsub"
