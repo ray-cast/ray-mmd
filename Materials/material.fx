@@ -90,7 +90,7 @@ const float melaninMapLoopNum = 1.0;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
-const float3 emissiveBlink = 1.0; // between float3(0, 0, 0) ~ float3(1, 1, 1)
+const float3 emissiveBlink = 1.0; // between float3(0, 0, 0) ~ float3(10, 10, 10)
 const float  emissiveIntensity = 1.0;
 const float2 emissiveMapLoopNum = 1.0;
 

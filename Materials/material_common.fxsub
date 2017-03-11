@@ -41,7 +41,12 @@ float3 SmoothTriangleWave(float3 x)
 	return SmoothCurve(TriangleWave(x));
 }
 
-static float3 LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
+#if EMISSIVE_APPLY_BLINK == 2
+	float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+	static float3 LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink * mBlink));
+#else
+	static float3 LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
+#endif
 #endif
 
 #if EMISSIVE_APPLY_MORPH_INTENSITY
@@ -340,6 +345,7 @@ float3 rgb2ycbcr(float3 col)
 	return half3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
+#if NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE
 float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, float3 tangentNormal)
 {
 	float3 dp1 = ddx(viewdir);
@@ -362,6 +368,19 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
 
 	return normalize(mul(tangentNormal, tbnTransform));
 }
+
+#if NORMAL_MAP_IS_COMPRESSED
+	float3 BumpToTangent(sampler source, float2 coord, float2 resolution) 
+	{
+		float xl = tex2D(source, coord + float2(-1.0,  0.0) / resolution).r;
+		float xr = tex2D(source, coord + float2( 1.0,  0.0) / resolution).r;
+		float ub = tex2D(source, coord + float2( 0.0, -1.0) / resolution).r;
+		float ut = tex2D(source, coord + float2( 0.0,  1.0) / resolution).r;
+		float2 slope = (float2(xl - xr, ub - yt) + 1.0) * 0.5;
+		return float3(slope, 1.0);
+	}
+#endif
+#endif
 
 #if PARALLAX_MAP_ENABLE
 float3 ParallaxOcclusionDirection(float3 normal, float3 worldPos, float2 coord)
