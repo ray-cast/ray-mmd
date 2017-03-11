@@ -2,9 +2,9 @@ float mAlbedoH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Albed
 float mAlbedoS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoS";>;
 float mAlbedoV : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoV";>;
 float mAlbedoLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoLoops";>;
-float mEmissiveH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveH";>;
-float mEmissiveS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveS";>;
-float mEmissiveV : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveV";>;
+float mEmissiveR : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveR";>;
+float mEmissiveG : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveG";>;
+float mEmissiveB : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveB";>;
 float mEmissiveBlinkP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveBlink";>;
 float mEmissiveIntensityP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveIntensity";>;
 float mEmissiveLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveLoops";>;
@@ -21,6 +21,12 @@ float mMetalnessBaseSpecularP : CONTROLOBJECT<string name=CONTROLLER_NAME; strin
 float mMetalnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MetalnessLoops";>;
 float mMelanin : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Melanin";>;
 float mMelaninLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MelaninLoops";>;
+float mCustomA : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "CustomA";>;
+float mCustomALoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "CustomALoops";>;
+float mCustom2R : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Custom2R";>;
+float mCustom2G : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Custom2G";>;
+float mCustom2B : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Custom2B";>;
+float mCustomBLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "CustomBLoops";>;
 
 float3 hsv2rgb(float3 hsv)
 {
@@ -29,7 +35,8 @@ float3 hsv2rgb(float3 hsv)
 }
 
 static const float3 mAlbedoColor = hsv2rgb(float3(mAlbedoH, mAlbedoS, 1 - mAlbedoV));
-static const float3 mEmissiveColor = hsv2rgb(float3(mEmissiveH, mEmissiveS, 1 - mEmissiveV));
+static const float3 mEmissiveColor = float3(mEmissiveR, mEmissiveG, mEmissiveB);
+static const float3 mCustomBColor = float3(mCustom2R, mCustom2G, mCustom2B);
 
 static const float mAlbedoLoops = lerp(1, 10, mAlbedoLoopsP);
 static const float mEmissiveLoops = lerp(1, 10, mEmissiveLoopsP);
@@ -38,6 +45,8 @@ static const float mNormalSubLoops = lerp(1, 10, mNormalSubLoopsP);
 static const float mSmoothnessLoops = lerp(1, 10, mSmoothnessLoopsP);
 static const float mMetalnessLoops = lerp(1, 10, mMetalnessLoopsP);
 static const float mMelaninLoops = lerp(1, 10, mMelaninLoopsP);
+static const float mCustomALoops = lerp(1, 10, mCustomALoopsP);
+static const float mCustomBLoops = lerp(1, 10, mCustomBLoopsP);
 
 static const float mNormalScale = lerp(lerp(1, 20, mNormalScaleP), -20, mNormalScaleM);
 static const float mNormalSubScale = lerp(lerp(1, 20, mNormalSubScaleP), -20, mNormalSubScaleM);

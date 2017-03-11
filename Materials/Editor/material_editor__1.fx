@@ -16,7 +16,7 @@
 #define ALBEDO_MAP_FILE "albedo.png"
 
 static const float3 albedo = mAlbedoColor;
-static const float albedoMapLoopNum = mAlbedoLoops;
+static const float2 albedoMapLoopNum = mAlbedoLoops;
 
 #define ALBEDO_SUB_ENABLE 1
 #define ALBEDO_SUB_MAP_ENABLE 0
@@ -91,7 +91,7 @@ static const float metalnessBaseSpecular = mMetalnessBaseSpecular;
 static const float melanin = mMelanin;
 static const float melaninMapLoopNum = mMelaninLoops;
 
-#define EMISSIVE_ENABLE 0
+#define EMISSIVE_ENABLE 1
 #define EMISSIVE_USE_ALBEDO 0
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
@@ -138,8 +138,8 @@ const float occlusionMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.0;
-const float customAMapLoopNum = 1.0;
+static const float customA = mCustomA;
+static const float customAMapLoopNum = mCustomALoops;
 
 #define CUSTOM_B_MAP_ENABLE 0
 #define CUSTOM_B_MAP_UV_FLIP 0
@@ -147,7 +147,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_APPLY_COLOR 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 0.0;
-const float customBMapLoopNum = 1.0;
+static const float3 customB = mCustomBColor;
+static const float2 customBMapLoopNum = mCustomBLoops;
 
 #include "../material_common.fxsub"

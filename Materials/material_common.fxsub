@@ -1180,10 +1180,8 @@ float GetLightMode(MaterialParam material)
 		return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : profile;
 	#endif
 	return profile;
-#elif USE_CUSTOM_MATERIAL && EMISSIVE_ENABLE
-	return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #else
-	return (material.emissiveIntensity > 0) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
+	return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
 #endif
 }
 
