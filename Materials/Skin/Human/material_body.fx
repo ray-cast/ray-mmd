@@ -14,6 +14,16 @@
 const float3 albedo = 1.0;           // between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
 const float2 albedoMapLoopNum = 5.0; // between 0.0 ~ inf or float2 albedoMapLoopNum = float2(x, y);
 
+#define ALBEDO_SUB_ENABLE 1  // 1 : melanin, 2 : multiply, 3 : pow, 4 : add
+#define ALBEDO_SUB_MAP_ENABLE 0
+#define ALBEDO_SUB_MAP_IN_TEXTURE 0
+#define ALBEDO_SUB_MAP_UV_FLIP 0
+#define ALBEDO_SUB_MAP_APPLY_SCALE 0
+#define ALBEDO_SUB_MAP_FILE "albedo.png"
+
+const float3 albedoSub = 0.1;
+const float2 albedoSubMapLoopNum = 1.0;
+
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
@@ -65,16 +75,6 @@ const float smoothnessMapLoopNum = 5.0;
 const float metalness = 0.05;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04; 
-
-#define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_IN_TOONMAP 0
-#define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0
-#define MELANIN_MAP_APPLY_SCALE 0
-#define MELANIN_MAP_FILE "melanin.png"
-
-const float melanin = 0.1;
-const float melaninMapLoopNum = 1.0;
 
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_USE_ALBEDO 0

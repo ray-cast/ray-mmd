@@ -12,7 +12,17 @@
 #define ALBEDO_MAP_FILE "albedo.png"
 
 const float3 albedo = 1.0;
-const float albedoMapLoopNum = 1.0;
+const float2 albedoMapLoopNum = 1.0;
+
+#define ALBEDO_SUB_ENABLE 0
+#define ALBEDO_SUB_MAP_ENABLE 0
+#define ALBEDO_SUB_MAP_IN_TEXTURE 0
+#define ALBEDO_SUB_MAP_UV_FLIP 0
+#define ALBEDO_SUB_MAP_APPLY_SCALE 0
+#define ALBEDO_SUB_MAP_FILE "albedo.png"
+
+const float3 albedoSub = 0.0;
+const float2 albedoSubMapLoopNum = 1.0;
 
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
@@ -43,7 +53,6 @@ const float normalMapLoopNum = 1.0;
 const float normalMapSubScale = 1;
 const float normalMapSubLoopNum = 1.0;
 
-
 #define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
@@ -51,9 +60,8 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.5;
+const float smoothness = 0.0;
 const float smoothnessMapLoopNum = 1.0;
-
 
 #define METALNESS_MAP_ENABLE 0
 #define METALNESS_MAP_IN_TOONMAP 0
@@ -64,17 +72,6 @@ const float smoothnessMapLoopNum = 1.0;
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
-
-
-#define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_IN_TOONMAP 0
-#define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0
-#define MELANIN_MAP_FILE "melanin.png"
-
-const float melanin = 0.0;
-const float melaninMapLoopNum = 1.0;
-
 
 #define EMISSIVE_ENABLE 1
 #define EMISSIVE_USE_ALBEDO 0

@@ -15,6 +15,16 @@
 const float3 albedo = 1;
 const float albedoMapLoopNum = 1.0;
 
+#define ALBEDO_SUB_ENABLE 1
+#define ALBEDO_SUB_MAP_ENABLE 0
+#define ALBEDO_SUB_MAP_IN_TEXTURE 0
+#define ALBEDO_SUB_MAP_UV_FLIP 0
+#define ALBEDO_SUB_MAP_APPLY_SCALE 0
+#define ALBEDO_SUB_MAP_FILE "albedo.png"
+
+const float3 albedoSub = 0.1;
+const float2 albedoSubMapLoopNum = 1.0;
+
 // 透明通道
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
@@ -67,16 +77,6 @@ const float smoothnessMapLoopNum = 1.0;
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
-
-// 黑色素
-#define MELANIN_MAP_ENABLE 0
-#define MELANIN_MAP_IN_TOONMAP 0
-#define MELANIN_MAP_UV_FLIP 0
-#define MELANIN_MAP_SWIZZLE 0 // (R = 0, G = 1, B = 2, A = 3)
-#define MELANIN_MAP_FILE "melanin.png"
-
-const float melanin = 0.1;
-const float melaninMapLoopNum = 1.0;
 
 // 发光贴图
 #define EMISSIVE_ENABLE 0

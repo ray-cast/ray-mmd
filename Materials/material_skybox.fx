@@ -5,6 +5,5 @@ static const float alpha = 1.0;
 static const float smoothness = 0.0;
 static const float metalness = 0.0;
 static const float metalnessBaseSpecular = 0.0;
-static const float melanin = 0.0;
 
 #include "material_common.fxsub"

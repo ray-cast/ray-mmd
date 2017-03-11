@@ -18,6 +18,16 @@
 static const float3 albedo = mAlbedoColor;
 static const float albedoMapLoopNum = mAlbedoLoops;
 
+#define ALBEDO_SUB_ENABLE 1
+#define ALBEDO_SUB_MAP_ENABLE 0
+#define ALBEDO_SUB_MAP_IN_TEXTURE 0
+#define ALBEDO_SUB_MAP_UV_FLIP 0
+#define ALBEDO_SUB_MAP_APPLY_SCALE 0
+#define ALBEDO_SUB_MAP_FILE "albedo.png"
+
+static const float3 albedoSub = mMelanin;
+static const float2 albedoSubMapLoopNum = mMelaninLoops;
+
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
@@ -82,7 +92,7 @@ static const float melanin = mMelanin;
 static const float melaninMapLoopNum = mMelaninLoops;
 
 #define EMISSIVE_ENABLE 0
-#define EMISSIVE_USE_ALBEDO 0 
+#define EMISSIVE_USE_ALBEDO 0
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
 #define EMISSIVE_MAP_IN_SCREEN_MAP 0
