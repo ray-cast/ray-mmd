@@ -17,7 +17,6 @@ float3 EnvironmentSpecularPolynomial(float3 N, float3 V, float smoothness, float
 	float bias = saturate(min( b1 * x + b2 * x * x, b3 + b4 * y + b5 * y * y + b6 * y * y * y));
 	float delta = saturate(d0 + d1 * x + d2 * y + d3 * x * x + d4 * x * y + d5 * y * y + d6 * x * x * x);
 	float scale = delta - bias;
-
 	return specular * scale + bias;
 }
 
