@@ -43,6 +43,26 @@ sampler SSAOMapSampTemp = sampler_state {
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
 
+static const float2 SSAOKernel[16] = 
+{
+	float2( -0.14, -0.02 ),
+	float2( -0.04, 0.24 ),
+	float2( 0.36, 0.08 ),
+	float2(-0.46, -0.08),
+	float2( 0.26, -0.4 ),
+	float2(-0.127, -0.347),
+	float2( -0.44, -0.34 ),
+	float2( -0.52, 0.4 ),
+	float2(-0.226, 0.589),
+	float2( 0.3, 0.68 ),
+	float2( 0.7, 0.356),
+	float2( 0.47, -0.287),
+	float2( 0.84, -0.32 ),
+	float2( 0.4, -0.74),
+	float2(-0.338, -0.684),
+	float2(-0.622, -0.415)
+};
+
 float linearizeDepth(float2 uv)
 {
 	return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).r;
@@ -81,26 +101,6 @@ float4 ScreenSpaceDirOccPassPS(
 	in float4 SSDOParams1 : TEXCOORD1,
 	in float4 SSDOParams2 : TEXCOORD2) : COLOR
 {
-	const float2 kernel[16] = 
-	{
-		float2( -0.14, -0.02 ),
-		float2( -0.04, 0.24 ),
-		float2( 0.36, 0.08 ),
-		float2(-0.46, -0.08),
-		float2( 0.26, -0.4 ),
-		float2(-0.127, -0.347),
-		float2( -0.44, -0.34 ),
-		float2( -0.52, 0.4 ),
-		float2(-0.226, 0.589),
-		float2( 0.3, 0.68 ),
-		float2( 0.7, 0.356),
-		float2( 0.47, -0.287),
-		float2( 0.84, -0.32 ),
-		float2( 0.4, -0.74),
-		float2(-0.338, -0.684),
-		float2(-0.622, -0.415)
-	};
-
 	float linearDepth = linearizeDepth(coord.xy);
 	float linearDepth2 = abs(linearDepth);
 
@@ -134,16 +134,16 @@ float4 ScreenSpaceDirOccPassPS(
 	[unroll]
 	for (int i = 0; i < SSAO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(kernel[i + 0].xy, sampleRotMat);
-		sampleRotate[i + 1] = mul(kernel[i + 1].xy, sampleRotMat);
-		sampleRotate[i + 2] = mul(kernel[i + 2].xy, sampleRotMat);
-		sampleRotate[i + 3] = mul(kernel[i + 3].xy, sampleRotMat);
+		sampleRotate[i + 0] = mul(SSAOKernel[i + 0].xy, sampleRotMat);
+		sampleRotate[i + 1] = mul(SSAOKernel[i + 1].xy, sampleRotMat);
+		sampleRotate[i + 2] = mul(SSAOKernel[i + 2].xy, sampleRotMat);
+		sampleRotate[i + 3] = mul(SSAOKernel[i + 3].xy, sampleRotMat);
 	}
 
 	[unroll]
 	for (int j = 0; j < SSAO_SAMPLER_COUNT; j+=4)
 	{
-		bool narrowBand = i < (SSAO_SAMPLER_COUNT / 2);
+		bool narrowBand = j < (SSAO_SAMPLER_COUNT / 2);
 
 		float2 radius = narrowBand ? radius0 : radius1;
 
@@ -191,7 +191,7 @@ float4 ScreenSpaceDirOccPassPS(
 
 		float emitterScale = narrowBand ? 0.5 : 2.5;
 		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
-		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) * 0.25;
+		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) * (SSAO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
 
@@ -209,7 +209,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= SSAO_SAMPLER_COUNT;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x * 1.2) , mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x * 1.5), mSSAOScale);
 
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
