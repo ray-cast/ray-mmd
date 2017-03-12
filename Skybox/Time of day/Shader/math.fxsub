@@ -68,6 +68,11 @@ float pow2(float x)
 	return x * x;
 }
 
+float3 pow2(float3 x)
+{
+	return x * x;
+}
+
 float pow5(float x)
 {
 	float xx = x * x;
@@ -84,7 +89,7 @@ float2 ComputeSphereCoord(float3 normal)
 float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
 {
 	float3 normal;
-	normal.x =  sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
+	normal.x =  -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
 	normal.y =  cos(thetaStart + coord.y * thetaLength);
 	normal.z =  sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
 	return normal;

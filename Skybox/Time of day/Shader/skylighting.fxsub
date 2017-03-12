@@ -168,12 +168,12 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 
 float4 EncodeRGBT(float3 rgb, float range = 1024)
 {
-	float vmax = 0;
-	vmax = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
-	vmax = min(vmax, range);
+	float limits = 0;
+	limits = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
+	limits = min(limits, range);
 
 	float4 encode;
-	encode[3] = (range + 1) / range *  vmax / (1 + vmax);
+	encode[3] = (range + 1) / range *  limits / (1 + limits);
 	encode[3] = ceil(encode[3] * 255.0) / 255.0;
 	
 	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
@@ -191,7 +191,8 @@ float3 DecodeRGBT(float4 rgbt, float range = 1024)
 	return rgbt.rgb * rgbt.a;
 }
 
-float2 sampleRotation[6][9] ={
+float2 sampleRotation[6][9] =
+{
 	float2(0.75,0.5),float2(0.625,0.386182),float2(0.828613,0.613818),float2(0.828613,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.72843,0.461711),float2(0.77157,0.461711),float2(0.625,0.538289),
 	float2(0.5,0),float2(0.625,0.386182),float2(0.125,0.274769),float2(0.125,0.386182),float2(0.625,0.274769),float2(0.625,0.461711),float2(0.375,0.461711),float2(0.125,0.461711),float2(0.625,0.157542),
 	float2(0.5,0.5),float2(0.625,0.386182),float2(0.421387,0.613818),float2(0.421387,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.375,0.461711),float2(0.47843,0.461711),float2(0.625,0.538289),
