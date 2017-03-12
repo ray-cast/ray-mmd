@@ -304,7 +304,7 @@ const float4 IBLColor  = float4(0,0.5,0,0.5);
 
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
-technique MainTech<string MMDPass = "object"; string Subset="0";
+technique MainTech<string MMDPass = "object";
 	string Script =
 	"ClearSetColor=BackColor;"
 	"RenderColorTarget0=LightAlphaMap;"
@@ -325,7 +325,7 @@ technique MainTech<string MMDPass = "object"; string Subset="0";
 	}
 }
 
-technique MainTechSS<string MMDPass = "object_ss"; string Subset="0";
+technique MainTechSS<string MMDPass = "object_ss";
 	string Script =
 	"ClearSetColor=BackColor;"
 	"RenderColorTarget0=LightAlphaMap;"
@@ -349,5 +349,3 @@ technique MainTechSS<string MMDPass = "object_ss"; string Subset="0";
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTech<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
-technique MainTech1<string MMDPass = "object";>{}
-technique MainTechSS1<string MMDPass = "object_ss";>{}
