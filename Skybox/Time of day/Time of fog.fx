@@ -33,12 +33,12 @@ float4 ScatteringFogPS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+
 	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
 	clip(dot(sum1, 1.0) - 1e-5);
-	
+
 	float3 V = normalize(viewdir);
-	
+
 	float scaling = 1000;
 
 	ScatteringParams setting;
@@ -48,13 +48,13 @@ float4 ScatteringFogPS(
 	setting.rayleighHeight = 15 * scaling;
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
-	
+
 	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);	
 	return float4(fog * LightSpecular, 0);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="0";>{\
+	technique name<string MMDPass = mmdpass;>{\
 		pass DrawObject {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
