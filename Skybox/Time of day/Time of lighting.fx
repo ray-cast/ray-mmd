@@ -26,11 +26,11 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
-	
+
 	float3 V = normalize(worldView);
 	float3 N = normalize(worldNormal);
 	float3 R = normalize(worldReflect);
-	
+
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
@@ -39,13 +39,13 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
-	
+
 	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(ComputeSphereCoord(R), 0, mipLayer)));
 	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));
 	float3 prefilteredSpeculr = 0;
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
-	
+
 	diffuse = prefilteredDiffuse;
 
 	specular = prefilteredSpeculr * fresnel;
@@ -96,12 +96,12 @@ void GenDiffuseMapVS(
 	out float4 oTexcoord6 : TEXCOORD6,
 	out float4 oPosition : POSITION)
 {
-   	oTexcoord0 = SHSamples(SkySpecularMapSample, 0);
-    oTexcoord1 = SHSamples(SkySpecularMapSample, 1);
-    oTexcoord2 = SHSamples(SkySpecularMapSample, 2);
-    oTexcoord3 = SHSamples(SkySpecularMapSample, 3);
-    oTexcoord4 = SHSamples(SkySpecularMapSample, 4);
-    oTexcoord5 = SHSamples(SkySpecularMapSample, 5);
+	oTexcoord0 = SHSamples(SkySpecularMapSample, 0);
+	oTexcoord1 = SHSamples(SkySpecularMapSample, 1);
+	oTexcoord2 = SHSamples(SkySpecularMapSample, 2);
+	oTexcoord3 = SHSamples(SkySpecularMapSample, 3);
+	oTexcoord4 = SHSamples(SkySpecularMapSample, 4);
+	oTexcoord5 = SHSamples(SkySpecularMapSample, 5);
 	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
 	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
@@ -154,10 +154,10 @@ void EnvLightingPS(
 
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
+
 	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
 	clip(dot(sum1, 1) - 1e-5);
-	
+
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
@@ -165,15 +165,15 @@ void EnvLightingPS(
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
+
 	float3 V = normalize(viewdir);
-	
+
 	float3 diffuse = 0, specular = 0;
 	ShadingMaterial(material, V, diffuse, specular);
-	
+
 	float3 diffuse2, specular2;
 	ShadingMaterial(materialAlpha, V, diffuse2, specular2);
-	
+
 	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 }

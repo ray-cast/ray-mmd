@@ -36,7 +36,7 @@ float4 BilateralBlurPS(
 
     if (offset.y > 0.0)
     {
-        float coeff = center_d > 2000 ? 0 : pow2(1 - exp(-center_d / 500));
+        float coeff = (1 - exp(-center_d / 500));
         total_c = lerp(tex2Dlod(original, float4(coord, 0, 0)).rgb, total_c, coeff);
     }
 
