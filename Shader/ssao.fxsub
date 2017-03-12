@@ -70,7 +70,7 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant();	
-	oTexcoord2 = float4(0.2, 0.2, 0.02, 0.2);
+	oTexcoord2 = float4(1.2, 1.2, 0.02, 0.2);
 	oTexcoord2.xy *= float2(matProject._11, matProject._22);
 
 	return Position;
