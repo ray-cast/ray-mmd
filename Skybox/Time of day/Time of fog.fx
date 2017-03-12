@@ -1,7 +1,7 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 #include "shader/cloud.fxsub"
-#include "shader/atmospheric.fxsub"
+#include "shader/phase.fxsub"
 #include "shader/fog.fxsub"
 
 #include "../../shader/gbuffer.fxsub"
@@ -46,9 +46,6 @@ float4 ScatteringFogPS(
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
 	setting.rayleighHeight = 15 * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
-	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	

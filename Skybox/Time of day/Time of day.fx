@@ -2,6 +2,7 @@
 #include "shader/common.fxsub"
 #include "shader/stars.fxsub"
 #include "shader/cloud.fxsub"
+#include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 
 static const float3 moonScaling = 2000;
