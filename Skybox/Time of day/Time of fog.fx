@@ -1,6 +1,5 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
-#include "shader/cloud.fxsub"
 #include "shader/phase.fxsub"
 #include "shader/fog.fxsub"
 
