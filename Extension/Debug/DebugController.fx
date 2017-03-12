@@ -34,7 +34,6 @@ float showPSSM : CONTROLOBJECT < string name="(self)"; string item = "PSSM"; >;
 
 texture2D ScnMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "X8R8G8B8";
 >;

@@ -110,15 +110,14 @@ if(doneNP){if(!doneN)lumaEndN=FxaaLuma(FxaaTexTop(tex,posN.xy));if(!doneP)lumaEn
 }FxaaFloat dstN=posM.x-posN.x,dstP=posP.x-posM.x;if(!horzSpan)dstN=posM.y-posN.y;if(!horzSpan)dstP=posP.y-posM.y;FxaaBool goodSpanN=lumaEndN<0.!=lumaMLTZero;FxaaFloat spanLength=dstP+dstN;FxaaBool goodSpanP=lumaEndP<0.!=lumaMLTZero;FxaaFloat spanLengthRcp=1./spanLength;FxaaBool directionN=dstN<dstP;FxaaFloat dst=min(dstN,dstP);FxaaBool goodSpan=directionN?goodSpanN:goodSpanP;FxaaFloat subpixG=subpixF*subpixF,pixelOffset=dst*-spanLengthRcp+.5,subpixH=subpixG*fxaaQualitySubpix,pixelOffsetGood=goodSpan?pixelOffset:0.,pixelOffsetSubpix=max(pixelOffsetGood,subpixH);if(!horzSpan)posM.x+=pixelOffsetSubpix*lengthSign;if(horzSpan)posM.y+=pixelOffsetSubpix*lengthSign;return FxaaFloat4(FxaaTexTop(tex,posM).xyz,lumaM);}}
 
 texture ScnMap : RENDERCOLORTARGET <
-    float2 ViewPortRatio = {1.0,1.0};
-    int MipLevels = 1;
-    bool AntiAlias = false;
-    string Format = "X8R8G8B8";
+	float2 ViewPortRatio = {1.0,1.0};
+	bool AntiAlias = false;
+	string Format = "X8R8G8B8";
 >;
 sampler ScnSamp = sampler_state {
-    texture = <ScnMap>;
-    MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-    AddressU = CLAMP; AddressV = CLAMP;
+	texture = <ScnMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
@@ -126,64 +125,64 @@ static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
 static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
 
 void FXAA3VS(
-    in float4 Position : POSITION,
-    in float4 Texcoord : TEXCOORD0,
-    out float4 oTexcoord  : TEXCOORD0,
-    out float4 oPosition  : POSITION)
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
 {
-    oTexcoord = Texcoord + ViewportOffset.xyxy;
-    oPosition = Position;
+	oTexcoord = Texcoord + ViewportOffset.xyxy;
+	oPosition = Position;
 }
 
 float4 FXAA3PS(in float4 coord : TEXCOORD0) : COLOR
 {
-    float4 color = FxaaPixelShader(coord.xy,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                ScnSamp,
-                ScnSamp,
-                ScnSamp,
-                ViewportOffset2,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
-                0.5,
-                0.166,
-                0.0833,
-                0.0f,
-                0.0f,
-                0.0f,
-                FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
-            );
-    return float4(color.rgb, 1);
+	float4 color = FxaaPixelShader(coord.xy,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				ScnSamp,
+				ScnSamp,
+				ScnSamp,
+				ViewportOffset2,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),
+				0.5,
+				0.166,
+				0.0833,
+				0.0f,
+				0.0f,
+				0.0f,
+				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
+			);
+	return float4(color.rgb, 1);
 }
 
 float Script : STANDARDSGLOBAL <
-    string ScriptOutput = "color";
-    string ScriptClass  = "scene";
-    string ScriptOrder  = "postprocess";
+	string ScriptOutput = "color";
+	string ScriptClass  = "scene";
+	string ScriptOrder  = "postprocess";
 > = 0.8;
 
 const float4 ClearColor  = float4(0,0,0,0);
 const float ClearDepth  = 1.0;
 
 technique FXAA <
-    string Script = 
-    "RenderColorTarget0=ScnMap;"
-    "ClearSetColor=ClearColor;"
-    "ClearSetDepth=ClearDepth;"
-    "Clear=Color;"
-    "Clear=Depth;"
-    "ScriptExternal=Color;"
-    
-    "RenderColorTarget=;"
-    "Clear=Color;"
-    "Pass=FXAA;"
-    ;
+	string Script = 
+	"RenderColorTarget0=ScnMap;"
+	"ClearSetColor=ClearColor;"
+	"ClearSetDepth=ClearDepth;"
+	"Clear=Color;"
+	"Clear=Depth;"
+	"ScriptExternal=Color;"
+	
+	"RenderColorTarget=;"
+	"Clear=Color;"
+	"Pass=FXAA;"
+	;
 > {
-    pass FXAA < string Script= "Draw=Buffer;"; > {
-        AlphaBlendEnable = false; AlphaTestEnable = false;
-        ZEnable = False; ZWriteEnable = False;
-        VertexShader = compile vs_3_0 FXAA3VS();
-        PixelShader  = compile ps_3_0 FXAA3PS();
-    }
+	pass FXAA < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = False; ZWriteEnable = False;
+		VertexShader = compile vs_3_0 FXAA3VS();
+		PixelShader  = compile ps_3_0 FXAA3PS();
+	}
 }

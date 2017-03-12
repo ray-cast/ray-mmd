@@ -12,13 +12,11 @@
 
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "D24S8";
 >;
 texture2D ScnMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A16B16G16R16F";
 >;
@@ -34,7 +32,6 @@ texture FogMap: OFFSCREENRENDERTARGET<
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
 		"SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
@@ -54,7 +51,6 @@ texture LightMap: OFFSCREENRENDERTARGET<
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
 		"DirectionalLight.pmx =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
@@ -70,13 +66,11 @@ texture LightMap: OFFSCREENRENDERTARGET<
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A16B16G16R16F";
 >;
 shared texture LightAlphaMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A16B16G16R16F";
 >;
@@ -102,7 +96,6 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0.5, 0, 0.5 };
 	float ClearDepth = 1.0;
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
 		"skybox*.*=./Skybox/skylighting_none.fx;"
@@ -111,7 +104,6 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 sampler EnvLightMapSamp = sampler_state {
@@ -131,7 +123,6 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string Format = "A8R8G8B8";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string DefaultEffect =
 		"self = hide;"
@@ -158,7 +149,6 @@ texture DepthMap : OFFSCREENRENDERTARGET<
 	string Format = "R32F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int MipLevels = 1;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -190,7 +180,6 @@ shared texture PSSM : OFFSCREENRENDERTARGET<
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	int MipLevels = 1;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -236,37 +225,31 @@ sampler ShadowmapSampTemp = sampler_state {
 shared texture Gbuffer2RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8" ;
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 shared texture Gbuffer3RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 shared texture Gbuffer4RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F" ;
 	bool AntiAlias = false;
-	int MipLevels = 1;
 >;
 shared texture Gbuffer5RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 shared texture Gbuffer6RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 shared texture Gbuffer7RT: RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 shared texture Gbuffer8RT: RENDERCOLORTARGET<
@@ -318,19 +301,16 @@ sampler Gbuffer8Map = sampler_state {
 texture ShadingMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 texture ShadingMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 texture ShadingMapTempSpecular : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	int Miplevels = 1;
 	bool AntiAlias = false;
 >;
 sampler ShadingMapSamp = sampler_state {
