@@ -10,10 +10,17 @@ static const float3 moonTranslate = -float3(10000, -5000,10000);
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
-texture DiffuseMap: MATERIALTEXTURE;
-sampler DiffuseMapSamp = sampler_state
+texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
+sampler MoonMapSamp = sampler_state
 {
-	texture = <DiffuseMap>;
+	texture = <MoonMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+texture JupiterMap<string ResourceName = "Shader/Textures/jupiter.jpg";>;
+sampler JupiterMapSamp = sampler_state
+{
+	texture = <JupiterMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
@@ -101,9 +108,10 @@ void SphereVS(
 float4 SpherePS(
 	in float2 coord : TEXCOORD0,
 	in float3 normal : TEXCOORD1,
-	in float3 viewdir : TEXCOORD2) : COLOR
+	in float3 viewdir : TEXCOORD2,
+	uniform sampler source) : COLOR
 {
-	float4 diffuse = tex2D(DiffuseMapSamp, coord);
+	float4 diffuse = tex2D(source, coord + float2(time / 200, 0));
 	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
 	diffuse.rgb += SpecularBRDF_GGX(normal, -LightDirection, viewdir, 1.0, 0.04, PI);
 	return diffuse;
@@ -147,44 +155,29 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	return linear2srgb(insctrColor);
 }
 
-#define BACKGROUND_TEC(name, mmdpass) \
+#define SKYBOX_TEC(name, mmdpass) \
 	technique name<string MMDPass = mmdpass; string Subset="0";>\
 	{ \
-		pass DrawObject { \
+		pass DrawStars { \
 			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
 			VertexShader = compile vs_3_0 StarsVS(); \
 			PixelShader  = compile ps_3_0 StarsPS(); \
 		} \
-	}
-   
-#define MOON_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="1";>\
-	{ \
-		pass DrawObject { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
-			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling); \
-			PixelShader  = compile ps_3_0 SpherePS(); \
-		} \
-	}
-
-#define JUPITER_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="2";>\
-	{ \
-		pass DrawObject { \
+		pass DrawJupiter { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
 			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling); \
-			PixelShader  = compile ps_3_0 SpherePS(); \
+			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp); \
 		} \
-	}
-
-#define SKYBOX_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="3";>\
-	{ \
-		pass DrawObject { \
+		pass DrawMoon { \
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
+			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling); \
+			PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp); \
+		} \
+		pass DrawScattering { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
 			SrcBlend = ONE; DestBlend = SRCALPHA;\
@@ -193,14 +186,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 		} \
 	}
 
-MOON_TEC(MoonTec1, "object")
-MOON_TEC(MoonTecBS1, "object_ss")
-JUPITER_TEC(Jupiter1, "object")
-JUPITER_TEC(JupiterBS1, "object_ss")
 SKYBOX_TEC(ScatteringTec0, "object")
 SKYBOX_TEC(ScatteringTecBS0, "object_ss")
-BACKGROUND_TEC(StarsTec0, "object")
-BACKGROUND_TEC(StarsTecBS0, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";> {}
 technique ShadowTec<string MMDPass = "shadow";> {}
