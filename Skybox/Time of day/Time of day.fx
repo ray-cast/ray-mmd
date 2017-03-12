@@ -78,14 +78,12 @@ void SphereVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = normalize(Position);
-	oTexcoord2 = normalize(CameraPosition - (oTexcoord1.xyz * scale + translate));
 	oPosition = mul(float4(oTexcoord1.xyz * scale + translate, 1), matViewProject);
 }
 
 float4 SpherePS(
 	in float2 coord : TEXCOORD0,
 	in float3 normal : TEXCOORD1,
-	in float3 viewdir : TEXCOORD2,
 	uniform sampler source) : COLOR
 {
 	float4 diffuse = tex2D(source, coord + float2(time / 200, 0));
@@ -98,7 +96,7 @@ void ScatteringVS(
 	out float3 oTexcoord0 : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = normalize(Position).xyz;
+	oTexcoord0 = normalize(Position.xyz - CameraPosition);
 	oPosition = mul(Position + float4(CameraPosition, 0), matWorldViewProject);
 }
 

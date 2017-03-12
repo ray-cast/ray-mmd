@@ -1,24 +1,20 @@
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
 #include "shader/cloud.fxsub"
 #include "shader/atmospheric.fxsub"
+#include "shader/fog.fxsub"
 
-float3 LightSpecular : SPECULAR< string Object = "Light";>;
-float3 LightDirection : DIRECTION< string Object = "Light";>;
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
 
 void ScatteringFogVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord : TEXCOORD0,
-	out float3 oViewdir  : TEXCOORD1,
+	out float3 oTexcoord0  : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oViewdir = CameraPosition - Position.xyz;
+	oTexcoord0 = normalize(Position.xyz - CameraPosition);
 	oTexcoord = oPosition = mul(Position, matWorldViewProject);
 }
 
@@ -39,21 +35,24 @@ float4 ScatteringFogPS(
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 	
 	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1) - 1e-5);
+	clip(dot(sum1, 1.0) - 1e-5);
 	
 	float3 V = normalize(viewdir);
 	
+	float scaling = 1000;
+
 	ScatteringParams setting;
-	setting.sunSize = 0.99;
-	setting.sunRadiance = 10.0;
-	setting.mieG = 0.76;
-	setting.mieHeight = 1.25E3;
-	setting.rayleighHeight = 8.4E3;
-	setting.waveLambdaMie = 2e-5;
-	setting.waveLambdaRayleigh = float3(5.8e-6, 13.5e-6, 33.1e-6);
+	setting.sunSize = mSunRadius;
+	setting.sunRadiance = mSunRadiance;
+	setting.mieG = mMiePhase;
+	setting.rayleighHeight = 15 * scaling;
+	setting.earthRadius = 6360 * scaling;
+	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.earthCenter = float3(0, -setting.earthRadius, 0);
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
 	
-	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
-	
+	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);	
 	return float4(fog * LightSpecular, 0);
 }
 
@@ -61,7 +60,7 @@ float4 ScatteringFogPS(
 	technique name<string MMDPass = mmdpass; string Subset="0";>{\
 		pass DrawObject {\
 			ZEnable = false; ZWriteEnable = false;\
-			AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			SrcBlend = ONE; DestBlend = ONE;\
 			CullMode = NONE;\
 			VertexShader = compile vs_3_0 ScatteringFogVS();\
