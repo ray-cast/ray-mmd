@@ -76,18 +76,14 @@ float pow5(float x)
 
 float2 ComputeSphereCoord(float3 normal)
 {
-#if IBL_QUALITY > 1
 	float2 coord = float2((atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
-#else
-	float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
-#endif
 	return coord;
 }
 
 float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
 {
 	float3 normal;
-	normal.x = -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
+	normal.x =  sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
 	normal.y =  cos(thetaStart + coord.y * thetaLength);
 	normal.z =  sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
 	return normal;

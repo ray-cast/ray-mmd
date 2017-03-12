@@ -144,7 +144,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	return intersectionTest;
 }
 
-float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L)
+float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L)
 {
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
