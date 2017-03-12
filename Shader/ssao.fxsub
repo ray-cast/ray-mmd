@@ -14,7 +14,6 @@
 
 shared texture SSAOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
-	int Miplevels = 1;
 	bool AntiAlias = false;
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
@@ -24,7 +23,6 @@ shared texture SSAOMap : RENDERCOLORTARGET<
 >;
 texture SSAOMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
-	int Miplevels = 1;
 	bool AntiAlias = false;
 #if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";

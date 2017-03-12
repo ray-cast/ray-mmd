@@ -167,7 +167,6 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 
 texture ColorGradingLUT : RENDERCOLORTARGET<
 	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A2B10G10R10";
 >;

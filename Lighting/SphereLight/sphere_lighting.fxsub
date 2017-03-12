@@ -43,7 +43,7 @@ static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
 #if IBL_ENABLE
-texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 0;>; 
+texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>; 
 sampler IBLDiffuseSampler = sampler_state {
 	texture = <IBLDiffuseTexture>;	
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;	

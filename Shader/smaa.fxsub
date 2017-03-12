@@ -51,13 +51,11 @@
 
 texture SMAAEdgeMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string Format = "A8L8";
 >;
 texture SMAABlendMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
-	int Miplevels = 1;
 	bool AntiAlias = false;
 	string Format = "A8R8G8B8";
 >;

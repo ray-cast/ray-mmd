@@ -1,13 +1,11 @@
 texture3D NoiseMap<string ResourceName = "noise.dds";>; 
 texture2D ScnMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A2R10G10B10";
 >;
 texture2D ScnMap2 : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
 	bool AntiAlias = false;
 	string Format = "A2R10G10B10";
 >;

@@ -12,11 +12,8 @@ texture ScreenMap : MATERIALTEXTURE;
 sampler ScreenMapSamp = sampler_state
 {
 	texture = <ScreenMap>;
-	MINFILTER = POINT;
-	MAGFILTER = POINT;
-	MIPFILTER = NONE;
-	ADDRESSU  = CLAMP;
-	ADDRESSV  = CLAMP;
+	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 void DummyScreenVS(
