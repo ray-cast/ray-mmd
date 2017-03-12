@@ -49,10 +49,10 @@ float3 FastBlur(sampler source, float2 uv, float2 offset, float level)
 	float sz = pow(2.0, level);
 	float mip = level + 1.0;
 
-	float2 coord0 = (uv + sz * float2(-1.5, -0.5) * offset);
-	float2 coord1 = (uv + sz * float2( 0.5, -1.5) * offset);
-	float2 coord2 = (uv + sz * float2( 1.5,  0.5) * offset);
-	float2 coord3 = (uv + sz * float2(-0.5,  1.5) * offset);
+	float2 coord0 = uv + sz * float2(-1.5, -0.5) * offset;
+	float2 coord1 = uv + sz * float2( 0.5, -1.5) * offset;
+	float2 coord2 = uv + sz * float2( 1.5,  0.5) * offset;
+	float2 coord3 = uv + sz * float2(-0.5,  1.5) * offset;
 
 	float3 a = DecodeRGBT(tex2Dlod(source, float4(coord0, 0, mip)));
 	float3 b = DecodeRGBT(tex2Dlod(source, float4(coord1, 0, mip)));
