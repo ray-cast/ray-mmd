@@ -1,0 +1,44 @@
+float4 BilateralBlurPS(
+    in float2 coord   : TEXCOORD0,
+    in float3 viewdir : TEXCOORD1,
+    uniform sampler source,
+    uniform sampler original,
+    uniform float2 offset) : COLOR
+{
+    float center_d = linearizeDepth2(coord);
+
+    float total_w = 1.0f;
+    float3 total_c = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+
+    float2 offset1 = coord + offset;
+    float2 offset2 = coord - offset;
+
+    [unroll]
+    for (int r = 1; r <= 6; r++)
+    {
+        float depth1 = linearizeDepth2(offset1);
+        float depth2 = linearizeDepth2(offset2);
+
+        float bilateralWeight1 = BilateralWeight(r, depth1, center_d, 6, 4);
+        float bilateralWeight2 = BilateralWeight(r, depth2, center_d, 6, 4);
+
+        total_c += tex2Dlod(source, float4(offset1, 0, 0)).rgb * bilateralWeight1;
+        total_c += tex2Dlod(source, float4(offset2, 0, 0)).rgb * bilateralWeight2;
+
+        total_w += bilateralWeight1;
+        total_w += bilateralWeight2;
+
+        offset1 += offset;
+        offset2 -= offset;
+    }
+    
+    total_c /= total_w;
+
+    if (offset.y > 0.0)
+    {
+        float coeff = center_d > 2000 ? 0 : pow2(1 - exp(-center_d / 500));
+        total_c = lerp(tex2Dlod(original, float4(coord, 0, 0)).rgb, total_c, coeff);
+    }
+
+    return float4(total_c, 0);
+}

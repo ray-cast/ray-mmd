@@ -93,6 +93,10 @@ static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalan
 #	include "shader/smaa.fxsub"
 #endif
 
+#if POST_BILATERAL_BLUR > 0
+#	include "shader/bilateral_blur.fxsub"
+#endif
+
 #if POST_STEREOSCOPIC_MODE > 0
 #	include "shader/stereoscopic.fxsub"
 #endif
@@ -245,6 +249,11 @@ technique DeferredLighting<
 	"RenderColorTarget=GhostImageMap; Pass=GhostImage1st;"
 	"RenderColorTarget=GlareLightMap; Pass=GhostImage2nd;"
 #endif
+#endif
+
+#if POST_BILATERAL_BLUR
+	"RenderColorTarget=ShadingMapTemp; Pass=BilateralBlurX;"
+	"RenderColorTarget=ShadingMap; 	   Pass=BilateralBlurY;"
 #endif
 
 #if POST_COLORGRADING_MODE
@@ -696,6 +705,20 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
+	}
+#endif
+#if POST_BILATERAL_BLUR
+	pass BilateralBlurX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 BilateralBlurPS(ShadingMapPointSamp, ShadingMapPointSamp, float2(ViewportOffset2.x, 0.0));
+	}
+	pass BilateralBlurY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 BilateralBlurPS(ShadingMapTempPointSamp, ShadingMapPointSamp, float2(0.0, ViewportOffset2.y));
 	}
 #endif
 #if POST_COLORGRADING_MODE
