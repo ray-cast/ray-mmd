@@ -40,12 +40,16 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
-	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, pow2(material.smoothness));
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
-	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));	
-	float3 prefilteredSpeculr = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(ComputeSphereCoord(R), 0, mipLayer)));	
-	prefilteredSpeculr = lerp(prefilteredDiffuse, prefilteredSpeculr, pow(material.smoothness, 1.5));
+	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));
+	
+	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(ComputeSphereCoord(R), 0, mipLayer)));
+	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));
+	float3 prefilteredSpeculr = 0;
+	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
+	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
 	
 	diffuse = prefilteredDiffuse;
 
@@ -90,14 +94,44 @@ float4 GenSpecularMapPS(in float4 texcoord : TEXCOORD0) : COLOR0
 	return EncodeRGBT(insctrColor);
 }
 
-float4 GenDiffuseMapPS(in float4 texcoord : TEXCOORD0) : COLOR0
+void GenDiffuseMapVS(
+	in float4 Position : POSITION,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	out float3 oTexcoord3 : TEXCOORD3,
+	out float3 oTexcoord4 : TEXCOORD4,
+	out float3 oTexcoord5 : TEXCOORD5,
+	out float3 oTexcoord6 : TEXCOORD6,
+	out float4 oPosition : POSITION)
 {
-	float2 coord = texcoord.xy / texcoord.w;
+	Position.xyz *= 2;
+	oTexcoord0 = oPosition = mul(Position, matWorldViewProject);
+   	oTexcoord1 = SHSamples(SkySpecularMapSample, 0);
+    oTexcoord2 = SHSamples(SkySpecularMapSample, 1);
+    oTexcoord3 = SHSamples(SkySpecularMapSample, 2);
+    oTexcoord4 = SHSamples(SkySpecularMapSample, 3);
+    oTexcoord5 = SHSamples(SkySpecularMapSample, 4);
+    oTexcoord6 = SHSamples(SkySpecularMapSample, 5);
+}
+
+float4 GenDiffuseMapPS(
+	in float4 texcoord0 : TEXCOORD0,
+	in float3 SH0 : TEXCOORD1,
+	in float3 SH1 : TEXCOORD2,
+	in float3 SH2 : TEXCOORD3,
+	in float3 SH3 : TEXCOORD4,
+	in float3 SH4 : TEXCOORD5,
+	in float3 SH5 : TEXCOORD6) : COLOR0
+{
+	float2 coord = texcoord0.xy / texcoord0.w;
 	coord = PosToCoord(coord);
 	coord += ViewportOffset;
 
-	float3 prefilteredDiffuse = FastBlur(SkySpecularMapSample, coord, 1.0 / float2(512, 256), 5);
-	return EncodeRGBT(prefilteredDiffuse);
+	float3 normal = ComputeSphereNormal(coord);
+	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
+
+	return EncodeRGBT(irradiance);
 }
 
 void EnvLightingVS(
@@ -185,7 +219,7 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		} \
 		pass GenDiffuseMap { \
 			AlphaBlendEnable = false; AlphaTestEnable = false;\
-			VertexShader = compile vs_3_0 GenSpecularMapVS(); \
+			VertexShader = compile vs_3_0 GenDiffuseMapVS(); \
 			PixelShader  = compile ps_3_0 GenDiffuseMapPS(); \
 		} \
 		pass ImageBasedLighting { \
