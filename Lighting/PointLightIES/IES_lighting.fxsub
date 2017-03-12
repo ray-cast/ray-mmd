@@ -158,7 +158,7 @@ float ShadingShadow(MaterialParam material, float3 V)
 
 #endif
 
-texture IESTexture<string ResourceName = IES_FILE_PATH; int Miplevels = 0;>; 
+texture IESTexture<string ResourceName = IES_FILE_PATH;>; 
 sampler IESTextureSamp = sampler_state
 {
 	texture = <IESTexture>;

@@ -1,4 +1,4 @@
-texture NoiseMap<string ResourceName = "shader/textures/noise.png"; int Miplevels = 1;>; 
+texture NoiseMap<string ResourceName = "shader/textures/noise.png";>; 
 sampler NoiseMapSamp = sampler_state {
 	texture = <NoiseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;

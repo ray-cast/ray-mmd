@@ -182,7 +182,7 @@ static const float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), floa
 static const float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
 #endif
 
-texture GhostMaskMap<string ResourceName = "shader/textures/mask.png"; int Miplevels = 1;>; 
+texture GhostMaskMap<string ResourceName = "shader/textures/mask.png";>; 
 sampler GhostMaskMapSamp = sampler_state
 {
 	texture = <GhostMaskMap>;
