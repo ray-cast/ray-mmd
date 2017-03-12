@@ -19,6 +19,58 @@ struct ScatteringParams
 	float3 earthCenter;
 };
 
+float4 EncodeRGBT(float3 rgb, float range = 1024)
+{
+	float vmax = 0;
+	vmax = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
+	vmax = min(vmax, range);
+
+	float4 encode;
+	encode[3] = (range + 1) / range *  vmax / (1 + vmax);
+	encode[3] = ceil(encode[3] * 255.0) / 255.0;
+	
+	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
+
+	encode[0] = rgb.r * rcp;
+	encode[1] = rgb.g * rcp;
+	encode[2] = rgb.b * rcp;
+	
+	return encode;
+}
+
+float3 DecodeRGBT(float4 rgbt, float range = 1024)
+{
+	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+	return rgbt.rgb * rgbt.a;
+}
+
+float3 FastBlur(sampler source, float2 uv, float2 offset, float level)
+{
+	float sz = pow(2.0, level);
+	float mip = level + 1.0;
+
+	float2 coord0 = (uv + sz * float2(-1.5, -0.5) * offset);
+	float2 coord1 = (uv + sz * float2( 0.5, -1.5) * offset);
+	float2 coord2 = (uv + sz * float2( 1.5,  0.5) * offset);
+	float2 coord3 = (uv + sz * float2(-0.5,  1.5) * offset);
+
+	float3 a = DecodeRGBT(tex2Dlod(source, float4(coord0, 0, mip)));
+	float3 b = DecodeRGBT(tex2Dlod(source, float4(coord1, 0, mip)));
+	float3 c = DecodeRGBT(tex2Dlod(source, float4(coord2, 0, mip)));
+	float3 d = DecodeRGBT(tex2Dlod(source, float4(coord3, 0, mip)));
+	float3 e = DecodeRGBT(tex2Dlod(source, float4(uv, 0, mip)));
+
+    float3 blurred = 0;
+    blurred += a* 4.0;
+	blurred += b* 4.0;
+	blurred += c* 4.0;
+	blurred += d* 4.0;
+	blurred += e;
+    blurred /= 17;
+    
+    return blurred;
+}
+
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
 {
 	float3 origin = position - center;
