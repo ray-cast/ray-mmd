@@ -115,7 +115,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
+	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, finalSmoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));

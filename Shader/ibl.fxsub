@@ -8,6 +8,19 @@ float3 EnvironmentReflect(float3 normal, float3 view)
 	return reflect(-view, normal);
 }
 
+float3 EnvironmentSpecularPolynomial(float3 N, float3 V, float smoothness, float3 specular)
+{
+	float b1 = -0.1688; float b2 = 1.895; float b3 = 0.9903; float b4 = -4.853; float b5 = 8.404; float b6 = -5.069;
+	float d0 = 0.6045; float d1 = 1.699; float d2 = -0.5228; float d3 = -3.603; float d4 = 1.404; float d5 = 0.1939; float d6 = 2.661;
+	float x = pow(1 - SmoothnessToRoughness(smoothness) * 0.7, 6);
+	float y = dot(N, V);
+	float bias = saturate(min( b1 * x + b2 * x * x, b3 + b4 * y + b5 * y * y + b6 * y * y * y));
+	float delta = saturate(d0 + d1 * x + d2 * y + d3 * x * x + d4 * x * y + d5 * y * y + d6 * x * x * x);
+	float scale = delta - bias;
+
+	return specular * scale + bias;
+}
+
 float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 specular)
 {
 	float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
