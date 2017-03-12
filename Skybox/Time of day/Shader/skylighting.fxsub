@@ -191,7 +191,7 @@ float3 DecodeRGBT(float4 rgbt, float range = 1024)
 	return rgbt.rgb * rgbt.a;
 }
 
-float2 sampleRotation[6][9] =
+float2 SHKernel[6][9] =
 {
 	float2(0.75,0.5),float2(0.625,0.386182),float2(0.828613,0.613818),float2(0.828613,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.72843,0.461711),float2(0.77157,0.461711),float2(0.625,0.538289),
 	float2(0.5,0),float2(0.625,0.386182),float2(0.125,0.274769),float2(0.125,0.386182),float2(0.625,0.274769),float2(0.625,0.461711),float2(0.375,0.461711),float2(0.125,0.461711),float2(0.625,0.157542),
@@ -206,15 +206,15 @@ float3 SHSamples(sampler tex, int i)
     const float diff0 = 0.35;
     const float diff1 = 0.12;
 
- 	float3 sh0 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][0], 0, 0)));
-    float3 sh1 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][1], 0, 0)));
-    float3 sh2 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][2], 0, 0)));
-    float3 sh3 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][3], 0, 0)));
-    float3 sh4 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][4], 0, 0)));
-    float3 sh5 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][5], 0, 0)));
-    float3 sh6 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][6], 0, 0)));
-    float3 sh7 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][7], 0, 0)));
-    float3 sh8 = DecodeRGBT(tex2Dlod(tex, float4(sampleRotation[i][8], 0, 0)));
+ 	float3 sh0 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][0], 0, 0)));
+    float3 sh1 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][1], 0, 0)));
+    float3 sh2 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][2], 0, 0)));
+    float3 sh3 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][3], 0, 0)));
+    float3 sh4 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][4], 0, 0)));
+    float3 sh5 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][5], 0, 0)));
+    float3 sh6 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][6], 0, 0)));
+    float3 sh7 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][7], 0, 0)));
+    float3 sh8 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][8], 0, 0)));
     
     return (sh0 + sh1 + sh2 + sh3 + sh4 + sh5 + sh6 + sh7 + sh8) / 9;
 }
