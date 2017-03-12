@@ -25,29 +25,6 @@ sampler JupiterMapSamp = sampler_state
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float3 SpecularBRDF_GGX(float3 N, float3 L, float3 V, float roughness, float3 specular, float NormalizationFactor)
-{
-	float3 H = normalize(V + L);
-
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, L));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
-
-	float m2 = roughness * roughness;
-	float spec = (nh * m2 - nh) * nh + 1;
-	spec = m2 / (spec * spec) * NormalizationFactor;
-
-	float Gv = nl * sqrt((-nv * m2 + nv) * nv + m2);
-	float Gl = nv * sqrt((-nl * m2 + nl) * nl + m2);
-	spec *= 0.5h / (Gv + Gl);
-
-	float3 f0 = max(0.02, specular);
-	float3 fresnel = lerp(f0, 1.0, pow5(1 - vh));
-
-	return fresnel * spec * nl;
-}
-
 void StarsVS(
 	in float4 Position    : POSITION,
 	in float4 Texcoord    : TEXCOORD0,
@@ -113,7 +90,6 @@ float4 SpherePS(
 {
 	float4 diffuse = tex2D(source, coord + float2(time / 200, 0));
 	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
-	diffuse.rgb += SpecularBRDF_GGX(normal, -LightDirection, viewdir, 1.0, 0.04, PI);
 	return diffuse;
 }
 
