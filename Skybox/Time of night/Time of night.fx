@@ -102,7 +102,7 @@ void ScatteringVS(
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	float3 V = normalize(viewdir);
-	
+
 	float scaling = 1000;
 
 	ScatteringParams setting;
