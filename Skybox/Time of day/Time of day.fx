@@ -1,9 +1,9 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 #include "shader/stars.fxsub"
-#include "shader/cloud.fxsub"
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
+#include "shader/cloud.fxsub"
 
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
