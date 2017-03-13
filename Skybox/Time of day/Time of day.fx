@@ -111,13 +111,13 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = 1.2 * scaling;
-	setting.rayleighHeight = 15 * scaling;
+	setting.mieHeight = mMieHeight * scaling;
+	setting.rayleighHeight = mRayleighHeight * scaling;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudMie = 0.5;
 	setting.cloudBias = mCloudBias;

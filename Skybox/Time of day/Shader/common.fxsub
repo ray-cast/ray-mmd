@@ -28,6 +28,8 @@ float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadi
 float mSunRadianceM : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance-";>;
 float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
+float mMieHeightP : CONTROLOBJECT<string name="(self)"; string item = "MieHeight+";>;
+float mMieHeightM : CONTROLOBJECT<string name="(self)"; string item = "MieHeight-";>;
 float mMieTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
 float mMieTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
 
@@ -41,21 +43,27 @@ float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias
 float mRayleightH : CONTROLOBJECT<string name="(self)"; string item = "RayleighH";>;
 float mRayleightS : CONTROLOBJECT<string name="(self)"; string item = "RayleighS";>;
 float mRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
+float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
+float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
 
 float mSkyNightP : CONTROLOBJECT<string name="(self)"; string item = "SkyNight+";>;
 
 static float mSunRadius = lerp(lerp(0.99, 1.0, mSunRadiusM), 0.65, mSunRadiusP);
 static float mSunRadiance = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
+
+static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
+
 static float mMiePhase = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
+static float mMieHeight = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
 static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
+static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
 
 static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
 static float mCloudBias = time * lerp(lerp(0.05, 0.2, mCloudBiasP), 0, mCloudBiasM);
 static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
 
-static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
-static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
-static float3 mRayleightColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 + mRayleightVP));
+static float mRayleighHeight = lerp(lerp(10, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
+static float3 mRayleighColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 + mRayleightVP));
 
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
 static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);

@@ -71,13 +71,13 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = 1.2 * scaling;
-	setting.rayleighHeight = 15 * scaling;
+	setting.mieHeight = mMieHeight * scaling;
+	setting.rayleighHeight = mRayleighHeight * scaling;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleightColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.z);
 	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection).rgb;
