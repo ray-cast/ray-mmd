@@ -55,7 +55,7 @@ void ScatteringVS(
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position);
-	oPosition = mul(Position + float4(CameraPosition, 0), matWorldViewProject);
+	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
 
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
