@@ -57,7 +57,7 @@ static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurb
 static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
 
 static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias = time * lerp(lerp(0.05, 0.2, mCloudBiasP), 0, mCloudBiasM);
+static float mCloudBias = time * lerp(lerp(0.1, 1.0, mCloudBiasP), 0, mCloudBiasM);
 static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
 
 static float mRayleighHeight = lerp(lerp(15, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
