@@ -87,9 +87,18 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	return linear2srgb(insctrColor);
 }
 
+const float4 BackColor = 0.0;
+
 #define SKYBOX_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="0";>\
-	{ \
+	technique name<string MMDPass = mmdpass;\
+		string Script =\
+		"RenderColorTarget=;"\
+		"ClearSetColor=BackColor;"\
+		"Clear=Color;"\
+		"Pass=DrawJupiter;"\
+		"Pass=DrawMoon;"\
+		"Pass=DrawScattering;";\
+	>{ \
 		pass DrawJupiter { \
 			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
@@ -114,6 +123,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 SKYBOX_TEC(ScatteringTec0, "object")
 SKYBOX_TEC(ScatteringTecBS0, "object_ss")
 
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTec<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

@@ -238,12 +238,12 @@ float3 SHCreateIrradiance(float3 n, float3 sh0, float3 sh1, float3 sh2, float3 s
 	float weight;
 
 	float3 irradiance;
-	irradiance  = sh2 * sh2_w; weight  = sh2_w;
-	irradiance += sh5 * sh5_w; weight += sh5_w;
-	irradiance += sh3 * sh3_w; weight += sh3_w;
-	irradiance += sh0 * sh0_w; weight += sh0_w;
+	irradiance  = sh0 * sh0_w; weight  = sh0_w;
 	irradiance += sh1 * sh1_w; weight += sh1_w;
+	irradiance += sh2 * sh2_w; weight += sh2_w;
+	irradiance += sh3 * sh3_w; weight += sh3_w;
 	irradiance += sh4 * sh4_w; weight += sh4_w;
+	irradiance += sh5 * sh5_w; weight += sh5_w;
 
 	return irradiance / weight;
 }
