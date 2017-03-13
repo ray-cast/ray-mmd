@@ -1,0 +1,81 @@
+float4 EncodeRGBT(float3 rgb, float range = 1024)
+{
+	float limits = 0;
+	limits = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
+	limits = min(limits, range);
+
+	float4 encode;
+	encode[3] = (range + 1) / range *  limits / (1 + limits);
+	encode[3] = ceil(encode[3] * 255.0) / 255.0;
+
+	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
+
+	encode[0] = rgb.r * rcp;
+	encode[1] = rgb.g * rcp;
+	encode[2] = rgb.b * rcp;
+
+	return encode;
+}
+
+float3 DecodeRGBT(float4 rgbt, float range = 1024)
+{
+	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+	return rgbt.rgb * rgbt.a;
+}
+
+float2 SHKernel[6][9] =
+{
+	float2(0.75,0.5),float2(0.625,0.386182),float2(0.828613,0.613818),float2(0.828613,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.72843,0.461711),float2(0.77157,0.461711),float2(0.625,0.538289),
+	float2(0.5,0),float2(0.625,0.386182),float2(0.125,0.274769),float2(0.125,0.386182),float2(0.625,0.274769),float2(0.625,0.461711),float2(0.375,0.461711),float2(0.125,0.461711),float2(0.625,0.157542),
+	float2(0.5,0.5),float2(0.625,0.386182),float2(0.421387,0.613818),float2(0.421387,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.375,0.461711),float2(0.47843,0.461711),float2(0.625,0.538289),
+	float2(0.25,0.5),float2(0.328613,0.386182),float2(1,0.613818),float2(1,0.386182),float2(0.328613,0.613818),float2(0.27157,0.461711),float2(0.5,0.461711),float2(1,0.461711),float2(0.27157,0.538289),
+	float2(0.5,1),float2(0.625,0.725231),float2(0.125,0.5),float2(0.125,0.725231),float2(0.625,0.5),float2(0.625,0.842458),float2(0.375,0.842458),float2(0.125,0.842458),float2(0.625,0.5),
+	float2(1,0.5),float2(0.921387,0.386182),float2(0.25,0.613818),float2(0.25,0.386182),float2(0.921387,0.613818),float2(0.97843,0.461711),float2(0.0215699,0.461711),float2(0.25,0.461711),float2(0.97843,0.538289),
+};
+
+float3 SHSamples(sampler tex, int i)
+{
+	const float diff0 = 0.35;
+	const float diff1 = 0.12;
+
+	float3 sh0 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][0], 0, 0)));
+	float3 sh1 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][1], 0, 0)));
+	float3 sh2 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][2], 0, 0)));
+	float3 sh3 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][3], 0, 0)));
+	float3 sh4 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][4], 0, 0)));
+	float3 sh5 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][5], 0, 0)));
+	float3 sh6 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][6], 0, 0)));
+	float3 sh7 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][7], 0, 0)));
+	float3 sh8 = DecodeRGBT(tex2Dlod(tex, float4(SHKernel[i][8], 0, 0)));
+
+	return (sh0 + sh1 + sh2 + sh3 + sh4 + sh5 + sh6 + sh7 + sh8) / 9;
+}
+
+float3 SHCreateIrradiance(float3 n, float3 sh0, float3 sh1, float3 sh2, float3 sh3, float3 sh4, float3 sh5)
+{
+	float sh0_w = dot(n, float3(1.0,0.0,0.0)) * 0.5 + 0.5; 
+	float sh1_w = dot(n, float3(0.0,1.0,0.0)) * 0.5 + 0.5;
+	float sh2_w = dot(n, float3(0.0,0.0,1.0)) * 0.5 + 0.5;
+	float sh3_w = 1.0 - sh0_w;
+	float sh4_w = 1.0 - sh1_w;
+	float sh5_w = 1.0 - sh2_w;
+
+	sh0_w = pow(sh0_w, 4);
+	sh1_w = pow(sh1_w, 4);
+	sh2_w = pow(sh2_w, 4);
+	sh3_w = pow(sh3_w, 4);
+	sh4_w = pow(sh4_w, 4);
+	sh5_w = pow(sh5_w, 4);
+
+	float weight;
+
+	float3 irradiance;
+	irradiance  = sh2 * sh2_w; weight  = sh2_w;
+	irradiance += sh5 * sh5_w; weight += sh5_w;
+	irradiance += sh3 * sh3_w; weight += sh3_w;
+	irradiance += sh0 * sh0_w; weight += sh0_w;
+	irradiance += sh1 * sh1_w; weight += sh1_w;
+	irradiance += sh4 * sh4_w; weight += sh4_w;
+
+	return irradiance / weight;
+}
