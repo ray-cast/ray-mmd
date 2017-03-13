@@ -92,10 +92,10 @@ float4 SpherePS(
 
 void ScatteringVS(
 	in float4 Position   : POSITION,
-	out float3 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = normalize(Position.xyz - CameraPosition);
+	oTexcoord0 = normalize(Position);
 	oPosition = mul(Position + float4(CameraPosition, 0), matWorldViewProject);
 }
 
