@@ -15,7 +15,7 @@ struct ScatteringParams
 
 float ComputeSunIntensity(float EE, float zenithAngleCos)
 {
-	float steepness = 1.0;
+	float steepness = 0.5;
 	float cutoffAngle = PI / 1.95;
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
 }

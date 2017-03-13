@@ -91,16 +91,14 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	technique name<string MMDPass = mmdpass; string Subset="0";>\
 	{ \
 		pass DrawJupiter { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling); \
 			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp); \
 		} \
 		pass DrawMoon { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling); \
 			PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp); \
 		} \
