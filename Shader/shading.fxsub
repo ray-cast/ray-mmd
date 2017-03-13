@@ -35,7 +35,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
 #endif
 
-	float shadow = any(ExistSkybox + ExistSkyboxHDR + ExistTimeOfDay);
+	float shadow = 1;
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 	float2 shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
 	shadow = lerp(shadow, shadowDepth.r, mEnvShadowP);
