@@ -106,6 +106,9 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	float3 V = normalize(viewdir);
 	
 	float scaling = 1000;
+	
+	mMieTurbidity = lerp(mMieTurbidity, mMieTurbidity * 0.15, mSkyNightP);
+	mRayleighHeight = lerp(mRayleighHeight, mRayleighHeight * 0.15, mSkyNightP);
 
 	ScatteringParams setting;
 	setting.sunSize = mSunRadius;
@@ -124,6 +127,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
     setting.cloudTop = 8 * scaling;
     setting.cloudBottom = 5 * scaling;
 	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
+	
+	//setting.rayleighHeight = lerp(setting.rayleighHeight, setting.rayleighHeight * 0.1, mSkyNightP);
 
 	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
