@@ -202,7 +202,7 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		"ClearSetColor=IBLColor;"\
 		"Clear=Color;"\
 		"Pass=ImageBasedLighting;" \
-	;> { \
+	;>{ \
 		pass GenSpecularMap { \
 			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			VertexShader = compile vs_3_0 GenSpecularMapVS(); \
@@ -224,8 +224,8 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
-technique MainTec1<string MMDPass = "object";> {}
-technique MainTecBS1<string MMDPass = "object_ss";> {}
+technique EdgeTec < string MMDPass = "edge";>{}
+technique ShadowTech < string MMDPass = "shadow";>{}
+technique ZplotTec < string MMDPass = "zplot";>{}
+technique MainTec1<string MMDPass = "object";>{}
+technique MainTecBS1<string MMDPass = "object_ss";>{}

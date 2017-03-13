@@ -39,7 +39,7 @@ float4 ScatteringFogPS(
 	float3 V = normalize(viewdir);
 
 	float scaling = 1000;
-	
+
 	ScatteringParams setting;
 	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
@@ -49,7 +49,8 @@ float4 ScatteringFogPS(
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
-	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);	
+	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
+
 	return float4(fog * LightSpecular, 0);
 }
 

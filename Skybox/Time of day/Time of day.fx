@@ -61,7 +61,7 @@ void ScatteringVS(
 float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
 	float3 V = normalize(viewdir);
-	
+
 	float scaling = 1000;
 
 	ScatteringParams setting;
@@ -78,8 +78,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.cloud = mCloudDensity;
 	setting.cloudMie = 0.5;
 	setting.cloudBias = mCloudBias;
-    setting.cloudTop = 8 * scaling;
-    setting.cloudBottom = 5 * scaling;
+	setting.cloudTop = 8 * scaling;
+	setting.cloudBottom = 5 * scaling;
 	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
 
 	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
