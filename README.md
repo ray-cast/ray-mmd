@@ -17,8 +17,9 @@ Download :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-    - Add second albedo map
-    - Remove melanin material (Sill support it, just removed the description)
+    - Added a Time of day
+    - Added a albedo sub map
+    - Remove melanin material (it's still available in old materials, just removed the description)
     - Improve bloom
     - Improve SSAO
     - Optimize skybox loading speed
