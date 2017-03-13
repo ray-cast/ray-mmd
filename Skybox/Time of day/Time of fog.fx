@@ -40,9 +40,6 @@ float4 ScatteringFogPS(
 
 	float scaling = 1000;
 	
-	mMieTurbidity = lerp(mMieTurbidity, mMieTurbidity * 0.15, mSkyNightP);
-	mRayleighHeight = lerp(mRayleighHeight, mRayleighHeight * 0.15, mSkyNightP);
-
 	ScatteringParams setting;
 	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;

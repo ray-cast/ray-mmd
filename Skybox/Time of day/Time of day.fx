@@ -1,6 +1,5 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
-#include "shader/stars.fxsub"
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 #include "shader/cloud.fxsub"
@@ -25,48 +24,6 @@ sampler JupiterMapSamp = sampler_state
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
-
-void StarsVS(
-	in float4 Position    : POSITION,
-	in float4 Texcoord    : TEXCOORD0,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
-	out float4 oPosition  : POSITION)
-{
-	oTexcoord0 = normalize(Position);
-
-	Position.xyz += CameraPosition;
-	oTexcoord1 = normalize(CameraPosition - Position.xyz);
-	oPosition = mul(Position, matViewProject);
-}
-
-float4 StarsPS(
-	in float3 normal  : TEXCOORD0, 
-	in float3 viewdir : TEXCOORD1) : COLOR
-{
-	float starBlink = 0.25;
-	float starDencity = 0.04;
-	float starDistance = 400;
-	float starBrightness = 0.4;
-
-	float3 V = normalize(viewdir);
-
-	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink * time + PI);
-	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink * time + PI);
-
-	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
-	stars2 *= hsv2rgb(float3(dot(normal, -V), 0.2, 1.5));
-
-	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
-	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
-
-	float meteor = CreateMeteor(V, float3(LightDirection.x, -1, LightDirection.z) + float3(0.5,0,0.0), time / PI);
-	
-	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
-	start = lerp(0, start, mSkyNightP);
-	
-	return float4(start, 1);
-}
 
 void SphereVS(
 	in float4 Position : POSITION,
@@ -106,9 +63,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	float3 V = normalize(viewdir);
 	
 	float scaling = 1000;
-	
-	mMieTurbidity = lerp(mMieTurbidity, mMieTurbidity * 0.15, mSkyNightP);
-	mRayleighHeight = lerp(mRayleighHeight, mRayleighHeight * 0.15, mSkyNightP);
 
 	ScatteringParams setting;
 	setting.sunSize = mSunRadius;
@@ -127,8 +81,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
     setting.cloudTop = 8 * scaling;
     setting.cloudBottom = 5 * scaling;
 	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
-	
-	//setting.rayleighHeight = lerp(setting.rayleighHeight, setting.rayleighHeight * 0.1, mSkyNightP);
 
 	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
@@ -138,11 +90,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 #define SKYBOX_TEC(name, mmdpass) \
 	technique name<string MMDPass = mmdpass; string Subset="0";>\
 	{ \
-		pass DrawStars { \
-			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
-			VertexShader = compile vs_3_0 StarsVS(); \
-			PixelShader  = compile ps_3_0 StarsPS(); \
-		} \
 		pass DrawJupiter { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\

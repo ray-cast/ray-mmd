@@ -46,8 +46,6 @@ float mRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "Rayleigh
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
 
-float mSkyNightP : CONTROLOBJECT<string name="(self)"; string item = "SkyNight+";>;
-
 static float mSunRadius = lerp(lerp(0.99, 1.0, mSunRadiusM), 0.65, mSunRadiusP);
 static float mSunRadiance = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
 
