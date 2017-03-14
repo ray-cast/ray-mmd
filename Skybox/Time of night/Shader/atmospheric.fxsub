@@ -19,16 +19,14 @@ float ComputeOpticalMass(float cosAngle)
 	return 1.0 / (cosAngle + 0.15 * pow(abs(93.885 - cosAngleRadians), -1.253));
 }
 
-float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g, float g2)
+float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRayleigh, float3 V, float3 L, float g)
 {
 	float sunTheta = dot(V, L);
-	float sunFade = pow(saturate(V.y), 1.0 / 2.2);
 
 	float3 betaMie1 = inscatteringMie * ComputePhaseMie(sunTheta, g) / (4 * PI);
-	float3 betaMie2 = inscatteringMie * ComputePhaseMie(sunTheta, g2) / (4 * PI);
 	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(sunTheta) / (4 * PI);
 
-	float3 betaTotal = (betaMie1 + betaMie2 * sunFade + betaRayleigh);
+	float3 betaTotal = (betaMie1 + betaRayleigh);
 	return betaTotal / (inscatteringMie + inscatteringRayleigh);
 }
 
@@ -51,7 +49,7 @@ float4 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
 	float3 inscatteringMie = setting.waveLambdaMie;
 	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
 
-	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG, setting.sunSize);
+	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG);
 
 	float3 opticalMie = inscatteringMie * setting.mieHeight * zenithAngleMass;
 	float3 opticalRayleigh = inscatteringRayleigh * setting.rayleighHeight * zenithAngleMass;

@@ -4,8 +4,8 @@
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 moonScaling = 2000;
-static const float3 moonTranslate = -float3(10000, -5000,10000);
+static const float3 moonScaling = 500;
+static const float3 moonTranslate = -10000;
 
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
@@ -103,6 +103,30 @@ float4 SpherePS(
 	return diffuse;
 }
 
+void MoonVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition : POSITION,
+	uniform float3 translate, uniform float3 scale)
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord1 = normalize(Position);
+	oPosition = mul(float4(oTexcoord1.xyz * scale + LightDirection * moonTranslate, 1), matViewProject);
+}
+
+float4 MoonPS(
+	in float2 coord : TEXCOORD0,
+	in float3 normal : TEXCOORD1,
+	uniform sampler source) : COLOR
+{
+	float4 diffuse = tex2D(source, coord + float2((PI + time) / 200, (PI + time) / 100));
+	diffuse.rgb *= saturate(dot(normal, -LightDirection)) * 1.5;
+	diffuse *= (1 - mSunRadianceM);
+	return diffuse;
+}
+
 void ScatteringVS(
 	in float4 Position   : POSITION,
 	out float4 oTexcoord : TEXCOORD0,
@@ -143,16 +167,16 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 		pass DrawJupiter { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
 			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling); \
 			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp); \
 		} \
 		pass DrawMoon { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling); \
-			PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp); \
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
+			VertexShader = compile vs_3_0 MoonVS(moonTranslate, moonScaling); \
+			PixelShader  = compile ps_3_0 MoonPS(MoonMapSamp); \
 		} \
 		pass DrawScattering { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
@@ -167,5 +191,5 @@ SKYBOX_TEC(ScatteringTec0, "object")
 SKYBOX_TEC(ScatteringTecBS0, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTec<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
