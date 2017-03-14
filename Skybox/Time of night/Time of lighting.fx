@@ -61,7 +61,6 @@ void GenSpecularMapVS(
 	oTexcoord = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
 	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
-	oTexcoord.z = oTexcoord.w;
 }
 
 float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
@@ -103,7 +102,6 @@ void GenDiffuseMapVS(
 	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
 	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
-	oTexcoord6.z = oTexcoord6.w;
 }
 
 float4 GenDiffuseMapPS(
@@ -115,7 +113,7 @@ float4 GenDiffuseMapPS(
 	in float3 SH5 : TEXCOORD5,
 	in float4 texcoord6 : TEXCOORD6) : COLOR0
 {
-	float3 normal = ComputeSphereNormal(texcoord6.xy / texcoord6.z);
+	float3 normal = ComputeSphereNormal(texcoord6.xy / texcoord6.w);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
 
 	return EncodeRGBT(irradiance);
@@ -130,9 +128,8 @@ void EnvLightingVS(
 {
 	oViewdir = normalize(CameraPosition - Position.xyz);
 	oTexcoord = oPosition = mul(Position, matWorldViewProject);
-	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
+	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
-	oTexcoord.z = oTexcoord.w;
 }
 
 void EnvLightingPS(
@@ -142,8 +139,7 @@ void EnvLightingPS(
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1)
 {
-	float2 coord = texcoord.xy / texcoord.z;
-	coord += ViewportOffset;
+	float2 coord = texcoord.xy / texcoord.w;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));

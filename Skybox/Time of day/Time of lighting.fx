@@ -60,7 +60,6 @@ void GenSpecularMapVS(
 	oTexcoord = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
 	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
-	oTexcoord.z = oTexcoord.w;
 }
 
 float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
@@ -79,7 +78,7 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
-	float3 V = ComputeSphereNormal(coord.xy / coord.z);
+	float3 V = ComputeSphereNormal(coord.xy / coord.w);
 	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection).rgb;
 
 	return EncodeRGBT(insctrColor);
@@ -132,9 +131,8 @@ void EnvLightingVS(
 {
 	oViewdir = normalize(CameraPosition - Position.xyz);
 	oTexcoord = oPosition = mul(Position, matWorldViewProject);
-	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
+	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
-	oTexcoord.z = oTexcoord.w;
 }
 
 void EnvLightingPS(
@@ -144,8 +142,7 @@ void EnvLightingPS(
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1)
 {
-	float2 coord = texcoord.xy / texcoord.z;
-	coord += ViewportOffset;
+	float2 coord = texcoord.xy / texcoord.w;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));

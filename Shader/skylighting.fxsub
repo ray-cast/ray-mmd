@@ -41,7 +41,7 @@ static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
+texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>;
 sampler IBLDiffuseSampler = sampler_state {
 	texture = <IBLDiffuseTexture>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
@@ -190,7 +190,9 @@ void EnvLightingVS(
 	out float4 oPosition : POSITION)
 {
 	oViewdir = CameraPosition - Position.xyz;
-	oTexcoord = oPosition = mul(Position, matWorldViewProject);
+	oTexcoord = oPosition = mul(Position, matViewProject);
+	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
+	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
 }
 
 void EnvLightingPS(
@@ -202,8 +204,6 @@ void EnvLightingPS(
 {
 #if IBL_ENABLE
 	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
@@ -259,8 +259,6 @@ void EnvLightingFastPS(
 {
 #if IBL_ENABLE
 	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
