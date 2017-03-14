@@ -1,42 +1,42 @@
 float3 ComputeWaveLengthMie(float density)
 {
-    return 2e-5f * density;
+	return 2e-5f * density;
 }
 
 float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float V)
 {
-    float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
-    float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0);
-    return mieConst * K / pow(lambda, V - 2);
+	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
+	float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0);
+	return mieConst * K / pow(lambda, V - 2);
 }
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)
 {
-    const float n = 1.0003;
-    const float N = 2.545E25;
-    const float pn = 0.035;
-    const float n2 = n * n;
-    const float pi3 = PI * PI * PI;
-    const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
-    return rayleighConst / (lambda * lambda * lambda * lambda);
+	const float n = 1.0003;
+	const float N = 2.545E25;
+	const float pn = 0.035;
+	const float n2 = n * n;
+	const float pi3 = PI * PI * PI;
+	const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
+	return rayleighConst / (lambda * lambda * lambda * lambda);
 }
 
 float ComputePhaseMie(float theta, float g)
 {
-    float g2 = g * g;
+	float g2 = g * g;
 
-    float theta2 = theta * theta;
+	float theta2 = theta * theta;
 
-    float leftTop = 3.0 * (1.0 - g2);
-    float leftBottom = 2.0 * (2.0 + g2);
-    float rightTop = 1.0 + theta2;
-    float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * theta), 1.5);
+	float leftTop = 3.0 * (1.0 - g2);
+	float leftBottom = 2.0 * (2.0 + g2);
+	float rightTop = 1.0 + theta2;
+	float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * theta), 1.5);
 
-    return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4.0 * PI);
+	return ((leftTop / leftBottom) * (rightTop / rightBottom));
 }
 
 float ComputePhaseRayleigh(float theta)
 {
-    float theta2 = theta * theta;
-    return (theta2 * 0.75 + 0.75) / (4.0 * PI);
+	float theta2 = theta * theta;
+	return theta2 * 0.75 + 0.75;
 }
