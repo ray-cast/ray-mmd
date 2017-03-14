@@ -25,7 +25,7 @@
 // Accurate Atmospheric Scattering - GPU Gems2
 // An Approximation to the Chapman Grazing-Incidence Function for Atmospheric Scattering
 
-// Based on other shaders,
+// Based on other shaders:
 
 // Noise. by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -38,5 +38,10 @@
 // SmallStars. By P_Malin, Nov 2015.
 // https://www.shadertoy.com/view/Ml2XDt
 
+// Based on other resources:
+
 // The Milky Way panorama
 // https://www.eso.org/public/images/eso0932a/
+
+// Moon & Jupiter
+// http://www.celestiamotherlode.net/catalog/moon.php
