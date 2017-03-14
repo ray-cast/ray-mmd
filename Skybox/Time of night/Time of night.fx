@@ -74,7 +74,7 @@ float4 StarsPS(
 	
 	float3 up = mul(float3(0,0,1), matTransform);
 	float2 coord = ComputeSphereCoord(mul(V, matTransform));
-	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, dot(-V, up));
+	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, pow2(saturate(-V.y)));
 
 	return float4(start, 1);
 }
@@ -105,10 +105,10 @@ float4 SpherePS(
 
 void ScatteringVS(
 	in float4 Position   : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = normalize(Position);
+	oTexcoord = normalize(Position);
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
 
@@ -124,7 +124,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
 	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
 	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
@@ -133,7 +133,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 }
 
 #define SKYBOX_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; string Subset="0";>\
+	technique name<string MMDPass = mmdpass;>\
 	{ \
 		pass DrawStars { \
 			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \

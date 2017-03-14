@@ -51,11 +51,11 @@ float mSkyNightP : CONTROLOBJECT<string name="(self)"; string item = "SkyNight+"
 static float mSunRadius = lerp(lerp(0.99, 1.0, mSunRadiusM), 0.65, mSunRadiusP);
 static float mSunRadiance = lerp(lerp(5, 10, mSunRadianceP), 1.0, mSunRadianceM);
 
-static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
+static float3 mWaveLength = float3(680e-9,620e-9,570e-9);
 
-static float mMiePhase = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
+static float mMiePhase = lerp(lerp(0.86, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieHeight = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
-static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
+static float mMieTurbidity = lerp(lerp(100.0, 250.0, mMieTurbidityP), 1e-5, mMieTurbidityM);
 static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
 
 static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);

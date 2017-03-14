@@ -15,6 +15,8 @@ void ScatteringFogVS(
 {
 	oTexcoord0 = normalize(Position.xyz - CameraPosition);
 	oTexcoord = oPosition = mul(Position, matWorldViewProject);
+	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
+	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
 }
 
 float4 ScatteringFogPS(
@@ -22,8 +24,6 @@ float4 ScatteringFogPS(
 	in float3 viewdir  : TEXCOORD1) : COLOR
 {
 	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
@@ -46,7 +46,7 @@ float4 ScatteringFogPS(
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
 	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
 	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
