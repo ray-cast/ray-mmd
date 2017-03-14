@@ -20,7 +20,7 @@ float4 ComputeStereoCoord(sampler depth, float2 coord, float maxSeparation, floa
 	return float4(coord + float2(parallaxL, 0), coord - float2(parallaxR, 0));
 }
 
-float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
+float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source, uniform sampler depth) : COLOR
 {
 #if POST_STEREOSCOPIC_MODE == 4
 	float2 coord = tex.x < 0.5 ? tex * float2(2,1) : float2((tex.x - 0.5f) * 2, tex.y);
@@ -30,7 +30,7 @@ float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
 	float2 coord = tex;
 #endif
 
-	float4 stereo = ComputeStereoCoord(DepthMapSamp, coord, 0.01, 0.3);
+	float4 stereo = ComputeStereoCoord(depth, coord, 0.01, 0.3);
 	float3 left = tex2Dlod(source, float4(stereo.xy, 0, 0)).rgb;
 	float3 right = tex2Dlod(source, float4(stereo.zw, 0, 0)).rgb;
 
@@ -42,7 +42,7 @@ float4 StereoscopicPS(float2 tex : TEXCOORD0, uniform sampler source) : COLOR
 	return float4(dot(left.gb, float2(0.7f, 0.3f)), right.rg, 1);
 #elif POST_STEREOSCOPIC_MODE == 4 // Horizontal
 	return float4(tex.x < 0.5 ? left : right, 1);
-#elif POST_STEREOSCOPIC_MODE == 5 // Horizontal
+#elif POST_STEREOSCOPIC_MODE == 5 // Vertical
 	return float4(tex.y < 0.5 ? left : right, 1);
 #else
 	return stereo;
