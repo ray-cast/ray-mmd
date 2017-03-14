@@ -46,12 +46,15 @@ float4 ScatteringFogPS(
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
 	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 4);
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.earthRadius = 6360 * scaling;
+	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 
-	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
 
-	return float4(fog * LightSpecular, 0);
+	return float4(fog, 0);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
