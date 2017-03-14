@@ -9,6 +9,8 @@ struct ScatteringParams
 	float mieHeight;
 
 	float rayleighHeight;
+	
+	float fogRange;
 
 	float3 waveLambda;
 	float3 waveLambdaMie;
@@ -91,14 +93,8 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 float3 ComputeFogChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance)
 {
-	float3 up = float3(0, 1, 0);
-	float3 sunDirection = normalize(-L);
-
-	float zenithAngle = saturate(dot(V, up));
-	float zenithAngleCos = dot(sunDirection, up);
-
 	float3 start = eye - setting.earthCenter;
-	float3 end = start + V * distance * 10;
+	float3 end = start + V * distance * setting.fogRange;
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;

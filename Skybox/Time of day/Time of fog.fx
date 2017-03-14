@@ -46,12 +46,13 @@ float4 ScatteringFogPS(
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
 	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
-
+	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.fogRange = mFogRange;
+	
 	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
 
 	return float4(fog, 0);
@@ -72,8 +73,8 @@ float4 ScatteringFogPS(
 OBJECT_TEC(FogTec0, "object")
 OBJECT_TEC(FogTecBS0, "object_ss")
 
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTech<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
-technique MainTec1<string MMDPass = "object";> {}
-technique MainTecBS1<string MMDPass = "object_ss";> {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
+technique MainTec1<string MMDPass = "object";>{}
+technique MainTecBS1<string MMDPass = "object_ss";>{}
