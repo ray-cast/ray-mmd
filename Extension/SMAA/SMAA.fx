@@ -532,8 +532,7 @@ float4 SMAANeighborhoodBlendingVS(
 float4 SMAANeighborhoodBlendingPS(
 	in float2 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1,
-	uniform sampler source,
-	uniform bool srgb) : COLOR
+	uniform sampler source) : COLOR
 {
 	float4 a;
 	a.x = tex2Dlod(SMAABlendMapSamp, float4(coord1.xy, 0, 0)).a;
@@ -610,6 +609,6 @@ technique SMAA <
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ScnSamp, 1);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ScnSamp);
 	}
 }

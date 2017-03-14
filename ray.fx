@@ -711,7 +711,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, 1);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp);
 	}
 #endif
 #if AA_QUALITY == 4 || AA_QUALITY == 5
@@ -731,7 +731,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, 0);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp);
 	}
 	pass SMAAEdgeDetection2x<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -749,7 +749,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, 1);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp);
 	}
 #endif
 }
