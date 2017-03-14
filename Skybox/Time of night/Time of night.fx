@@ -122,7 +122,7 @@ float4 MoonPS(
 	uniform sampler source) : COLOR
 {
 	float4 diffuse = tex2D(source, coord + float2((PI + time) / 200, (PI + time) / 100));
-	diffuse.rgb *= saturate(dot(normal, -LightDirection)) * 1.5;
+	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;
 	diffuse *= (1 - mSunRadianceM);
 	return diffuse;
 }
