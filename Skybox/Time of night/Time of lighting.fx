@@ -10,6 +10,20 @@
 
 #define IBL_MIPMAP_LEVEL 7
 
+texture DiffuseMap<string ResourceName = "Shader/Textures/skydiff_hdr.dds";>;
+sampler DiffuseMapSamp = sampler_state
+{
+	texture = <DiffuseMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+texture SpecularMap<string ResourceName = "Shader/Textures/skyspec_hdr.dds";>;
+sampler SpecularMapSamp = sampler_state
+{
+	texture = <SpecularMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
 texture SkySpecularMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 }; int Miplevels=0;>;
 sampler SkySpecularMapSample = sampler_state {
 	texture = <SkySpecularMap>;
@@ -23,6 +37,8 @@ sampler SkyDiffuseMapSample = sampler_state {
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
+static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
+
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
@@ -32,6 +48,10 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 N = normalize(worldNormal);
 	float3 R = normalize(worldReflect);
 
+	float2 coord = ComputeSphereCoord(R);
+	float2 coord1 = ComputeSphereCoord(mul(N, matTransform));
+	float2 coord2 = ComputeSphereCoord(mul(R, matTransform));
+
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
@@ -40,12 +60,15 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
+	prefilteredDiffuse += DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0))) * saturate(worldNormal.y);
 
-	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(ComputeSphereCoord(R), 0, mipLayer)));
-	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));
+	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(coord, 0, mipLayer)));
+	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(coord, 0, 0)));
+
 	float3 prefilteredSpeculr = 0;
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
-	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
+	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);	
+	prefilteredSpeculr += DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer))) * saturate(worldNormal.y);
 
 	diffuse = prefilteredDiffuse;
 
@@ -77,7 +100,7 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.z);
-	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
+	float3 insctrColor = ComputeSkyScattering(setting, V, LightDirection).rgb;
 
 	return EncodeRGBT(insctrColor);
 }
@@ -115,7 +138,6 @@ float4 GenDiffuseMapPS(
 {
 	float3 normal = ComputeSphereNormal(texcoord6.xy / texcoord6.w);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
-
 	return EncodeRGBT(irradiance);
 }
 
