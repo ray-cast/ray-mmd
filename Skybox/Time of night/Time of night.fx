@@ -10,6 +10,15 @@ static const float3 moonTranslate = -float3(10000, -5000,10000);
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
+static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
+
+texture MilkWayMap<string ResourceName = "Shader/Textures/milky way.jpg";>;
+sampler MilkWayMapSamp = sampler_state
+{
+	texture = <MilkWayMap>;
+	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = NONE;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
 texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
 sampler MoonMapSamp = sampler_state
 {
@@ -63,6 +72,10 @@ float4 StarsPS(
 	
 	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
 	
+	float3 up = mul(float3(0,0,1), matTransform);
+	float2 coord = ComputeSphereCoord(mul(V, matTransform));
+	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, dot(-V, up));
+
 	return float4(start, 1);
 }
 

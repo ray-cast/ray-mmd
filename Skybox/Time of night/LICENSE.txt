@@ -37,3 +37,6 @@
 
 // SmallStars. By P_Malin, Nov 2015.
 // https://www.shadertoy.com/view/Ml2XDt
+
+// The Milky Way panorama
+// https://www.eso.org/public/images/eso0932a/
