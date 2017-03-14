@@ -108,22 +108,26 @@ void MoonVS(
 	in float4 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION,
 	uniform float3 translate, uniform float3 scale)
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = normalize(Position);
-	oPosition = mul(float4(oTexcoord1.xyz * scale + LightDirection * moonTranslate, 1), matViewProject);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale + LightDirection * moonTranslate, 1);
+	oPosition = mul(oTexcoord2, matViewProject);
 }
 
 float4 MoonPS(
 	in float2 coord : TEXCOORD0,
 	in float3 normal : TEXCOORD1,
+	in float3 viewdir : TEXCOORD2,
 	uniform sampler source) : COLOR
 {
+	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord + float2((PI + time) / 200, (PI + time) / 100));
-	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;
-	diffuse *= (1 - mSunRadianceM);
+	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;	
+	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 500));
 	return diffuse;
 }
 
