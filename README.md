@@ -17,7 +17,7 @@ Download :
     - Adding new features to the most recent version
     - Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-    - Added a Time of day
+    - Added a Time of day & night
     - Added a albedo sub map
     - Remove melanin material (it's still available in old materials, just removed the description)
     - Improve bloom
