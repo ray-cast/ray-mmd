@@ -39,25 +39,18 @@ float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, floa
 	return float4(prefilteredSpeculr, 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
 }
 
-float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R, float roughness)
+float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V)
 {
-	float nv = max(abs(dot(N, V)), 0.1);
-
 	float3 f9 = max(0.04, material.customDataB);
-	float3 fresnel = lerp(material.specular, f9, pow(1 - nv, 5) / (40 - 39 * material.smoothness));
-
+	float3 fresnel = lerp(material.specular, f9, pow(1 - max(abs(dot(N, V)), 0.1), 5) / (40 - 39 * material.smoothness));
 	return fresnel;
 }
 
-float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
-	float3 prefilteredTransmittance = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
-
 	float3 dependentSplit = 0.5;
-	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
+	float3 scattering = prefilteredDiffuse + DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
 	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
-	scattering += prefilteredDiffuse * mEnvIntensityDiff;
-
 	return scattering;
 }
 
@@ -98,11 +91,11 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
+		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
 	}
 	else if (material.lightModel == SHADINGMODELID_CLOTH)
 	{
-		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect, roughness);
+		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView);
 		specular = lerp(specular, prefilteredSpeculr * specular2, material.customDataA);
 	}
 
