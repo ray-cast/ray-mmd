@@ -71,7 +71,7 @@ void SunVS(
 	float3 sunUp = float3(0, 1, 0);
 	float3 sunDirection = normalize(-LightDirection);
 
-	float sunRadius = mSunRadius + (1 - saturate(dot(sunDirection, sunUp))) * 0.5;
+	float sunRadius = mSunRadius + (1 - saturate(dot(sunDirection, sunUp))) * 0.25;
 
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(normalize(Position.xyz), 1);
