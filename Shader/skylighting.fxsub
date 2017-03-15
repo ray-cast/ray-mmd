@@ -41,16 +41,16 @@ static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>;
-sampler IBLDiffuseSampler = sampler_state {
-	texture = <IBLDiffuseTexture>;
+texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE;>;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
-texture IBLSpecularTexture<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>;
-sampler IBLSpecularSampler = sampler_state {
-	texture = <IBLSpecularTexture>;
+texture SpecularMap<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>;
+sampler SpecularMapSamp = sampler_state {
+	texture = <SpecularMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
@@ -82,15 +82,15 @@ float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V)
 	return fresnel;
 }
 
-float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
 	float3 dependentSplit = 0.5;
-	float3 scattering = prefilteredDiffuse + DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(-N), 0, 0)));
+	float3 scattering = prefilteredDiffuse + DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
 	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
 	return scattering;
 }
 
-void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView, float finalSmoothness, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmoothness, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
@@ -106,8 +106,8 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, finalSmoothness, material.specular);
 
-	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(IBLDiffuseSampler, float4(ComputeSphereCoord(N), 0, 0)));
-	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(IBLSpecularSampler, float4(ComputeSphereCoord(R), 0, mipLayer)));
+	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
+	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(ComputeSphereCoord(R), 0, mipLayer)));
 
 	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceDiffuse);
 	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mBalanceSpecular);
@@ -126,7 +126,7 @@ void ShadingMaterial(MaterialParam material, float3 FlatNormal, float3 worldView
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse += ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
+		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
 	}
 	else if (material.lightModel == SHADINGMODELID_CLOTH)
 	{
@@ -174,14 +174,14 @@ float AdjustRoughness(float roughness, float3 normal)
 void EnvLightingVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float4 oTexcoord : TEXCOORD0,
-	out float3 oViewdir  : TEXCOORD1,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oViewdir = CameraPosition - Position.xyz;
-	oTexcoord = oPosition = mul(Position, matViewProject);
-	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
-	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
+	oTexcoord1= CameraPosition - Position.xyz;
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
 void EnvLightingPS(
@@ -224,10 +224,10 @@ void EnvLightingPS(
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, materialAlpha.normal, V, finalSmoothness, diffuse, specular);
+	ShadingMaterial(material, V, finalSmoothness, diffuse, specular);
 
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, materialAlpha.normal, V, materialAlpha.smoothness, diffuse2, specular2);
+	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
 
 	float fakeSSAO = any(materialAlpha.alpha) ? (1 - materialAlpha.alpha * 0.5) : 1;
 
@@ -268,15 +268,13 @@ void EnvLightingFastPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
-	float finalSmoothness = material.smoothness;
-
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, materialAlpha.normal, V, finalSmoothness, diffuse, specular);
+	ShadingMaterial(material, V, material.smoothness, diffuse, specular);
 
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, materialAlpha.normal, V, materialAlpha.smoothness, diffuse2, specular2);
+	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
 
 	oColor0 = EncodeYcbcr(screenPosition, diffuse , specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
