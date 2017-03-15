@@ -7,6 +7,17 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
+float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
+float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
+float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
+
+static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
+
 #define IBL_MIPMAP_LEVEL 7
 
 texture SkySpecularMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 }; int Miplevels=0;>;
@@ -46,9 +57,9 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
 
-	diffuse = prefilteredDiffuse;
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 
-	specular = prefilteredSpeculr * fresnel;
+	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
 	specular *= step(0, dot(material.specular, 1) - 1e-5);
 }
 
