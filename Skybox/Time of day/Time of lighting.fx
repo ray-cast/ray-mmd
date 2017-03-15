@@ -82,7 +82,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
-		float4 specular2 = ImageBasedLightClearCost(material, N, V, prefilteredSpeculr);
+		float4 specular2 = ImageBasedLightClearCost(material, worldNormal, worldView, prefilteredSpeculr);
 		specular *= (1 - specular2.a);
 		specular += specular2.rgb;
 	}
