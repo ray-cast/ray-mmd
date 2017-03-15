@@ -69,9 +69,9 @@ float4 StarsPS(
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
 
 	float meteor = CreateMeteor(V, float3(LightDirection.x, -1, LightDirection.z) + float3(0.5,0,0.0), time / PI);
-	
+
 	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
-	
+
 	float3 up = mul(float3(0,0,1), matTransform);
 	float2 coord = ComputeSphereCoord(mul(V, matTransform));
 	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, pow2(saturate(-V.y)));
