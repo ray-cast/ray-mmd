@@ -148,3 +148,23 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return intersectionTest;
 }
+
+float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L)
+{
+	float3 insctrMie = 0.0;
+	float3 insctrRayleigh = 0.0;
+	float3 insctrOpticalLength = 1;
+	bool intersectionTest = ComputeSkyboxChapman(setting, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
+	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
+
+	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie / (4 * PI);
+	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh / (4 * PI);
+
+	float3 sky = insctrTotalMie + insctrTotalRayleigh;
+
+	return float4(sky * setting.sunRadiance, phaseNight * intersectionTest);
+}

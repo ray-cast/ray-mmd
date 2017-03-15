@@ -78,7 +78,6 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	float scaling = 1000;
 
 	ScatteringParams setting;
-	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
