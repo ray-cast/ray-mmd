@@ -184,9 +184,9 @@ float4 GenDiffuseMapPS(
 	in float3 SH3 : TEXCOORD3,
 	in float3 SH4 : TEXCOORD4,
 	in float3 SH5 : TEXCOORD5,
-	in float4 texcoord6 : TEXCOORD6) : COLOR0
+	in float4 coord : TEXCOORD6) : COLOR0
 {
-	float3 normal = ComputeSphereNormal(texcoord6.xy / texcoord6.w);
+	float3 normal = ComputeSphereNormal(coord.xy / coord.w);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
 	return EncodeRGBT(irradiance);
 }
