@@ -114,7 +114,7 @@ void MoonVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = normalize(Position);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale + LightDirection * moonTranslate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + LightDirection * moonTranslate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -126,7 +126,7 @@ float4 MoonPS(
 {
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord + float2((PI + time) / 200, (PI + time) / 100));
-	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;	
+	diffuse *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;	
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 500));
 	return diffuse;
 }
