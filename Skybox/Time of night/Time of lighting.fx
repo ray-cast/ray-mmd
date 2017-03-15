@@ -52,7 +52,6 @@ static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
 
 float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 prefilteredSpeculr)
 {
-	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
 	return float4(prefilteredSpeculr, 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
 }
 
@@ -88,7 +87,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
-	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
