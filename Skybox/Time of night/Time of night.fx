@@ -11,6 +11,7 @@ static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
 static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
+static float3x3 matMoonTransform = CreateRotate(float3(0.0, 0.0, time / 50));
 
 texture MilkWayMap<string ResourceName = "Shader/Textures/milky way.jpg";>;
 sampler MilkWayMapSamp = sampler_state
@@ -113,7 +114,7 @@ void MoonVS(
 	uniform float3 translate, uniform float3 scale)
 {
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = normalize(Position);
+	oTexcoord1 = float4(mul(normalize(Position).xyz, matMoonTransform), 1);
 	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + LightDirection * moonTranslate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
@@ -125,7 +126,7 @@ float4 MoonPS(
 	uniform sampler source) : COLOR
 {
 	float3 V = normalize(viewdir - CameraPosition);
-	float4 diffuse = tex2D(source, coord + float2((PI + time) / 200, (PI + time) / 100));
+	float4 diffuse = tex2D(source, coord + float2(0.4, 0.0));
 	diffuse *= saturate(dot(normal, -LightDirection) + 0.1) * 1.5;	
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 500));
 	return diffuse;
