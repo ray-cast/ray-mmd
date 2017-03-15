@@ -128,9 +128,3 @@ float3 GetViewPosition(float4 projConstant, float2 coord, float depth)
 {
 	return float3(coord * projConstant.xy + projConstant.zw, 1) * depth;
 }
-
-float3 ReconstructPos(float2 Tex, float4x4 matProjectInverse, float depth)
-{
-	float3 v = mul(float4(CoordToPos(Tex), 0, 1), matProjectInverse).xyz;
-	return v * depth / v.z;
-}

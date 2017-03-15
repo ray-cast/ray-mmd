@@ -210,8 +210,10 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 	float jitter = GetJitterOffset(coord.zw);
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, jitter, hitPixel);
-
-	float3 rayHitPositionVS = ReconstructPos(hitPixel.xy, matProjectInverse, tex2Dlod(DepthMapSamp, float4(hitPixel.xy, 0, 0)).r);
+	if (!hitTest)
+	{
+		return 0;
+	}
 
 	float2 boundary = abs(coord.xy * 2 - 1);
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
@@ -220,8 +222,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
 
 	float fadeOnPerpendicular = saturate(atten);
-	float fadeOnDistance = 1.0f - saturate(distance(rayHitPositionVS, viewPosition) / mSSRFadeDistance);
-	float fadeOnTotal = fadeOnBorder * fadeOnDistance * fadeOnPerpendicular;
+	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
 
 	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel.xy, 0, 0));
 	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
@@ -284,6 +285,6 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	else
 		color = lerp(refl3, refl2, weight);
 
-	float3 fresnel = EnvironmentSpecularUnreal4(material.normal, normalize(viewdir), material.smoothness, material.specular);
+	float3 fresnel = EnvironmentSpecularPolynomial(material.normal, normalize(viewdir), material.smoothness, material.specular);
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
 }
