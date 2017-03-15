@@ -114,7 +114,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	setting.cloud = mCloudDensity;
-	setting.cloudMie = 0.5;
 	setting.cloudBias = mCloudBias;
 	setting.cloudTop = 8 * scaling;
 	setting.cloudBottom = 5 * scaling;

@@ -18,7 +18,6 @@ struct ScatteringParams
 	float3 earthCenter;
 
 	float cloud;
-	float cloudMie;
 	float cloudBias;
 	float cloudTop;
 	float cloudBottom;
