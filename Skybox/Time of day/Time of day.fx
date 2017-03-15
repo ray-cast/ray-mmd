@@ -4,6 +4,9 @@
 #include "shader/atmospheric.fxsub"
 #include "shader/cloud.fxsub"
 
+static const float3 sunScaling = 500;
+static const float3 sunTranslate = -10000;
+
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
 
@@ -21,6 +24,13 @@ texture JupiterMap<string ResourceName = "Shader/Textures/jupiter.jpg";>;
 sampler JupiterMapSamp = sampler_state
 {
 	texture = <JupiterMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+texture SunMap<string ResourceName = "Shader/Textures/realsun.jpg";>;
+sampler SunMapSamp = sampler_state
+{
+	texture = <SunMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
@@ -49,6 +59,35 @@ float4 SpherePS(
 	return diffuse;
 }
 
+void SunVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2,
+	out float4 oPosition : POSITION,
+	uniform float3 translate, uniform float3 scale)
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord1 = float4(normalize(Position.xyz), 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + LightDirection * translate, 1);
+	oPosition = mul(oTexcoord2, matViewProject);
+}
+
+float4 SunPS(
+	in float2 coord : TEXCOORD0,
+	in float3 normal : TEXCOORD1,
+	in float3 viewdir : TEXCOORD2,
+	uniform sampler source) : COLOR
+{
+	float3 V = normalize(viewdir - CameraPosition);
+	float4 diffuse = tex2D(source, coord);
+	diffuse *= diffuse;
+	diffuse *= saturate(dot(normalize(normal), -LightDirection) + 0.1) * 1.5;
+	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 100));
+	return diffuse;
+}
+
 void ScatteringVS(
 	in float4 Position   : POSITION,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -65,7 +104,6 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	float scaling = 1000;
 
 	ScatteringParams setting;
-	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
@@ -97,6 +135,7 @@ const float4 BackColor = 0.0;
 		"Clear=Color;"\
 		"Pass=DrawJupiter;"\
 		"Pass=DrawMoon;"\
+		"Pass=DrawSun;"\
 		"Pass=DrawScattering;";\
 	>{ \
 		pass DrawJupiter { \
@@ -110,6 +149,13 @@ const float4 BackColor = 0.0;
 			ZEnable = false; ZWriteEnable = false;\
 			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling); \
 			PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp); \
+		} \
+		pass DrawSun { \
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
+			VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling); \
+			PixelShader  = compile ps_3_0 SunPS(SunMapSamp); \
 		} \
 		pass DrawScattering { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\

@@ -2,7 +2,6 @@
 
 struct ScatteringParams
 {
-	float sunSize;
 	float sunRadiance;
 
 	float mieG;
