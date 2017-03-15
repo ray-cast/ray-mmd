@@ -13,7 +13,7 @@ float3 EnvironmentSpecularPolynomial(float3 N, float3 V, float smoothness, float
 	float b1 = -0.1688; float b2 = 1.895; float b3 = 0.9903; float b4 = -4.853; float b5 = 8.404; float b6 = -5.069;
 	float d1 =  0.6045; float d2 = 1.699; float d3 =-0.5228; float d4 = -3.603; float d5 = 1.404; float d6 = 0.1939; float d7 = 2.661;
 	float x = pow(1 - SmoothnessToRoughness(smoothness) * 0.7, 6);
-	float y = dot(N, V);
+	float y = abs(dot(N, V));
 	float xx = x * x;
 	float yy = y * y;
 	float bias  = saturate(min(b1 * x + b2 * xx, b3 + b4 * y + b5 * yy + b6 * yy * y));
