@@ -11,7 +11,7 @@ static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
 static float3x3 matTransformMoon = CreateRotate(float3(0.0, 0.0, time / 50));
-static float3x3 matTransformMilkWay = CreateRotate(float3(3.14 / 2,0.0, time / 100));
+static float3x3 matTransformMilkWay = CreateRotate(float3(3.14 / 2,0.0, 0.0));
 
 texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
 sampler MoonMapSamp = sampler_state
@@ -74,7 +74,7 @@ float4 StarsPS(
 	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
 
 	float3 up = mul(float3(0,0,1), matTransformMilkWay);
-	float2 coord = ComputeSphereCoord(mul(V, matTransformMilkWay));
+	float2 coord = ComputeSphereCoord(mul(V, matTransformMilkWay)) - float2(time / 1000, 0.0);
 	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, pow2(saturate(-V.y)));
 
 	return float4(start, 1);

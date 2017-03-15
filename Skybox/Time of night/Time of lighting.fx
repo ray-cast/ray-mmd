@@ -71,7 +71,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
-	prefilteredDiffuse += DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0))) * saturate(worldNormal.y);
+	prefilteredDiffuse += DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1 - float2(time / 1000, 0.0), 0, 0))) * saturate(worldNormal.y);
 
 	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(coord, 0, mipLayer)));
 	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(coord, 0, 0)));
@@ -79,7 +79,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 prefilteredSpeculr = 0;
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);	
-	prefilteredSpeculr += DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer))) * saturate(worldNormal.y);
+	prefilteredSpeculr += DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2 - float2(time / 1000, 0.0), 0, mipLayer))) * saturate(worldNormal.y);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 
