@@ -10,7 +10,7 @@ static const float3 moonTranslate = -10000;
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
-static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
+static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0, time / 100));
 static float3x3 matMoonTransform = CreateRotate(float3(0.0, 0.0, time / 50));
 
 texture MilkWayMap<string ResourceName = "Shader/Textures/milky way.jpg";>;
