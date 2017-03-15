@@ -40,9 +40,9 @@ float mCloudSpeedM : CONTROLOBJECT<string name="(self)"; string item = "CloudSpe
 float mCloudBiasP : CONTROLOBJECT<string name="(self)"; string item = "CloudBias+";>;
 float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias-";>;
 
-float mRayleightH : CONTROLOBJECT<string name="(self)"; string item = "RayleighH";>;
-float mRayleightS : CONTROLOBJECT<string name="(self)"; string item = "RayleighS";>;
-float mRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
+float mRayleightR : CONTROLOBJECT<string name="(self)"; string item = "RayleighR-";>;
+float mRayleightG : CONTROLOBJECT<string name="(self)"; string item = "RayleighG-";>;
+float mRayleightB : CONTROLOBJECT<string name="(self)"; string item = "RayleighB-";>;
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
 
@@ -63,7 +63,7 @@ static float mCloudBias = time * lerp(lerp(0.05, 0.2, mCloudBiasP), 0, mCloudBia
 static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
 
 static float mRayleighHeight = lerp(lerp(5, 12, mRayleighHeightP), 1e-5, mRayleighHeightM);
-static float3 mRayleighColor = hsv2rgb(float3(mRayleightH, mRayleightS, 1 + mRayleightVP));
+static float3 mRayleighColor = 1.0 - float3(mRayleightR, mRayleightG, mRayleightB);
 
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
 static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
