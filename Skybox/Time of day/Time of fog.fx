@@ -9,21 +9,21 @@
 void ScatteringFogVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float4 oTexcoord : TEXCOORD0,
-	out float3 oTexcoord0  : TEXCOORD1,
+	out float3 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1  : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position.xyz - CameraPosition);
-	oTexcoord = oPosition = mul(Position, matWorldViewProject);
+	oTexcoord1 = oPosition = mul(Position, matWorldViewProject);
+	oTexcoord1.xy = PosToCoord(oTexcoord1.xy / oTexcoord1.w) + ViewportOffset;
+	oTexcoord1.xy = oTexcoord1.xy * oTexcoord1.w;
 }
 
 float4 ScatteringFogPS(
-	in float4 texcoord : TEXCOORD0,
-	in float3 viewdir  : TEXCOORD1) : COLOR
+	in float3 viewdir  : TEXCOORD0,
+	in float4 texcoord : TEXCOORD1) : COLOR
 {
 	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
