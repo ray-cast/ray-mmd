@@ -67,7 +67,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
-	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, pow2(material.smoothness));
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, material.smoothness);
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
@@ -92,7 +92,7 @@ void GenSpecularMapVS(
 	out float4 oTexcoord : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
+	oTexcoord = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
 	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
 }
@@ -133,7 +133,7 @@ void GenDiffuseMapVS(
 	oTexcoord3 = SHSamples(SkySpecularMapSample, 3);
 	oTexcoord4 = SHSamples(SkySpecularMapSample, 4);
 	oTexcoord5 = SHSamples(SkySpecularMapSample, 5);
-	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
+	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
 	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
 }
@@ -160,7 +160,7 @@ void EnvLightingVS(
 	out float4 oPosition : POSITION)
 {
 	oViewdir = normalize(CameraPosition - Position.xyz);
-	oTexcoord = oPosition = mul(Position, matWorldViewProject);
+	oTexcoord = oPosition = mul(Position, matViewProject);
 	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
 	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
 }
