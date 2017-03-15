@@ -20,18 +20,46 @@ static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLig
 
 #define IBL_MIPMAP_LEVEL 7
 
-texture SkySpecularMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 }; int Miplevels=0;>;
-sampler SkySpecularMapSample = sampler_state {
-	texture = <SkySpecularMap>;
+texture SpecularMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 }; int Miplevels=0;>;
+sampler SpecularMapSamp = sampler_state {
+	texture = <SpecularMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
-texture SkyDiffuseMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 };>;
-sampler SkyDiffuseMapSample = sampler_state {
-	texture = <SkyDiffuseMap>;
+texture DiffuseMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 };>;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+
+float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 prefilteredSpeculr)
+{
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
+	return float4(prefilteredSpeculr, 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
+}
+
+float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R, float roughness)
+{
+	float nv = max(abs(dot(N, V)), 0.1);
+
+	float3 f9 = max(0.04, material.customDataB);
+	float3 fresnel = lerp(material.specular, f9, pow(1 - nv, 5) / (40 - 39 * material.smoothness));
+
+	return fresnel;
+}
+
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
+{
+	float3 prefilteredTransmittance = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
+
+	float3 dependentSplit = 0.5;
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
+	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
+	scattering += prefilteredDiffuse * mEnvIntensityDiff;
+
+	return scattering;
+}
 
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
@@ -49,15 +77,34 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL, pow2(material.smoothness));
 	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
-	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
+	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
 
-	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(ComputeSphereCoord(R), 0, mipLayer)));
-	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(R), 0, 0)));
+	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(ComputeSphereCoord(R), 0, mipLayer)));
+	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(R), 0, 0)));
 	float3 prefilteredSpeculr = 0;
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+	
+	[branch]
+	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+	{
+		float4 specular2 = ImageBasedLightClearCost(material, N, V, prefilteredSpeculr);
+		specular *= (1 - specular2.a);
+		specular += specular2.rgb;
+	}
+	else if (material.lightModel == SHADINGMODELID_SKIN || 
+			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
+			 material.lightModel == SHADINGMODELID_GLASS)
+	{
+		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
+	}
+	else if (material.lightModel == SHADINGMODELID_CLOTH)
+	{
+		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect, roughness);
+		specular = lerp(specular, prefilteredSpeculr * specular2, material.customDataA);
+	}
 
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
 	specular *= step(0, dot(material.specular, 1) - 1e-5);
@@ -105,12 +152,12 @@ void GenDiffuseMapVS(
 	out float4 oTexcoord6 : TEXCOORD6,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = SHSamples(SkySpecularMapSample, 0);
-	oTexcoord1 = SHSamples(SkySpecularMapSample, 1);
-	oTexcoord2 = SHSamples(SkySpecularMapSample, 2);
-	oTexcoord3 = SHSamples(SkySpecularMapSample, 3);
-	oTexcoord4 = SHSamples(SkySpecularMapSample, 4);
-	oTexcoord5 = SHSamples(SkySpecularMapSample, 5);
+	oTexcoord0 = SHSamples(SpecularMapSamp, 0);
+	oTexcoord1 = SHSamples(SpecularMapSamp, 1);
+	oTexcoord2 = SHSamples(SpecularMapSamp, 2);
+	oTexcoord3 = SHSamples(SpecularMapSamp, 3);
+	oTexcoord4 = SHSamples(SpecularMapSamp, 4);
+	oTexcoord5 = SHSamples(SpecularMapSamp, 5);
 	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matWorldViewProject);
 	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
@@ -198,10 +245,10 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		"Clear=Color;"\
 		"RenderColorTarget=LightSpecMap;"\
 		"Clear=Color;"\
-		"RenderColorTarget=SkySpecularMap;" \
+		"RenderColorTarget=SpecularMap;" \
 		"Clear=Color;"\
 		"Pass=GenSpecularMap;" \
-		"RenderColorTarget=SkyDiffuseMap;" \
+		"RenderColorTarget=DiffuseMap;" \
 		"Clear=Color;"\
 		"Pass=GenDiffuseMap;" \
 		"RenderColorTarget=;" \

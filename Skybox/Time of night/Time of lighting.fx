@@ -50,6 +50,34 @@ sampler SkyDiffuseMapSample = sampler_state {
 
 static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
 
+float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 prefilteredSpeculr)
+{
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
+	return float4(prefilteredSpeculr, 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
+}
+
+float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V, float3 R, float roughness)
+{
+	float nv = max(abs(dot(N, V)), 0.1);
+
+	float3 f9 = max(0.04, material.customDataB);
+	float3 fresnel = lerp(material.specular, f9, pow(1 - nv, 5) / (40 - 39 * material.smoothness));
+
+	return fresnel;
+}
+
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float mipLayer, float3 fresnel, float3 prefilteredDiffuse)
+{
+	float3 prefilteredTransmittance = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
+
+	float3 dependentSplit = 0.5;
+	float3 scattering = prefilteredDiffuse + prefilteredTransmittance;
+	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
+	scattering += prefilteredDiffuse * mEnvIntensityDiff;
+
+	return scattering;
+}
+
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
@@ -82,6 +110,25 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	prefilteredSpeculr += DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2 - float2(time / 1000, 0.0), 0, mipLayer))) * saturate(worldNormal.y);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+
+	[branch]
+	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
+	{
+		float4 specular2 = ImageBasedLightClearCost(material, N, V, prefilteredSpeculr);
+		specular *= (1 - specular2.a);
+		specular += specular2.rgb;
+	}
+	else if (material.lightModel == SHADINGMODELID_SKIN || 
+			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
+			 material.lightModel == SHADINGMODELID_GLASS)
+	{
+		diffuse = ImageBasedLightSubsurface(material, N, mipLayer, fresnel, prefilteredDiffuse);
+	}
+	else if (material.lightModel == SHADINGMODELID_CLOTH)
+	{
+		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView, worldReflect, roughness);
+		specular = lerp(specular, prefilteredSpeculr * specular2, material.customDataA);
+	}
 
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
 	specular *= step(0, dot(material.specular, 1) - 1e-5);
