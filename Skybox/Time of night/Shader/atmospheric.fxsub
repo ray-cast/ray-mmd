@@ -50,13 +50,11 @@ float4 ComputeSkyScattering(ScatteringParams setting, float3 V, float3 L)
 	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
 
 	float3 inscattering = ComputeScatteringFunctions(inscatteringMie, inscatteringRayleigh, V, sunDirection, setting.mieG);
+	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
 	float3 opticalMie = inscatteringMie * setting.mieHeight * zenithAngleMass;
 	float3 opticalRayleigh = inscatteringRayleigh * setting.rayleighHeight * zenithAngleMass;
-	
 	float3 extinction = exp(-(opticalMie + opticalRayleigh));
-
-	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
 	float3 Lin = inscattering * (1.0 - extinction);
 
@@ -82,9 +80,10 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 	float3 betaTotal = (betaMie + betaRayleigh);
 
 	float3 inscattering = betaTotal / (inscatteringMie + inscatteringRayleigh);
+	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
 	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance);
 
-	float3 Lin = inscattering * setting.sunRadiance * (1.0 - extinction);
+	float3 Lin = inscattering * (1.0 - extinction);
 	return Lin;
 }

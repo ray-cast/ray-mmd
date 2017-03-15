@@ -72,5 +72,3 @@ OBJECT_TEC(FogTecBS0, "object_ss")
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTech<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
-technique MainTec1<string MMDPass = "object";>{}
-technique MainTecBS1<string MMDPass = "object_ss";>{}
