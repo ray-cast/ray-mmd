@@ -127,17 +127,17 @@ float4 ScreenSpaceDirOccPassPS(
 
 	float2 rotateKernel[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / 16) / ViewportSize);
+	float2 sampleDiskRadius = ((ViewportSize.x / 24) / ViewportSize) * sampleScale;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
 	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		rotateKernel[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		rotateKernel[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		rotateKernel[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
-		rotateKernel[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		rotateKernel[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleDiskRadius;
+		rotateKernel[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleDiskRadius;
+		rotateKernel[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleDiskRadius;
+		rotateKernel[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleDiskRadius;
 	}
 
 	[unroll]
@@ -197,7 +197,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= sampleWeight;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x * 1.5), mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x), mSSAOScale);
 
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }
