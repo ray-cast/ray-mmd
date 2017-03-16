@@ -125,25 +125,25 @@ static float3 mColorOffsetHighP = float3(mColorOffsetHighRP, mColorOffsetHighGP,
 
 static float4 mColorContrast   = float4(lerp(1.0, 2.0, mColorContrastP), 1);
 static float4 mColorSaturation = float4(lerp(1.0, 2.0, mColorSaturationP), 1);
-static float4 mColorGamma      = float4(lerp(1.0, 0.45, mColorGammaP), 1);
+static float4 mColorGamma      = float4(lerp(1.0, 2.0, mColorGammaP), 1);
 static float4 mColorGain       = float4(lerp(1.0, 2.0, mColorGainP), 1);
 static float4 mColorOffset     = float4(lerp(0.0, 2.0, mColorOffsetP), 1);
 
 static float4 mColorContrastLow   = float4(lerp(1.0, 2.0, mColorContrastLowP), 1);
 static float4 mColorSaturationLow = float4(lerp(1.0, 2.0, mColorSaturationLowP), 1);
-static float4 mColorGammaLow      = float4(lerp(1.0, 0.45, mColorGammaLowP), 1);
+static float4 mColorGammaLow      = float4(lerp(1.0, 2.0, mColorGammaLowP), 1);
 static float4 mColorGainLow       = float4(lerp(1.0, 2.0, mColorGainLowP), 1);
 static float4 mColorOffsetLow     = float4(lerp(0.0, 1.0, mColorOffsetLowP), 1);
 
 static float4 mColorContrastMid   = float4(lerp(1.0, 2.0, mColorContrastMidP), 1);
 static float4 mColorSaturationMid = float4(lerp(1.0, 2.0, mColorSaturationMidP), 1);
-static float4 mColorGammaMid      = float4(lerp(1.0, 0.45, mColorGammaMidP), 1);
+static float4 mColorGammaMid      = float4(lerp(1.0, 2.0, mColorGammaMidP), 1);
 static float4 mColorGainMid       = float4(lerp(1.0, 2.0, mColorGainMidP), 1);
 static float4 mColorOffsetMid     = float4(lerp(0.0, 2.0, mColorOffsetMidP), 1);
 
 static float4 mColorContrastHigh   = float4(lerp(1.0, 2.0, mColorContrastHighP), 1);
 static float4 mColorSaturationHigh = float4(lerp(1.0, 2.0, mColorSaturationHighP), 1);
-static float4 mColorGammaHigh      = float4(lerp(1.0, 0.45, mColorGammaHighP), 1);
+static float4 mColorGammaHigh      = float4(lerp(1.0, 2.0, mColorGammaHighP), 1);
 static float4 mColorGainHigh       = float4(lerp(1.0, 2.0, mColorGainHighP), 1);
 static float4 mColorOffsetHigh     = float4(lerp(0.0, 2.0, mColorOffsetHighP), 1);
 
@@ -216,7 +216,7 @@ float3 ColorCorrect(
 	float3 lum = luminance(color);
 	color = max(0, lerp(lum, color, colorSaturation.rgb * colorSaturation.a));
 	color = pow(color * (1.0 / 0.18), colorContrast.rgb * colorContrast.a) * 0.18;
-	color = pow(color, colorGamma.rgb * colorGamma.a);
+	color = pow(color, 1.0 / colorGamma.rgb * colorGamma.a);
 	color = color * (colorGainP.rgb * colorGainP.a + colorGainM.rgb * colorGainM.a);
 	return color;
 }
