@@ -11,7 +11,7 @@ texture ScnMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
 	int MipLevels = 1;
 	bool AntiAlias = false;
-	string Format = "A16B16G16R16F";
+	string Format = "A2B10G10R10";
 >;
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
@@ -159,9 +159,9 @@ const float F = 0.30;
 
 float3 inverse_filmic_curve(float3 x) 
 {
-    float3 q = B*(F*(C-x) - E);
-    float3 d = A*(F*(x - 1.0) + E);
-    return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
+	float3 q = B*(F*(C-x) - E);
+	float3 d = A*(F*(x - 1.0) + E);
+	return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
 }
 
 float filmic_curve(float x) 
@@ -183,8 +183,8 @@ float3 filmic(float3 color, float range = 8.0)
 
 float3 inverse_filmic(float3 color, float range = 8.0)
 {
-    color *= filmic_curve(range);
-    return inverse_filmic_curve(color);
+	color *= filmic_curve(range);
+	return inverse_filmic_curve(color);
 }
 
 float luminance(float3 rgb)
@@ -385,7 +385,7 @@ float4 ColorGradingPS(in float2 coord : TEXCOORD0, in float4 screenPosition : SV
 	color.rgb = ColorLookupTable(color.rgb);
 
 #if LUT_DEBUG_SHOW
-	float tileX = LUT_SIZE / 46.0;
+	float tileX = LUT_SIZE / 50.0;
 	float tileY = 1 - tileX / LUT_SIZE * ViewportAspect;
 
 	if (coord.x <= tileX && coord.y >= tileY)
@@ -403,10 +403,10 @@ float Script : STANDARDSGLOBAL <
 	string ScriptOrder  = "postprocess";
 > = 0.8;
 
-const float4 ClearColor  = float4(0,0,0,0);
+const float4 ClearColor = float4(0,0,0,0);
 const float ClearDepth  = 1.0;
 
-technique MainTech <
+technique MainTech<
 	string Script = 
 	"RenderColorTarget0=ScnMap;"
 	"ClearSetColor=ClearColor;"
@@ -422,8 +422,7 @@ technique MainTech <
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
 	"Pass=ColorGrading;"
-	;
-> {
+;>{
 	pass ColorGenerate < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = False; ZWriteEnable = False;
