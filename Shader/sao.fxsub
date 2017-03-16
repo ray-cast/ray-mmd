@@ -102,11 +102,6 @@ float4 ScreenSpaceDirOccPassPS(
 	float mSSDOBiasFar = 0.004;
 	float mSSDOBiasFalloff = 300.0;
 	float mSSDOSpaceRadius = 10.0;
-	float mSSDOIntensityMin = 2.4;
-	float mSSDOIntensityMax = 6.0;
-	float mSSDOBlurFalloff = 200.0;
-	float mSSDOBlurSharpnessMin = 1.0;
-	float mSSDOBlurSharpnessMax = 6.0;
 
 	float linearDepth = linearizeDepth(coord.xy);
 	float linearDepth2 = abs(linearDepth);

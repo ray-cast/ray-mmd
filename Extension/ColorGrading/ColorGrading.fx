@@ -150,10 +150,59 @@ static float4 mColorOffsetHigh     = float4(lerp(0.0, 2.0, mColorOffsetHighP), 1
 static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP), 0.0, mWeightLowM);
 static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
 
+const float A = 0.22;
+const float B = 0.3;
+const float C = 0.1;
+const float D = 0.20;
+const float E = 0.01;
+const float F = 0.30;
+
+float3 inverse_filmic_curve(float3 x) 
+{
+    float3 q = B*(F*(C-x) - E);
+    float3 d = A*(F*(x - 1.0) + E);
+    return (q -sqrt(q*q - 4.0*D*F*F*x*d)) / (2.0*d);
+}
+
+float filmic_curve(float x) 
+{
+	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
+float4 filmic_curve(float4 x) 
+{
+	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
+float3 filmic(float3 color, float range = 8.0)
+{
+	float4 curr = filmic_curve(float4(color, range));
+	curr = curr / curr.w;
+	return curr.rgb;
+}
+
+float3 inverse_filmic(float3 color, float range = 8.0)
+{
+    color *= filmic_curve(range);
+    return inverse_filmic_curve(color);
+}
+
 float luminance(float3 rgb)
 {
 	const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
 	return dot(rgb, lumfact);
+}
+
+float3 srgb2linear(float3 rgb)
+{
+	rgb = max(6.10352e-5, rgb);
+	return rgb < 0.04045f ? rgb * (1.0 / 12.92) : pow(rgb * (1.0 / 1.055) + 0.0521327, 2.4);
+}
+
+float3 linear2srgb(float3 srgb)
+{
+	srgb = max(6.10352e-5, srgb);
+	return min(srgb * 12.92, pow(max(srgb, 0.00313067), 1.0/2.4) * 1.055 - 0.055);
 }
 
 float3 ColorCorrect(
@@ -266,9 +315,9 @@ float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
 
 float3 ColorLookupTable(float3 color, float size = LUT_SIZE)
 {
-	float3 LUTEncodedColor = pow(max(0, color), 2.2);	
+	float3 LUTEncodedColor = srgb2linear(color);	
 	float3 deviceColor = ColorLookupTable2D(ColorGradingLUTSamp, LUTEncodedColor, size).rgb;
-	return pow(max(0, deviceColor), 1.0 / 2.2);
+	return linear2srgb(deviceColor);
 }
 
 void GenerateColorVS(
@@ -285,6 +334,7 @@ void GenerateColorVS(
 float4 GenerateColorPS(in float2 coord : TEXCOORD0) : COLOR 
 {
 	float3 color = CreateColorSpectrum(coord.xy, LUT_SIZE);
+	color = inverse_filmic(color);
 	color = ColorCorrectAll(
 		color,
 		mColorSaturation,
@@ -313,6 +363,7 @@ float4 GenerateColorPS(in float2 coord : TEXCOORD0) : COLOR
 
 		mColorCorrectionLowThreshold,
 		mColorCorrectionHighThreshold);
+	color = filmic(color);
 	return float4(color, 0);
 }
 
