@@ -47,13 +47,13 @@ static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
-static float mContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
-static float mSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
-static float mGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
-static float3 mColorBalanceRGBP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
-static float3 mColorBalanceRGBM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
+static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
+static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
+static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
+static float3 mColorBalanceP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
+static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
 
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"

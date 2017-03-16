@@ -105,13 +105,19 @@ float3 ColorTemperature(float3 color, float kelvin)
 	return color * balance;
 }
 
-float3 ColorCorrect(float3 color, float contrast, float saturation, float gamma, float3 colorGrainRGBP, float3 colorGrainRGBM)
+float3 ColorCorrect(
+	float3 color, 
+	float colorContrast, 
+	float colorSaturation, 
+	float colorGamma, 
+	float3 colorGainP,
+	float3 colorGainM)
 {
 	float3 lum = luminance(color);
-	color = lerp(lum, color, saturation);
-	color = pow(color * (1.0 / 0.18), contrast) * 0.18;
-	color = pow(color, gamma);
-	color *= colorGrainRGBP + (1.0 - colorGrainRGBM);
+	color = max(0, lerp(lum, color, colorSaturation));
+	color = pow(color * (1.0 / 0.18), colorContrast) * 0.18;
+	color = pow(color, colorGamma);
+	color = color * (colorGainP + 1.0 - colorGainM);
 	return color;
 }
 
@@ -232,7 +238,7 @@ float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR
 	float3 color = CreateColorSpectrum(coord.xy);
 
 	color = ColorTemperature(color, mColorTemperature);
-	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorToneMapping(color);
 
 	return float4(linear2srgb(color) / 1.05, 0);
@@ -252,7 +258,7 @@ float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : CO
 	color *= mExposure;
 
 	color = ColorTemperature(color, mColorTemperature);
-	color = ColorCorrect(color, mContrast, mSaturation, mGamma, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceRGBP, mColorBalanceRGBM);
 	color = ColorVignette(color, coord);
 	color = ColorToneMapping(color);
 
