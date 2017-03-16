@@ -15,8 +15,8 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 	diffuse *= lightColor;
 	specular *= lightColor;
 
-#if SSAO_QUALITY > 3
-	float3 bentNormal = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).gba;
+#if SSDO_QUALITY > 3
+	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).gba;
 	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
 	diffuse *= ssdo;
 	specular *= ssdo;
@@ -29,8 +29,8 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 #if IBL_QUALITY
 	DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
-#if SSAO_QUALITY
-	float ssao = tex2Dlod(SSAOMapSamp, float4(coord, 0, 0)).r;
+#if SSDO_QUALITY
+	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).r;
 	diffuse *= ssao;
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
 #endif

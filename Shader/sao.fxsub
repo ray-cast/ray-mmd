@@ -1,47 +1,47 @@
-#if SSAO_QUALITY == 1 || SSAO_QUALITY == 4
-#	define SSAO_SAMPLER_COUNT 8
-#	define SSAO_BLUR_RADIUS 6
-#elif SSAO_QUALITY == 2 || SSAO_QUALITY == 5
-#	define SSAO_SAMPLER_COUNT 12
-#	define SSAO_BLUR_RADIUS 6
-#elif SSAO_QUALITY >= 3 || SSAO_QUALITY == 6
-#	define SSAO_SAMPLER_COUNT 16
-#	define SSAO_BLUR_RADIUS 6
+#if SSDO_QUALITY == 1 || SSDO_QUALITY == 4
+#	define SSDO_SAMPLER_COUNT 8
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 2 || SSDO_QUALITY == 5
+#	define SSDO_SAMPLER_COUNT 12
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY >= 3 || SSDO_QUALITY == 6
+#	define SSDO_SAMPLER_COUNT 16
+#	define SSDO_BLUR_RADIUS 6
 #else
-#	define SSAO_SAMPLER_COUNT 8
-#	define SSAO_BLUR_RADIUS 6
+#	define SSDO_SAMPLER_COUNT 8
+#	define SSDO_BLUR_RADIUS 6
 #endif
 
-shared texture SSAOMap : RENDERCOLORTARGET<
+shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
 #else
 	string Format = "L8";
 #endif
 >;
-texture SSAOMapTemp : RENDERCOLORTARGET<
+texture SSDOMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
 #else
 	string Format = "L8";
 #endif
 >;
-sampler SSAOMapSamp = sampler_state {
-	texture = <SSAOMap>;
+sampler SSDOMapSamp = sampler_state {
+	texture = <SSDOMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
-sampler SSAOMapSampTemp = sampler_state {
-	texture = <SSAOMapTemp>;
+sampler SSDOMapSampTemp = sampler_state {
+	texture = <SSDOMapTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
 
-static const float2 SSAOKernel[16] = 
+static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),
 	float2( -0.04, 0.24 ),
@@ -96,60 +96,58 @@ float4 ScreenSpaceDirOccPassVS(
 
 float4 ScreenSpaceDirOccPassPS(
 	in float4 coord : TEXCOORD0,
-	in float4 SSDOParams1 : TEXCOORD1,
-	in float4 SSDOParams2 : TEXCOORD2) : COLOR
+	in float4 SSDOParams1 : TEXCOORD1) : COLOR
 {
+	float mSSDOBiasNear = 0.02;
+	float mSSDOBiasFar = 0.004;
+	float mSSDOBiasFalloff = 300.0;
+	float mSSDOSpaceRadius = 10.0;
+	float mSSDOIntensityMin = 2.4;
+	float mSSDOIntensityMax = 6.0;
+	float mSSDOBlurFalloff = 200.0;
+	float mSSDOBlurSharpnessMin = 1.0;
+	float mSSDOBlurSharpnessMax = 6.0;
+
 	float linearDepth = linearizeDepth(coord.xy);
 	float linearDepth2 = abs(linearDepth);
 
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
+	   
+	float sampleWeight = 0.0f;
+	float sampleNoise = GetJitterOffset(coord.zw);
+	float sampleRadius2 = mSSDOSpaceRadius * mSSDOSpaceRadius;
+	float sampleScale = saturate(mSSDOBiasFalloff / viewPosition.z * 0.25);
 
-	float maxRadius = SSDOParams2.w;
-	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleBias = 0;
-	sampleBias += mSSAOBiasFar * linearDepth2;
-	sampleBias += mSSAOBiasNear * (1 - saturate(linearDepth2 / mSSAOBiasFalloffNear));
+	sampleBias += mSSDOBiasFar * linearDepth2;
+	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
 
-	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
-	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+	float4 sampleOcclustion = 0.0;
 
-	float2 radius0 = clamp(SSDOParams2.xy * 0.15 / linearDepth2, SSDOParams2.z, maxRadius);
-	float2 radius1 = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
-
-	float2 sampleRotate[16];
-	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
-	float4 sampleWeight = 0;
-
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-	float4 sampleOcclustion = 0.0f;
-#else
-	float sampleOcclustion = 0.0f;
-#endif
+	float2 rotateKernel[16];
+	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
+	float2 sampleDiskRadius = ((ViewportSize.x / 16) / ViewportSize);
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
 	[unroll]
-	for (int i = 0; i < SSAO_SAMPLER_COUNT; i+=4)
+	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(SSAOKernel[i + 0].xy, sampleRotMat);
-		sampleRotate[i + 1] = mul(SSAOKernel[i + 1].xy, sampleRotMat);
-		sampleRotate[i + 2] = mul(SSAOKernel[i + 2].xy, sampleRotMat);
-		sampleRotate[i + 3] = mul(SSAOKernel[i + 3].xy, sampleRotMat);
+		rotateKernel[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		rotateKernel[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		rotateKernel[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
+		rotateKernel[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleDiskRadius * sampleScale;
 	}
 
 	[unroll]
-	for (int j = 0; j < SSAO_SAMPLER_COUNT; j+=4)
+	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
-		bool narrowBand = j < (SSAO_SAMPLER_COUNT / 2);
-
-		float2 radius = narrowBand ? radius0 : radius1;
-
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[j + 0] * radius;
-		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
-		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
-		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
+		sampleOffset[0] = coord.xy + rotateKernel[j + 0];
+		sampleOffset[1] = coord.xy + rotateKernel[j + 1];
+		sampleOffset[2] = coord.xy + rotateKernel[j + 2];
+		sampleOffset[3] = coord.xy + rotateKernel[j + 3];
 
 		float4 sampleDepths;
 		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
@@ -176,44 +174,32 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		sampleDirection[0] = normalize(sampleDirection[0]);
-		sampleDirection[1] = normalize(sampleDirection[1]);
-		sampleDirection[2] = normalize(sampleDirection[2]);
-		sampleDirection[3] = normalize(sampleDirection[3]);
-
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
 			dot(sampleDirection[1], viewNormal),
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
 
-		float emitterScale = narrowBand ? 0.5 : 2.5;
-		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
-		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius);
+		float4 sampleLength = rsqrt(sampleLength2);
 
-		float4 sh = emitterArea * saturate(sampleAngle- sampleBias) / (sampleLength2 + emitterArea);
+		float4 f = max(0.0, sampleRadius2 - sampleLength2);
+		float4 falloff = f * f * f;
+		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
-		sampleOcclustion.x += sum(sh);
-		sampleOcclustion.yzw += sh.x * sampleDirection[0];
-		sampleOcclustion.yzw += sh.y * sampleDirection[1];
-		sampleOcclustion.yzw += sh.z * sampleDirection[2];
-		sampleOcclustion.yzw += sh.w * sampleDirection[3];
-#else
-		sampleOcclustion += sum(sh);
-#endif
+		sampleWeight += sum(falloff);
+		sampleOcclustion.x += sum(occlustion);
+		sampleOcclustion.yzw += occlustion[0] * sampleDirection[0] * sampleLength[0];
+		sampleOcclustion.yzw += occlustion[1] * sampleDirection[1] * sampleLength[1];
+		sampleOcclustion.yzw += occlustion[2] * sampleDirection[2] * sampleLength[2];
+		sampleOcclustion.yzw += occlustion[3] * sampleDirection[3] * sampleLength[3];
 	}
 
-	sampleOcclustion /= SSAO_SAMPLER_COUNT;
-	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
+	sampleOcclustion /= sampleWeight;
+	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
 	float ao = pow(saturate(1 - sampleOcclustion.x * 1.5), mSSAOScale);
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
-#else
-	return ao;
-#endif
 }
 
 float4 ScreenSpaceDirOccBlurPS(
@@ -224,13 +210,8 @@ float4 ScreenSpaceDirOccBlurPS(
 {
 	float center_d = linearizeDepth2(coord);
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
-#else
-	float total_w = 1.0f;
-	float total_c = tex2Dlod(source, float4(coord, 0, 0)).r;
-#endif
 
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;
@@ -238,27 +219,22 @@ float4 ScreenSpaceDirOccBlurPS(
 	float3 normal = GetNormal(coord);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
-	float falloff = saturate(center_d / mSSAOBlurFalloff);
+	float falloff = saturate(center_d / mSSDOBlurFalloff);
 	float sharpness = 0;
-	sharpness = lerp(mSSAOBlurSharpnessMax * angle, mSSAOBlurSharpnessMin, falloff);
-	sharpness = lerp(mSSAOBlurSharpnessMax, sharpness, saturate(center_d / mSSAOBiasFalloffNear));
+	sharpness = lerp(mSSDOBlurSharpnessMax * angle, mSSDOBlurSharpnessMin, falloff);
+	sharpness = lerp(mSSDOBlurSharpnessMax, sharpness, saturate(center_d / mSSDOBiasFalloffNear));
 
 	[unroll]
-	for (int r = 1; r <= SSAO_BLUR_RADIUS; r++)
+	for (int r = 1; r <= SSDO_BLUR_RADIUS; r++)
 	{
 		float depth1 = linearizeDepth2(offset1);
 		float depth2 = linearizeDepth2(offset2);
 
-		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSAO_BLUR_RADIUS, sharpness);
-		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSAO_BLUR_RADIUS, sharpness);
+		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
+		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
 
-#if SSAO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
-#else
-		total_c += tex2Dlod(source, float4(offset1, 0, 0)).r * bilateralWeight1;
-		total_c += tex2Dlod(source, float4(offset2, 0, 0)).r * bilateralWeight2;
-#endif
 
 		total_w += bilateralWeight1;
 		total_w += bilateralWeight2;

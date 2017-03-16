@@ -42,7 +42,7 @@ float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 float3 LightSpecular : SPECULAR< string Object = "Light";>;
 float3 LightDirection : DIRECTION< string Object = "Light";>;
 
-static float mSSAOScale = lerp(lerp(mSSAOIntensityMin, mSSAOIntensityMax, mSSAOP), 0, mSSAOM);
+static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
@@ -69,8 +69,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/shadowmap.fxsub"
 #endif
 
-#if SSAO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
-#	include "shader/ssao.fxsub"
+#if SSDO_QUALITY >= 4 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#	include "shader/ssdo.fxsub"
+#elif SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#	include "shader/sao.fxsub"
 #endif
 
 #if SSSS_QUALITY > 0
@@ -147,11 +149,11 @@ technique DeferredLighting<
 	"Clear=Depth;"
 	"ScriptExternal=Color;"
 
-#if SSAO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
-	"RenderColorTarget=SSAOMap; Pass=SSAO;"
-#if SSAO_BLUR_RADIUS > 0
-	"RenderColorTarget=SSAOMapTemp; Pass=SSAOBlurX;"
-	"RenderColorTarget=SSAOMap;	    Pass=SSAOBlurY;"
+#if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+	"RenderColorTarget=SSDOMap; Pass=SSDO;"
+#if SSDO_BLUR_RADIUS > 0
+	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
+	"RenderColorTarget=SSDOMap;	    Pass=SSDOBlurY;"
 #endif
 #endif
 
@@ -296,24 +298,24 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
-#if SSAO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
-	pass SSAO<string Script= "Draw=Buffer;";>{
+#if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+	pass SSDO<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceDirOccPassVS();
 		PixelShader  = compile ps_3_0 ScreenSpaceDirOccPassPS();
 	}
-	pass SSAOBlurX<string Script= "Draw=Buffer;";>{
+	pass SSDOBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSAOMapSamp, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapSamp, float2(ViewportOffset2.x, 0.0f));
 	}
-	pass SSAOBlurY<string Script= "Draw=Buffer;";>{
+	pass SSDOBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSAOMapSampTemp, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 	pass ShadingOpacity<string Script= "Draw=Buffer;";>{

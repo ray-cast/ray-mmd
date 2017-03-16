@@ -1,0 +1,247 @@
+#if SSDO_QUALITY == 1 || SSDO_QUALITY == 4
+#   define SSDO_SAMPLER_COUNT 8
+#   define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 2 || SSDO_QUALITY == 5
+#   define SSDO_SAMPLER_COUNT 12
+#   define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY >= 3 || SSDO_QUALITY == 6
+#   define SSDO_SAMPLER_COUNT 16
+#   define SSDO_BLUR_RADIUS 6
+#else
+#   define SSDO_SAMPLER_COUNT 8
+#   define SSDO_BLUR_RADIUS 6
+#endif
+
+shared texture SSDOMap : RENDERCOLORTARGET<
+	float2 ViewPortRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+	string Format = "A8R8G8B8";
+#else
+	string Format = "L8";
+#endif
+>;
+texture SSDOMapTemp : RENDERCOLORTARGET<
+	float2 ViewPortRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
+	string Format = "A8R8G8B8";
+#else
+	string Format = "L8";
+#endif
+>;
+sampler SSDOMapSamp = sampler_state {
+	texture = <SSDOMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
+};
+sampler SSDOMapSampTemp = sampler_state {
+	texture = <SSDOMapTemp>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
+};
+
+static const float2 SSDOKernel[16] = 
+{
+	float2( -0.14, -0.02 ),
+	float2( -0.04, 0.24 ),
+	float2( 0.36, 0.08 ),
+	float2(-0.46, -0.08),
+	float2( 0.26, -0.4 ),
+	float2(-0.127, -0.347),
+	float2( -0.44, -0.34 ),
+	float2( -0.52, 0.4 ),
+	float2(-0.226, 0.589),
+	float2( 0.3, 0.68 ),
+	float2( 0.7, 0.356),
+	float2( 0.47, -0.287),
+	float2( 0.84, -0.32 ),
+	float2( 0.4, -0.74),
+	float2(-0.338, -0.684),
+	float2(-0.622, -0.415)
+};
+
+float linearizeDepth(float2 uv)
+{
+	return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).r;
+}
+
+float linearizeDepth2(float2 uv)
+{
+	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
+}
+
+float3 GetNormal(float2 uv)
+{
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
+	return DecodeGBufferNormal(MRT6);
+}
+
+float4 ScreenSpaceDirOccPassVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = GetProjConstant(); 
+	oTexcoord2 = float4(1.2, 1.2, 0.02, 0.2);
+	oTexcoord2.xy *= float2(matProject._11, matProject._22);
+	oTexcoord2.w *= oTexcoord1.x;
+	return Position;
+}
+
+float4 ScreenSpaceDirOccPassPS(
+	in float4 coord : TEXCOORD0,
+	in float4 SSDOParams1 : TEXCOORD1,
+	in float4 SSDOParams2 : TEXCOORD2) : COLOR
+{
+	float linearDepth = linearizeDepth(coord.xy);
+	float linearDepth2 = abs(linearDepth);
+
+	float3 viewNormal = GetNormal(coord.xy);
+	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
+
+	float maxRadius = SSDOParams2.w;
+	float sampleJitter = GetJitterOffset(coord.zw);
+	float sampleBias = 0;
+	sampleBias += mSSDOBiasFar * linearDepth2;
+	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
+
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+
+	float2 radius0 = clamp(SSDOParams2.xy * 0.15 / linearDepth2, SSDOParams2.z, maxRadius);
+	float2 radius1 = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
+
+	float2 sampleRotate[16];
+	float4 sampleOcclustion = 0.0f;
+	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
+
+	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
+
+	[unroll]
+	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
+	{
+		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat);
+		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat);
+		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat);
+		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat);
+	}
+
+	[unroll]
+	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
+	{
+		bool narrowBand = j < (SSDO_SAMPLER_COUNT / 2);
+
+		float2 radius = narrowBand ? radius0 : radius1;
+
+		float2 sampleOffset[4];
+		sampleOffset[0] = coord.xy + sampleRotate[j + 0] * radius;
+		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
+		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
+		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
+
+		float4 sampleDepths;
+		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
+		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
+		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
+		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
+		sampleDepths = abs(sampleDepths);
+
+		float3 samplePosition[4];
+		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
+		samplePosition[1] = float3(sampleOffset[1] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[1];
+		samplePosition[2] = float3(sampleOffset[2] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[2];
+		samplePosition[3] = float3(sampleOffset[3] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[3];
+
+		float3 sampleDirection[4];
+		sampleDirection[0] = samplePosition[0] - viewPosition;
+		sampleDirection[1] = samplePosition[1] - viewPosition;
+		sampleDirection[2] = samplePosition[2] - viewPosition;
+		sampleDirection[3] = samplePosition[3] - viewPosition;
+
+		float4 sampleLength2 = float4(
+			dot(sampleDirection[0], sampleDirection[0]),
+			dot(sampleDirection[1], sampleDirection[1]),
+			dot(sampleDirection[2], sampleDirection[2]),
+			dot(sampleDirection[3], sampleDirection[3]));
+
+		sampleDirection[0] = normalize(sampleDirection[0]);
+		sampleDirection[1] = normalize(sampleDirection[1]);
+		sampleDirection[2] = normalize(sampleDirection[2]);
+		sampleDirection[3] = normalize(sampleDirection[3]);
+
+		float4 sampleAngle = float4(
+			dot(sampleDirection[0], viewNormal),
+			dot(sampleDirection[1], viewNormal),
+			dot(sampleDirection[2], viewNormal),
+			dot(sampleDirection[3], viewNormal));
+
+		float emitterScale = narrowBand ? 0.5 : 2.5;
+		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
+		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius);
+
+		float4 sh = emitterArea * saturate(sampleAngle- sampleBias) / (sampleLength2 + emitterArea);
+
+		sampleOcclustion.x += sum(sh);
+		sampleOcclustion.yzw += sh.x * sampleDirection[0];
+		sampleOcclustion.yzw += sh.y * sampleDirection[1];
+		sampleOcclustion.yzw += sh.z * sampleDirection[2];
+		sampleOcclustion.yzw += sh.w * sampleDirection[3];
+	}
+
+	sampleOcclustion /= SSDO_SAMPLER_COUNT;
+	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
+
+	float ao = pow(saturate(1 - sampleOcclustion.x * 1.5), mSSAOScale);
+
+	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
+}
+
+float4 ScreenSpaceDirOccBlurPS(
+	in float2 coord   : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	uniform sampler source,
+	uniform float2 offset) : COLOR
+{
+	float center_d = linearizeDepth2(coord);
+
+	float total_w = 1.0f;
+	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
+
+	float2 offset1 = coord + offset;
+	float2 offset2 = coord - offset;
+
+	float3 normal = GetNormal(coord);
+
+	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
+	float falloff = saturate(center_d / mSSDOBlurFalloff);
+	float sharpness = 0;
+	sharpness = lerp(mSSDOBlurSharpnessMax * angle, mSSDOBlurSharpnessMin, falloff);
+	sharpness = lerp(mSSDOBlurSharpnessMax, sharpness, saturate(center_d / mSSDOBiasFalloffNear));
+
+	[unroll]
+	for (int r = 1; r <= SSDO_BLUR_RADIUS; r++)
+	{
+		float depth1 = linearizeDepth2(offset1);
+		float depth2 = linearizeDepth2(offset2);
+
+		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
+		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
+
+		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
+		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
+
+		total_w += bilateralWeight1;
+		total_w += bilateralWeight2;
+
+		offset1 += offset;
+		offset2 -= offset;
+	}
+
+	return total_c / total_w;
+}
