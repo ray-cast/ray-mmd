@@ -4,8 +4,8 @@
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 moonScaling = 500;
-static const float3 moonTranslate = -10000;
+static const float3 moonScaling = 4000;
+static const float3 moonTranslate = 90000;
 
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
@@ -115,7 +115,7 @@ void MoonVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(mul(normalize(Position).xyz, matTransformMoon), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + LightDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius - LightDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
