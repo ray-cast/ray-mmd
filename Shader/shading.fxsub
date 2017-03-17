@@ -1,7 +1,7 @@
 #if MAIN_LIGHT_ENABLE == 2
 float ComputeSunIntensity(float3 L)
 {
-	float EE = 10;
+	float EE = 8;
 	float steepness = 1.5;
 	float cutoffAngle = 1.6110731556870734; // PI / 1.95;
 	float zenithAngleCos = saturate(dot(-L, float3(0, 1, 0)));
