@@ -48,26 +48,24 @@ float mRayleightB : CONTROLOBJECT<string name="(self)"; string item = "RayleighB
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
 
-static float mSunRadius = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
-static float mSunRadiance = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
-static float mFogRange = lerp(lerp(1, 10, mFogRangeP), 0.1, mFogRangeM);
-
 static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 
-static float mMiePhase = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
-static float mMieHeight = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
-static float mMieTurbidity = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
-static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
-
-static float mCloudDensity = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias = time * lerp(lerp(0.1, 1.0, mCloudBiasP), 0, mCloudBiasM);
-static float mCloudSpeed = time * lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM);
-
+static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
+static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
+static float mFogRange       = lerp(lerp(1, 10, mFogRangeP), 0.1, mFogRangeM);
+static float mMiePhase       = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
+static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
+static float mMieTurbidity   = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
 static float mRayleighHeight = lerp(lerp(8, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
+static float mCloudDensity   = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
+static float mCloudBias      = lerp(lerp(0.1, 1.0, mCloudBiasP), 0, mCloudBiasM) * time;
+static float mCloudSpeed     = lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM) * time;
+
+static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
 static float3 mRayleighColor = 1.0 - float3(mRayleightR, mRayleightG, mRayleightB);
 
-static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
-static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
+static float2 ViewportOffset  = float2(0.5,0.5) / ViewportSize;
+static float2 ViewportOffset2 = float2(1.0,1.0) / ViewportSize;
 static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
 
 uniform bool use_texture;

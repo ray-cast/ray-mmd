@@ -11,6 +11,8 @@ struct ScatteringParams
 	float3 waveLambda;
 	float3 waveLambdaMie;
 	float3 waveLambdaRayleigh;
+	
+	float fogRange;
 };
 
 float ComputeOpticalMass(float cosAngle)
@@ -32,7 +34,7 @@ float3 ComputeScatteringFunctions(float3 inscatteringMie, float3 inscatteringRay
 
 float ComputeSunIntensity(float EE, float zenithAngleCos)
 {
-	float steepness = 1.0;
+	float steepness = 1.5;
 	float cutoffAngle = PI / 1.95;
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
 }
@@ -82,7 +84,7 @@ float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 
 	float3 inscattering = betaTotal / (inscatteringMie + inscatteringRayleigh);
 	inscattering *= ComputeSunIntensity(setting.sunRadiance, zenithAngleCos);
 
-	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance);
+	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance * setting.fogRange);
 
 	float3 Lin = inscattering * (1.0 - extinction);
 	return Lin;

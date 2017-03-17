@@ -48,6 +48,7 @@ float4 ScatteringFogPS(
 	setting.rayleighHeight = mRayleighHeight * scaling;
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
 	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.fogRange = mFogRange;
 
 	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
 
