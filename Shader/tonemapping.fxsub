@@ -1,9 +1,3 @@
-#define LUT_SIZE 16
-#define LUT_WIDTH 256
-#define LUT_LINEAR_RANGE 14
-#define LUT_LINEAR_GREY 0.18
-#define LUT_EXPOSURE_GREY 444
-
 float3 ACESFilmLinear(float3 x)
 {
 	const float A = 2.51f;
@@ -170,59 +164,6 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 }
 
 #if POST_COLORGRADING_MODE
-
-texture ColorGradingLUT : RENDERCOLORTARGET<
-	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
-	bool AntiAlias = false;
-	string Format = "A2B10G10R10";
->;
-sampler ColorGradingLUTSamp = sampler_state {
-	texture = <ColorGradingLUT>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-
-float3 log2lin(float3 color)
-{
-	return exp2((color - LUT_EXPOSURE_GREY / 1023.0) * LUT_LINEAR_RANGE) * LUT_LINEAR_GREY;
-}
-
-float3 lin2log(float3 LinearColor)
-{
-	float3 color = log2(LinearColor) / LUT_LINEAR_RANGE - log2(LUT_LINEAR_GREY) / LUT_LINEAR_RANGE + LUT_EXPOSURE_GREY / 1023.0;
-	return saturate(color);
-}
-
-float3 CreateColorSpectrum(float2 coord, float size = LUT_SIZE)
-{
-	float3 rgb;
-	rgb.r = frac(coord.x * size);
-	rgb.b = coord.x - rgb.r / size;
-	rgb.g = coord.y;
-	return log2lin(rgb * size / (size - 1));
-}
-
-float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
-{
-	color = lin2log(color);
-	color = color * ((size - 1) / size) + (0.5f / size);
-
-	float slice = color.z * size - 0.5;
-	float s = frac(slice);
-	slice -= s;
-
-	float u = (color.x + slice) / size;
-	float v = color.y;
-
-	float2 uv0 = float2(u, v);
-	float2 uv1 = float2(u + 1.0f / size, v);
-
-	float4 col0 = tex2Dlod(lut, float4(uv0, 0, 0));
-	float4 col1 = tex2Dlod(lut, float4(uv1, 0, 0));
-
-	return lerp(col0, col1, s) * 1.05;
-}
-
 void GenerateColorLUT_VS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
@@ -239,6 +180,34 @@ float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR
 
 	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorCorrectAll(
+		color,
+		mColorSaturationAll,
+		mColorContrastAll,
+		mColorGammaAll,
+		mColorGainAll,
+		mColorOffsetAll,
+
+		mColorSaturationLow,
+		mColorContrastLow,
+		mColorGammaLow,
+		mColorGainLow,
+		mColorOffsetLow,
+
+		mColorSaturationMid,
+		mColorContrastMid,
+		mColorGammaMid,
+		mColorGainMid,
+		mColorOffsetMid,
+
+		mColorSaturationHigh,
+		mColorContrastHigh,
+		mColorGammaHigh,
+		mColorGainHigh,
+		mColorOffsetHigh,
+
+		mColorCorrectionLowThreshold,
+		mColorCorrectionHighThreshold);
 	color = ColorToneMapping(color);
 
 	return float4(linear2srgb(color) / 1.05, 0);
@@ -258,7 +227,7 @@ float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : CO
 	color *= mExposure;
 
 	color = ColorTemperature(color, mColorTemperature);
-	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceRGBP, mColorBalanceRGBM);
+	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorVignette(color, coord);
 	color = ColorToneMapping(color);
 
@@ -266,17 +235,10 @@ float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : CO
 #else
 	color = ColorVignette(color, coord);
 	color = ColorLookupTable2D(ColorGradingLUTSamp, color * mExposure).rgb;
-#endif
 
 #if POST_COLORGRADING_MODE == 2
-	float tileX = LUT_SIZE / 50.0;
-	float tileY = 1 - tileX / LUT_SIZE * ViewportAspect;
-
-	if (coord.x <= tileX && coord.y >= tileY)
-	{
-		coord = float2(coord.x / tileX, (coord.y - tileY) / (1 - tileY));
-		return tex2Dlod(ColorGradingLUTSamp, float4(coord, 0, 0));
-	}
+	color = CreateColorSpectrumDebug(color, ColorGradingLUTSamp, coord, ViewportAspect, mVisualizationLUT);
+#endif
 #endif
 
 #if AA_QUALITY > 0

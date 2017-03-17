@@ -1,6 +1,5 @@
 #define LUT_SIZE 32
 #define LUT_WIDTH 1024
-#define LUT_DEBUG_SHOW 1
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
@@ -30,80 +29,146 @@ sampler ColorGradingLUTSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-float mContrastRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastR+";>;
-float mContrastGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastG+";>;
-float mContrastBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastB+";>;
-float mSaturationRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationR+";>;
-float mSaturationGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationG+";>;
-float mSaturationBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationB+";>;
-float mGammaRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaR+";>;
-float mGammaGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaG+";>;
-float mGammaBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaB+";>;
-float mColorRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorR+";>;
-float mColorGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorG+";>;
-float mColorBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorB+";>;
-float mColorOffsetRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetR+";>;
-float mColorOffsetGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetG+";>;
-float mColorOffsetBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetB+";>;
+float mContrastAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllR+";>;
+float mContrastAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllG+";>;
+float mContrastAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllB+";>;
+float mSaturationAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationAllR+";>;
+float mSaturationAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationAllG+";>;
+float mSaturationAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationAllB+";>;
+float mGammaAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaAllR+";>;
+float mGammaAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaAllG+";>;
+float mGammaAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaAllB+";>;
+float mColorAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorAllR+";>;
+float mColorAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorAllG+";>;
+float mColorAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorAllB+";>;
+float mColorOffsetAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetAllR+";>;
+float mColorOffsetAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetAllG+";>;
+float mColorOffsetAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetAllB+";>;
 
-float mContrastLowRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastLowR+";>;
-float mContrastLowGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastLowG+";>;
-float mContrastLowBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastLowB+";>;
-float mSaturationLowRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationLowR+";>;
-float mSaturationLowGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationLowG+";>;
-float mSaturationLowBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationLowB+";>;
-float mGammaLowRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaLowR+";>;
-float mGammaLowGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaLowG+";>;
-float mGammaLowBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaLowB+";>;
-float mColorLowRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorLowR+";>;
-float mColorLowGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorLowG+";>;
-float mColorLowBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorLowB+";>;
-float mColorOffsetLowRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetLowR+";>;
-float mColorOffsetLowGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetLowG+";>;
-float mColorOffsetLowBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetLowB+";>;
+float mContrastLowRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastLowR+";>;
+float mContrastLowGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastLowG+";>;
+float mContrastLowBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastLowB+";>;
+float mSaturationLowRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationLowR+";>;
+float mSaturationLowGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationLowG+";>;
+float mSaturationLowBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationLowB+";>;
+float mGammaLowRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaLowR+";>;
+float mGammaLowGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaLowG+";>;
+float mGammaLowBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaLowB+";>;
+float mColorLowRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorLowR+";>;
+float mColorLowGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorLowG+";>;
+float mColorLowBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorLowB+";>;
+float mColorOffsetLowRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetLowR+";>;
+float mColorOffsetLowGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetLowG+";>;
+float mColorOffsetLowBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetLowB+";>;
 
-float mContrastMidRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastMidR+";>;
-float mContrastMidGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastMidG+";>;
-float mContrastMidBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastMidB+";>;
-float mSaturationMidRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationMidR+";>;
-float mSaturationMidGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationMidG+";>;
-float mSaturationMidBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationMidB+";>;
-float mGammaMidRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaMidR+";>;
-float mGammaMidGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaMidG+";>;
-float mGammaMidBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaMidB+";>;
-float mColorMidRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorMidR+";>;
-float mColorMidGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorMidG+";>;
-float mColorMidBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorMidB+";>;
-float mColorOffsetMidRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetMidR+";>;
-float mColorOffsetMidGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetMidG+";>;
-float mColorOffsetMidBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetMidB+";>;
+float mContrastMidRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastMidR+";>;
+float mContrastMidGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastMidG+";>;
+float mContrastMidBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastMidB+";>;
+float mSaturationMidRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationMidR+";>;
+float mSaturationMidGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationMidG+";>;
+float mSaturationMidBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationMidB+";>;
+float mGammaMidRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaMidR+";>;
+float mGammaMidGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaMidG+";>;
+float mGammaMidBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaMidB+";>;
+float mColorMidRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorMidR+";>;
+float mColorMidGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorMidG+";>;
+float mColorMidBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorMidB+";>;
+float mColorOffsetMidRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetMidR+";>;
+float mColorOffsetMidGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetMidG+";>;
+float mColorOffsetMidBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetMidB+";>;
 
-float mContrastHighRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastHighR+";>;
-float mContrastHighGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastHighG+";>;
-float mContrastHighBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ContrastHighB+";>;
-float mSaturationHighRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationHighR+";>;
-float mSaturationHighGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationHighG+";>;
-float mSaturationHighBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "SaturationHighB+";>;
-float mGammaHighRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaHighR+";>;
-float mGammaHighGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaHighG+";>;
-float mGammaHighBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "GammaHighB+";>;
-float mColorHighRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorHighR+";>;
-float mColorHighGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorHighG+";>;
-float mColorHighBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorHighB+";>;
-float mColorOffsetHighRP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetHighR+";>;
-float mColorOffsetHighGP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetHighG+";>;
-float mColorOffsetHighBP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "ColorOffsetHighB+";>;
+float mContrastHighRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastHighR+";>;
+float mContrastHighGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastHighG+";>;
+float mContrastHighBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastHighB+";>;
+float mSaturationHighRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationHighR+";>;
+float mSaturationHighGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationHighG+";>;
+float mSaturationHighBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "SaturationHighB+";>;
+float mGammaHighRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaHighR+";>;
+float mGammaHighGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaHighG+";>;
+float mGammaHighBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "GammaHighB+";>;
+float mColorHighRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorHighR+";>;
+float mColorHighGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorHighG+";>;
+float mColorHighBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorHighB+";>;
+float mColorOffsetHighRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetHighR+";>;
+float mColorOffsetHighGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetHighG+";>;
+float mColorOffsetHighBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ColorOffsetHighB+";>;
 
-float mWeightLowP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "WeightLow+";>;
-float mWeightLowM : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "WeightLow-";>;
-float mWeightHighP : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "WeightHigh+";>;
-float mWeightHighM : CONTROLOBJECT<string name="ColorGradingController.pmx"; string item = "WeightHigh-";>;
+float mContrastAllRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastAllR-";>;
+float mContrastAllGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastAllG-";>;
+float mContrastAllBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastAllB-";>;
+float mSaturationAllRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationAllR-";>;
+float mSaturationAllGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationAllG-";>;
+float mSaturationAllBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationAllB-";>;
+float mGammaAllRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaAllR-";>;
+float mGammaAllGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaAllG-";>;
+float mGammaAllBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaAllB-";>;
+float mColorAllRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorAllR-";>;
+float mColorAllGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorAllG-";>;
+float mColorAllBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorAllB-";>;
+float mColorOffsetAllRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetAllR-";>;
+float mColorOffsetAllGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetAllG-";>;
+float mColorOffsetAllBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetAllB-";>;
 
-static float3 mColorContrastP = float3(mContrastRP, mContrastGP, mContrastBP);
-static float3 mColorSaturationP = float3(mSaturationRP, mSaturationGP, mSaturationBP);
-static float3 mColorGammaP = float3(mGammaRP, mGammaGP, mGammaBP);
-static float3 mColorGainP = float3(mColorRP, mColorGP, mColorBP);
-static float3 mColorOffsetP = float3(mColorOffsetRP, mColorOffsetGP, mColorOffsetBP);
+float mContrastLowRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastLowR-";>;
+float mContrastLowGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastLowG-";>;
+float mContrastLowBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastLowB-";>;
+float mSaturationLowRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationLowR-";>;
+float mSaturationLowGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationLowG-";>;
+float mSaturationLowBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationLowB-";>;
+float mGammaLowRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaLowR-";>;
+float mGammaLowGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaLowG-";>;
+float mGammaLowBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaLowB-";>;
+float mColorLowRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorLowR-";>;
+float mColorLowGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorLowG-";>;
+float mColorLowBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorLowB-";>;
+float mColorOffsetLowRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetLowR-";>;
+float mColorOffsetLowGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetLowG-";>;
+float mColorOffsetLowBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetLowB-";>;
+
+float mContrastMidRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastMidR-";>;
+float mContrastMidGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastMidG-";>;
+float mContrastMidBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastMidB-";>;
+float mSaturationMidRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationMidR-";>;
+float mSaturationMidGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationMidG-";>;
+float mSaturationMidBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationMidB-";>;
+float mGammaMidRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaMidR-";>;
+float mGammaMidGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaMidG-";>;
+float mGammaMidBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaMidB-";>;
+float mColorMidRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorMidR-";>;
+float mColorMidGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorMidG-";>;
+float mColorMidBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorMidB-";>;
+float mColorOffsetMidRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetMidR-";>;
+float mColorOffsetMidGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetMidG-";>;
+float mColorOffsetMidBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetMidB-";>;
+
+float mContrastHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastHighR-";>;
+float mContrastHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastHighG-";>;
+float mContrastHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ContrastHighB-";>;
+float mSaturationHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationHighR-";>;
+float mSaturationHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationHighG-";>;
+float mSaturationHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "SaturationHighB-";>;
+float mGammaHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaHighR-";>;
+float mGammaHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaHighG-";>;
+float mGammaHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "GammaHighB-";>;
+float mColorHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorHighR-";>;
+float mColorHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorHighG-";>;
+float mColorHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorHighB-";>;
+float mColorOffsetHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetHighR-";>;
+float mColorOffsetHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetHighG-";>;
+float mColorOffsetHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetHighB-";>;
+
+float mWeightLowP : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightLow+";>;
+float mWeightLowM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightLow-";>;
+float mWeightHighP : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightHigh+";>;
+float mWeightHighM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightHigh-";>;
+
+float mVisualizationLUT : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "VisualizationLUT";>;
+
+static float3 mColorContrastAllP = float3(mContrastAllRP, mContrastAllGP, mContrastAllBP);
+static float3 mColorSaturationAllP = float3(mSaturationAllRP, mSaturationAllGP, mSaturationAllBP);
+static float3 mColorGammaAllP = float3(mGammaAllRP, mGammaAllGP, mGammaAllBP);
+static float3 mColorGainAllP = float3(mColorAllRP, mColorAllGP, mColorAllBP);
+static float3 mColorOffsetAllP = float3(mColorOffsetAllRP, mColorOffsetAllGP, mColorOffsetAllBP);
 
 static float3 mColorContrastLowP = float3(mContrastLowRP, mContrastLowGP, mContrastLowBP);
 static float3 mColorSaturationLowP = float3(mSaturationLowRP, mSaturationLowGP, mSaturationLowBP);
@@ -123,32 +188,56 @@ static float3 mColorGammaHighP = float3(mGammaHighRP, mGammaHighGP, mGammaHighBP
 static float3 mColorGainHighP = float3(mColorHighRP, mColorHighGP, mColorHighBP);
 static float3 mColorOffsetHighP = float3(mColorOffsetHighRP, mColorOffsetHighGP, mColorOffsetHighBP);
 
-static float4 mColorContrast   = float4(lerp(1.0, 2.0, mColorContrastP), 1);
-static float4 mColorSaturation = float4(lerp(1.0, 2.0, mColorSaturationP), 1);
-static float4 mColorGamma      = float4(lerp(1.0, 2.0, mColorGammaP), 1);
-static float4 mColorGain       = float4(lerp(1.0, 2.0, mColorGainP), 1);
-static float4 mColorOffset     = float4(lerp(0.0, 2.0, mColorOffsetP), 1);
+static float3 mColorContrastAllM = float3(mContrastAllRM, mContrastAllGM, mContrastAllBM);
+static float3 mColorSaturationAllM = float3(mSaturationAllRM, mSaturationAllGM, mSaturationAllBM);
+static float3 mColorGammaAllM = float3(mGammaAllRM, mGammaAllGM, mGammaAllBM);
+static float3 mColorGainAllM = float3(mColorAllRM, mColorAllGM, mColorAllBM);
+static float3 mColorOffsetAllM = float3(mColorOffsetAllRM, mColorOffsetAllGM, mColorOffsetAllBM);
 
-static float4 mColorContrastLow   = float4(lerp(1.0, 2.0, mColorContrastLowP), 1);
-static float4 mColorSaturationLow = float4(lerp(1.0, 2.0, mColorSaturationLowP), 1);
-static float4 mColorGammaLow      = float4(lerp(1.0, 2.0, mColorGammaLowP), 1);
-static float4 mColorGainLow       = float4(lerp(1.0, 2.0, mColorGainLowP), 1);
-static float4 mColorOffsetLow     = float4(lerp(0.0, 1.0, mColorOffsetLowP), 1);
+static float3 mColorContrastLowM = float3(mContrastLowRM, mContrastLowGM, mContrastLowBM);
+static float3 mColorSaturationLowM = float3(mSaturationLowRM, mSaturationLowGM, mSaturationLowBM);
+static float3 mColorGammaLowM = float3(mGammaLowRM, mGammaLowGM, mGammaLowBM);
+static float3 mColorGainLowM = float3(mColorLowRM, mColorLowGM, mColorLowBM);
+static float3 mColorOffsetLowM = float3(mColorOffsetLowRM, mColorOffsetLowGM, mColorOffsetLowBM);
 
-static float4 mColorContrastMid   = float4(lerp(1.0, 2.0, mColorContrastMidP), 1);
-static float4 mColorSaturationMid = float4(lerp(1.0, 2.0, mColorSaturationMidP), 1);
-static float4 mColorGammaMid      = float4(lerp(1.0, 2.0, mColorGammaMidP), 1);
-static float4 mColorGainMid       = float4(lerp(1.0, 2.0, mColorGainMidP), 1);
-static float4 mColorOffsetMid     = float4(lerp(0.0, 2.0, mColorOffsetMidP), 1);
+static float3 mColorContrastMidM = float3(mContrastMidRM, mContrastMidGM, mContrastMidBM);
+static float3 mColorSaturationMidM = float3(mSaturationMidRM, mSaturationMidGM, mSaturationMidBM);
+static float3 mColorGammaMidM = float3(mGammaMidRM, mGammaMidGM, mGammaMidBM);
+static float3 mColorGainMidM = float3(mColorMidRM, mColorMidGM, mColorMidBM);
+static float3 mColorOffsetMidM = float3(mColorOffsetMidRM, mColorOffsetMidGM, mColorOffsetMidBM);
 
-static float4 mColorContrastHigh   = float4(lerp(1.0, 2.0, mColorContrastHighP), 1);
-static float4 mColorSaturationHigh = float4(lerp(1.0, 2.0, mColorSaturationHighP), 1);
-static float4 mColorGammaHigh      = float4(lerp(1.0, 2.0, mColorGammaHighP), 1);
-static float4 mColorGainHigh       = float4(lerp(1.0, 2.0, mColorGainHighP), 1);
-static float4 mColorOffsetHigh     = float4(lerp(0.0, 2.0, mColorOffsetHighP), 1);
+static float3 mColorContrastHighM = float3(mContrastHighRM, mContrastHighGM, mContrastHighBM);
+static float3 mColorSaturationHighM = float3(mSaturationHighRM, mSaturationHighGM, mSaturationHighBM);
+static float3 mColorGammaHighM = float3(mGammaHighRM, mGammaHighGM, mGammaHighBM);
+static float3 mColorGainHighM = float3(mColorHighRM, mColorHighGM, mColorHighBM);
+static float3 mColorOffsetHighM = float3(mColorOffsetHighRM, mColorOffsetHighGM, mColorOffsetHighBM);
 
-static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP), 0.0, mWeightLowM);
-static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
+static float4 mColorContrastAll   = float4(lerp(lerp(1.0, 2.0, mColorContrastAllP), 0, mColorContrastAllM), 1);
+static float4 mColorSaturationAll = float4(lerp(lerp(1.0, 2.0, mColorSaturationAllP), 0, mColorSaturationAllM), 1);
+static float4 mColorGammaAll      = float4(lerp(lerp(1.0, 2.0, mColorGammaAllP), 0, mColorGammaAllM), 1);
+static float4 mColorGainAll       = float4(lerp(lerp(1.0, 2.0, mColorGainAllP), 0, mColorGainAllM), 1);
+static float4 mColorOffsetAll     = float4(lerp(lerp(0.0, 2.0, mColorOffsetAllP), 0, mColorOffsetAllM), 1);
+
+static float4 mColorContrastLow   = float4(lerp(lerp(1.0, 2.0, mColorContrastLowP), 0, mColorContrastLowM), 1);
+static float4 mColorSaturationLow = float4(lerp(lerp(1.0, 2.0, mColorSaturationLowP), 0, mColorSaturationLowM), 1);
+static float4 mColorGammaLow      = float4(lerp(lerp(1.0, 2.0, mColorGammaLowP), 0, mColorGammaLowM), 1);
+static float4 mColorGainLow       = float4(lerp(lerp(1.0, 2.0, mColorGainLowP), 0, mColorGainLowM), 1);
+static float4 mColorOffsetLow     = float4(lerp(lerp(0.0, 1.0, mColorOffsetLowP), 0, mColorOffsetLowM), 1);
+
+static float4 mColorContrastMid   = float4(lerp(lerp(1.0, 2.0, mColorContrastMidP), 0, mColorContrastMidM), 1);
+static float4 mColorSaturationMid = float4(lerp(lerp(1.0, 2.0, mColorSaturationMidP), 0, mColorSaturationMidM), 1);
+static float4 mColorGammaMid      = float4(lerp(lerp(1.0, 2.0, mColorGammaMidP), 0, mColorGammaMidM), 1);
+static float4 mColorGainMid       = float4(lerp(lerp(1.0, 2.0, mColorGainMidP), 0, mColorGainMidM), 1);
+static float4 mColorOffsetMid     = float4(lerp(lerp(0.0, 2.0, mColorOffsetMidP), 0, mColorOffsetMidM), 1);
+
+static float4 mColorContrastHigh   = float4(lerp(lerp(1.0, 2.0, mColorContrastHighP), 0, mColorContrastHighM), 1);
+static float4 mColorSaturationHigh = float4(lerp(lerp(1.0, 2.0, mColorSaturationHighP), 0, mColorSaturationHighM), 1);
+static float4 mColorGammaHigh      = float4(lerp(lerp(1.0, 2.0, mColorGammaHighP), 0, mColorGammaHighM), 1);
+static float4 mColorGainHigh       = float4(lerp(lerp(1.0, 2.0, mColorGainHighP), 0, mColorGainHighM), 1);
+static float4 mColorOffsetHigh     = float4(lerp(lerp(0.0, 2.0, mColorOffsetHighP), 0, mColorOffsetHighM), 1);
+
+static float mColorCorrectionLowThreshold  = lerp(lerp(0.25, 1.0, mWeightLowP) , 0.0, mWeightLowM);
+static float mColorCorrectionHighThreshold = lerp(lerp(0.75, 0.0, mWeightHighP), 1.0, mWeightHighM);
 
 const float A = 0.22;
 const float B = 0.3;
@@ -293,6 +382,20 @@ float3 CreateColorSpectrum(float2 coord, float size = LUT_SIZE)
 	return rgb * size / (size - 1);
 }
 
+float3 CreateColorSpectrumDebug(float3 color, sampler sourceLUT, float2 coord, float ratio, float alpha, float size = LUT_SIZE)
+{
+	float tileX = size / 46.0;
+	float tileY = 1 - tileX / size * ratio;
+
+	if (coord.x <= tileX && coord.y >= tileY)
+	{
+		coord = float2(coord.x / tileX, (coord.y - tileY) / (1 - tileY));
+		color = lerp(color, tex2Dlod(sourceLUT, float4(coord, 0, 0)).rgb, alpha);
+	}
+
+	return color;
+}
+
 float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
 {
 	color = color * ((size - 1) / size) + (0.5f / size);
@@ -337,11 +440,11 @@ float4 GenerateColorPS(in float2 coord : TEXCOORD0) : COLOR
 	color = inverse_filmic(color);
 	color = ColorCorrectAll(
 		color,
-		mColorSaturation,
-		mColorContrast,
-		mColorGamma,
-		mColorGain,
-		mColorOffset,
+		mColorSaturationAll,
+		mColorContrastAll,
+		mColorGammaAll,
+		mColorGainAll,
+		mColorOffsetAll,
 
 		mColorSaturationLow,
 		mColorContrastLow,
@@ -383,17 +486,7 @@ float4 ColorGradingPS(in float2 coord : TEXCOORD0, in float4 screenPosition : SV
 {
 	float4 color = tex2Dlod(ScnSamp, float4(coord, 0, 0));
 	color.rgb = ColorLookupTable(color.rgb);
-
-#if LUT_DEBUG_SHOW
-	float tileX = LUT_SIZE / 50.0;
-	float tileY = 1 - tileX / LUT_SIZE * ViewportAspect;
-
-	if (coord.x <= tileX && coord.y >= tileY)
-	{
-		coord = float2(coord.x / tileX, (coord.y - tileY) / (1 - tileY));
-		return tex2Dlod(ColorGradingLUTSamp, float4(coord, 0, 0));
-	}
-#endif
+	color.rgb = CreateColorSpectrumDebug(color.rgb, ColorGradingLUTSamp, coord, ViewportAspect, mVisualizationLUT);
 	return color;
 }
 

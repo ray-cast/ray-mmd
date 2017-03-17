@@ -127,7 +127,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
-		"*controller.pmx=hide;"
+		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
 		"skybox*.* = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
@@ -152,7 +152,7 @@ texture DepthMap : OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
-		"*controller.pmx=hide;"
+		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
 		"skybox*.* =shadow/Depth_noalpha.fx;"
 		"DirectionalLight*.* =shadow/Depth_noalpha.fx;"
@@ -183,7 +183,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
-		"*controller.pmx=hide;"
+		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
 		"skybox*.* =shadow/PSSM_noalpha.fx;"
 		"DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
