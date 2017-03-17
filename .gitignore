@@ -8,19 +8,7 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-Skybox/CG Env 001
-Skybox/Studio 2
-Skybox/StPeters
-Skybox/Grace
-Skybox/incskies_030
-Skybox/incskies_027
-Skybox/Charcoal
-Skybox/uffizi
-Skybox/Time of day 1
-Skybox/Empty room 04
-Skybox/dfh hdrfin
-Skybox/Test
-Materials/Test
+Test
 Extension/NoiseBlur
 Extension/PaniniProjection
 Extension/BokehBlur
