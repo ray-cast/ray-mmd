@@ -112,11 +112,26 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	};
 #endif
 
-#if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
-	#if ALPHA_MAP_ANIMATION_ENABLE == 0
-		texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
+#if USE_CUSTOM_MATERIAL && ALBEDO_SUB_MAP_ENABLE
+	#if ALBEDO_SUB_MAP_ANIMATION_ENABLE
+		texture AlbedoSubMap : ANIMATEDTEXTURE<string ResourceName = ALBEDO_SUB_MAP_FILE;>;
 	#else
+		texture AlbedoSubMap<string ResourceName = ALBEDO_SUB_MAP_FILE;>; 
+	#endif
+	sampler AlbedoSubMapSamp = sampler_state
+	{
+		texture = AlbedoSubMap;
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
+	#if ALPHA_MAP_ANIMATION_ENABLE
 		texture AlphaMap : ANIMATEDTEXTURE<string ResourceName = ALPHA_MAP_FILE;>;
+	#else
+		texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
 	#endif
 	sampler AlphaMapSamp = sampler_state
 	{
@@ -128,7 +143,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
-	texture NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
+	#if NORMAL_MAP_ANIMATION_ENABLE
+		texture NormalMap : ANIMATEDTEXTURE<string ResourceName = NORMAL_MAP_FILE;>;
+	#else
+		texture NormalMap<string ResourceName = NORMAL_MAP_FILE;>;
+	#endif
 	sampler NormalMapSamp = sampler_state
 	{
 		texture = NormalMap;
@@ -139,7 +158,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE && NORMAL_MAP_SUB_IN_SPHEREMAP != 1
-	texture NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
+	#if NORMAL_MAP_SUB_ANIMATION_ENABLE
+		texture NormalSubMap : ANIMATEDTEXTURE<string ResourceName = NORMAL_MAP_SUB_FILE;>;
+	#else
+		texture NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
+	#endif
 	sampler NormalSubMapSamp = sampler_state
 	{
 		texture = NormalSubMap;
@@ -150,7 +173,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && SMOOTHNESS_MAP_ENABLE && SMOOTHNESS_MAP_IN_TOONMAP != 1
-	texture SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
+	#if SMOOTHNESS_MAP_ANIMATION_ENABLE
+		texture SmoothnessMap : ANIMATEDTEXTURE<string ResourceName = SMOOTHNESS_MAP_FILE;>;
+	#else
+		texture SmoothnessMap<string ResourceName = SMOOTHNESS_MAP_FILE;>; 
+	#endif
 	sampler SmoothnessMapSamp = sampler_state
 	{
 		texture = SmoothnessMap;
@@ -161,7 +188,11 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if USE_CUSTOM_MATERIAL && METALNESS_MAP_ENABLE && METALNESS_MAP_IN_TOONMAP != 1
-	texture MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
+	#if METALNESS_MAP_ANIMATION_ENABLE
+		texture MetalnessMap : ANIMATEDTEXTURE<string ResourceName = METALNESS_MAP_FILE;>;
+	#else
+		texture MetalnessMap<string ResourceName = METALNESS_MAP_FILE;>; 
+	#endif
 	sampler MetalnessMapSamp = sampler_state
 	{
 		texture = MetalnessMap;
@@ -209,17 +240,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	sampler MelaninMapSamp = sampler_state
 	{
 		texture = MelaninMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP;
-	};
-#endif
-
-#if USE_CUSTOM_MATERIAL && ALBEDO_SUB_MAP_ENABLE
-	texture AlbedoSubMap<string ResourceName = ALBEDO_SUB_MAP_FILE;>; 
-	sampler AlbedoSubMapSamp = sampler_state
-	{
-		texture = AlbedoSubMap;
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;

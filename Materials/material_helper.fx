@@ -1,9 +1,9 @@
 #define USE_CUSTOM_MATERIAL 0         // When set to 1, u can create a custom material.
 
 #define ALBEDO_MAP_ENABLE 1           // When set to 1, this allows u to use texture. set to 0, use albedo color.
+#define ALBEDO_MAP_ANIMATION_ENABLE 0 // Texture can be create from a GIF/APNG anim
 #define ALBEDO_MAP_IN_TEXTURE 1       // Texture can be create from a pmx.
 #define ALBEDO_MAP_IN_SCREEN_MAP 0    // Texture can be create from a screen map or AVI map
-#define ALBEDO_MAP_ANIMATION_ENABLE 0 // Texture can be create from a GIF/APNG anim
 #define ALBEDO_MAP_UV_FLIP 0          // Flip texture horizontal, X axis.
 #define ALBEDO_MAP_UV_REPETITION 0    // Loop mode : 1 : tile, 2 : no tile mode1, 3 : no tile mode2
 #define ALBEDO_MAP_APPLY_COLOR 0      // Texture colors to multiply with the with the (1 = map*albedo, 2 = map^albedo).
@@ -15,6 +15,7 @@ const float3 albedo = 1.0;            // between float3(0, 0, 0) ~ float3(1, 1, 
 const float2 albedoMapLoopNum = 1.0;  // between 0.0 ~ inf or float2 albedoMapLoopNum = float2(x, y);
 
 #define ALBEDO_SUB_ENABLE 0           // 1 : melanin, 2 : albedo * albedoSub, 3 : albedo ^ albedoSub, 4 : albedo + albedoSub
+#define ALBEDO_SUB_MAP_ANIMATION_ENABLE 0
 #define ALBEDO_SUB_MAP_ENABLE 0
 #define ALBEDO_SUB_MAP_IN_TEXTURE 0
 #define ALBEDO_SUB_MAP_UV_FLIP 0
@@ -25,8 +26,8 @@ const float3 albedoSub = 0.0;
 const float2 albedoSubMapLoopNum = 1.0;
 
 #define ALPHA_MAP_ENABLE 1
-#define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
+#define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3           // The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_FILE "alpha.png"
@@ -35,6 +36,7 @@ const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
 #define NORMAL_MAP_ENABLE 0
+#define NORMAL_MAP_ANIMATION_ENABLE 0
 #define NORMAL_MAP_IN_SPHEREMAP 0   // Texture can be create from a sph map.
 #define NORMAL_MAP_IS_COMPRESSED 0  // RG normal map to RGB normal
 #define NORMAL_MAP_UV_FLIP 0        // 1 : Filp texture x-axis, 2 : Filp normal x-axis (ignore map)
@@ -45,6 +47,7 @@ const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
 
 #define NORMAL_MAP_SUB_ENABLE 0
+#define NORMAL_MAP_SUB_ANIMATION_ENABLE 0
 #define NORMAL_MAP_SUB_IN_SPHEREMAP 0   // Texture can be create from a sph map.
 #define NORMAL_MAP_SUB_IS_COMPRESSED 0  // RG normal map to RGB normal
 #define NORMAL_MAP_SUB_UV_FLIP 0        // Filp texture x-axis
@@ -55,6 +58,7 @@ const float normalMapSubScale = 1.0;
 const float normalMapSubLoopNum = 1.0;
 
 #define SMOOTHNESS_MAP_ENABLE 0
+#define SMOOTHNESS_MAP_ANIMATION_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0    // Texture can be create from a toon map.
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0  // Roughness map to smoothness
 #define SMOOTHNESS_MAP_UV_FLIP 0
@@ -66,6 +70,7 @@ const float smoothness = 0.5;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_ENABLE 0
+#define METALNESS_MAP_ANIMATION_ENABLE 0
 #define METALNESS_MAP_IN_TOONMAP 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE 0
