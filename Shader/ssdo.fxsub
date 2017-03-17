@@ -80,7 +80,7 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2 = float4(1.2, 1.2, 0.02, 0.2);
+	oTexcoord2 = float4(1.0, 1.0, 0.02, 0.2);
 	oTexcoord2.xy *= float2(matProject._11, matProject._22);
 	return Position;
 }
@@ -156,10 +156,10 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		sampleDirection[0] = normalize(sampleDirection[0]);
-		sampleDirection[1] = normalize(sampleDirection[1]);
-		sampleDirection[2] = normalize(sampleDirection[2]);
-		sampleDirection[3] = normalize(sampleDirection[3]);
+		sampleDirection[0] *= rsqrt(sampleLength2[0]);
+		sampleDirection[1] *= rsqrt(sampleLength2[1]);
+		sampleDirection[2] *= rsqrt(sampleLength2[2]);
+		sampleDirection[3] *= rsqrt(sampleLength2[3]);
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),

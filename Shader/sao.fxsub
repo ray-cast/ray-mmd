@@ -79,22 +79,17 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0 = Texcoord;
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
-	oTexcoord1 = GetProjConstant();	
-	oTexcoord2 = float4(1.2, 1.2, 0.02, 0.2);
+	oTexcoord1 = GetProjConstant();
+	oTexcoord2 = float4(0.25, 0.25, 0.02, 0.2);
 	oTexcoord2.xy *= float2(matProject._11, matProject._22);
-	oTexcoord2.w *= oTexcoord1.x;
 	return Position;
 }
 
 float4 ScreenSpaceDirOccPassPS(
 	in float4 coord : TEXCOORD0,
-	in float4 SSDOParams1 : TEXCOORD1) : COLOR
+	in float4 SSDOParams1 : TEXCOORD1,
+	in float4 SSDOParams2 : TEXCOORD2) : COLOR
 {
-	float mSSDOBiasNear = 0.02;
-	float mSSDOBiasFar = 0.004;
-	float mSSDOBiasFalloff = 300.0;
-	float mSSDOSpaceRadius = 10.0;
-
 	float linearDepth = linearizeDepth(coord.xy);
 	float linearDepth2 = abs(linearDepth);
 
@@ -104,7 +99,12 @@ float4 ScreenSpaceDirOccPassPS(
 	float sampleWeight = 0.0f;
 	float sampleNoise = GetJitterOffset(coord.zw);
 	float sampleRadius2 = mSSDOSpaceRadius * mSSDOSpaceRadius;
-	float sampleScale = saturate(mSSDOBiasFalloff / viewPosition.z * 0.25);
+	
+	float maxRadius = SSDOParams2.w;
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+
+	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
 	float sampleBias = 0;
 	sampleBias += mSSDOBiasFar * linearDepth2;
@@ -112,29 +112,28 @@ float4 ScreenSpaceDirOccPassPS(
 
 	float4 sampleOcclustion = 0.0;
 
-	float2 rotateKernel[16];
+	float2 sampleKernel[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / 32) / ViewportSize) * sampleScale;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
 	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		rotateKernel[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleDiskRadius;
-		rotateKernel[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleDiskRadius;
-		rotateKernel[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleDiskRadius;
-		rotateKernel[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleDiskRadius;
+		sampleKernel[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * radius;
+		sampleKernel[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * radius;
+		sampleKernel[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * radius;
+		sampleKernel[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * radius;
 	}
 
 	[unroll]
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + rotateKernel[j + 0];
-		sampleOffset[1] = coord.xy + rotateKernel[j + 1];
-		sampleOffset[2] = coord.xy + rotateKernel[j + 2];
-		sampleOffset[3] = coord.xy + rotateKernel[j + 3];
+		sampleOffset[0] = coord.xy + sampleKernel[j + 0];
+		sampleOffset[1] = coord.xy + sampleKernel[j + 1];
+		sampleOffset[2] = coord.xy + sampleKernel[j + 2];
+		sampleOffset[3] = coord.xy + sampleKernel[j + 3];
 
 		float4 sampleDepths;
 		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
@@ -160,6 +159,11 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[1], sampleDirection[1]),
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
+			
+		sampleDirection[0] = normalize(sampleDirection[0]);
+		sampleDirection[1] = normalize(sampleDirection[1]);
+		sampleDirection[2] = normalize(sampleDirection[2]);
+		sampleDirection[3] = normalize(sampleDirection[3]);
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
@@ -167,11 +171,11 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
 
-		float4 sampleLength = rsqrt(sampleLength2);
+		float4 sampleLength = rsqrt(sampleLength2 + 1e-5);
 
 		float4 f = max(0.0, sampleRadius2 - sampleLength2);
-		float4 falloff = f * f * f + 1e-5;
-		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
+		float4 falloff = f * f * f;
+		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias));
 
 		sampleWeight += sum(falloff);
 		sampleOcclustion.x += sum(occlustion);
