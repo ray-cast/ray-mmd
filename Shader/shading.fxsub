@@ -1,3 +1,14 @@
+#if MAIN_LIGHT_ENABLE == 2
+float ComputeSunIntensity(float3 L)
+{
+	float EE = 8;
+	float steepness = 1.0;
+	float cutoffAngle = PI / 1.95;
+	float zenithAngleCos = dot(L, float3(0, 1, 0));
+	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
+}
+#endif
+
 void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
 #if MAIN_LIGHT_ENABLE
@@ -12,6 +23,10 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 #endif
 
 	float3 lightColor = LightSpecular * mMainLightIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
+#if MAIN_LIGHT_ENABLE == 2
+ 	lightColor *= ComputeSunIntensity(L);
+#endif
+
 	diffuse *= lightColor;
 	specular *= lightColor;
 
