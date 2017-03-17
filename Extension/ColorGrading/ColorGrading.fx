@@ -236,8 +236,8 @@ static float4 mColorGammaHigh      = float4(lerp(lerp(1.0, 2.0, mColorGammaHighP
 static float4 mColorGainHigh       = float4(lerp(lerp(1.0, 2.0, mColorGainHighP), 0, mColorGainHighM), 1);
 static float4 mColorOffsetHigh     = float4(lerp(lerp(0.0, 2.0, mColorOffsetHighP), 0, mColorOffsetHighM), 1);
 
-static float mColorCorrectionLowThreshold  = lerp(lerp(0.25, 1.0, mWeightLowP) , 0.0, mWeightLowM);
-static float mColorCorrectionHighThreshold = lerp(lerp(0.75, 0.0, mWeightHighP), 1.0, mWeightHighM);
+static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP) , 0.0, mWeightLowM);
+static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
 
 const float A = 0.22;
 const float B = 0.3;
