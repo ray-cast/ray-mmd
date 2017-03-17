@@ -102,8 +102,8 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleBias += mSSDOBiasFar * linearDepth2;
 	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
 
-	if ((fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
-	if ((fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
 	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
