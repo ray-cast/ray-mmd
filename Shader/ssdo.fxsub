@@ -1,15 +1,15 @@
-#if SSDO_QUALITY == 1 || SSDO_QUALITY == 4
-#   define SSDO_SAMPLER_COUNT 8
-#   define SSDO_BLUR_RADIUS 6
-#elif SSDO_QUALITY == 2 || SSDO_QUALITY == 5
-#   define SSDO_SAMPLER_COUNT 12
-#   define SSDO_BLUR_RADIUS 6
-#elif SSDO_QUALITY >= 3 || SSDO_QUALITY == 6
-#   define SSDO_SAMPLER_COUNT 16
-#   define SSDO_BLUR_RADIUS 6
+#if SSDO_QUALITY == 1
+#	define SSDO_SAMPLER_COUNT 8
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 2
+#	define SSDO_SAMPLER_COUNT 12
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY >= 3
+#	define SSDO_SAMPLER_COUNT 16
+#	define SSDO_BLUR_RADIUS 6
 #else
-#   define SSDO_SAMPLER_COUNT 8
-#   define SSDO_BLUR_RADIUS 6
+#	define SSDO_SAMPLER_COUNT 8
+#	define SSDO_BLUR_RADIUS 6
 #endif
 
 shared texture SSDOMap : RENDERCOLORTARGET<
@@ -82,7 +82,6 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord1 = GetProjConstant(); 
 	oTexcoord2 = float4(1.2, 1.2, 0.02, 0.2);
 	oTexcoord2.xy *= float2(matProject._11, matProject._22);
-	oTexcoord2.w *= oTexcoord1.x;
 	return Position;
 }
 
@@ -103,11 +102,10 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleBias += mSSDOBiasFar * linearDepth2;
 	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
 
-	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
-	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+	if ((fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if ((fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
-	float2 radius0 = clamp(SSDOParams2.xy * 0.15 / linearDepth2, SSDOParams2.z, maxRadius);
-	float2 radius1 = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
+	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
 	float2 sampleRotate[16];
 	float4 sampleOcclustion = 0.0f;
@@ -118,24 +116,20 @@ float4 ScreenSpaceDirOccPassPS(
 	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat);
-		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat);
-		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat);
-		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat);
+		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * radius;
+		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * radius;
+		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * radius;
+		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * radius;
 	}
 
 	[unroll]
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
-		bool narrowBand = j < (SSDO_SAMPLER_COUNT / 2);
-
-		float2 radius = narrowBand ? radius0 : radius1;
-
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[j + 0] * radius;
-		sampleOffset[1] = coord.xy + sampleRotate[j + 1] * radius;
-		sampleOffset[2] = coord.xy + sampleRotate[j + 2] * radius;
-		sampleOffset[3] = coord.xy + sampleRotate[j + 3] * radius;
+		sampleOffset[0] = coord.xy + sampleRotate[j + 0];
+		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
+		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
+		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
 
 		float4 sampleDepths;
 		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
@@ -173,11 +167,11 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
 
-		float emitterScale = narrowBand ? 0.5 : 2.5;
+		float emitterScale = 2.5;
 		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
 		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius);
 
-		float4 sh = emitterArea * saturate(sampleAngle- sampleBias) / (sampleLength2 + emitterArea);
+		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
 
 		sampleOcclustion.x += sum(sh);
 		sampleOcclustion.yzw += sh.x * sampleDirection[0];
