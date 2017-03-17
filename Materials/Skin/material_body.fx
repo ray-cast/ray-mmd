@@ -14,7 +14,7 @@
 const float3 albedo = 1.0;
 const float2 albedoMapLoopNum = 1.0;
 
-#define ALBEDO_SUB_ENABLE 1
+#define ALBEDO_SUB_ENABLE 4
 #define ALBEDO_SUB_MAP_ENABLE 0
 #define ALBEDO_SUB_MAP_IN_TEXTURE 0
 #define ALBEDO_SUB_MAP_UV_FLIP 0

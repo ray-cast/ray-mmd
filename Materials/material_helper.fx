@@ -14,7 +14,7 @@
 const float3 albedo = 1.0;            // between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
 const float2 albedoMapLoopNum = 1.0;  // between 0.0 ~ inf or float2 albedoMapLoopNum = float2(x, y);
 
-#define ALBEDO_SUB_ENABLE 0           // 1 : melanin, 2 : albedo * albedoSub, 3 : albedo ^ albedoSub, 4 : albedo + albedoSub
+#define ALBEDO_SUB_ENABLE 0           // 1 : albedo * albedoSub, 2 : albedo ^ albedoSub, 3 : albedo + albedoSub, 4 : melanin
 #define ALBEDO_SUB_MAP_ANIMATION_ENABLE 0
 #define ALBEDO_SUB_MAP_ENABLE 0
 #define ALBEDO_SUB_MAP_IN_TEXTURE 0

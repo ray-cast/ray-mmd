@@ -5,13 +5,14 @@
 #define ALBEDO_MAP_IN_SCREEN_MAP 0
 #define ALBEDO_MAP_ANIMATION_ENABLE 0
 #define ALBEDO_MAP_UV_FLIP 0
+#define ALBEDO_MAP_UV_REPETITION 0
 #define ALBEDO_MAP_APPLY_COLOR 1
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
 const float3 albedo = float3(247, 199, 149) / 255;
-const float albedoMapLoopNum = 1.0;
+const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0 
 #define ALBEDO_SUB_MAP_ENABLE 0
@@ -26,6 +27,7 @@ const float2 albedoSubMapLoopNum = 1.0;
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
+#define ALPHA_MAP_ANIMATION_SPEED 0
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"

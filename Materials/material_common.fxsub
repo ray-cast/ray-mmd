@@ -777,13 +777,13 @@ float3 GetSubAlbedo(float3 albedo, float2 coord, bool use_texture)
 	#endif
 	
 	#if ALBEDO_SUB_ENABLE == 1
-		albedo = ColorSynthesis(albedo, albedoSubValue);
-	#elif ALBEDO_SUB_ENABLE == 2
 		albedo *= albedoSubValue;
-	#elif ALBEDO_SUB_ENABLE == 3
+	#elif ALBEDO_SUB_ENABLE == 2
 		albedo = pow(albedo, albedoSubValue);
-	#elif ALBEDO_SUB_ENABLE == 4
+	#elif ALBEDO_SUB_ENABLE == 3
 		albedo += albedoSubValue;
+	#elif ALBEDO_SUB_ENABLE == 4
+		albedo = ColorSynthesis(albedo, albedoSubValue);
 	#endif
 
 	return saturate(albedo);
