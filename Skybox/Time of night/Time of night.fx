@@ -4,8 +4,8 @@
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 moonScaling = 4000;
-static const float3 moonTranslate = 90000;
+static const float3 moonScaling = 3800;
+static const float3 moonTranslate = 80000;
 
 static const float3 jupiterScaling = 4000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);

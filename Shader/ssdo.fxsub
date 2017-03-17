@@ -15,20 +15,12 @@
 shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
-#else
-	string Format = "L8";
-#endif
 >;
 texture SSDOMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
-#else
-	string Format = "L8";
-#endif
 >;
 sampler SSDOMapSamp = sampler_state {
 	texture = <SSDOMap>;
@@ -197,7 +189,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= SSDO_SAMPLER_COUNT;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x * 1.5), mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x * 1.2), mSSAOScale);
 
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }

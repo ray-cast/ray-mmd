@@ -4,8 +4,8 @@
 #include "shader/atmospheric.fxsub"
 #include "shader/cloud.fxsub"
 
-static const float3 sunScaling = 4000;
-static const float3 sunTranslate = 90000;
+static const float3 sunScaling = 3800;
+static const float3 sunTranslate = 80000;
 
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);

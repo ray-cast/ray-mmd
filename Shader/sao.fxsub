@@ -15,20 +15,12 @@
 shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
-#else
-	string Format = "L8";
-#endif
 >;
 texture SSDOMapTemp : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
-#if SSDO_QUALITY > 3 && MAIN_LIGHT_ENABLE
 	string Format = "A8R8G8B8";
-#else
-	string Format = "L8";
-#endif
 >;
 sampler SSDOMapSamp = sampler_state {
 	texture = <SSDOMap>;
@@ -122,7 +114,7 @@ float4 ScreenSpaceDirOccPassPS(
 
 	float2 rotateKernel[16];
 	float2 sampleSinCos = float2(sin(sampleNoise * PI_2), cos(sampleNoise * PI_2));
-	float2 sampleDiskRadius = ((ViewportSize.x / 24) / ViewportSize) * sampleScale;
+	float2 sampleDiskRadius = ((ViewportSize.x / 32) / ViewportSize) * sampleScale;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
@@ -178,7 +170,7 @@ float4 ScreenSpaceDirOccPassPS(
 		float4 sampleLength = rsqrt(sampleLength2);
 
 		float4 f = max(0.0, sampleRadius2 - sampleLength2);
-		float4 falloff = f * f * f;
+		float4 falloff = f * f * f + 1e-5;
 		float4 occlustion = max(0.0, falloff * (sampleAngle - sampleBias) * sampleLength);
 
 		sampleWeight += sum(falloff);
@@ -192,7 +184,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= sampleWeight;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x), mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x * 1.2), mSSAOScale);
 
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }
