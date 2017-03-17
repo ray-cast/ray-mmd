@@ -86,8 +86,8 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 {
 	float3 dependentSplit = 0.5;
 	float3 scattering = prefilteredDiffuse + DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
-	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
-	return scattering;
+	scattering *= material.customDataB * material.customDataA * dependentSplit;
+	return scattering * mEnvIntensitySSS;
 }
 
 void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmoothness, out float3 diffuse, out float3 specular)
@@ -126,6 +126,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
+		diffuse *= (1 - 0.04 * material.customDataA * mEnvIntensitySSS);
 		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
 	}
 	else if (material.lightModel == SHADINGMODELID_CLOTH)

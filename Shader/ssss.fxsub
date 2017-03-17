@@ -46,7 +46,7 @@ float4 SSSGuassBlurPS(
 	float sssAmount = material.customDataA;
 	float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
 	float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1;
-	float sssWidth = (material.lightModel != SHADINGMODELID_SKIN) ? mSSSSWidth * 1.5 : mSSSSWidth;
+	float sssWidth = (material.lightModel != SHADINGMODELID_SKIN) ? mSSSSWidth * 3 : mSSSSWidth;
 	float radius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength;
 
 	const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
