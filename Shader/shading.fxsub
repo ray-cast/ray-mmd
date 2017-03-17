@@ -1,10 +1,10 @@
 #if MAIN_LIGHT_ENABLE == 2
 float ComputeSunIntensity(float3 L)
 {
-	float EE = 8;
-	float steepness = 1.0;
-	float cutoffAngle = PI / 1.95;
-	float zenithAngleCos = dot(-L, float3(0, 1, 0));
+	float EE = 10;
+	float steepness = 1.5;
+	float cutoffAngle = 1.6110731556870734; // PI / 1.95;
+	float zenithAngleCos = saturate(dot(-L, float3(0, 1, 0)));
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
 }
 #endif
@@ -51,9 +51,15 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 #endif
 
 	float shadow = 1;
+#if MAIN_LIGHT_ENABLE == 2
+	float envShadow = lerp(0.3, 1.0, mEnvShadowP);
+#else
+	float envShadow = mEnvShadowP;
+#endif
+
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 	float2 shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-	shadow = lerp(shadow, shadowDepth.r, mEnvShadowP);
+	shadow = lerp(shadow, shadowDepth.r, envShadow);
 #endif
 
 	diffuse *= material.visibility * shadow;
