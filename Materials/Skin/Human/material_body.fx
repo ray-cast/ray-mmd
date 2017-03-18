@@ -12,7 +12,7 @@
 #define ALBEDO_MAP_FILE "textures/Skin_-_Human_Albedo.png"
 
 const float3 albedo = 1.0;
-const float2 albedoMapLoopNum = 5.0
+const float2 albedoMapLoopNum = 5.0;
 
 #define ALBEDO_SUB_ENABLE 4
 #define ALBEDO_SUB_MAP_ENABLE 0
@@ -59,7 +59,7 @@ const float normalMapSubLoopNum = 60.0;
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
-#define SMOOTHNESS_MAP_APPLY_SCALE 
+#define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "textures/Skin_-_Human_Gloss.PNG"
 
 const float smoothness = 1.0;
@@ -90,7 +90,7 @@ const float metalnessBaseSpecular = 0.04;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
-const float3 emissiveBlink = 1.0
+const float3 emissiveBlink = 1.0;
 const float  emissiveIntensity = 1.0;
 const float2 emissiveMapLoopNum = 1.0;
 
