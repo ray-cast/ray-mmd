@@ -332,7 +332,7 @@ float3 CreateColorSpectrumDebug(float3 color, sampler sourceLUT, float2 coord, f
 	if (coord.x <= tileX && coord.y >= tileY)
 	{
 		coord = float2(coord.x / tileX, (coord.y - tileY) / (1 - tileY));
-		color = lerp(color, tex2Dlod(sourceLUT, float4(coord, 0, 0)).rgb, alpha);
+		color = lerp(tex2Dlod(sourceLUT, float4(coord, 0, 0)).rgb, color, alpha);
 	}
 
 	return color;

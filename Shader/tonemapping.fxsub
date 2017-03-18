@@ -176,7 +176,7 @@ void GenerateColorLUT_VS(
 
 float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR 
 {
-	float3 color = CreateColorSpectrum(coord.xy);
+	float3 color = CreateColorSpectrum(coord);
 
 	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);

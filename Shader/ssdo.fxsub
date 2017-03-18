@@ -219,6 +219,11 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
 
+#if SSDO_QUALITY
+		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
+		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
+#endif
+
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
 
