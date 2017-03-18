@@ -80,8 +80,9 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2 = float4(1.0, 1.0, 0.02, 0.2);
-	oTexcoord2.xy *= float2(matProject._11, matProject._22);
+	oTexcoord2 = float4(2, 2, ViewportOffset2 * float2(10, 25));
+	oTexcoord2.xy *= float2(1, ViewportAspect);
+	oTexcoord2.zw /= oTexcoord1.x;
 	return Position;
 }
 
@@ -101,9 +102,6 @@ float4 ScreenSpaceDirOccPassPS(
 	float sampleBias = 0;
 	sampleBias += mSSDOBiasFar * linearDepth2;
 	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
-
-	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
-	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
 	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
@@ -169,7 +167,7 @@ float4 ScreenSpaceDirOccPassPS(
 
 		float emitterScale = 2.5;
 		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
-		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius);
+		float emitterArea = (emitterScale * PI * emitterRadius * emitterRadius) / (float)(SSDO_SAMPLER_COUNT / 2);
 
 		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
 
@@ -183,7 +181,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= SSDO_SAMPLER_COUNT;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x * 1.2), mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
 
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }
