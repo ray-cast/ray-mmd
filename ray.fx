@@ -285,7 +285,7 @@ technique DeferredLighting<
 	pass ShadowMapGen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ShadowMapGenVS();
 		PixelShader  = compile ps_3_0 ShadowMapGenPS();
 	}
 	pass ShadowBlurX<string Script= "Draw=Buffer;";>{
