@@ -80,7 +80,7 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2 = float4(2, 2, ViewportOffset2 * float2(10, 25));
+	oTexcoord2 = float4(2, 2, 0.02, 0.05);
 	oTexcoord2.xy *= float2(1, ViewportAspect);
 	oTexcoord2.zw /= oTexcoord1.x;
 	return Position;
@@ -217,7 +217,7 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
 
-#if SSDO_QUALITY
+#if SSDO_QUALITY == 4
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 #endif
