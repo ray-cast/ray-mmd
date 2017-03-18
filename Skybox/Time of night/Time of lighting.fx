@@ -88,7 +88,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	float3 fresnel = EnvironmentSpecularPolynomial(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
 	prefilteredDiffuse += DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1 - float2(time / 1000, 0.0), 0, 0))) * saturate(worldNormal.y);
