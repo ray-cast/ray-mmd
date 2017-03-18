@@ -24,16 +24,6 @@ const float2 albedoMapLoopNum = 1.0;
 const float3 albedoSub = 0.0;
 const float2 albedoSubMapLoopNum = 1.0;
 
-#define ALBEDO_SUB_ENABLE 0
-#define ALBEDO_SUB_MAP_ENABLE 0
-#define ALBEDO_SUB_MAP_IN_TEXTURE 0
-#define ALBEDO_SUB_MAP_UV_FLIP 0
-#define ALBEDO_SUB_MAP_APPLY_SCALE 0
-#define ALBEDO_SUB_MAP_FILE "albedo.png"
-
-const float3 albedoSub = 0.0;
-const float2 albedoSubMapLoopNum = 1.0;
-
 #define ALPHA_MAP_ENABLE 1
 #define ALPHA_MAP_IN_TEXTURE 1
 #define ALPHA_MAP_ANIMATION_ENABLE 0
