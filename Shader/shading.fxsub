@@ -58,8 +58,8 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 #endif
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
-	float2 shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).rg;
-	shadow = lerp(shadow, shadowDepth.r, envShadow);
+	float shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+	shadow = lerp(shadow, shadowDepth, envShadow);
 #endif
 
 	diffuse *= material.visibility * shadow;
