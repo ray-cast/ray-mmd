@@ -32,7 +32,7 @@ float4 SSSGuassBlurPS(
 	float3 N = material.normal;
 
 #if SSSS_QUALITY == 1
-	const float3 profileVarArr[2] = { float3( 3.3, 2.8, 1.4 ), float3( 9.3, 1.4, 1.1 ) };
+	const float3 profileVarArr[2] = { float3( 3.3, 2.8, 1.4 ), float3( 6.3, 1.4, 1.1 ) };
 	const float4 profileSpikeRadArr[2] = { float4(0.30, 0.30, 0.80, 8.0 ), float4(0.35, 0.40, 0.50, 1.0) };
 #else
 	const float3 profileVarArr[2] = { float3( 3.3, 2.8, 1.4 ), float3( 3.3, 1.4, 1.1 ) };
