@@ -160,18 +160,18 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 			
-		sampleDirection[0] = normalize(sampleDirection[0]);
-		sampleDirection[1] = normalize(sampleDirection[1]);
-		sampleDirection[2] = normalize(sampleDirection[2]);
-		sampleDirection[3] = normalize(sampleDirection[3]);
+		float4 sampleLength = rsqrt(sampleLength2 + 1e-5);
+
+		sampleDirection[0] *= sampleLength[0];
+		sampleDirection[1] *= sampleLength[1];
+		sampleDirection[2] *= sampleLength[2];
+		sampleDirection[3] *= sampleLength[3];
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
 			dot(sampleDirection[1], viewNormal),
 			dot(sampleDirection[2], viewNormal),
 			dot(sampleDirection[3], viewNormal));
-
-		float4 sampleLength = rsqrt(sampleLength2 + 1e-5);
 
 		float4 f = max(0.0, sampleRadius2 - sampleLength2);
 		float4 falloff = f * f * f;
@@ -188,7 +188,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleOcclustion /= sampleWeight;
 	sampleOcclustion.x *= linearDepth < 0.0 ? 0.25 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x * 1.2), mSSAOScale);
+	float ao = pow(saturate(1 - sampleOcclustion.x), mSSAOScale);
 
 	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
 }
