@@ -70,26 +70,38 @@ float4 CreateFrustumFromProjection()
 
 float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frustumInfo, float near, float far)
 {
-	float4 znear = float4(near.xxx, 1);
 	float4 zfar = float4(far.xxx, 1);
+	float4 znear = float4(near.xxx, 1);
 
 	float4 rtn = float4(frustumInfo.xz, 1, 1) * znear;
 	float4 rtf = float4(frustumInfo.xz, 1, 1) * zfar;
 	float4 lbn = float4(frustumInfo.yw, 1, 1) * znear;
 	float4 lbf = float4(frustumInfo.yw, 1, 1) * zfar;
 
-	float4 rbn = float4(rtn.x, lbn.yzw), rbf = float4(rtf.x, lbf.yzw);
-	float4 ltn = float4(lbn.x, rtn.yzw), ltf = float4(lbf.x, rtf.yzw);
+	float4 rbn = float4(rtn.x, lbn.yzw);
+	float4 rbf = float4(rtf.x, lbf.yzw);
+	float4 ltn = float4(lbn.x, rtn.yzw);
+	float4 ltf = float4(lbf.x, rtf.yzw);
+	
+    float2 vrtn = mul(rtn, matLightViewFromCameraView).xy;
+    float2 vrtf = mul(rtf, matLightViewFromCameraView).xy;
+    float2 vlbn = mul(lbn, matLightViewFromCameraView).xy;
+    float2 vlbf = mul(lbf, matLightViewFromCameraView).xy;
+    float2 vrbn = mul(rbn, matLightViewFromCameraView).xy;
+    float2 vrbf = mul(rbf, matLightViewFromCameraView).xy;
+    float2 vltn = mul(ltn, matLightViewFromCameraView).xy;
+    float2 vltf = mul(ltf, matLightViewFromCameraView).xy;
 
-	float4 orthographicBB = float4(9999, 9999, -9999,-9999);
+	float4 minBB = float4(vrtn, vrtf);
+	float4 maxBB = minBB;
+	minBB = min(float4(vlbn, vlbf), minBB);
+	maxBB = max(float4(vlbn, vlbf), maxBB);
+	minBB = min(float4(vrbn, vrbf), minBB);
+	maxBB = max(float4(vrbn, vrbf), maxBB);
+	minBB = min(float4(vltn, vltf), minBB);
+	maxBB = max(float4(vltn, vltf), maxBB);
 
-	float2 vpos;
-	#define CalcMinMax(inV) \
-		vpos = mul(inV, matLightViewFromCameraView).xy; \
-		orthographicBB.xy = min(orthographicBB.xy, vpos); \
-		orthographicBB.zw = max(orthographicBB.zw, vpos);
-	CalcMinMax(rtn);    CalcMinMax(rtf);    CalcMinMax(lbn);    CalcMinMax(lbf);
-	CalcMinMax(rbn);    CalcMinMax(rbf);    CalcMinMax(ltn);    CalcMinMax(ltf);
+	float4 orthographicBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
 
 	const float normalizeByBufferSize = 2.0 / SHADOW_MAP_SIZE;
 	const float scaleDuetoBlureAMT = (WARP_RANGE * 2.0 + 1) * normalizeByBufferSize * 0.5;
@@ -105,13 +117,13 @@ float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frus
 
 float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView)
 {
-	static const float4 frustumInfo = CreateFrustumFromProjection();
+	static const float z0 = mPSSMCascadeZMin;
+	static const float z1 = CalcSplitPosition(1.0);
+	static const float z2 = CalcSplitPosition(2.0);
+	static const float z3 = CalcSplitPosition(3.0);
+	static const float z4 = mPSSMCascadeZMax;
 
-	float z0 = mPSSMCascadeZMin;
-	float z1 = CalcSplitPosition(1.0);
-	float z2 = CalcSplitPosition(2.0);
-	float z3 = CalcSplitPosition(3.0);
-	float z4 = mPSSMCascadeZMax;
+	static const float4 frustumInfo = CreateFrustumFromProjection();
 
 	return float4x4(
 		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z0, z1),
@@ -122,8 +134,8 @@ float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView)
 
 float CalcEdgeFalloff(float2 coord)
 {
-	static const float m = (SHADOW_MAP_SIZE * 0.5 / WARP_RANGE);
-	static const float a = (SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE);
+	static const float m = SHADOW_MAP_SIZE * 0.5 / WARP_RANGE;
+	static const float a = SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE;
 	float2 falloff = abs(coord) * (-m * 4.0) + (m - a);
 	return saturate(min(falloff.x, falloff.y));
 }
