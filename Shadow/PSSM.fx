@@ -4,4 +4,4 @@
 // 不产生阴影的Alpha阈值
 const float CasterAlphaThreshold = 0.5;
 
-#include "PSSM.fxsub"
+#include "../shader/PSSM.fxsub"
