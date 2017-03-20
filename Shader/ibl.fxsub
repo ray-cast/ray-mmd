@@ -8,6 +8,11 @@ float3 EnvironmentReflect(float3 normal, float3 view)
 	return reflect(-view, normal);
 }
 
+float3 FresnelSchlickWithRoughness(float3 N, float3 V, float Gloss, float3 SpecularColor)
+{
+    return SpecularColor + (max(Gloss, SpecularColor) - SpecularColor) * pow(1 - saturate(dot(N, V)), 5);
+}
+
 float3 EnvironmentSpecularPolynomial(float3 N, float3 V, float smoothness, float3 specular)
 {
 	float b1 = -0.1688; float b2 = 1.895; float b3 = 0.9903; float b4 = -4.853; float b5 = 8.404; float b6 = -5.069;
