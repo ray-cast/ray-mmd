@@ -181,10 +181,11 @@ float4 ShadingTransparentPS(
 
 	if (material.lightModel == SHADINGMODELID_GLASS)
 	{
+		float3 dielectricColor = max(0.02, material.albedo);
 		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
 		float3 fresnel = lerp(material.specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * material.smoothness));
 
-		lighting = lerp(prefilteredRefract * material.albedo, lighting, fresnel * material.alpha);		
+		lighting = lerp(prefilteredRefract * dielectricColor, lighting, fresnel * material.alpha);		
 		lighting += material.customDataA * material.customDataB * trans * saturate(dot(N, -L));
 	}
 	else

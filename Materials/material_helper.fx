@@ -79,7 +79,7 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04; // minimum of specular coefficient
+const float metalnessBaseSpecular = 0.04; // minimum coefficient of specular
 
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_USE_ALBEDO 0
@@ -122,7 +122,7 @@ const float parallaxMapLoopNum = 1.0;
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
-// 4 : Glass              // customA = ior         customB = transmittance color
+// 4 : Glass              // customA = curvature   customB = transmittance color
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
