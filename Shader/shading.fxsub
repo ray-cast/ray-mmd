@@ -53,7 +53,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	float shadow = 1;
 #if MAIN_LIGHT_ENABLE == 2
 	float zenithAngleCos = saturate(dot(-LightDirection, float3(0, 1, 0)));
-	float envShadow = lerp(0.45 * zenithAngleCos, 1.0, mEnvShadowP);
+	float envShadow = lerp(0.3 * zenithAngleCos, 1.0, mEnvShadowP);
 #else
 	float envShadow = mEnvShadowP;
 #endif
