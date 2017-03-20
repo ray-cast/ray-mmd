@@ -27,7 +27,7 @@ float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 s
 	float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
 	float4 c1 = float4(1, 0.0425, 1.04, -0.04);
 	float4 r = SmoothnessToRoughness(smoothness) * c0 + c1;
-	float a004 = min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
+	float a004 = min(r.x * r.x, exp2(-9.28 * abs(dot(N, V)))) * r.x + r.y;
 	float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
 	return specular * AB.x + AB.y;
 }
@@ -37,14 +37,14 @@ float EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness)
 	const float2 c0 = float2(-1, -0.0275);
 	const float2 c1 = float2(1, 0.0425);
 	float2 r = SmoothnessToRoughness(smoothness) * c0 + c1;
-	return min(r.x * r.x, exp2(-9.28 * dot(N, V))) * r.x + r.y;
+	return min(r.x * r.x, exp2(-9.28 * abs(dot(N, V)))) * r.x + r.y;
 }
 
 float3 ComputeDiffuseDominantDir(float3 N, float3 V, float roughness)
 {
 	float a = 1.02341f * roughness - 1.51174f;
 	float b = -0.511705f * roughness + 0.755868f;
-	return normalize(lerp(N, V, saturate((dot(N, V) * a + b) * roughness)));
+	return normalize(lerp(N, V, saturate((abs(dot(N, V)) * a + b) * roughness)));
 }
 
 float3 ComputeSpecularDominantDir(float3 N, float3 R, float roughness) 
