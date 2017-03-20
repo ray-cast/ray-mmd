@@ -11,7 +11,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = 0.45;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -72,7 +72,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_APPLY_SCALE 0
 #define METALNESS_MAP_FILE "metalness.png"
 
-const float metalness = 0.0;
+const float metalness = 0.7;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.02; 
 
@@ -122,7 +122,7 @@ const float occlusionMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.0;
+const float customA = 0.1;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0
@@ -131,7 +131,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_APPLY_COLOR 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 1.0;
+const float3 customB = 0.1;
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
