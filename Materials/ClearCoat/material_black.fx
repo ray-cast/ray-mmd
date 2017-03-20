@@ -62,7 +62,7 @@ const float normalMapSubLoopNum = 1.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.9;
+const float smoothness = 1.0;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_ENABLE 0

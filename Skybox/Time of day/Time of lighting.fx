@@ -35,7 +35,8 @@ sampler DiffuseMapSamp = sampler_state {
 
 float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 prefilteredSpeculr)
 {
-	return float4(prefilteredSpeculr, 1.0) * EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	float fresnel = EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	return float4(prefilteredSpeculr, fresnel);
 }
 
 float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V)
@@ -62,7 +63,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 N = normalize(worldNormal);
 	float3 R = normalize(worldReflect);
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
@@ -83,8 +84,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
 		float4 specular2 = ImageBasedLightClearCost(material, worldNormal, worldView, prefilteredSpeculr);
-		specular *= (1 - specular2.a);
-		specular += specular2.rgb;
+		specular = lerp(specular, specular2.rgb, specular2.a);
 	}
 	else if (material.lightModel == SHADINGMODELID_SKIN || 
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||

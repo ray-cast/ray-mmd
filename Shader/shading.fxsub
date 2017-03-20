@@ -12,7 +12,7 @@ float ComputeSunIntensity(float3 L)
 void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
 #if MAIN_LIGHT_ENABLE
-	float4 energy = SurfaceEnergy(material, material.normal, L, L, V, 1.0);
+	float4 energy = SurfaceEnergy(material, material.normal, L, V, 1.0);
 	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
 	specular = energy.gba;
 
