@@ -13,7 +13,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 {
 #if MAIN_LIGHT_ENABLE
 	float4 energy = SurfaceEnergy(material, material.normal, L, V, 1.0);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V).rgb;
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
 	specular = energy.gba;
 
 #if SHADOW_QUALITY
