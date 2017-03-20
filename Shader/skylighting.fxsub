@@ -73,7 +73,7 @@ float3 DecodeHDR(float4 rgbx)
 float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float2 coord)
 {
 	float level = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
-	float fresnel = EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	float fresnel = FresnelSchlickClearCoat(N, V, material.customDataA, 0.04);
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(coord, 0, level)));
 	return float4(prefilteredSpeculr, fresnel);
 }
@@ -108,7 +108,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
-	
+
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
 

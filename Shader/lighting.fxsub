@@ -161,7 +161,7 @@ float3 ClothShading(MaterialParam material, float nh, float nl, float vh, float 
 
 float3 ClearCoatShading(MaterialParam material, float nh, float nl, float vh, float nv, float roughness, float normalizeFactor)
 {
-	float clearcoat = max(SmoothnessToRoughness(material.customDataA), 1e-4);
+	float clearcoat = max(SmoothnessToRoughness(material.customDataA), 0.001);
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 	float4 spec2 = SpecularBRDF_ClearCoat(nh, nl, vh, nv, clearcoat, 0.04, normalizeFactor);
 	return lerp(spec1, spec2.rgb, spec2.a);
@@ -176,7 +176,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	float vh = saturate(dot(V, H));
 	float nv = abs(dot(N, V)) + 1e-5h;
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float diffuse = BurleyBRDF(nl, vh, nv, roughness);
 
 	float3 specular = 0;
@@ -201,7 +201,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	float vh = saturate(dot(V, H));
 	float nv = abs(dot(N, V)) + 1e-5h;
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
 
 	float3 specular = 0;
