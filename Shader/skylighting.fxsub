@@ -102,7 +102,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
@@ -235,9 +235,7 @@ void EnvLightingPS(
 	float3 diffuse2, specular2;
 	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
 
-	float fakeSSAO = any(materialAlpha.alpha) ? (1 - materialAlpha.alpha * 0.5) : 1;
-
-	oColor0 = EncodeYcbcr(screenPosition, diffuse * fakeSSAO , specular * fakeSSAO);
+	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 #else
 	oColor0 = EncodeYcbcr(screenPosition, 0, 0);

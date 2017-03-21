@@ -85,7 +85,7 @@ void ShadingOpacityPS(
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
-	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
+	float3 L = mul(-LightDirection, (float3x3)matView);
 
 	float3 diffuse = tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 	float3 specular = tex2Dlod(LightSpecMapSamp, float4(coord, 0, 0)).rgb;
@@ -159,7 +159,7 @@ float4 ShadingTransparentPS(
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
-	float3 L = mul(normalize(-LightDirection), (float3x3)matView);
+	float3 L = mul(-LightDirection, (float3x3)matView);
 
 	float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 
