@@ -10,7 +10,7 @@ float4 SSSSStencilTestPS(in float2 coord : TEXCOORD0) : COLOR
 	return 1;
 }
 
-float4 SSSGuassBlurPS(
+float4 SSSGaussBlurPS(
 	in float2 coord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	uniform sampler source,
