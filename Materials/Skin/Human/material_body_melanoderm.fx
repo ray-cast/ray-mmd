@@ -21,7 +21,7 @@ const float2 albedoMapLoopNum = 5.0;
 #define ALBEDO_SUB_MAP_APPLY_SCALE 0
 #define ALBEDO_SUB_MAP_FILE "albedo.png"
 
-const float3 albedoSub = 0.1;
+const float3 albedoSub = 0.6;
 const float2 albedoSubMapLoopNum = 1.0;
 
 #define ALPHA_MAP_ENABLE 1
@@ -41,7 +41,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_UV_REPETITION 0
 #define NORMAL_MAP_FILE "textures/Skin_-_Human_Normal.png"
 
-const float normalMapScale = 2.0;
+const float normalMapScale = 1.0;
 const float normalMapLoopNum = 5.0;
 
 #define NORMAL_MAP_SUB_ENABLE 1
@@ -51,7 +51,7 @@ const float normalMapLoopNum = 5.0;
 #define NORMAL_MAP_SUB_UV_REPETITION 0
 #define NORMAL_MAP_SUB_FILE "../../_MaterialMap/skin.png"
 
-const float normalMapSubScale = 1.0;
+const float normalMapSubScale = 2.0;
 const float normalMapSubLoopNum = 60.0;
 
 #define SMOOTHNESS_MAP_ENABLE 1

@@ -188,9 +188,9 @@ float2 ComputeSphereCoord(float3 normal)
 float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
 {
 	float3 normal;
-	normal.x = -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
+	normal.x = -sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
 	normal.y =  cos(thetaStart + coord.y * thetaLength);
-	normal.z =  sin(thetaStart + coord.y * thetaLength) * sin(phiStart + coord.x * phiLength);
+	normal.z = -sin(thetaStart + coord.y * thetaLength) * cos(phiStart + coord.x * phiLength);
 	return normal;
 }
 
