@@ -122,7 +122,7 @@ float3 DecodeRGBM(float4 rgbm, float range)
 	return rgbm.rgb * rgbm.a * range;
 }
 
-float3 DecodeRGBT(float4 rgbt, float range)
+float3 DecodeRGBT(float4 rgbt, float range = 1024)
 {
 	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
 	return rgbt.rgb * rgbt.a;

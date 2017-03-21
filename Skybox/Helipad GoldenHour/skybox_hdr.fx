@@ -1,7 +1,8 @@
 #define SKYDOME_ENABLE 0
 
 #define SKYBOX_HDR_ENABLE 1
-#define SKYBOX_HDR_FILE "texture/skybox.hdr"
+#define SKYBOX_HDR_RGBT_ENABLE 1
+#define SKYBOX_HDR_FILE "texture/skybox.dds"
 
 #define SKYBOX_MAP_ENABLE 0
 #define SKYBOX_MAP_FILE "texture/skybox.png"

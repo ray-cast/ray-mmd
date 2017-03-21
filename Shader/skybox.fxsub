@@ -48,6 +48,15 @@ sampler SkyboxBlurMapSamp = sampler_state {
 	};
 #endif
 
+float3 DecodeHDR(float4 rgbx)
+{
+#if SKYBOX_HDR_RGBT_ENABLE
+	return DecodeRGBT(rgbx, 1024);
+#else
+	return rgbx.rgb;
+#endif
+}
+
 float3 ApplyColorBalance(float3 color)
 {
 	float3 lum = luminance(color);
@@ -89,7 +98,7 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 		color.rgb = DecodeRGBM(color, 6);
 	#endif
 #else
-	float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0));
+	float3 color = DecodeHDR(tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0)));
 #endif
 
 #if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
@@ -104,7 +113,7 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 #if SKYBOX_HDR_ENABLE
 	return float4(linear2srgb(color.rgb), 1);
 #else
-	return color;
+	return float4(color.rgb, 1);
 #endif
 }
 

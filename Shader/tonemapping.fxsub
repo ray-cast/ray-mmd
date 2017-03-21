@@ -210,7 +210,7 @@ float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR
 		mColorCorrectionHighThreshold);
 	color = ColorToneMapping(color);
 
-	return float4(linear2srgb(color) / 1.05, 0);
+	return float4(linear2srgb(color), 0);
 }
 #endif
 

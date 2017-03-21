@@ -356,5 +356,5 @@ float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
 	float4 col0 = tex2Dlod(lut, float4(uv0, 0, 0));
 	float4 col1 = tex2Dlod(lut, float4(uv1, 0, 0));
 
-	return lerp(col0, col1, s) * 1.05;
+	return lerp(col0, col1, s);
 }
