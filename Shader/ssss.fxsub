@@ -31,13 +31,8 @@ float4 SSSGaussBlurPS(
 	float3 P = V * material.linearDepth / V.z;
 	float3 N = material.normal;
 
-#if SSSS_QUALITY == 1
 	const float3 profileVarArr[2] = { float3( 3.3, 2.8, 1.4 ), float3( 6.3, 1.4, 1.1 ) };
 	const float4 profileSpikeRadArr[2] = { float4(0.30, 0.30, 0.80, 8.0 ), float4(0.35, 0.40, 0.50, 1.0) };
-#else
-	const float3 profileVarArr[2] = { float3( 3.3, 2.8, 1.4 ), float3( 3.3, 1.4, 1.1 ) };
-	const float4 profileSpikeRadArr[2] = { float4(0.30, 0.30, 0.80, 8.0 ), float4(0.15, 0.20, 0.25, 1.0) };
-#endif
 
 	float perspectiveScaleX = dot(normalize(N.xz), normalize(-P.xz));
 	float perspectiveScaleY = dot(normalize(N.yz), normalize(-P.yz));
@@ -51,12 +46,7 @@ float4 SSSGaussBlurPS(
 
 	const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
 
-#if SSSS_QUALITY == 1
 	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * sssWidth);
-#else
-	float2 finalStep = direction * perspectiveScale * radius / (material.linearDepth * sssWidth * 1.5);
-#endif
-
 	float3 blurFalloff = -1.0f / (2 * profileVarArr[sssIndex]);
 
 	float3 totalWeight = 1;
