@@ -87,7 +87,7 @@ const float metalnessBaseSpecular = 0.04;
 #define EMISSIVE_APPLY_MORPH_COLOR 0
 #define EMISSIVE_APPLY_MORPH_INTENSITY 0
 #define EMISSIVE_APPLY_BLINK 0
-#define EMISSIVE_MAP_FILE "rance.gif"
+#define EMISSIVE_MAP_FILE "rainbow.gif"
 
 const float3 emissive = 1.0;
 const float3 emissiveBlink = 1.0;

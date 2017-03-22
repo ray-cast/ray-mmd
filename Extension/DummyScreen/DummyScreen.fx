@@ -3,7 +3,6 @@
 shared texture2D DummyScreenTex : RenderColorTarget
 <
 	float2 ViewPortRatio = {1.0, 1.0};
-	bool AntiAlias = false;
 	int Miplevels = 0;
 	string Format= "A2B10G10R10";
 >;
@@ -19,8 +18,8 @@ sampler ScreenMapSamp = sampler_state
 void DummyScreenVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord  : TEXCOORD0,
-	out float4 oPosition  : POSITION)
+	out float4 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
 {
 	oTexcoord = Texcoord.xyxy + ViewportOffset.xyxy;
 	oPosition = Position;
@@ -44,7 +43,7 @@ technique MainTec0 <
 ;> {
 	pass CopyDummyScreenTex < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 DummyScreenVS();
 		PixelShader  = compile ps_3_0 DummyScreenPS();
 	}
