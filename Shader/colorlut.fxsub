@@ -198,74 +198,74 @@ static float3 mColorGammaHighM = float3(mGammaHighRM, mGammaHighGM, mGammaHighBM
 static float3 mColorGainHighM = float3(mColorHighRM, mColorHighGM, mColorHighBM);
 static float3 mColorOffsetHighM = float3(mColorOffsetHighRM, mColorOffsetHighGM, mColorOffsetHighBM);
 
-static float4 mColorContrastAll   = float4(lerp(lerp(1.0, 2.0, mColorContrastAllP), 0, mColorContrastAllM), 1);
-static float4 mColorSaturationAll = float4(lerp(lerp(1.0, 2.0, mColorSaturationAllP), 0, mColorSaturationAllM), 1);
-static float4 mColorGammaAll      = float4(lerp(lerp(1.0, 2.0, mColorGammaAllP), 0, mColorGammaAllM), 1);
-static float4 mColorGainAll       = float4(lerp(lerp(1.0, 2.0, mColorGainAllP), 0, mColorGainAllM), 1);
-static float4 mColorOffsetAll     = float4(lerp(lerp(0.0, 2.0, mColorOffsetAllP), 0, mColorOffsetAllM), 1);
+static float3 mColorContrastAll   = lerp(lerp(1.0, 3.0, mColorContrastAllP), 0, mColorContrastAllM);
+static float3 mColorSaturationAll = lerp(lerp(1.0, 3.0, mColorSaturationAllP), 0, mColorSaturationAllM);
+static float3 mColorGammaAll      = lerp(lerp(1.0, 3.0, mColorGammaAllP), 0, mColorGammaAllM);
+static float3 mColorGainAll       = lerp(lerp(1.0, 3.0, mColorGainAllP), 0, mColorGainAllM);
+static float3 mColorOffsetAll     = lerp(lerp(0.0, 3.0, mColorOffsetAllP), 0, mColorOffsetAllM);
 
-static float4 mColorContrastLow   = float4(lerp(lerp(1.0, 2.0, mColorContrastLowP), 0, mColorContrastLowM), 1);
-static float4 mColorSaturationLow = float4(lerp(lerp(1.0, 2.0, mColorSaturationLowP), 0, mColorSaturationLowM), 1);
-static float4 mColorGammaLow      = float4(lerp(lerp(1.0, 2.0, mColorGammaLowP), 0, mColorGammaLowM), 1);
-static float4 mColorGainLow       = float4(lerp(lerp(1.0, 2.0, mColorGainLowP), 0, mColorGainLowM), 1);
-static float4 mColorOffsetLow     = float4(lerp(lerp(0.0, 1.0, mColorOffsetLowP), 0, mColorOffsetLowM), 1);
+static float3 mColorContrastLow   = lerp(lerp(1.0, 3.0, mColorContrastLowP), 0, mColorContrastLowM);
+static float3 mColorSaturationLow = lerp(lerp(1.0, 3.0, mColorSaturationLowP), 0, mColorSaturationLowM);
+static float3 mColorGammaLow      = lerp(lerp(1.0, 3.0, mColorGammaLowP), 0, mColorGammaLowM);
+static float3 mColorGainLow       = lerp(lerp(1.0, 3.0, mColorGainLowP), 0, mColorGainLowM);
+static float3 mColorOffsetLow     = lerp(lerp(0.0, 3.0, mColorOffsetLowP), 0, mColorOffsetLowM);
 
-static float4 mColorContrastMid   = float4(lerp(lerp(1.0, 2.0, mColorContrastMidP), 0, mColorContrastMidM), 1);
-static float4 mColorSaturationMid = float4(lerp(lerp(1.0, 2.0, mColorSaturationMidP), 0, mColorSaturationMidM), 1);
-static float4 mColorGammaMid      = float4(lerp(lerp(1.0, 2.0, mColorGammaMidP), 0, mColorGammaMidM), 1);
-static float4 mColorGainMid       = float4(lerp(lerp(1.0, 2.0, mColorGainMidP), 0, mColorGainMidM), 1);
-static float4 mColorOffsetMid     = float4(lerp(lerp(0.0, 2.0, mColorOffsetMidP), 0, mColorOffsetMidM), 1);
+static float3 mColorContrastMid   = lerp(lerp(1.0, 3.0, mColorContrastMidP), 0, mColorContrastMidM);
+static float3 mColorSaturationMid = lerp(lerp(1.0, 3.0, mColorSaturationMidP), 0, mColorSaturationMidM);
+static float3 mColorGammaMid      = lerp(lerp(1.0, 3.0, mColorGammaMidP), 0, mColorGammaMidM);
+static float3 mColorGainMid       = lerp(lerp(1.0, 3.0, mColorGainMidP), 0, mColorGainMidM);
+static float3 mColorOffsetMid     = lerp(lerp(0.0, 3.0, mColorOffsetMidP), 0, mColorOffsetMidM);
 
-static float4 mColorContrastHigh   = float4(lerp(lerp(1.0, 2.0, mColorContrastHighP), 0, mColorContrastHighM), 1);
-static float4 mColorSaturationHigh = float4(lerp(lerp(1.0, 2.0, mColorSaturationHighP), 0, mColorSaturationHighM), 1);
-static float4 mColorGammaHigh      = float4(lerp(lerp(1.0, 2.0, mColorGammaHighP), 0, mColorGammaHighM), 1);
-static float4 mColorGainHigh       = float4(lerp(lerp(1.0, 2.0, mColorGainHighP), 0, mColorGainHighM), 1);
-static float4 mColorOffsetHigh     = float4(lerp(lerp(0.0, 2.0, mColorOffsetHighP), 0, mColorOffsetHighM), 1);
+static float3 mColorContrastHigh   = lerp(lerp(1.0, 3.0, mColorContrastHighP), 0, mColorContrastHighM);
+static float3 mColorSaturationHigh = lerp(lerp(1.0, 3.0, mColorSaturationHighP), 0, mColorSaturationHighM);
+static float3 mColorGammaHigh      = lerp(lerp(1.0, 3.0, mColorGammaHighP), 0, mColorGammaHighM);
+static float3 mColorGainHigh       = lerp(lerp(1.0, 3.0, mColorGainHighP), 0, mColorGainHighM);
+static float3 mColorOffsetHigh     = lerp(lerp(0.0, 3.0, mColorOffsetHighP), 0, mColorOffsetHighM);
 
 static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP) , 0.0, mWeightLowM);
 static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
 
 float3 ColorCorrect(
 	float3 color, 
-	float4 colorContrast, 
-	float4 colorSaturation, 
-	float4 colorGamma, 
-	float4 colorGainP,
-	float4 colorGainM)
+	float3 colorContrast, 
+	float3 colorSaturation, 
+	float3 colorGamma, 
+	float3 colorGainP,
+	float3 colorGainM)
 {
 	float3 lum = luminance(color);
-	color = max(0, lerp(lum, color, colorSaturation.rgb * colorSaturation.a));
-	color = pow(color * (1.0 / 0.18), colorContrast.rgb * colorContrast.a) * 0.18;
-	color = pow(color, 1.0 / (colorGamma.rgb * colorGamma.a));
-	color = color * (colorGainP.rgb * colorGainP.a + colorGainM.rgb * colorGainM.a);
+	color = max(0, lerp(lum, color, colorSaturation.rgb));
+	color = pow(color * (1.0 / 0.18), colorContrast.rgb) * 0.18;
+	color = pow(color, 1.0 / colorGamma.rgb);
+	color = color * (colorGainP.rgb + colorGainM.rgb);
 	return color;
 }
 
 float3 ColorCorrectAll(
 	float3 color,
-	float4 colorSaturation,
-	float4 colorContrast,
-	float4 colorGamma,
-	float4 colorGain,
-	float4 colorOffset,
+	float3 colorSaturation,
+	float3 colorContrast,
+	float3 colorGamma,
+	float3 colorGain,
+	float3 colorOffset,
 
-	float4 colorSaturationShadows,
-	float4 colorContrastShadows,
-	float4 colorGammaShadows,
-	float4 colorGainShadows,
-	float4 colorOffsetShadows,
+	float3 colorSaturationShadows,
+	float3 colorContrastShadows,
+	float3 colorGammaShadows,
+	float3 colorGainShadows,
+	float3 colorOffsetShadows,
 
-	float4 colorSaturationMidtones,
-	float4 colorContrastMidtones,
-	float4 colorGammaMidtones,
-	float4 colorGainMidtones,
-	float4 colorOffsetMidtones,
+	float3 colorSaturationMidtones,
+	float3 colorContrastMidtones,
+	float3 colorGammaMidtones,
+	float3 colorGainMidtones,
+	float3 colorOffsetMidtones,
 
-	float4 colorSaturationHighlights,
-	float4 colorContrastHighlights,
-	float4 colorGammaHighlights,
-	float4 colorGainHighlights,
-	float4 colorOffsetHighlights,
+	float3 colorSaturationHighlights,
+	float3 colorContrastHighlights,
+	float3 colorGammaHighlights,
+	float3 colorGainHighlights,
+	float3 colorOffsetHighlights,
 
 	float colorCorrectionShadowsMax,
 	float colorCorrectionHighlightsMin)
