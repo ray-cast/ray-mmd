@@ -8,8 +8,6 @@ static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
 
 texture ScnMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0,1.0};
-	int MipLevels = 1;
-	bool AntiAlias = false;
 	string Format = "A2B10G10R10";
 >;
 sampler ScnSamp = sampler_state {
@@ -19,8 +17,6 @@ sampler ScnSamp = sampler_state {
 };
 texture ColorGradingLUT : RENDERCOLORTARGET<
 	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
-	int MipLevels = 1;
-	bool AntiAlias = false;
 	string Format = "A2B10G10R10";
 >;
 sampler ColorGradingLUTSamp = sampler_state {

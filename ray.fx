@@ -13,6 +13,8 @@ float mSSAOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SS
 float mSSAOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO-";>;
 float mSSDOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO+";>;
 float mSSDOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO-";>;
+float mSSSSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSSS+";>;
+float mSSSSM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSSS-";>;
 float mExposureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure+";>;
 float mExposureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure-";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
@@ -44,6 +46,7 @@ float3 LightDirection : DIRECTION< string Object = "Light";>;
 
 static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
+static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
 static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);

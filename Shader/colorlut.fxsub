@@ -6,7 +6,6 @@
 
 texture ColorGradingLUT : RENDERCOLORTARGET<
 	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
-	bool AntiAlias = false;
 	string Format = "A2B10G10R10";
 >;
 sampler ColorGradingLUTSamp = sampler_state {
