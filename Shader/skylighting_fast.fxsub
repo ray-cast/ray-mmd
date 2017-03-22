@@ -1,0 +1,185 @@
+#include "../../ray.conf"
+#include "../../ray_advanced.conf"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/ibl.fxsub"
+
+float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
+float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
+float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
+float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
+
+static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
+
+static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
+
+texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE;>;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
+
+texture SpecularMap<string ResourceName = IBLSPEC_MAP_FILE; int Miplevels = IBL_MIPMAP_LEVEL;>;
+sampler SpecularMapSamp = sampler_state {
+	texture = <SpecularMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
+
+float3 DecodeHDR(float4 rgbx)
+{
+#if IBL_HDR_ENABLE
+	#if IBL_RGBT_RANGE
+		return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
+	#elif IBL_RGBM_RANGE
+		return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
+	#else
+		return DecodeRGBM(rgbx, 6);
+	#endif
+#else
+	return rgbx.rgb;
+#endif
+}
+
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
+{
+	float3 dependentSplit = 0.5;
+	float3 scattering = prefilteredDiffuse + DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
+	scattering *= material.customDataB * material.customDataA * dependentSplit;
+	return scattering * mEnvIntensitySSS;
+}
+
+void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmoothness, out float3 diffuse, out float3 specular)
+{
+	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
+
+	float3 V = mul(matTransform, worldView);
+	float3 N = mul(matTransform, worldNormal);
+	float3 R = mul(matTransform, worldReflect);
+
+	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
+	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
+
+	float2 coord1 = ComputeSphereCoord(N);
+	float2 coord2 = ComputeSphereCoord(R);
+
+	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)));
+	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)));
+
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+	specular = prefilteredSpeculr * fresnel;
+
+	if (material.lightModel == SHADINGMODELID_SKIN || 
+		material.lightModel == SHADINGMODELID_SUBSURFACE ||
+		material.lightModel == SHADINGMODELID_GLASS)
+	{
+		diffuse *= (1 - 0.04 * material.customDataA * mEnvIntensitySSS);
+		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+	}
+
+	specular *= mEnvIntensitySpec;
+	specular *= step(0, sum(material.specular) - 1e-5);
+}
+
+void EnvLightingVS(
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition : POSITION)
+{
+	oTexcoord1= CameraPosition - Position.xyz;
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+}
+
+void EnvLightingPS(
+	in float4 texcoord : TEXCOORD0,
+	in float3 viewdir  : TEXCOORD1,
+	in float4 screenPosition : SV_Position,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1)
+{
+#if IBL_ENABLE
+	float2 coord = texcoord.xy / texcoord.w;
+
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+
+	MaterialParam materialAlpha;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+
+	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
+	clip(sum(sum1) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+
+	float3 V = normalize(viewdir);
+
+	float3 diffuse, specular;
+	ShadingMaterial(material, V, material.smoothness, diffuse, specular);
+
+	float3 diffuse2, specular2;
+	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
+
+	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
+	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
+#else
+	oColor0 = EncodeYcbcr(screenPosition, 0, 0);
+	oColor1 = EncodeYcbcr(screenPosition, 0, 0);
+#endif
+}
+
+const float4 BackColor = float4(0,0,0,0);
+const float4 IBLColor  = float4(0,0.5,0,0.5);
+
+shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
+
+#define OBJECT_TEC(name, mmdpass) \
+	technique name<string MMDPass = mmdpass; \
+		string Script =\
+		"ClearSetColor=BackColor;"\
+		"RenderColorTarget0=LightAlphaMap;"\
+		"Clear=Color;"\
+		"RenderColorTarget0=LightSpecMap;"\
+		"Clear=Color;"\
+		"RenderColorTarget0=;"\
+		"RenderColorTarget1=EnvLightAlphaMap;"\
+		"ClearSetColor=IBLColor;"\
+		"Clear=Color;"\
+		"Pass=DrawObject;"\
+;> {\
+	pass DrawObject {\
+		AlphaBlendEnable = false; AlphaTestEnable = false;\
+		CullMode = CCW;\
+		VertexShader = compile vs_3_0 EnvLightingVS();\
+		PixelShader  = compile ps_3_0 EnvLightingPS();\
+	}\
+}
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
+
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

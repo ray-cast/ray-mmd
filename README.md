@@ -14,15 +14,16 @@ Download :
 ------------
 * [Ray-MMD alpha - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/alpha.zip)
 - About alpha version :
-    - Adding new features to the most recent version
-    - Fewer Bugs in this version
+	- Adding new features to the most recent version
+	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-    - Add a Time of day & night
-    - Add a albedo sub map
-    - Remove melanin material (it's still available in old materials, just removed the description)
-    - Improve bloom
-    - Improve SSAO
-    - Optimize skybox loading speed
+	- Added a Time of day & night
+	- Added a albedo sub map
+	- Added a skylighting_hdr_fast.fx
+	- Removed melanin material (it's still available in old materials, just removed the description)
+	- Improved bloom
+	- Improved SSAO
+	- Optimize fps
 
 Requirement :
 ------------
@@ -33,14 +34,14 @@ Requirement :
 Resources
 ------------
 - HDRi
-    - sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
-    - ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
-    - USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
+	- sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
+	- ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
+	- USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
 - Text editor
-    - Notepad++ \[[link](https://notepad-plus-plus.org)\].
-    - Visual studio code \[[link](http://code.visualstudio.com/Download)\].
+	- Notepad++ \[[link](https://notepad-plus-plus.org)\].
+	- Visual studio code \[[link](http://code.visualstudio.com/Download)\].
 - Materials
-    - Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
+	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
 
 Tutroial:
 ------------
@@ -68,26 +69,26 @@ Contact
 
 [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
 -------------------------------------------------------------------------------
-    Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
+	Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
 
-    https://github.com/ray-cast/ray-mmd
+	https://github.com/ray-cast/ray-mmd
 
-    Permission is hereby granted, free of charge, to any person obtaining a
-    copy of this software and associated documentation files (the "Software"),
-    to deal in the Software without restriction, including without limitation
-    the rights to use, copy, modify, merge, publish, distribute, sublicense,
-    and/or sell copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following conditions:
+	Permission is hereby granted, free of charge, to any person obtaining a
+	copy of this software and associated documentation files (the "Software"),
+	to deal in the Software without restriction, including without limitation
+	the rights to use, copy, modify, merge, publish, distribute, sublicense,
+	and/or sell copies of the Software, and to permit persons to whom the
+	Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
+	The above copyright notice and this permission notice shall be included
+	in all copies or substantial portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-    BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-    AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+	BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+	AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Digging Deeper
 --------
