@@ -54,6 +54,16 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 	return scattering;
 }
 
+float3 GetSpecularColor(float2 coord, float mipLayer, float3 fresnel, float roughness)
+{
+	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord, 0, mipLayer)));
+	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord, 0, 0)));
+	float3 prefilteredSpeculr = 0;
+	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
+	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
+	return prefilteredSpeculr;
+}
+
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
@@ -63,7 +73,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 N = normalize(worldNormal);
 	float3 R = normalize(worldReflect);
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
@@ -71,12 +81,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
-
-	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(ComputeSphereCoord(R), 0, mipLayer)));
-	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(R), 0, 0)));
-	float3 prefilteredSpeculr = 0;
-	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
-	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
+	float3 prefilteredSpeculr = GetSpecularColor(ComputeSphereCoord(R), mipLayer, fresnel, roughness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	
@@ -90,7 +95,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse *= (1 - 0.04 * material.customDataA * mEnvIntensitySSS);
 		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
 	}
 	else if (material.lightModel == SHADINGMODELID_CLOTH)

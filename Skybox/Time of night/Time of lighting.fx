@@ -92,7 +92,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
-	prefilteredDiffuse += DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1 - float2(time / 1000, 0.0), 0, 0))) * saturate(worldNormal.y);
 
 	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SkySpecularMapSample, float4(coord, 0, mipLayer)));
 	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(coord, 0, 0)));
@@ -189,7 +188,10 @@ float4 GenDiffuseMapPS(
 {
 	float3 normal = ComputeSphereNormal(coord.xy / coord.w);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
-	return EncodeRGBT(irradiance);
+
+	coord.y = 1 - coord.y;
+	float3 diffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord.xy / coord.w - float2(time / 1000, 0.0), 0, 0)));
+	return EncodeRGBT(irradiance + diffuse * step(0.5, coord.y));
 }
 
 void EnvLightingVS(
