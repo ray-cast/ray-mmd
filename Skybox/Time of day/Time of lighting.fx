@@ -152,7 +152,7 @@ void GenDiffuseMapVS(
 	oTexcoord4 = SHSamples(SpecularMapSamp, 4);
 	oTexcoord5 = SHSamples(SpecularMapSamp, 5);
 	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
-	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
+	oTexcoord6.xy = (oTexcoord6.xy / oTexcoord6.w) * 0.5 + 0.5;
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
 	oTexcoord6.z = oTexcoord6.w;
 }
