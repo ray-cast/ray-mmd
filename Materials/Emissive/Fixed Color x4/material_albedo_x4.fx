@@ -1,7 +1,7 @@
 #define USE_CUSTOM_MATERIAL 1
 
-#define ALBEDO_MAP_ENABLE 0
-#define ALBEDO_MAP_IN_TEXTURE 0
+#define ALBEDO_MAP_ENABLE 1
+#define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_IN_SCREEN_MAP 0
 #define ALBEDO_MAP_ANIMATION_ENABLE 0
 #define ALBEDO_MAP_UV_FLIP 0
@@ -11,7 +11,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 0.0;
+const float3 albedo = 1.0;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -74,33 +74,25 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.0; 
+const float metalnessBaseSpecular = 0.04; 
 
 #define EMISSIVE_ENABLE 1
-#define EMISSIVE_USE_ALBEDO 0
+#define EMISSIVE_USE_ALBEDO 1
 #define EMISSIVE_MAP_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
 #define EMISSIVE_MAP_IN_SCREEN_MAP 0
 #define EMISSIVE_MAP_ANIMATION_ENABLE 0
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
-#define EMISSIVE_APPLY_MORPH_COLOR 1
-#define EMISSIVE_APPLY_MORPH_INTENSITY 1
-#define EMISSIVE_APPLY_BLINK 2
+#define EMISSIVE_APPLY_MORPH_COLOR 0
+#define EMISSIVE_APPLY_MORPH_INTENSITY 0
+#define EMISSIVE_APPLY_BLINK 0
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
-const float3 emissiveBlink = 10.0;
-const float  emissiveIntensity = 2.0;
+const float3 emissiveBlink = 1.0;
+const float  emissiveIntensity = 4.0;
 const float2 emissiveMapLoopNum = 1.0;
-
-#define PARALLAX_MAP_ENABLE 0
-#define PARALLAX_MAP_UV_FLIP 0
-#define PARALLAX_MAP_SUPPORT_ALPHA 0
-#define PARALLAX_MAP_FILE "height.png"
-
-const float parallaxMapScale = 0.01;
-const float parallaxMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_ENABLE 0
 #define OCCLUSION_MAP_IN_TOONMAP 0
@@ -111,6 +103,14 @@ const float parallaxMapLoopNum = 1.0;
 
 const float occlusionMapScale = 1.0;
 const float occlusionMapLoopNum = 1.0;
+
+#define PARALLAX_MAP_ENABLE 0
+#define PARALLAX_MAP_UV_FLIP 0
+#define PARALLAX_MAP_SUPPORT_ALPHA 0
+#define PARALLAX_MAP_FILE "height.png"
+
+const float parallaxMapScale = 0.01;
+const float parallaxMapLoopNum = 1.0;
 
 #define CUSTOM_ENABLE 0
 
