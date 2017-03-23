@@ -91,7 +91,7 @@ const float metalnessBaseSpecular = 0.04;
 
 const float3 emissive = float3(0.0, 0.5, 1.0);
 const float3 emissiveBlink = 1.0;
-const float  emissiveIntensity = 1.0;
+const float  emissiveIntensity = 2.0;
 const float2 emissiveMapLoopNum = 1.0;
 
 #define PARALLAX_MAP_ENABLE 0

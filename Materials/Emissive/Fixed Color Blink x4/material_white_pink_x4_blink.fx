@@ -12,7 +12,7 @@
 #define ALBEDO_MAP_FILE "albedo.png"
 
 const float3 albedo = 1.0;
-const float2 albedoMapLoopNum = 1.0;
+const float albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
 #define ALBEDO_SUB_MAP_ENABLE 0
@@ -87,9 +87,9 @@ const float metalnessBaseSpecular = 0.04;
 #define EMISSIVE_APPLY_BLINK 1
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = float3(1.0, 0.5, 0.0);
+const float3 emissive = float3(1.0, 0.5, 0.5);
 const float emissiveBlink = 1.0;
-const float emissiveIntensity = 2.0;
+const float emissiveIntensity = 4.0;
 const float emissiveMapLoopNum = 1.0;
 
 #define PARALLAX_MAP_ENABLE 0
