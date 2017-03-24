@@ -86,7 +86,7 @@ const float metalnessBaseSpecular = 0.04;
 #define EMISSIVE_APPLY_MORPH_INTENSITY 0
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = float3(1.0, 0.5, 0.0);
+const float3 emissive = pow(float3(155, 64, 227) / 255, 2.2);
 const float emissiveIntensity = 2.0;
 const float emissiveMapLoopNum = 1.0;
 

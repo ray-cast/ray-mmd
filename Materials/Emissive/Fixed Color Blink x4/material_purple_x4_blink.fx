@@ -76,19 +76,20 @@ const float metalnessBaseSpecular = 0.04;
 #define EMISSIVE_ENABLE 1
 #define EMISSIVE_USE_ALBEDO 0
 #define EMISSIVE_MAP_ENABLE 0
+#define EMISSIVE_MAP_ANIMATION_ENABLE 0
 #define EMISSIVE_MAP_IN_TEXTURE 0
 #define EMISSIVE_MAP_IN_SCREEN_MAP 0
-#define EMISSIVE_MAP_ANIMATION_ENABLE 0
-#define EMISSIVE_MAP_ANIMATION_SPEED 1
 #define EMISSIVE_MAP_UV_FLIP 0
 #define EMISSIVE_APPLY_COLOR 0
 #define EMISSIVE_APPLY_MORPH_COLOR 0
 #define EMISSIVE_APPLY_MORPH_INTENSITY 0
+#define EMISSIVE_APPLY_BLINK 1
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = float3(1.0, 0.5, 0.0);
-const float emissiveIntensity = 2.0;
-const float emissiveMapLoopNum = 1.0;
+const float3 emissive = pow(float3(155, 64, 227) / 255, 2.2);
+const float3 emissiveBlink = 1.0;
+const float  emissiveIntensity = 4.0;
+const float2 emissiveMapLoopNum = 1.0;
 
 #define PARALLAX_MAP_ENABLE 0
 #define PARALLAX_MAP_UV_FLIP 0
