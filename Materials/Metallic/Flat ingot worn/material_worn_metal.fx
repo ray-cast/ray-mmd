@@ -1,6 +1,6 @@
 #define USE_CUSTOM_MATERIAL 1
 
-#define ALBEDO_MAP_ENABLE 0
+#define ALBEDO_MAP_ENABLE 1
 #define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_IN_SCREEN_MAP 0
 #define ALBEDO_MAP_ANIMATION_ENABLE 0
@@ -11,7 +11,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = float3(0.95, 0.93, 0.88);
+const float3 albedo = 1.0;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -143,4 +143,4 @@ const float customAMapLoopNum = 1.0;
 const float3 customB = 0.0;
 const float2 customBMapLoopNum = 1.0;
 
-#include "../material_common.fxsub"
+#include "../../material_common.fxsub"

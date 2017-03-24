@@ -1,6 +1,6 @@
 #define USE_CUSTOM_MATERIAL 1
 
-#define ALBEDO_MAP_ENABLE 0
+#define ALBEDO_MAP_ENABLE 1
 #define ALBEDO_MAP_IN_TEXTURE 1
 #define ALBEDO_MAP_IN_SCREEN_MAP 0
 #define ALBEDO_MAP_ANIMATION_ENABLE 0
@@ -11,7 +11,7 @@
 #define ALBEDO_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = float3(0.7294, 0.4314, 0.2509);
+const float3 albedo = 1.0;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -54,16 +54,16 @@ const float normalMapLoopNum = 1.0;
 const float normalMapSubScale = 1.0;
 const float normalMapSubLoopNum = 1.0;
 
-#define SMOOTHNESS_MAP_ENABLE 1
+#define SMOOTHNESS_MAP_ENABLE 0
 #define SMOOTHNESS_MAP_IN_TOONMAP 0
 #define SMOOTHNESS_MAP_IS_ROUGHNESS 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
-#define SMOOTHNESS_MAP_FILE "../_MaterialMap/worn_metal.png"
+#define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 1.0;
-const float smoothnessMapLoopNum = 2.0;
+const float smoothness = 0.5;
+const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_ENABLE 0
 #define METALNESS_MAP_IN_TOONMAP 0
@@ -143,4 +143,4 @@ const float customAMapLoopNum = 1.0;
 const float3 customB = 0.0;
 const float2 customBMapLoopNum = 1.0;
 
-#include "../material_common.fxsub"
+#include "../../material_common.fxsub"
