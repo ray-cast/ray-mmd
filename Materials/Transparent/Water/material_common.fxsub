@@ -556,7 +556,7 @@ float GetCustomDataA(float3 P, float2 coord)
 
 float3 GetCustomDataB(float2 coord)
 {
-	return customB;
+	return transmittance;
 }
 
 void MaterialVS(
