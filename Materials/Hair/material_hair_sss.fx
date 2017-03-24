@@ -112,7 +112,7 @@ const float parallaxMapLoopNum = 1.0;
 const float occlusionMapScale = 1.0;
 const float occlusionMapLoopNum = 1.0;
 
-#define CUSTOM_ENABLE 0
+#define CUSTOM_ENABLE 7
 
 #define CUSTOM_A_MAP_ENABLE 0
 #define CUSTOM_A_MAP_IN_TOONMAP 0
@@ -122,7 +122,7 @@ const float occlusionMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.0;
+const float customA = 0.2;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_ENABLE 0
@@ -131,7 +131,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_APPLY_COLOR 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 0.0;
+const float3 customB = float3(129,64,48) / 255;
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common.fxsub"
