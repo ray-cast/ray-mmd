@@ -80,7 +80,7 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2 = float4(2, 2, 0.02, 0.05);
+	oTexcoord2 = float4(2, 2, 0.02, 0.1);
 	oTexcoord2.xy *= float2(1, ViewportAspect);
 	oTexcoord2.zw /= oTexcoord1.x;
 	return Position;
@@ -97,11 +97,14 @@ float4 ScreenSpaceDirOccPassPS(
 	float3 viewNormal = GetNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
 
-	float maxRadius = SSDOParams2.w;
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleBias = 0;
 	sampleBias += mSSDOBiasFar * linearDepth2;
 	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
+
+	float maxRadius = SSDOParams2.w;
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
 	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
 
