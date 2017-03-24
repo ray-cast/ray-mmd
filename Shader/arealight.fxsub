@@ -24,20 +24,20 @@ float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float scale)
 	return attenuation;
 }
 
-float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
-{
-	float3 R = reflect(V, N);
-	float3 centerToRay = dot(L, R) * R - L;
-	float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
-	return closestPoint;
-}
-
 float SphereNormalization(float3 L, float radius, float roughness)
 {
 	float len = max(length(L),  1e-6);
 	float dist = saturate(radius / len);
 	float normFactor = roughness / saturate(roughness + 0.5 * dist);
 	return normFactor * normFactor;
+}
+
+float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
+{
+	float3 R = reflect(V, N);
+	float3 centerToRay = dot(L, R) * R - L;
+	float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
+	return normalize(closestPoint);
 }
 
 float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius, float roughness, float3 f0)
