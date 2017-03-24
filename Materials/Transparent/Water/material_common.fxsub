@@ -559,25 +559,6 @@ float3 GetCustomDataB(float2 coord)
 	return customB;
 }
 
-float GetLightMode(MaterialParam material)
-{
-#if USE_CUSTOM_MATERIAL && CUSTOM_ENABLE
-	#if EMISSIVE_ENABLE
-		return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : CUSTOM_ENABLE;
-	#else
-		return CUSTOM_ENABLE;
-	#endif
-#elif USE_CUSTOM_MATERIAL && SSS_ENABLE
-	float profile = transmittanceStrength >= 1.0 ? SHADINGMODELID_SKIN : SHADINGMODELID_SUBSURFACE;
-	#if EMISSIVE_ENABLE
-		return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : profile;
-	#endif
-	return profile;
-#else
-	return any(saturate(material.emissive - EMISSIVE_EPSILON)) ? SHADINGMODELID_EMISSIVE : SHADINGMODELID_DEFAULT;
-#endif
-}
-
 void MaterialVS(
 	in float4 Position : POSITION, 
 	in float3 Normal : NORMAL, 
@@ -620,7 +601,7 @@ GbufferParam MaterialPS(
 	material.emissive = 0.0;
 	material.emissiveIntensity = 0.0;
 	material.visibility = 0.0;
-	material.lightModel = GetLightMode(material);
+	material.lightModel = SHADINGMODELID_GLASS;
 	material.alpha = 1;
 
 	return EncodeGbuffer(material, coord.z);
@@ -648,7 +629,7 @@ GbufferParam Material2PS(
 	material.emissive = 0.0;
 	material.emissiveIntensity = 0.0;
 	material.visibility = 0.0;
-	material.lightModel = GetLightMode(material);
+	material.lightModel = SHADINGMODELID_GLASS;
 	material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
 
 	return EncodeGbuffer(material, coord.z);
