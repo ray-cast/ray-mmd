@@ -93,15 +93,8 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothness, float3 specular, float NormalizationFactor)
 {
 	float alpha = exp2(10 * smoothness + 1);
-	float D =  ((alpha + 2) / 8) * exp2(alpha * InvLog2 * nh - alpha * InvLog2) * NormalizationFactor;
-
-	float k = min(1.0f, smoothness + 0.545f);
-	float G = 1.0 / (k * vh * vh + 1 - k);
-
-	float3 f0 = max(0.02, specular);
-	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
-
-	return D * G * fresnel / PI;
+	float D = ((alpha + 2) / (8 * PI)) * pow(nh, alpha) * NormalizationFactor;
+	return D;
 }
 
 float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
