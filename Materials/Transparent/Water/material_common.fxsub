@@ -1,53 +1,21 @@
-float time : TIME<bool SyncInEditMode=true;>;
+float time : TIME;//<bool SyncInEditMode=true;>;
 
 float4x4 matView : VIEW;
 float4x4 matViewProject : VIEWPROJECTION;
-float4x4 matWorld : WORLD;
-float4x4 matWorldView : WORLDVIEW;
-float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
 
 float3 CameraPosition  : POSITION  < string Object = "Camera"; >;
 
 float4 MaterialDiffuse : DIFFUSE  < string Object = "Geometry"; >;
-float3 MaterialSpecular : SPECULAR < string Object = "Geometry"; >;
-float  MaterialPower : SPECULARPOWER < string Object = "Geometry"; >;
-
-float4 TextureAddValue : ADDINGTEXTURE;
-float4 TextureMulValue : MULTIPLYINGTEXTURE;
-
-bool use_texture;
-bool use_subtexture;
-bool use_spheremap;
-bool use_toon;
-
-#if ALBEDO_APPLY_MORPH_COLOR
-float MorphRed   : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float MorphGreen : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float MorphBlue  : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
-
-static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
-#endif
 
 #define TEXTURE_FILTER ANISOTROPIC
 #define TEXTURE_MIP_FILTER ANISOTROPIC
 #define TEXTURE_ANISOTROPY_LEVEL 16
 
-#define SHADINGMODELID_DEFAULT      0
-#define SHADINGMODELID_SKIN         1
-#define SHADINGMODELID_EMISSIVE     2
-#define SHADINGMODELID_HAIR         3
 #define SHADINGMODELID_GLASS        4
-#define SHADINGMODELID_CLOTH        5
-#define SHADINGMODELID_CLEAR_COAT   6
-#define SHADINGMODELID_SUBSURFACE   7
-#define SHADINGMODELID_MASK         0xF
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
 #define TWO_BITS_EXTRACTION_FACTOR (3.0f + MAX_FRACTIONAL_8_BIT)
-#define EMISSIVE_EPSILON (2.0f / 255.0f)
-
-#define ALPHA_THRESHOLD 0.999
 
 shared texture Gbuffer2RT: RENDERCOLORTARGET;
 shared texture Gbuffer3RT: RENDERCOLORTARGET;
@@ -57,77 +25,26 @@ shared texture Gbuffer6RT: RENDERCOLORTARGET;
 shared texture Gbuffer7RT: RENDERCOLORTARGET;
 shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
-#if (ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_SCREEN_MAP) || (EMISSIVE_MAP_ENABLE && EMISSIVE_MAP_IN_SCREEN_MAP)
-	shared texture2D DummyScreenTex : RENDERCOLORTARGET;
-#endif
-
-#if USE_CUSTOM_MATERIAL && ALBEDO_MAP_ENABLE && ALBEDO_MAP_IN_TEXTURE != 1
-	#if ALBEDO_MAP_IN_SCREEN_MAP == 0
-		#if ALBEDO_MAP_ANIMATION_ENABLE
-			texture AlbedoMap : ANIMATEDTEXTURE <string ResourceName = ALBEDO_MAP_FILE; float speed=ALBEDO_MAP_ANIMATION_ENABLE;>;
-		#else
-			texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>; 
-		#endif
-	#endif
-	sampler AlbedoMapSamp = sampler_state
+#if WAVE_MAP_ENABLE
+	texture WaveNormalMap<string ResourceName = WAVE_MAP_FILE;>; 
+	sampler WaveNormalMapSamp = sampler_state
 	{
-#if ALBEDO_MAP_IN_SCREEN_MAP
-		texture = DummyScreenTex;
-#else
-		texture = AlbedoMap;
-#endif
+		texture = WaveNormalMap;
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
 #endif
 
-#if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
-	#if ALPHA_MAP_ANIMATION_ENABLE == 0
-		texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
-	#else
-		texture AlphaMap : ANIMATEDTEXTURE <string ResourceName = ALPHA_MAP_FILE; float speed=ALPHA_MAP_ANIMATION_ENABLE;>;
-	#endif
-	sampler AlphaMapSamp = sampler_state
+#if RIPPLE_MAP_ENABLE
+	texture RippleNormalMap<string ResourceName = RIPPLE_MAP_FILE;>; 
+	sampler RippleNormalMapSamp = sampler_state
 	{
-		texture = AlphaMap;
+		texture = RippleNormalMap;
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
-#endif
-
-#if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE && NORMAL_MAP_IN_SPHEREMAP != 1
-	texture NormalMap<string ResourceName = NORMAL_MAP_FILE;>; 
-	sampler NormalMapSamp = sampler_state
-	{
-		texture = NormalMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP;
-	};
-#endif
-
-#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE && NORMAL_MAP_SUB_IN_SPHEREMAP != 1
-	texture NormalSubMap<string ResourceName = NORMAL_MAP_SUB_FILE;>; 
-	sampler NormalSubMapSamp = sampler_state
-	{
-		texture = NormalSubMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP;
-	};
-#endif
-
-#if ALBEDO_MAP_IN_TEXTURE || ALPHA_MAP_IN_TEXTURE || EMISSIVE_MAP_IN_TEXTURE
-texture DiffuseMap: MATERIALTEXTURE;
-sampler DiffuseMapSamp = sampler_state
-{
-	texture = <DiffuseMap>;
-	MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-	MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
 #endif
 
 struct MaterialParam
@@ -162,22 +79,6 @@ float3 EncodeNormal(float3 normal)
 	return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
 }
 
-float luminance(float3 rgb)
-{
-	const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-	return dot(rgb, lumfact);
-}
-
-float3 srgb2linear(float3 rgb)
-{
-	return rgb < 0.04045f ? rgb / 12.92f : pow(max(6.10352e-5, rgb) * (1.0 / 1.055) + 0.0521327, 2.4);
-}
-
-float4 srgb2linear(float4 c)
-{
-	return float4(srgb2linear(c.rgb), c.a);
-}
-
 float3 rgb2ycbcr(float3 col)
 {
 	float3 encode;
@@ -210,28 +111,13 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
 	return normalize(mul(tangentNormal, tbnTransform));
 }
 
-float SmoothnessToRoughness(float smoothness)
-{
-	return (1.0f - smoothness) * (1.0f - smoothness);
-}
-
-float RoughnessToSmoothness(float roughness)
-{
-	return 1.0f - sqrt(roughness);
-}
-
-float ShininessToSmoothness(float spec)
-{
-	return RoughnessToSmoothness(sqrt(2.0 / (spec + 2)));
-}
-
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
 	GbufferParam gbuffer;
 	gbuffer.buffer1.xyz = material.albedo;
 	gbuffer.buffer1.w = material.smoothness;
 
-	material.normal = mul(material.normal, (float3x3)matWorldView);
+	material.normal = mul(material.normal, (float3x3)matView);
 	material.normal = normalize(material.normal);
 
 	gbuffer.buffer2.xyz = EncodeNormal(material.normal);
@@ -240,235 +126,18 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
 	gbuffer.buffer3.w = 0;
 
-	if (material.lightModel == SHADINGMODELID_SKIN || 
-		material.lightModel == SHADINGMODELID_SUBSURFACE ||
-		material.lightModel == SHADINGMODELID_GLASS ||
-		material.lightModel == SHADINGMODELID_CLOTH)
-	{
-		material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
-		gbuffer.buffer3.yz = material.customDataB.gb;
-		gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
-	}
-	else if (material.lightModel == SHADINGMODELID_EMISSIVE)
-	{
-		material.emissive = rgb2ycbcr(min(0.999, material.emissive));
-		gbuffer.buffer3.yz = material.emissive.gb;
-		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
-	}
-
+	material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
+	gbuffer.buffer3.yz = material.customDataB.gb;
+	gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
 	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
+
 	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);    
 	gbuffer.buffer4.y = floor(material.emissiveIntensity * 100.0) + saturate(material.visibility) - 1e-5;
 
 	return gbuffer;
 }
 
-float3 ColorSynthesis(float3 diffuse, float m)
-{
-	float3 melanin = diffuse * luminance(diffuse);
-	return diffuse * lerp(1.0, melanin, m);
-}
-
-float GetAlpha(float2 coord, bool useTexture)
-{
-#if USE_CUSTOM_MATERIAL
-	#if ALPHA_MAP_ENABLE
-		#if ALPHA_MAP_UV_FLIP
-			coord.y = 1 - coord.y;
-		#endif
-
-		#if ALPHA_MAP_IN_TEXTURE
-			#if ALPHA_MAP_SWIZZLE == 0
-				return useTexture ? tex2D(DiffuseMapSamp, coord).r * MaterialDiffuse.a : MaterialDiffuse.a;
-			#elif ALPHA_MAP_SWIZZLE == 1
-				return useTexture ? tex2D(DiffuseMapSamp, coord).g * MaterialDiffuse.a : MaterialDiffuse.a;
-			#elif ALPHA_MAP_SWIZZLE == 2
-				return useTexture ? tex2D(DiffuseMapSamp, coord).b * MaterialDiffuse.a : MaterialDiffuse.a;
-			#else
-				return useTexture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
-			#endif
-		#else
-			#if ALPHA_MAP_SWIZZLE == 0
-				return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).r;
-			#elif ALPHA_MAP_SWIZZLE == 1
-				return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).g;
-			#elif ALPHA_MAP_SWIZZLE == 2
-				return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).b;
-			#else
-				return tex2D(AlphaMapSamp, coord * alphaMapLoopNum).a;
-			#endif
-		#endif
-	#else
-		return alpha;
-	#endif
-#else
-	return useTexture ? tex2D(DiffuseMapSamp, coord).a * MaterialDiffuse.a : MaterialDiffuse.a;
-#endif
-}
-
-float3 GetAlbedo(float2 uv, bool useTexture)
-{
-#if USE_CUSTOM_MATERIAL
-	#if ALBEDO_MAP_ENABLE
-		#if ALBEDO_MAP_UV_FLIP
-			uv.y = 1 - uv.y;
-		#endif
-		#if ALBEDO_MAP_IN_TEXTURE
-			float3 albedoColor = MaterialDiffuse.rgb;
-			if (useTexture)
-			{
-				albedoColor = tex2D(DiffuseMapSamp, uv * albedoMapLoopNum).rgb;
-				albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
-			#if ALBEDO_MAP_APPLY_DIFFUSE
-				albedoColor *= MaterialDiffuse.rgb;
-			#endif
-			}
-		#else
-			float3 albedoColor = tex2D(AlbedoMapSamp, uv * albedoMapLoopNum).rgb;
-			albedoColor = lerp(1.0, albedoColor * TextureMulValue.rgb + TextureAddValue.rgb, TextureMulValue.a + TextureAddValue.a);
-			#if ALBEDO_MAP_APPLY_DIFFUSE
-				albedoColor *= MaterialDiffuse.rgb;
-			#endif
-		#endif
-		
-		albedoColor = srgb2linear(albedoColor);
-		
-		#if ALBEDO_MAP_APPLY_COLOR
-			albedoColor *= albedo.rgb;
-		#endif
-		
-		#if ALBEDO_APPLY_MORPH_COLOR
-			albedoColor *= MorphColor;
-		#endif
-		
-		return albedoColor;
-	#elif ALBEDO_APPLY_MORPH_COLOR
-		return MorphColor;
-	#else
-		return albedo.rgb;
-	#endif
-#else
-	float3 diffuse = MaterialDiffuse.rgb;
-
-	if (useTexture)
-	{
-		float4 TexColor = tex2D(DiffuseMapSamp, uv);
-		TexColor.rgb = lerp(1, TexColor * TextureMulValue + TextureAddValue, TextureMulValue.a + TextureAddValue.a).rgb;
-		diffuse *= TexColor.rgb;
-	}
-
-	return srgb2linear(diffuse);
-#endif
-}
-
-float3 GetMainNormal(float2 coord)
-{
-#if USE_CUSTOM_MATERIAL && NORMAL_MAP_ENABLE
-	#if NORMAL_MAP_UV_FLIP
-		coord.y = 1 - coord.y;
-	#endif
-
-	#if NORMAL_MAP_IN_SPHEREMAP
-		#if NORMAL_MAP_UV_REPETITION == 1
-			float3 tangentNormal = use_spheremap ? textureNoTile1(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#elif NORMAL_MAP_UV_REPETITION == 2
-			float3 tangentNormal = use_spheremap ? textureNoTile2(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#else
-			float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#endif
-	#else
-		#if NORMAL_MAP_UV_REPETITION == 1
-			float3 tangentNormal = textureNoTile1(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-		#elif NORMAL_MAP_UV_REPETITION == 2
-			float3 tangentNormal = textureNoTile2(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-		#else
-			float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
-		#endif
-	#endif
-
-	#if NORMAL_MAP_IS_COMPRESSED
-		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
-	#endif
-
-	tangentNormal.rg *= normalMapScale;
-	tangentNormal = normalize(tangentNormal);
-		
-	return tangentNormal;
-#else
-	return float3(0, 0, 1);
-#endif
-}
-
-float3 GetSubNormal(float2 coord)
-{
-#if USE_CUSTOM_MATERIAL && NORMAL_MAP_SUB_ENABLE
-	#if NORMAL_MAP_SUB_UV_FLIP
-		coord.y = 1 - coord.y;
-	#endif
-
-	#if NORMAL_MAP_SUB_IN_SPHEREMAP
-		#if NORMAL_MAP_SUB_UV_REPETITION == 1
-			float3 tangentNormal = use_spheremap ? textureNoTile1(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#elif NORMAL_MAP_SUB_UV_REPETITION == 2
-			float3 tangentNormal = use_spheremap ? textureNoTile2(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#else
-			float3 tangentNormal = use_spheremap ? tex2D(SphereMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
-		#endif
-	#else
-		#if NORMAL_MAP_SUB_UV_REPETITION == 1
-			float3 tangentNormal = textureNoTile1(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-		#elif NORMAL_MAP_SUB_UV_REPETITION == 2
-			float3 tangentNormal = textureNoTile2(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-		#else
-			float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalMapSubLoopNum).rgb * 2 - 1;
-		#endif
-	#endif
-
-	#if NORMAL_MAP_SUB_IS_COMPRESSED
-		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
-	#endif
-
-	tangentNormal.rg *= normalMapSubScale;
-	tangentNormal = normalize(tangentNormal);
-
-	return tangentNormal;
-#else
-	return float3(0, 0, 1);
-#endif
-}
-
-float3 GetNormal(float3 N, float3 viewdir, float2 coord)
-{
-#if USE_CUSTOM_MATERIAL && (NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE)
-	#if NORMAL_MAP_ENABLE
-		float3 tangentNormal = GetMainNormal(coord);
-		
-		#if NORMAL_MAP_SUB_ENABLE
-			float3 tangentSubNormal = GetSubNormal(coord);        
-			tangentNormal.rg += tangentSubNormal.rg;
-			tangentNormal = normalize(tangentNormal);
-		#endif
-	#elif NORMAL_MAP_SUB_ENABLE
-		float3 tangentNormal = GetSubNormal(coord);
-	#endif
-
-	return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
-#else
-	return N;
-#endif
-}
-
-float GetSmoothness(float2 coord)
-{
-	return smoothness;
-}
-
-float GetMetalness(float2 coord)
-{
-	return 0.0;
-}
-
-texture NoiseMap<string ResourceName = "_MaterialMap/noise.png"; int Miplevels = 0;>; 
+texture NoiseMap<string ResourceName = "textures/noise.png"; int Miplevels = 0;>; 
 sampler NoiseMapSamp = sampler_state {
 	texture = <NoiseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
@@ -546,17 +215,12 @@ float3 GetWaveNormal(float3 P, float3 V)
 	return N;
 }
 
-float GetCustomDataA(float3 P, float2 coord)
+float GetWaveCurvature(float3 P, float2 coord)
 {
     float L = length(coord * 2 - 1);
     L = 1 - smoothstep(0.7, 1.5, L);
 	float xc = GetWaveHeight((P.xz * 10), 100.0, 1.0, 2.0, time);
 	return exp((xc - 100) * 0.025) * L;
-}
-
-float3 GetCustomDataB(float2 coord)
-{
-	return transmittance;
 }
 
 void MaterialVS(
@@ -569,8 +233,8 @@ void MaterialVS(
 	out float4 oPosition : POSITION)
 {
 	oNormal = Normal;
-	oWorldPos = mul(Position, matWorld);
-	oPosition = mul(Position, matWorldViewProject);
+	oWorldPos = Position;
+	oPosition = mul(Position, matViewProject);
 	oTexcoord = float3(Texcoord, oPosition.w);
 }
 
@@ -579,58 +243,18 @@ GbufferParam MaterialPS(
 	in float3 coord    : TEXCOORD1,
 	in float3 worldPos : TEXCOORD2)
 {
-	normal = normalize(normal);
-
-	float alpha = GetAlpha(coord.xy, use_texture);
-	clip(alpha - ALPHA_THRESHOLD);
-#if ALPHA_MAP_ANIMATION_ENABLE
-	clip(-1);
-#endif
-
-	float3 albedoColor = GetAlbedo(coord.xy, use_texture);
-
-	float3 MaterialMetalness = GetMetalness(coord.xy);
-
 	MaterialParam material = (MaterialParam)0;
-	material.normal = GetNormal(normal, worldPos, coord.xy);
-	material.smoothness = GetSmoothness(coord.xy);
-	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
-	material.customDataA = GetCustomDataA(worldPos, coord.xy);
-	material.customDataB = GetCustomDataB(coord.xy);
-	material.emissive = 0.0;
-	material.emissiveIntensity = 0.0;
-	material.visibility = 0.0;
-	material.lightModel = SHADINGMODELID_GLASS;
-	material.alpha = 1;
-
-	return EncodeGbuffer(material, coord.z);
-}
-
-GbufferParam Material2PS(
-	in float3 normal   : TEXCOORD0,
-	in float3 coord    : TEXCOORD1,
-	in float3 worldPos : TEXCOORD2)
-{
-	float alpha = GetAlpha(coord.xy, use_texture);
-	clip(alpha - 0.01);
-
-	float3 albedoColor = GetAlbedo(coord.xy, use_texture);
-   
-	float3 MaterialMetalness = GetMetalness(coord.xy);
-
-	MaterialParam material = (MaterialParam)0;
+	material.albedo = scatteringLow;
 	material.normal = GetWaveNormal(worldPos, normalize(worldPos - CameraPosition));
-	material.smoothness = GetSmoothness(coord.xy);
-	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
-	material.customDataA = GetCustomDataA(worldPos, coord.xy);
-	material.customDataB = GetCustomDataB(coord.xy);
+	material.smoothness = smoothness;
+	material.specular = smoothnessBaseSpecular;
+	material.customDataA = GetWaveCurvature(worldPos, coord.xy);
+	material.customDataB = scatteringHigh;
 	material.emissive = 0.0;
 	material.emissiveIntensity = 0.0;
 	material.visibility = 0.0;
 	material.lightModel = SHADINGMODELID_GLASS;
-	material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
+	material.alpha = MaterialDiffuse.a;
 
 	return EncodeGbuffer(material, coord.z);
 }
@@ -638,27 +262,16 @@ GbufferParam Material2PS(
 #define OBJECT_TEC(name, mmdpass) \
 	technique name < string MMDPass = mmdpass; \
 	string Script = \
-		"RenderColorTarget0=;" \
-		"RenderColorTarget1=Gbuffer2RT;" \
-		"RenderColorTarget2=Gbuffer3RT;" \
-		"RenderColorTarget3=Gbuffer4RT;" \
-		"Pass=DrawObject;" \
 		"RenderColorTarget0=Gbuffer5RT;" \
 		"RenderColorTarget1=Gbuffer6RT;" \
 		"RenderColorTarget2=Gbuffer7RT;" \
 		"RenderColorTarget3=Gbuffer8RT;" \
-		"Pass=DrawAlphaObject;"\
-	; \
-	> { \
+		"Pass=DrawObject;"\
+	;> { \
 		pass DrawObject { \
 			AlphaTestEnable = false; AlphaBlendEnable = false; \
 			VertexShader = compile vs_3_0 MaterialVS(); \
 			PixelShader  = compile ps_3_0 MaterialPS(); \
-		} \
-		pass DrawAlphaObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 MaterialVS(); \
-			PixelShader  = compile ps_3_0 Material2PS(); \
 		} \
 	}
 

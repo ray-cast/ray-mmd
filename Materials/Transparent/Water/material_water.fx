@@ -1,25 +1,13 @@
-#define USE_CUSTOM_MATERIAL 1
-
-#define ALBEDO_MAP_APPLY_COLOR 0
-#define ALBEDO_MAP_APPLY_DIFFUSE 0
-#define ALBEDO_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "albedo.png"
-
-const float3 albedo = pow(float3(0.1372549, 0.3490196, 0.5882353), 2.2);
-const float2 albedoMapLoopNum = 1.0;
-
-#define ALPHA_MAP_ENABLE 1
-#define ALPHA_MAP_IN_TEXTURE 1
-#define ALPHA_MAP_FILE "alpha.png"
-
-const float alpha = 1.0;
-const float alphaMapLoopNum = 1.0;
-
 const float smoothness = 1.0;
+const float smoothnessBaseSpecular = 0.02;
 
-const float metalness = 0.0;
-const float metalnessBaseSpecular = 0.02; 
+const float3 scatteringLow = exp(-float3(4.0, 2.5, 2.4) * 1.25);
+const float3 scatteringHigh = exp(-float3(4.0, 2.5, 2.5) * 1.25);
 
-const float3 transmittance = exp(-float3(40, 25, 25) * 0.125); //pow(float3(0.03, 0.05, 0.05), 1.2);
+#define WAVE_MAP_ENABLE 1
+#define WAVE_MAP_FILE "textures/wave.png"
+
+#define RIPPLE_MAP_ENABLE 0
+#define RIPPLE_MAP_FILE "textures/ripple.png"
 
 #include "material_common.fxsub"
