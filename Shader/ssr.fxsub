@@ -285,6 +285,7 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	else
 		color = lerp(refl3, refl2, weight);
 
-	float3 fresnel = EnvironmentSpecularUnreal4(material.normal, normalize(viewdir), material.smoothness, material.specular);
+	float3 f0 = min(0.02, material.specular);
+	float3 fresnel = EnvironmentSpecularUnreal4(material.normal, normalize(viewdir), material.smoothness, f0);
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
 }
