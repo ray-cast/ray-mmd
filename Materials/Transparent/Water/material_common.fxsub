@@ -11,7 +11,7 @@ float4 MaterialDiffuse : DIFFUSE  < string Object = "Geometry"; >;
 #define TEXTURE_MIP_FILTER ANISOTROPIC
 #define TEXTURE_ANISOTROPY_LEVEL 16
 
-#define SHADINGMODELID_GLASS        4
+#define SHADINGMODELID_GLASS 4
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
@@ -36,8 +36,30 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	};
 #endif
 
-#if RIPPLE_MAP_ENABLE
-	texture RippleNormalMap<string ResourceName = RIPPLE_MAP_FILE;>; 
+#if WAVE_FLOW_MAP_ENABLE
+	texture WaveFlowMap<string ResourceName = WAVE_FLOW_MAP_FILE;>; 
+	sampler WaveFlowMapSamp = sampler_state
+	{
+		texture = WaveFlowMap;
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if WAVE_FOAM_MAP_ENABLE
+	texture WaveFoamMap<string ResourceName = WAVE_FOAM_MAP_FILE;>; 
+	sampler WaveFoamMapSamp = sampler_state
+	{
+		texture = WaveFoamMap;
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if WAVE_RIPPLE_MAP_ENABLE
+	texture RippleNormalMap<string ResourceName = WAVE_RIPPLE_MAP_FILE;>; 
 	sampler RippleNormalMapSamp = sampler_state
 	{
 		texture = RippleNormalMap;
