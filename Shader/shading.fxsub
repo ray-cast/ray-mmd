@@ -120,10 +120,10 @@ void ShadingOpacityPS(
 
 float4 ShadingOpacityAlbedoPS(in float2 coord: TEXCOORD0) : COLOR
 {
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
