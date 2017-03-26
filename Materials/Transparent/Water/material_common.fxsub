@@ -1,4 +1,4 @@
-float time : TIME<bool SyncInEditMode=true;>;
+float time : TIME;//<bool SyncInEditMode=true;>;
 
 float4x4 matView : VIEW;
 float4x4 matViewProject : VIEWPROJECTION;
@@ -33,6 +33,17 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if WAVE_NOISE_MAP_ENABLE
+	texture WaveFlowNoiseMap<string ResourceName = WAVE_NOISE_MAP_FILE;>; 
+	sampler WaveFlowNoiseMapSamp = sampler_state
+	{
+		texture = WaveFlowNoiseMap;
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
 #endif
 
@@ -183,12 +194,20 @@ float2 GetParalaxOffset(sampler source, float2 coord, float3 V)
 float3 GetWaveNormal(float2 coord, float3 N, float3 V)
 {
 #if WAVE_MAP_ENABLE || WAVE_RIPPLE_MAP_ENABLE
-	float2 translate = waveMapTranslate.xy * time * 0.05;
+	float2 translate = waveMapTranslate.xy * time * 0.05 + 3.14;
+
+#if WAVE_NOISE_MAP_ENABLE
+	float noise = tex2Dlod(WaveFlowNoiseMapSamp, float4(coord, 0, 0)).r;
+	translate += noise * 0.5;
+#endif
 
 #if WAVE_FLOW_MAP_ENABLE
 	float2 flow = tex2Dlod(WaveFlowMapSamp, float4(coord, 0, 0)).rg * 2 - 1;
-	translate *= flow;
+	translate += flow;
 #endif
+
+  //half fDistScale = saturate(10.0/Wave0.w);
+  //half3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * half3(0, 0.1, 0.125));  
 
 	float3 bumpNormal = 0;
 
