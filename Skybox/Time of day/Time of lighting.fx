@@ -175,7 +175,7 @@ float4 GenDiffuseMapPS(
 	float3 normal = ComputeSphereNormal(coord.xy / coord.z);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
 
-	return EncodeRGBT(irradiance);
+	return EncodeRGBT(irradiance / PI);
 }
 
 void EnvLightingVS(
