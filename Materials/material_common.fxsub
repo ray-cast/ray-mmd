@@ -373,7 +373,7 @@ float3 rgb2ycbcr(float3 col)
 	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
 	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb);
 	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb);
-	return half3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
+	return float3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
 #if NORMAL_MAP_ENABLE || NORMAL_MAP_SUB_ENABLE
