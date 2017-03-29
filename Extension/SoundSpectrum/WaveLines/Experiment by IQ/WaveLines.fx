@@ -1,6 +1,6 @@
 #define USE_CUSTOM_PARAMS 0
 
-static float waveLines = 8;        // 0 ~ 8
+static float waveLines = 8;        // 1 ~ 8
 static float waveBloom = 3;        // 1 ~ inf
 static float waveHeightLow = 5;    // 1 ~ inf
 static float waveHeightHigh = 7;   // 1 ~ inf
