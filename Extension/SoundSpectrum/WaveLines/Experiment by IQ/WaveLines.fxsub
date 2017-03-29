@@ -172,7 +172,7 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 		p.x += i * 0.05 + freq * 0.1 + time * mWaveWheel;
 		p.y += sin(p.x * mWaveSin) * cos(p.x * mWaveCos) * freq * 0.2 * ((i + 1.0) / float(mWaveLines));
 
-		float intensity = abs(0.01 / p.y) * clamp(freq, 0.35, 2.0);
+		float intensity = 0.01 / abs(p.y) * log(1.6 + freq);
 
 #if USE_RGB_SPACE
 		float3 blend = lerp(mWaveColorLow, mWaveColorHigh, i / (mWaveLines));
