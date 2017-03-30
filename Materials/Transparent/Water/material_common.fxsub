@@ -29,7 +29,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	sampler WaveNormalMapSamp = sampler_state
 	{
 		texture = WaveNormalMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
@@ -40,7 +39,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	sampler WaveNoiseMapSamp = sampler_state
 	{
 		texture = WaveNoiseMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
@@ -51,7 +49,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	sampler WaveFlowMapSamp = sampler_state
 	{
 		texture = WaveFlowMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
@@ -62,7 +59,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	sampler WaveFoamMapSamp = sampler_state
 	{
 		texture = WaveFoamMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
