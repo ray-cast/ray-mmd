@@ -182,6 +182,7 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 		color += intensity * blend * mWaveBloom / mWaveLines;
 	}
 
+	color = clamp(color, 0, 20);
 	color = color * pow(saturate(1 - length(wave)), mWaveFade);
 	color = pow(ACESFilmLinear(color), 1.0 / 2.2);
 
