@@ -17,9 +17,10 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-	- Added a Time of day & night
-	- Added a albedo sub map
-	- Added a skylighting_hdr_fast.fx
+	- Added Time of day & night
+	- Added albedo sub map
+	- Added skylighting_hdr_fast.fx
+	- Added SoundSpectrum
 	- Removed melanin material (it's still available in old materials, just removed the description)
 	- Improved bloom
 	- Improved SSAO
