@@ -4,7 +4,6 @@ float4x4 matView : VIEW;
 float4x4 matViewProject : VIEWPROJECTION;
 
 float3 CameraPosition  : POSITION  < string Object = "Camera"; >;
-
 float4 MaterialDiffuse : DIFFUSE  < string Object = "Geometry"; >;
 
 #define TEXTURE_FILTER ANISOTROPIC
@@ -37,13 +36,13 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 
 #if WAVE_NOISE_MAP_ENABLE
-	texture WaveFlowNoiseMap<string ResourceName = WAVE_NOISE_MAP_FILE;>; 
-	sampler WaveFlowNoiseMapSamp = sampler_state
+	texture WaveNoiseMap<string ResourceName = WAVE_NOISE_MAP_FILE;>; 
+	sampler WaveNoiseMapSamp = sampler_state
 	{
-		texture = WaveFlowNoiseMap;
+		texture = WaveNoiseMap;
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
 #endif
 
@@ -170,64 +169,96 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	return gbuffer;
 }
 
+float noise(float2 p)
+{
+	return tex2Dlod(WaveNoiseMapSamp, float4(p / 256.0, 0, 0)).x;
+}
+
+float fbm(float2 p) 
+{
+	float2x2 m2 = float2x2(1.6,-1.2,1.2,1.6);
+	float f = 0;
+	f += 0.5000 * noise( p ); p = mul(m2, p);
+	f += 0.2500 * noise( p ); p = mul(m2, p);
+	f += 0.1666 * noise( p );
+	return f;
+}
+
+float GetWaterHeight(float2 p)
+{
+	float2 shift1 = float2(0.32, 0.24) * time;
+	float2 shift2 = float2(0.38,-0.26) * time;
+	
+	float2 p2 = p * waveLoopsHigh;
+
+	float wave = 0;
+	wave += sin(dot(p2, 0.622) + shift2.x * 4.269);
+	wave *= fbm(p);
+	wave *= waveHeightHigh;
+
+	p *= waveLoopsLow;
+
+	float f = 0;
+	float s = 0.5;
+	float amp = 1.0;
+	float2x2 m = float2x2(0.72, -1.60,  1.60, 0.72);
+
+	for (int i = 0; i < 9; i++)
+	{
+		p = mul(m, p) * 0.947; 
+		f -= amp * abs(sin((noise(p + shift1 * s) - 0.5) * 2.0)); 
+		amp = amp * 0.59;
+		s *= -1.329;
+	}
+
+	return wave + f * waveHeightLow;
+}
+
+float4 GenWaterNormal(float2 coord)
+{
+	float2 dif = float2(0, 0.01);
+
+	float h0 = GetWaterHeight(coord * 15);
+	float h1 = GetWaterHeight(coord * 15 - dif);
+	float h2 = GetWaterHeight(coord * 15 + dif);
+	float h3 = GetWaterHeight(coord * 15 - dif.yx);
+	float h4 = GetWaterHeight(coord * 15 + dif.yx);
+
+	float3 bumpNormal = normalize(float3(h3 - h4, h1 - h2, 0.15));
+	return float4(bumpNormal, h0);
+}
+
 float2 GetParalaxOffset(sampler source, float2 coord, float3 V)
 {
-	const float gradientScale = 0.5 * 0.01;// * GradientScale;
-	const float heightScale   = 0.5 * 0.01;// * HeightScale;
+	const float gradientScale = 0.5 * 0.01;
+	const float heightScale   = 0.5 * 0.01;
 
-	float4 paralaxCoord = coord.xyxy * float4(0.25, 0.25, 1, 1);
-
-	float4 height = tex2D(source, paralaxCoord.xy) * 2 - 1;
-	height.xy = gradientScale * height.xy;
-	height.w  = heightScale   * height.w;   
-	float2 paralaxOffset = V.xy * height.w + height.xy;
-
-	height = tex2D(source, paralaxCoord.zw + paralaxOffset) * 2 - 1;
+	float4 height = GenWaterNormal(coord);
 	height.xy = gradientScale * height.xy;
 	height.w  = heightScale   * height.w;
 
-	paralaxOffset += V.xy * height.w + height.xy;
-
+	float2 paralaxOffset = V.xy * height.w + height.xy;
 	return paralaxOffset;
 }
 
 float3 GetWaveNormal(float2 coord, float3 N, float3 V)
 {
 #if WAVE_MAP_ENABLE || WAVE_RIPPLE_MAP_ENABLE
-	float2 translate = waveMapTranslate.xy * time * 0.05 + 3.14;
-
-#if WAVE_NOISE_MAP_ENABLE
-	float noise = tex2Dlod(WaveFlowNoiseMapSamp, float4(coord, 0, 0)).r;
-	translate += noise * 0.5;
-#endif
-
-#if WAVE_FLOW_MAP_ENABLE
-	float2 flow = tex2Dlod(WaveFlowMapSamp, float4(coord, 0, 0)).rg * 2 - 1;
-	translate += flow;
-#endif
-
-  //half fDistScale = saturate(10.0/Wave0.w);
-  //half3 WaterDeepColor = (vRefraction.xyz * fDistScale + (1 - fDistScale) * half3(0, 0.1, 0.125));  
-
 	float3 bumpNormal = 0;
 
 #if WAVE_MAP_ENABLE
 	float4 wave = coord.xyxy * waveMapLoopNumLow.xyxy;
-	wave.zw *= float2(2, 2) * waveMapLoopNumHigh;
-	wave += translate.xyxy;
+	wave *= float4(1, 1, 2, 2);
 
 	float2 paralaxOffset = GetParalaxOffset(WaveNormalMapSamp, wave.xy, V);
-	float4 paralaxCoord = wave.xyxy * float4(0.25, 0.25, 1, 1) + paralaxOffset.xyxy;
 
-	bumpNormal.xy = (tex2D(WaveNormalMapSamp, wave.zw + paralaxOffset.xy).xy * 2 - 1) * waveMapScaleHigh;
-	bumpNormal += tex2D(WaveNormalMapSamp, paralaxCoord.xy).xyz * 2 - 1;
-	bumpNormal += tex2D(WaveNormalMapSamp, paralaxCoord.zw).xyz * 2 - 1;
+	bumpNormal = GenWaterNormal(wave.xy + paralaxOffset.xy).xyz;
 	bumpNormal.xy *= waveMapScaleLow;
 #endif
 
 #if WAVE_RIPPLE_MAP_ENABLE
 	float4 ripple = coord.xyxy * rippleMapLoopNumLow.xyxy;
-	bumpNormal.xy += tex2D(WaveRippleMapSamp, ripple.xy).xy * 5;
+	bumpNormal.xy += tex2D(WaveRippleMapSamp, ripple.xy).xy;
 #endif
 
 	return ComputeTangentBinormalNormal(N, V, coord, bumpNormal);

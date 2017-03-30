@@ -34,6 +34,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 #if SSDO_QUALITY
 	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).gba;
 	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
+	ssdo = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssdo;
 	diffuse *= ssdo;
 	specular *= ssdo;
 #endif
@@ -47,6 +48,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 
 #if SSDO_QUALITY
 	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).r;
+	ssao = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao;
 	diffuse *= ssao;
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
 #endif
