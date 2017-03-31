@@ -124,7 +124,7 @@ float2 GetFramesPerSecond(float time, float size = FFT_SIZE, float uniforms = FF
 
 float GetFramesFreq(float2 coord, float samples, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
 {
-	float n = samples * 512;
+	float n = samples * 256;
 	float x = int(n / 4);
 	float y = int(fmod(n, 4));
 
@@ -155,7 +155,7 @@ float3 GenWave(float2 coord)
 {
 	float2 index = GetFramesPerSecond(time);
 
-	float fft = GetFramesFreq(index, lerp(0.005, 0.20, abs(coord.x))) * mWaveHeight;
+	float fft = GetFramesFreq(index, lerp(0.01, 0.5, abs(coord.x))) * mWaveHeight;
 	float wave = 1 - saturate(fft);
 
 #if USE_RGB_SPACE

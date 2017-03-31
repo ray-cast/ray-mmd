@@ -135,7 +135,7 @@ float2 GetFramesPerSecond(float time, float size = FFT_SIZE, float uniforms = FF
 
 float GetFramesFreq(float2 coord, float samples, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
 {
-	float n = samples * 512;
+	float n = samples * 256;
 	float x = int(n / 4);
 	float y = int(fmod(n, 4));
 
@@ -168,7 +168,7 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 	for (int i = 0; i < mWaveLines; ++i) 
 	{
 		float freqHeight = i < (mWaveLines * 0.5) ? mWaveHeightLow : mWaveHeightHigh;
-		float freq = GetFramesFreq(index, lerp(0.01, 0.08, i / mWaveLines)) * freqHeight;
+		float freq = GetFramesFreq(index, lerp(0.02, 0.2, i / mWaveLines)) * freqHeight;
 
 		float2 p = wave + float2(0, mWaveOffset * i / mWaveLines);
 		p.x += i * 0.05 + freq * 0.1 + time * mWaveWheel;
