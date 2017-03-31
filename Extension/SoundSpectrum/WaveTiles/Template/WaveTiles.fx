@@ -7,7 +7,8 @@ static float waveLines = 8;   // 1 ~ 8
 static float waveBloom = 10;  // 1 ~ inf
 static float waveHeight = 1;  // 1 ~ 2
 static float waveFade = 0.8;  // 0 ~ inf
-static float waveBlockSize = 100; // 0 ~ inf
+static float waveBlockSizeX = 100; // 0 ~ inf
+static float waveBlockSizeY = 100; // 0 ~ inf
 
 static float3 waveColorLow  = float3(0.0, 1.0, 1.0); // hsv, h & s 0 ~ 1, v 0 ~ inf
 static float3 waveColorHigh = float3(0.6, 0.9, 1.0); // hsv, h & s 0 ~ 1, v 0 ~ inf
