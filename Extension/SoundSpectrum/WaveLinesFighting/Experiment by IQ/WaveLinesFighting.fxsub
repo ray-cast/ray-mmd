@@ -86,7 +86,7 @@ float mBlockColorM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"
 static float mWaveLines = 7;
 static float mWaveBloom = lerp(lerp(10, 6, mWaveBloomP), 1, mWaveBloomM);
 static float mWaveHeight = lerp(lerp(1, 2, mWaveHeightP), 0, mWaveHeightM);
-static float mWaveFade = lerp(lerp(0.8, 2.0, mWaveFadeP), 0.1, mWaveFadeM);
+static float mWaveFade = lerp(lerp(0.5, 2.0, mWaveFadeP), 0.1, mWaveFadeM);
 static float mWaveBlockSize = lerp(lerp(0.02, 0.2, mBlockSizeP), 0.0, mBlockSizeM);;
 
 static float2 mSize = 1.0 - float2(mSizeX, mSizeY);
@@ -149,6 +149,8 @@ void SoundSpectrumVS(
 
 float3 GenWaveBg(float2 coord, float3 blockColor, float size = 0.02)
 {
+    coord = (coord * 0.5 + 0.5) * float2(ViewportAspect, 1);
+
 	float s1 = fmod(coord.x, 2.0 * size);
 	float s2 = fmod(coord.y, 2.0 * size);
 
@@ -156,37 +158,37 @@ float3 GenWaveBg(float2 coord, float3 blockColor, float size = 0.02)
 	s2 = step(size, s2);
 
 #if USE_RGB_SPACE
-	return lerp(0.0, blockColor * coord.y, s1 * s2);
+	return lerp(0.0, blockColor * coord.y, s1 * s2) * 2;
 #else
-	return lerp(0.0, hsv2rgb(blockColor) * coord.y, s1 * s2);
+	return lerp(0.0, hsv2rgb(blockColor) * coord.y, s1 * s2) * 2;
 #endif
 }
 
 float3 GenWave(float2 coord, float4 freqs1, float4 freqs2)
 {
-    float freqs[8] = { freqs1, freqs2.abgr };
+	float freqs[8] = { freqs1, freqs2.abgr };
 
-    float n = floor(abs(coord.x) * mWaveLines);
+	float n = floor(abs(coord.x) * mWaveLines);
 	float fft1  = freqs[n];
 	float fft2  = freqs[max(0, n - 1 * sign(coord.x))];
 
 	float fft = lerp(fft2, fft1, coord.x * mWaveLines - floor(coord.x * mWaveLines)) * mWaveHeight;
 	float wave = 1 - saturate(fft);
-	
+
 	float2 noise = tex2Dlod(NoiseMapSamp, float4(coord.x, fft, 0, 0)).rg;
 	fft *= noise.x * noise.y;
 	wave *= noise.x;
 
 #if USE_RGB_SPACE
-    float3 color = lerp(mWaveColorHigh, mWaveColorLow, abs(coord.x));
+	float3 color = lerp(mWaveColorHigh, mWaveColorLow, abs(coord.x));
 #else
 	float3 color = lerp(hsv2rgb(mWaveColorHigh), hsv2rgb(mWaveColorLow), abs(coord.x));
 #endif
 
-    color *= abs(1.0 / (coord.y * 150.0)) * mWaveBloom;
-    color *= (1.0 + (fft * (10.0 / wave)));
+	color *= abs(1.0 / (coord.y * 150.0)) * mWaveBloom;
+	color *= (1.0 + (fft * (10.0 / wave)));
 
-	return clamp(color, 0, 20);
+	return clamp(color, 0, 10);
 }
 
 float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR 
@@ -199,9 +201,9 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 
 	float2 wave = smoothstep(mTranslate, mTranslate + mSize, coord) * 2 - 1;
 
-	float3 bg = GenWaveBg(wave * 0.5 + 0.5, mWaveColorBg, mWaveBlockSize) * 2;
+	float3 bg = GenWaveBg(wave, mWaveColorBg, mWaveBlockSize);
 	color = (1 + bg) * GenWave(wave, freqs1, freqs2);
-	color *= pow(saturate(1 - length(wave)), mWaveFade);
+	color *= pow((1 - abs(wave.x)) * (1 - abs(wave.y)), mWaveFade);
 
 	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
 	return float4(screen + color, 1);

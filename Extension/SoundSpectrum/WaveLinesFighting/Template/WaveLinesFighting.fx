@@ -19,4 +19,4 @@ static float3 waveBlockColorBg  = float3(0.8, 1.0, 1.0); // hsv, h & s 0 ~ 1, v 
 #define WAVE_1_MAP_FILE "spectrum.wav1.png"
 #define WAVE_2_MAP_FILE "spectrum.wav2.png"
 
-#include "wavelines.fxsub"
+#include "WaveLinesFighting.fxsub"
