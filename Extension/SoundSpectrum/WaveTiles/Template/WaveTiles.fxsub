@@ -71,7 +71,7 @@ static float mWaveFade = lerp(lerp(0.0, 2.0, mWaveFadeP), 0.1, mWaveFadeM);
 static float mWaveBlockSizeX = lerp(lerp(100, 200, mBlockSizeXP), 1, mBlockSizeXM);
 static float mWaveBlockSizeY = lerp(lerp(100, 200, mBlockSizeYP), 1, mBlockSizeYM);
 
-static float2 mSize = lerp(1.0, 10.0, float2(mSizeX, mSizeY));
+static float2 mSize = lerp(1.0, 0.0, float2(mSizeX, mSizeY));
 static float2 mTranslate = float2(mPositionXP, mPositionYP) - float2(mPositionXM, mPositionYM);
 
 static float3 mWaveColorLow = float3(mBlockColorLowH, mBlockColorLowS, 1 - mBlockColorLowV);
@@ -152,14 +152,14 @@ float3 GenWave(float2 coord, float2 size)
 
 	float s1 = floor((coord.x * 0.5 + 0.5) * tiles.x);
 	float s2 = floor((coord.y * 0.5 + 0.5) * tiles.y);
-	
+
 	float n1 = abs((s1 / tiles.x) * 2 - 1);
 	float n2 = abs((s2 / tiles.y) * 2 - 1);
 
-	float freq = GetFramesFreq(index, lerp(0.0, 0.2, n1));    
+	float freq = GetFramesFreq(index, lerp(0.0, 0.2, n1));
 	freq *= fmod(s1, 2);
 	freq *= fmod(s2, 2);
-	freq *= step(1 - saturate(freq * mWaveHeight), 1 - abs((s2 / tiles.y) * 2 - 1));
+	freq *= step(1 - saturate(freq * mWaveHeight), 1 - n2);
 	freq = any(freq);
 
 #if USE_RGB_SPACE
@@ -168,10 +168,10 @@ float3 GenWave(float2 coord, float2 size)
 	float3 color = hsv2rgb(lerp(mWaveColorHigh, mWaveColorLow, n1));
 #endif
 
-	return color * freq * (step(0.0, -coord.y) ? 1.0 : 0.2);
+	return color * freq;
 }
 
-void SoundSpectrumVS(
+void SoundBackgroundVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
 	out float4 oTexcoord  : TEXCOORD0,
@@ -183,19 +183,35 @@ void SoundSpectrumVS(
 	oPosition = Position;
 }
 
+float4 SoundBackgroundPS(in float2 coord : TEXCOORD0) : COLOR 
+{
+	return tex2Dlod(ScnSamp, float4(coord, 0, 0));
+}
+
+void SoundSpectrumVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oTexcoord = Texcoord;
+	oTexcoord.zw = Texcoord.xy * ViewportSize;
+	oTexcoord.xy += ViewportOffset.xy;
+
+	oPosition = Position;
+	oPosition.xy += mTranslate;
+	oPosition.xy *= mSize;
+}
+
 float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR 
 {
 	float2 wave = coord * 2 - 1;
-	wave += mTranslate;
-	wave = clamp(wave * mSize, -1, 1);
 
 	float3 color = GenWave(wave, float2(mWaveBlockSizeX, mWaveBlockSizeY));
-	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
+	color *= pow(saturate((1 - abs(wave.x)) * (1 - abs(wave.y))), mWaveFade);
+	color *= step(0.0, -wave.y) ? 1.0 : 0.3;
 
-	color *= pow((1 - abs(wave.x)) * (1 - abs(wave.y)), mWaveFade);
-	screen = lerp(screen, color, any(color));
-	
-	return float4(screen + color, 1);
+	return float4(color, any(color));
 }
 
 float Script : STANDARDSGLOBAL <
@@ -204,7 +220,7 @@ float Script : STANDARDSGLOBAL <
 	string ScriptOrder  = "postprocess";
 > = 0.8;
 
-const float4 ClearColor = float4(0,0,0,0);
+const float4 ClearColor = 0.0;
 const float ClearDepth  = 1.0;
 
 technique MainTech<
@@ -217,11 +233,21 @@ technique MainTech<
 	"ScriptExternal=Color;"
 
 	"RenderColorTarget=;"
+	"Pass=SoundBackground;"
+
+	"RenderColorTarget=;"
 	"Pass=SoundSpectrum;"
 ;>{
-	pass SoundSpectrum < string Script= "Draw=Buffer;"; > {
+	pass SoundBackground < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 SoundBackgroundVS();
+		PixelShader  = compile ps_3_0 SoundBackgroundPS();
+	}
+	pass SoundSpectrum < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		DestBlend = INVSRCALPHA; SrcBlend = SRCALPHA;
 		VertexShader = compile vs_3_0 SoundSpectrumVS();
 		PixelShader  = compile ps_3_0 SoundSpectrumPS();
 	}
