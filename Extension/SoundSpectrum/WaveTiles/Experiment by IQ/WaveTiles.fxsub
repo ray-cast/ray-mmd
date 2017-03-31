@@ -1,0 +1,231 @@
+#define FFT_SIZE 1024
+#define FFT_UNIFORM 64
+
+float time : TIME<bool SyncInEditMode=true;>;
+
+float2 ViewportSize : VIEWPORTPIXELSIZE;
+static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
+static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
+static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
+
+texture ScnMap : RENDERCOLORTARGET <
+	float2 ViewPortRatio = {1.0,1.0};
+	string Format = "A2B10G10R10";
+>;
+sampler ScnSamp = sampler_state {
+	texture = <ScnMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+texture SpectrumMap<string ResourceName = FFT_MAP_FILE;>; 
+sampler SpectrumMapSamp = sampler_state
+{
+	texture = <SpectrumMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+#if USE_CUSTOM_PARAMS
+static float mWaveLines = 7;
+static float mWaveBloom = waveBloom;
+static float mWaveHeight = waveHeight;
+static float mWaveFade = waveFade;
+static float mWaveBlockSizeX = waveBlockSize;
+static float mWaveBlockSizeY = waveBlockSize;
+
+static float2 mSize = size;
+static float2 mTranslate = translate;
+
+static float3 mWaveColorLow = waveColorLow;
+static float3 mWaveColorHigh = waveColorHigh;
+static float3 mWaveColorBg = waveBlockColorBg;
+#else
+float mPositionXP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "PosX+";>;
+float mPositionYP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "PosY+";>;
+float mPositionXM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "PosX-";>;
+float mPositionYM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "PosY-";>;
+float mSizeX : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "SizeW-";>;
+float mSizeY : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "SizeH-";>;
+
+float mColorLowH : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorLowH+";>;
+float mColorLowS : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorLowS+";>;
+float mColorLowP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorLowV+";>;
+float mColorLowM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorLowV-";>;
+float mColorHighH : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorHighH+";>;
+float mColorHighS : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorHighS+";>;
+float mColorHighP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorHighV+";>;
+float mColorHighM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "ColorHighV-";>;
+
+float mWaveBloomP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveBloom+";>;
+float mWaveBloomM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveBloom-";>;
+float mWaveHeightP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveHeight+";>;
+float mWaveHeightM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveHeight-";>;
+float mWaveFadeP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveFade+";>;
+float mWaveFadeM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "WaveFade-";>;
+float mBlockSizeP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockSize+";>;
+float mBlockSizeM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockSize-";>;
+
+float mBlockColorH : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockColorH+";>;
+float mBlockColorS : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockColorS+";>;
+float mBlockColorP : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockColorV+";>;
+float mBlockColorM : CONTROLOBJECT<string name="WaveLinesFightingController.pmx"; string item = "BlockColorV-";>;
+
+static float mWaveBloom = lerp(lerp(10, 6, mWaveBloomP), 1, mWaveBloomM);
+static float mWaveHeight = lerp(lerp(1, 2, mWaveHeightP), 0, mWaveHeightM);
+static float mWaveFade = lerp(lerp(0.8, 2.0, mWaveFadeP), 0.1, mWaveFadeM);
+static float mWaveBlockSizeX = lerp(lerp(100, 200, mBlockSizeP), 1, mBlockSizeM);
+static float mWaveBlockSizeY = lerp(lerp(100, 200, mBlockSizeP), 1, mBlockSizeM);
+
+static float2 mSize = 1.0 - float2(mSizeX, mSizeY);
+static float2 mTranslate = float2(mPositionXP, mPositionYP) - float2(mPositionXM, mPositionYM);
+
+static float3 mWaveColorLow = float3(mColorLowH, mColorLowS, lerp(lerp(1, 2, mColorLowP), 0, mColorLowM));
+static float3 mWaveColorHigh = float3(mColorHighH, mColorHighS, lerp(lerp(1, 2, mColorHighP), 0, mColorHighM));
+static float3 mWaveColorBg = float3(mBlockColorH, mBlockColorS, lerp(lerp(1, 2, mBlockColorP), 0, mBlockColorM));
+#endif
+
+float3 ACESFilmLinear(float3 x)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+	return (x * (A * x + B)) / (x * (C * x + D) + E);
+}
+
+float3 rgb2hsv(float3 c)
+{
+	float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+	float4 p = lerp(float4(c.bg, K.wz), float4(c.gb, K.xy), step(c.b, c.g));
+	float4 q = lerp(float4(p.xyw, c.r), float4(c.r, p.yzx), step(p.x, c.r));
+
+	float d = q.x - min(q.w, q.y);
+	float e = 1.0e-10;
+	return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+float3 hsv2rgb(float3 c)
+{
+	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+}
+
+float2 GetFramesPerSecond(float time, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
+{
+    float frame = time / 8.5 * 255;
+
+    float y = floor(frame / size);
+    float x = frame - y * size;
+
+    return float2(x, y * uniforms) / size;
+}
+
+float GetFramesFreq(float2 coord, float samples, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
+{
+    float n = samples * 256;
+    float x = int(n / 4);
+    float y = int(fmod(n, 4));
+
+    float2 lookup = coord + x * float2(0, 1.0 / FFT_SIZE);
+    float4 freqs = tex2Dlod(SpectrumMapSamp, float4(lookup, 0, 0));
+
+    return freqs[y];
+}
+
+float3 GenWaveBg(float2 coord, float3 blockColor, float size = 0.02)
+{
+	coord = (coord * 0.5 + 0.5) * float2(ViewportAspect, 1);
+	
+	float s1 = fmod(coord.x, 2.0 * size);
+	float s2 = fmod(coord.y, 2.0 * size);
+
+	s1 = step(size, s1);
+	s2 = step(size, s2);
+
+#if USE_RGB_SPACE
+	return lerp(0.0, blockColor * coord.y, s1 * s2) * 2;
+#else
+	return lerp(0.0, hsv2rgb(blockColor), s1 * s2) * 2;
+#endif
+}
+
+float3 GenWave(float2 coord, float2 size)
+{
+    float2 index = GetFramesPerSecond(time);
+    float2 tiles = size * float2(ViewportAspect, 1);
+    
+    float s1 = floor((coord.x * 0.5 + 0.5) * tiles.x);
+    float s2 = floor((coord.y * 0.5 + 0.5) * tiles.y);
+    
+    float n1 = abs((s1 / tiles.x) * 2 - 1);
+    float n2 = abs((s2 / tiles.y) * 2 - 1);
+
+    float freq = GetFramesFreq(index, lerp(0.0, 0.2, n1));    
+    freq *= fmod(s1, 2);
+    freq *= fmod(s2, 2);
+    freq *= step(1 - freq, 1 - abs((s2 / tiles.y) * 2 - 1));
+    freq = any(freq);
+    
+#if USE_RGB_SPACE
+    float3 color = lerp(mWaveColorHigh, mWaveColorLow, abs(coord.x));
+#else
+    float3 color = hsv2rgb(lerp(mWaveColorHigh, mWaveColorLow, n1));
+#endif
+
+    return color * freq * (step(0.0, -coord.y) ? 1.0 : 0.2);
+}
+
+void SoundSpectrumVS(
+    in float4 Position : POSITION,
+    in float4 Texcoord : TEXCOORD0,
+    out float4 oTexcoord  : TEXCOORD0,
+    out float4 oPosition  : POSITION)
+{
+    oTexcoord = Texcoord;
+    oTexcoord.zw = Texcoord.xy * ViewportSize;
+    oTexcoord.xy += ViewportOffset.xy;
+    oPosition = Position;
+}
+
+float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR 
+{
+	float2 wave = coord * 2 - 1;
+
+	float3 color = GenWave(wave, float2(mWaveBlockSizeX, mWaveBlockSizeY));
+	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
+	screen = lerp(screen, color, any(color));
+
+	return float4(screen + color, 1);
+}
+
+float Script : STANDARDSGLOBAL <
+	string ScriptOutput = "color";
+	string ScriptClass  = "scene";
+	string ScriptOrder  = "postprocess";
+> = 0.8;
+
+const float4 ClearColor = float4(0,0,0,0);
+const float ClearDepth  = 1.0;
+
+technique MainTech<
+	string Script = 
+	"RenderColorTarget0=ScnMap;"
+	"ClearSetColor=ClearColor;"
+	"ClearSetDepth=ClearDepth;"
+	"Clear=Color;"
+	"Clear=Depth;"
+	"ScriptExternal=Color;"
+
+	"RenderColorTarget=;"
+	"Pass=SoundSpectrum;"
+;>{
+	pass SoundSpectrum < string Script= "Draw=Buffer;"; > {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = False; ZWriteEnable = False;
+		VertexShader = compile vs_3_0 SoundSpectrumVS();
+		PixelShader  = compile ps_3_0 SoundSpectrumPS();
+	}
+}
