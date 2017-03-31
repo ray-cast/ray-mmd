@@ -88,7 +88,7 @@ static float mWaveLines = lerp(8, 1, mWaveLinesM);
 static float mWaveBloom = lerp(lerp(3, 6, mWaveBloomP), 1, mWaveBloomM);
 static float mWaveHeightLow = lerp(lerp(5, 15, mWaveHeightLowP), 1, mWaveHeightLowM);
 static float mWaveHeightHigh = lerp(lerp(5, 15, mWaveHeightHighP), 1, mWaveHeightHighM);
-static float mWaveFade = lerp(lerp(2, 4, mWaveFadeP), 0.1, mWaveFadeM);
+static float mWaveFade = lerp(lerp(0.5, 4, mWaveFadeP), 0.1, mWaveFadeM);
 static float mWaveSin = lerp(lerp(10, 20, mWaveSinP), 1, mWaveSinM);
 static float mWaveCos = lerp(lerp(2, 4, mWaveCosP), 1, mWaveCosM);
 static float mWaveWheel = lerp(lerp(1, 2, mWaveWheelP), 0, mWaveWheelM);
@@ -182,7 +182,8 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 		color += intensity * blend * mWaveBloom / mWaveLines;
 	}
 
-	color = color * pow(saturate(1 - length(wave)), mWaveFade);
+	color = clamp(color, 0, 10);
+	color = color * pow((1 - abs(wave.x)) * (1 - abs(wave.y)), mWaveFade);
 	color = pow(ACESFilmLinear(color), 1.0 / 2.2);
 
 	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
