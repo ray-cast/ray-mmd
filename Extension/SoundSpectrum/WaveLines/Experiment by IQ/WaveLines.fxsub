@@ -1,4 +1,5 @@
-#define LUT_SIZE 256
+#define FFT_SIZE 1024
+#define FFT_UNIFORM 64
 
 float time : TIME<bool SyncInEditMode=true;>;
 
@@ -17,24 +18,16 @@ sampler ScnSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-texture Spectrum1Map<string ResourceName = WAVE_1_MAP_FILE;>; 
-sampler Spectrum1MapSamp = sampler_state
+texture SpectrumMap<string ResourceName = FFT_MAP_FILE;>; 
+sampler SpectrumMapSamp = sampler_state
 {
-	texture = <Spectrum1Map>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-
-texture Spectrum2Map<string ResourceName = WAVE_2_MAP_FILE;>; 
-sampler Spectrum2MapSamp = sampler_state
-{
-	texture = <Spectrum2Map>;
+	texture = <SpectrumMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 #if USE_CUSTOM_PARAMS
-static float mWaveLines = min(8, waveLines);
+static float mWaveLines = clamp(waveLines, 1, 16);
 static float mWaveBloom = waveBloom;
 static float mWaveHeightLow = waveHeightLow;
 static float mWaveHeightHigh = waveHeightHigh;
@@ -82,9 +75,10 @@ float mWaveFadeP : CONTROLOBJECT<string name="WaveLinesController.pmx"; string i
 float mWaveFadeM : CONTROLOBJECT<string name="WaveLinesController.pmx"; string item = "WaveFade-";>;
 float mWaveWheelP : CONTROLOBJECT<string name="WaveLinesController.pmx"; string item = "WaveWheel+";>;
 float mWaveWheelM : CONTROLOBJECT<string name="WaveLinesController.pmx"; string item = "WaveWheel-";>;
+float mWaveLinesP : CONTROLOBJECT<string name="WaveLinesController.pmx"; string item = "WaveLines+";>;
 float mWaveLinesM : CONTROLOBJECT<string name="WaveLinesController.pmx"; string item = "WaveLines-";>;
 
-static float mWaveLines = lerp(8, 1, mWaveLinesM);
+static float mWaveLines = lerp(lerp(8, 16, mWaveLinesP), 1, mWaveLinesM);
 static float mWaveBloom = lerp(lerp(3, 6, mWaveBloomP), 1, mWaveBloomM);
 static float mWaveHeightLow = lerp(lerp(5, 15, mWaveHeightLowP), 1, mWaveHeightLowM);
 static float mWaveHeightHigh = lerp(lerp(5, 15, mWaveHeightHighP), 1, mWaveHeightHighM);
@@ -111,16 +105,6 @@ float3 ACESFilmLinear(float3 x)
 	return (x * (A * x + B)) / (x * (C * x + D) + E);
 }
 
-float2 GetFramesPerSecond(float time, float size = LUT_SIZE)
-{
-	float frame = time / 8.5 * (size - 1);
-
-	float y = floor(frame / size);
-	float x = frame - y * size;
-
-	return float2(x, y) / size;
-}
-
 float3 rgb2hsv(float3 c)
 {
 	float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -137,6 +121,28 @@ float3 hsv2rgb(float3 c)
 	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 	float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
 	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+}
+
+float2 GetFramesPerSecond(float time, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
+{
+	float frame = time / 8.5 * 255;
+
+	float y = floor(frame / size);
+	float x = frame - y * size;
+
+	return float2(x, y * uniforms) / size;
+}
+
+float GetFramesFreq(float2 coord, float samples, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
+{
+	float n = samples * 512;
+	float x = int(n / 4);
+	float y = int(fmod(n, 4));
+
+	float2 lookup = coord + x * float2(0, 1.0 / FFT_SIZE);
+	float4 freqs = tex2Dlod(SpectrumMapSamp, float4(lookup, 0, 0));
+
+	return freqs[y];
 }
 
 void SoundSpectrumVS(
@@ -156,17 +162,13 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 	float3 color = 0;
 	float2 index = GetFramesPerSecond(time);
 
-	float4 freqs1 = tex2Dlod(Spectrum1MapSamp, float4(index, 0, 0));
-	float4 freqs2 = tex2Dlod(Spectrum2MapSamp, float4(index, 0, 0));
-
 	float2 wave = smoothstep(mTranslate, mTranslate + mSize, coord) * 2 - 1;
 
-	const float freqs[8] = { freqs1 * mWaveHeightLow, freqs2 * mWaveHeightHigh};
-
-	[unroll(8)]
+	[unroll(16)]
 	for (int i = 0; i < mWaveLines; ++i) 
 	{
-		float freq = freqs[i];
+		float freqHeight = i < (mWaveLines * 0.5) ? mWaveHeightLow : mWaveHeightHigh;
+		float freq = GetFramesFreq(index, lerp(0.01, 0.08, i / mWaveLines)) * freqHeight;
 
 		float2 p = wave + float2(0, mWaveOffset * i / mWaveLines);
 		p.x += i * 0.05 + freq * 0.1 + time * mWaveWheel;

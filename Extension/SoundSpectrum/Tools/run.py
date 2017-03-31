@@ -6,20 +6,11 @@ from PIL import Image, ImageDraw
 
 FPS = 30
 
-TEXTURE_WIDTH = 256
-TEXTURE_HEIGHT = 256
-
-FFT_SAMPLE_WAVE_1 = 0.01
-FFT_SAMPLE_WAVE_2 = 0.02
-FFT_SAMPLE_WAVE_3 = 0.03
-FFT_SAMPLE_WAVE_4 = 0.04
-FFT_SAMPLE_WAVE_5 = 0.05
-FFT_SAMPLE_WAVE_6 = 0.06
-FFT_SAMPLE_WAVE_7 = 0.07
-FFT_SAMPLE_WAVE_8 = 0.08
+TEXTURE_WIDTH = 1024
+TEXTURE_HEIGHT = 1024
 
 FFT_SCOPE = 1024
-FFT_UNIFORM = 150
+FFT_UNIFORM = 64
 
 def FFT(s1):
 	global fft_max
@@ -50,11 +41,9 @@ def gen(fn):
 	print "INFO: Sound length = ", int(soundLength * FPS)
 	print "INFO: Left channel size =", len(s1)
 
-	img1 = Image.new("RGBA", (TEXTURE_WIDTH,TEXTURE_HEIGHT), color=(0,0,0,0))
-	img2 = Image.new("RGBA", (TEXTURE_WIDTH,TEXTURE_HEIGHT), color=(0,0,0,0))
+	img = Image.new("RGBA", (TEXTURE_WIDTH,TEXTURE_HEIGHT), color=(0,0,0,0))
 
-	draw1 = ImageDraw.Draw(img1)
-	draw2 = ImageDraw.Draw(img2)
+	draw = ImageDraw.Draw(img)
 
 	rangeStep = sampFreq / FPS
 	rangeLimits = int(soundLength * FPS);
@@ -76,7 +65,7 @@ def gen(fn):
 		fft_ret = FFT(fft_data)
 		fft_ret_len = len(fft_ret)
 
-		limit = max(limit, fft_ret[int(FFT_SAMPLE_WAVE_8*fft_ret_len)])
+		limit = max(limit, fft_ret[fft_ret_len - 1])
 
 	print "INFO: Max limit =", limit
 
@@ -95,27 +84,18 @@ def gen(fn):
 		fft_ret = FFT(fft_data)
 		fft_ret_len = len(fft_ret)
 
-		rgba1 = [fft_ret[int(FFT_SAMPLE_WAVE_1*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_2*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_3*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_4*fft_ret_len)]]
-				
-		rgba2 = [fft_ret[int(FFT_SAMPLE_WAVE_5*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_6*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_7*fft_ret_len)],
-				fft_ret[int(FFT_SAMPLE_WAVE_8*fft_ret_len)]]
-
-		rgba1 = [255 * (1.0 - x / limit) for x in rgba1]
-		rgba2 = [255 * (1.0 - x / limit) for x in rgba2]
-
 		px = i % TEXTURE_WIDTH;
-		py = i / TEXTURE_HEIGHT;
+		py = i / TEXTURE_HEIGHT * FFT_UNIFORM;
 
-		draw1.point((px, py), fill=(int(rgba1[0]), int(rgba1[1]), int(rgba1[2]), int(rgba1[3])))
-		draw2.point((px, py), fill=(int(rgba2[0]), int(rgba2[1]), int(rgba2[2]), int(rgba2[3])))
+		for j in xrange(FFT_UNIFORM):
+			index = j * 4;
+			v1 = int(255 * (1 - fft_ret[index] / limit))
+			v2 = int(255 * (1 - fft_ret[index + 1] / limit))
+			v3 = int(255 * (1 - fft_ret[index + 2] / limit))
+			v4 = int(255 * (1 - fft_ret[index + 3] / limit))
+			draw.point((px, py + j), fill=(v1,v2,v3,v4))
 
-	img1.save(fn+"1.png", 'png')
-	img2.save(fn+"2.png", 'png')
+	img.save(fn+".fft.png", 'png')
 
 if __name__ == "__main__":
 	if len(sys.argv) == 2:

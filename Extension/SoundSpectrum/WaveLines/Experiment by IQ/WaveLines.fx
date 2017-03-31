@@ -1,6 +1,6 @@
 #define USE_CUSTOM_PARAMS 1
 
-static float waveLines = 8;        // 1 ~ 8
+static float waveLines = 8;        // 1 ~ 16
 static float waveBloom = 3;        // 1 ~ inf
 static float waveHeightLow = 5;    // 1 ~ inf
 static float waveHeightHigh = 7;   // 1 ~ inf
@@ -19,7 +19,6 @@ static float2 translate = 0.0;     // 0 ~ 1
 // ignore USE_CUSTOM_PARAMS
 #define USE_RGB_SPACE 0
 
-#define WAVE_1_MAP_FILE "../../Media/Experiment by IQ.wav1.png"
-#define WAVE_2_MAP_FILE "../../Media/Experiment by IQ.wav2.png"
+#define FFT_MAP_FILE "../../Media/Experiment by IQ/Experiment by IQ.wav.fft.png"
 
 #include "wavelines.fxsub"

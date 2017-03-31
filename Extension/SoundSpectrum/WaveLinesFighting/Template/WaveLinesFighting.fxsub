@@ -1,3 +1,6 @@
+#define FFT_SIZE 1024
+#define FFT_UNIFORM 64
+
 float time : TIME<bool SyncInEditMode=true;>;
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
@@ -15,28 +18,12 @@ sampler ScnSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-texture Spectrum1Map<string ResourceName = WAVE_1_MAP_FILE;>; 
-sampler Spectrum1MapSamp = sampler_state
+texture SpectrumMap<string ResourceName = FFT_MAP_FILE;>; 
+sampler SpectrumMapSamp = sampler_state
 {
-	texture = <Spectrum1Map>;
+	texture = <SpectrumMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
-};
-
-texture Spectrum2Map<string ResourceName = WAVE_2_MAP_FILE;>; 
-sampler Spectrum2MapSamp = sampler_state
-{
-	texture = <Spectrum2Map>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-
-texture NoiseMap<string ResourceName = "noise.png";>; 
-sampler NoiseMapSamp = sampler_state
-{
-	texture = NoiseMap;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
 #if USE_CUSTOM_PARAMS
@@ -107,16 +94,6 @@ float3 ACESFilmLinear(float3 x)
 	return (x * (A * x + B)) / (x * (C * x + D) + E);
 }
 
-float2 GetFramesPerSecond(float time, float size = 256)
-{
-	float frame = time / 8.5 * (size - 1);
-
-	float y = floor(frame / size);
-	float x = frame - y * size;
-
-	return float2(x, y) / size;
-}
-
 float3 rgb2hsv(float3 c)
 {
 	float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -135,21 +112,31 @@ float3 hsv2rgb(float3 c)
 	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
 }
 
-void SoundSpectrumVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord  : TEXCOORD0,
-	out float4 oPosition  : POSITION)
+float2 GetFramesPerSecond(float time, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
 {
-	oTexcoord = Texcoord;
-	oTexcoord.zw = Texcoord.xy * ViewportSize;
-	oTexcoord.xy += ViewportOffset.xy;
-	oPosition = Position;
+	float frame = time / 8.5 * 255;
+
+	float y = floor(frame / size);
+	float x = frame - y * size;
+
+	return float2(x, y * uniforms) / size;
+}
+
+float GetFramesFreq(float2 coord, float samples, float size = FFT_SIZE, float uniforms = FFT_UNIFORM)
+{
+	float n = samples * 512;
+	float x = int(n / 4);
+	float y = int(fmod(n, 4));
+
+	float2 lookup = coord + x * float2(0, 1.0 / FFT_SIZE);
+	float4 freqs = tex2Dlod(SpectrumMapSamp, float4(lookup, 0, 0));
+
+	return freqs[y];
 }
 
 float3 GenWaveBg(float2 coord, float3 blockColor, float size = 0.02)
 {
-    coord = (coord * 0.5 + 0.5) * float2(ViewportAspect, 1);
+	coord = (coord * 0.5 + 0.5) * float2(ViewportAspect, 1);
 
 	float s1 = fmod(coord.x, 2.0 * size);
 	float s2 = fmod(coord.y, 2.0 * size);
@@ -164,20 +151,12 @@ float3 GenWaveBg(float2 coord, float3 blockColor, float size = 0.02)
 #endif
 }
 
-float3 GenWave(float2 coord, float4 freqs1, float4 freqs2)
+float3 GenWave(float2 coord)
 {
-	float freqs[8] = { freqs1, freqs2.abgr };
+	float2 index = GetFramesPerSecond(time);
 
-	float n = floor(abs(coord.x) * mWaveLines);
-	float fft1  = freqs[n];
-	float fft2  = freqs[max(0, n - 1 * sign(coord.x))];
-
-	float fft = lerp(fft2, fft1, coord.x * mWaveLines - floor(coord.x * mWaveLines)) * mWaveHeight;
+	float fft = GetFramesFreq(index, lerp(0.005, 0.20, abs(coord.x))) * mWaveHeight;
 	float wave = 1 - saturate(fft);
-
-	float2 noise = tex2Dlod(NoiseMapSamp, float4(coord.x, fft, 0, 0)).rg;
-	fft *= noise.x * noise.y;
-	wave *= noise.x;
 
 #if USE_RGB_SPACE
 	float3 color = lerp(mWaveColorHigh, mWaveColorLow, abs(coord.x));
@@ -191,18 +170,24 @@ float3 GenWave(float2 coord, float4 freqs1, float4 freqs2)
 	return clamp(color, 0, 10);
 }
 
+void SoundSpectrumVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oTexcoord = Texcoord;
+	oTexcoord.zw = Texcoord.xy * ViewportSize;
+	oTexcoord.xy += ViewportOffset.xy;
+	oPosition = Position;
+}
+
 float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR 
 {
-	float3 color = 0;
-	float2 index = GetFramesPerSecond(time);
-
-	float4 freqs1 = tex2Dlod(Spectrum1MapSamp, float4(index, 0, 0));
-	float4 freqs2 = tex2Dlod(Spectrum2MapSamp, float4(index, 0, 0));
-
 	float2 wave = smoothstep(mTranslate, mTranslate + mSize, coord) * 2 - 1;
 
 	float3 bg = GenWaveBg(wave, mWaveColorBg, mWaveBlockSize);
-	color = (1 + bg) * GenWave(wave, freqs1, freqs2);
+	float3 color = (1 + bg) * GenWave(wave);
 	color *= pow((1 - abs(wave.x)) * (1 - abs(wave.y)), mWaveFade);
 
 	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
