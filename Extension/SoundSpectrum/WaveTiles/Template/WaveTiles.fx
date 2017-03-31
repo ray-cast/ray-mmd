@@ -3,10 +3,8 @@
 static float2 size = 1.0;      // 0 ~ 1
 static float2 translate = 0.0; // 0 ~ 1
 
-static float waveLines = 8;   // 1 ~ 8
-static float waveBloom = 10;  // 1 ~ inf
 static float waveHeight = 1;  // 1 ~ 2
-static float waveFade = 0.8;  // 0 ~ inf
+static float waveFade = 0.0;  // 0 ~ inf
 static float waveBlockSizeX = 100; // 0 ~ inf
 static float waveBlockSizeY = 100; // 0 ~ inf
 
