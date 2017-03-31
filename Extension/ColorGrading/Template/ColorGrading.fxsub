@@ -25,6 +25,36 @@ sampler ColorGradingLUTSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
+#if USE_CUTSOM_PARAMS
+static const float3 mColorContrastAll   = colorContrastAll;
+static const float3 mColorSaturationAll = colorSaturationAll;
+static const float3 mColorGammaAll      = colorGammaAll;
+static const float3 mColorGainAll       = colorGainAll;
+static const float3 mColorOffsetAll     = colorOffsetAll;
+
+static const float3 mColorContrastLow   = colorContrastLow;
+static const float3 mColorSaturationLow = colorSaturationLow;
+static const float3 mColorGammaLow      = colorGammaLow;
+static const float3 mColorGainLow       = colorGainLow;
+static const float3 mColorOffsetLow     = colorOffsetLow;
+
+static const float3 mColorContrastMid   = colorContrastMid;
+static const float3 mColorSaturationMid = colorSaturationMid;
+static const float3 mColorGammaMid      = colorGammaMid;
+static const float3 mColorGainMid       = colorGainMid;
+static const float3 mColorOffsetMid     = colorOffsetMid;
+
+static const float3 mColorContrastHigh   = colorContrastHigh;
+static const float3 mColorSaturationHigh = colorSaturationHigh;
+static const float3 mColorGammaHigh      = colorGammaHigh;
+static const float3 mColorGainHigh       = colorGainHigh;
+static const float3 mColorOffsetHigh     = colorOffsetHigh;
+
+static const float mColorCorrectionLowThreshold  = colorCorrectionLowThreshold;
+static const float mColorCorrectionHighThreshold = colorCorrectionHighThreshold;
+
+static const float mVisualizationLUT = colorVisualizationLUT;
+#else
 float mContrastAllRP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllR+";>;
 float mContrastAllGP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllG+";>;
 float mContrastAllBP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "ContrastAllB+";>;
@@ -234,6 +264,7 @@ static float3 mColorOffsetHigh     = lerp(lerp(0.0, 3.0, mColorOffsetHighP), 0, 
 
 static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP) , 0.0, mWeightLowM);
 static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
+#endif
 
 const float A = 0.22;
 const float B = 0.3;
