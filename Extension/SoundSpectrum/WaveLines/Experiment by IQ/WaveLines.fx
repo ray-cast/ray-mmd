@@ -2,7 +2,7 @@
 
 static float waveLines = 8;        // 1 ~ 16
 static float waveBloom = 3;        // 1 ~ inf
-static float waveHeightLow = 5;    // 1 ~ inf
+static float waveHeightLow = 7;    // 1 ~ inf
 static float waveHeightHigh = 7;   // 1 ~ inf
 static float waveFade = 0.5;       // 0 ~ inf
 static float waveSin = 10;         // 1 ~ inf

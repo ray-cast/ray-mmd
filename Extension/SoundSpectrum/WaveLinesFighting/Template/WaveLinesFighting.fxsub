@@ -155,7 +155,7 @@ float3 GenWave(float2 coord)
 {
 	float2 index = GetFramesPerSecond(time);
 
-	float fft = GetFramesFreq(index, lerp(0.01, 0.5, abs(coord.x))) * mWaveHeight;
+	float fft = GetFramesFreq(index, lerp(0.01, 1.0, abs(coord.x))) * mWaveHeight;
 	float wave = 1 - saturate(fft);
 
 #if USE_RGB_SPACE
@@ -189,7 +189,7 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 	float3 bg = GenWaveBg(wave, mWaveColorBg, mWaveBlockSize);
 	float3 color = (1 + bg) * GenWave(wave);
 	color *= pow((1 - abs(wave.x)) * (1 - abs(wave.y)), mWaveFade);
-
+    
 	float3 screen = tex2Dlod(ScnSamp, float4(coord, 0, 0)).xyz;
 	return float4(screen + color, 1);
 }

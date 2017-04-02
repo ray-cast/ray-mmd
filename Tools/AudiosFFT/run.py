@@ -1,7 +1,7 @@
-import sys
-
-from pylab import*
+from sys import argv
+from math import ceil, log10
 from scipy.io import wavfile
+from scipy.fftpack import fft
 from PIL import Image, ImageDraw
 
 FPS = 30
@@ -27,8 +27,10 @@ def FFT(s1):
 	else:
 		p[1:len(p) -1] = p[1:len(p) - 1] * 2
 
-	ret = [abs(10*log10(x+1e-5)) for x in p]
-	return ret
+	return p
+	
+def plot(x):
+	return abs(10 * log10(x ** 2 + 1e-15))
 
 def gen(fn):
 	sampFreq, snd = wavfile.read(fn)
@@ -48,7 +50,8 @@ def gen(fn):
 	rangeStep = sampFreq / FPS
 	rangeLimits = int(soundLength * FPS);
 
-	limit = 0.0;
+	limit_max = 0.0;
+	limit_min = 255;
 
 	for i in xrange(rangeLimits):
 		start_index = rangeStep * i
@@ -65,9 +68,11 @@ def gen(fn):
 		fft_ret = FFT(fft_data)
 		fft_ret_len = len(fft_ret)
 
-		limit = max(limit, fft_ret[fft_ret_len - 1])
+		limit_max = max(limit_max, plot(fft_ret[0]))
+		limit_min = min(limit_min, plot(fft_ret[0]))
 
-	print "INFO: Max limit =", limit
+	print "INFO: Min limit =", limit_min
+	print "INFO: Max limit =", limit_max
 
 	for i in xrange(rangeLimits):
 		start_index = rangeStep * i
@@ -89,17 +94,19 @@ def gen(fn):
 
 		for j in xrange(FFT_UNIFORM):
 			index = j * 4;
-			v1 = int(255 * (1 - fft_ret[index] / limit))
-			v2 = int(255 * (1 - fft_ret[index + 1] / limit))
-			v3 = int(255 * (1 - fft_ret[index + 2] / limit))
-			v4 = int(255 * (1 - fft_ret[index + 3] / limit))
+
+			v1 = int(255 * (1 - (plot(fft_ret[index]) ) / limit_max))
+			v2 = int(255 * (1 - (plot(fft_ret[index + 1]) ) / limit_max))
+			v3 = int(255 * (1 - (plot(fft_ret[index + 2]) ) / limit_max))
+			v4 = int(255 * (1 - (plot(fft_ret[index + 3]) ) / limit_max))
+
 			draw.point((px, py + j), fill=(v1,v2,v3,v4))
 
 	img.save(fn+".fft.png", 'png')
 
 if __name__ == "__main__":
-	if len(sys.argv) == 2:
-		fn = sys.argv[1]
+	if len(argv) == 2:
+		fn = argv[1]
 		gen(fn)
 		print 'DONE...'
 	else:

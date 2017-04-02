@@ -168,7 +168,9 @@ float4 SoundSpectrumPS(in float2 coord : TEXCOORD0) : COLOR
 	for (int i = 0; i < mWaveLines; ++i) 
 	{
 		float freqHeight = i < (mWaveLines * 0.5) ? mWaveHeightLow : mWaveHeightHigh;
-		float freq = GetFramesFreq(index, lerp(0.02, 0.2, i / mWaveLines)) * freqHeight;
+		float freq = GetFramesFreq(index, lerp(0.02, 0.2, i / mWaveLines));
+		freq *= freq;
+		freq *= freqHeight;
 
 		float2 p = wave + float2(0, mWaveOffset * i / mWaveLines);
 		p.x += i * 0.05 + freq * 0.1 + time * mWaveWheel;
