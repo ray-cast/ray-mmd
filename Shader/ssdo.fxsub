@@ -1,10 +1,10 @@
-#if SSDO_QUALITY == 1
+#if SSDO_QUALITY == 1 || SSDO_QUALITY == 4
 #	define SSDO_SAMPLER_COUNT 8
 #	define SSDO_BLUR_RADIUS 6
-#elif SSDO_QUALITY == 2
+#elif SSDO_QUALITY == 2 || SSDO_QUALITY == 5
 #	define SSDO_SAMPLER_COUNT 12
 #	define SSDO_BLUR_RADIUS 6
-#elif SSDO_QUALITY >= 3
+#elif SSDO_QUALITY == 3 || SSDO_QUALITY == 6
 #	define SSDO_SAMPLER_COUNT 16
 #	define SSDO_BLUR_RADIUS 6
 #else
@@ -219,7 +219,7 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
 
-#if SSDO_QUALITY == 4
+#if SSDO_QUALITY >= 4
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
 #endif

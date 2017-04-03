@@ -117,12 +117,11 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
 	float4 deltaScreenPos = endScreenPos - startScreenPos;
 
-	float intervalSize = maxDistance / (SSR_SAMPLER_COUNT * 1.6) * mSSRThreshold;
-
 	float stepSize = 1.0 / SSR_SAMPLER_COUNT;
 	float stepLength = jitter * stepSize + stepSize;
 
 	float bestLen = 0;
+	float bestIntervalSize = maxDistance / (SSR_SAMPLER_COUNT * 1.6) * mSSRThreshold;
 
 	for (int i = 0; i < SSR_SAMPLER_COUNT; i += 4)
 	{
@@ -147,7 +146,7 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 
 		float4 depthDiff = samplePosZ - abs(sampleDepth);
 
-		bool4 hit = abs(depthDiff) < intervalSize;
+		bool4 hit = abs(depthDiff) < bestIntervalSize;
 		if (any(hit))
 		{
 			float hitIndex = 3;
@@ -187,20 +186,18 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float3 test = material.albedo + material.specular;
 	clip(sum(test - 1e-5));
 
-	float linearDepth = material.linearDepth;
+	float3 view = normalize(viewdir);
+	float3 viewPosition = view * material.linearDepth / view.z;
+	float3 viewReflect = normalize(reflect(-view, material.normal));
 
-	float3 V = normalize(viewdir);
-	float3 viewPosition = V * linearDepth / V.z;
-	float3 viewReflect = normalize(reflect(-V, material.normal));
-
-	float maxDistance = linearDepth * (1.5 + mSSRRangeP - mSSRRangeM);
+	float maxDistance = material.linearDepth * (1.5 + mSSRRangeP - mSSRRangeM);
 #if SSR_QUALITY == 2
-	maxDistance += viewPosition.z * 0.35 + 100 * pow5(1 - saturate(dot(V, material.normal)));
+	maxDistance += viewPosition.z * 0.35 + 100 * pow5(1 - saturate(dot(view, material.normal)));
 #elif SSR_QUALITY == 3
-	maxDistance += viewPosition.z * 0.45 + 100 * pow5(1 - saturate(dot(V, material.normal)));
+	maxDistance += viewPosition.z * 0.45 + 100 * pow5(1 - saturate(dot(view, material.normal)));
 #endif
 
-	float atten = dot(viewReflect, -V);
+	float atten = dot(viewReflect, -view);
 	if (atten <= 0)
 	{
 		clip(-1);
@@ -266,9 +263,9 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 	float gloss = material.smoothness;
-	gloss *= gloss;
+	float gloss2 = gloss * gloss;
 
-	float weight = frac(min(gloss, 0.9999) * 3);
+	float weight = frac(min(gloss2, 0.9999) * 3);
 
 	float4 refl0 = tex2Dlod(SSRLightX1Samp, float4(coord, 0, 0));
 	float4 refl1 = tex2Dlod(SSRLightX2Samp, float4(coord, 0, 0));
@@ -278,14 +275,18 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float4 color = 0;
 
 	[branch]
-	if (gloss > 2.0 / 3.0)
+	if (gloss2 > 2.0 / 3.0)
 		color = lerp(refl1, refl0, weight * weight);
-	else if (gloss > 1.0/3.0)
+	else if (gloss2 > 1.0 / 3.0)
 		color = lerp(refl2, refl1, weight);
 	else
 		color = lerp(refl3, refl2, weight);
 
+	float3 V = normalize(viewdir);
+	float3 N = material.normal;
 	float3 f0 = min(0.02, material.specular);
-	float3 fresnel = EnvironmentSpecularUnreal4(material.normal, normalize(viewdir), material.smoothness, f0);
+	
+	float3 fresnel = EnvironmentSpecularUnreal4(N, V, gloss, f0);
+
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
 }

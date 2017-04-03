@@ -27,7 +27,6 @@ sampler SpectrumMapSamp = sampler_state
 };
 
 #if USE_CUSTOM_PARAMS
-static float mWaveLines = 7;
 static float mWaveHeight = waveHeight;
 static float mWaveFade = waveFade;
 static float mWaveBlockSizeX = waveBlockSizeX;
