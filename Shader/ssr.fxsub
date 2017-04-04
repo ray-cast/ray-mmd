@@ -209,7 +209,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, jitter, hitPixel);
 	if (!hitTest)
 	{
-		return 0;
+		clip(-1);
 	}
 
 	float2 boundary = abs(coord.xy * 2 - 1);
