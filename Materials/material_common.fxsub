@@ -965,7 +965,7 @@ float GetSmoothness(float2 coord)
 			coord.y = 1 - coord.y;
 		#endif
 
-		#if SMOOTHNeSS_MAP_IN_TOONMAP
+		#if SMOOTHNESS_MAP_IN_TOONMAP
 			float4 smoothnessValues = tex2D(ToonMapSamp, coord * smoothnessMapLoopNum);
 		#else
 			float4 smoothnessValues = tex2D(SmoothnessMapSamp, coord * smoothnessMapLoopNum);
