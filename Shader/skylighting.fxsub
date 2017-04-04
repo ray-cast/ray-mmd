@@ -9,8 +9,6 @@
 float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
 float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
-float mEnvLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvLight+";>;
-float mEnvLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvLight-";>;
 float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
 float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
 float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
@@ -37,9 +35,9 @@ float mSpecularCol  :  CONTROLOBJECT<string name="(self)"; string item = "Specul
 static float4 mBalanceDiffuse = float4(float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM), mDiffuseCol);
 static float4 mBalanceSpecular = float4(float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM), mSpecularCol);
 
-static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP + mEnvLightP),  0, mEnvSSSLightM + mEnvLightM);
-static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP + mEnvLightP), 0, mEnvSpecLightM + mEnvLightM);
-static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP + mEnvLightP), 0, mEnvDiffLightM + mEnvLightM);
+static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 

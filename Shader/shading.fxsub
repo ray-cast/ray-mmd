@@ -17,13 +17,13 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 	specular = energy.gba;
 
 #if SHADOW_QUALITY
-	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	shadow = min(shadow, saturate(dot(material.normal, L) * 2));
+	float3 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+	shadow = min(shadow, saturate(dot(material.normal, L) * 2)) + mSunShadowP * (1 - shadow);
 	diffuse *= shadow;
 	specular *= shadow;
 #endif
 
-	float3 lightColor = LightSpecular * mMainLightIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
+	float3 lightColor = LightSpecular * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
 #if MAIN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(LightDirection);
 #endif

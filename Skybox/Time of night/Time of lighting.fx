@@ -8,8 +8,6 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
-float mEnvLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvLight+";>;
-float mEnvLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvLight-";>;
 float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
 float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight-";>;
 float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
@@ -17,9 +15,9 @@ float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string it
 float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
 float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
 
-static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP + mEnvLightP),  0, mEnvSSSLightM + mEnvLightM);
-static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP + mEnvLightP), 0, mEnvSpecLightM + mEnvLightM);
-static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP + mEnvLightP), 0, mEnvDiffLightM + mEnvLightM);
+static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 #define IBL_MIPMAP_LEVEL 7
 

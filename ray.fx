@@ -6,8 +6,11 @@ const float4 WhiteColor = 1.0;
 const float ClearDepth = 1.0;
 const int ClearStencil = 0;
 
-float mDirectionLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DirectionLight+";>;
-float mDirectionLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DirectionLight-";>;
+float mSunLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunLight+";>;
+float mSunLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunLight-";>;
+float mSunShadowRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunShadowR+";>;
+float mSunShadowGP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunShadowG+";>;
+float mSunShadowBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunShadowB+";>;
 float mEnvShadowP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvShadow+";>;
 float mSSAOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO+";>;
 float mSSAOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO-";>;
@@ -47,7 +50,7 @@ float3 LightDirection : DIRECTION< string Object = "Light";>;
 static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
-static float mMainLightIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mDirectionLightP), 0, mDirectionLightM);
+static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
@@ -55,6 +58,7 @@ static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax,
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
 static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
+static float3 mSunShadowP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
 static float3 mColorBalanceP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
 static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
 
