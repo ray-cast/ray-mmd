@@ -12,6 +12,10 @@
 #	define SSDO_BLUR_RADIUS 6
 #endif
 
+#if SSDO_QUALITY >= 4
+#	define SSDO_LOW_SAMPLER_COUNT 12
+#endif
+
 shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0, 1.0};
 	bool AntiAlias = false;
@@ -85,41 +89,117 @@ float4 ScreenSpaceDirOccPassVS(
 	return Position;
 }
 
-float4 ScreenSpaceDirOccPassPS(
-	in float4 coord : TEXCOORD0,
-	in float4 SSDOParams1 : TEXCOORD1,
-	in float4 SSDOParams2 : TEXCOORD2) : COLOR
+#if SSDO_LOW_SAMPLER_COUNT
+float4 ScreenSpaceDirOccLowPS(
+	float4 coord,
+	float3 viewNormal,
+	float3 viewPosition,
+	float  SSDOJitter,
+	float  SSDOBias,
+	float  SSDORadius,
+	float4 SSDOParams1,
+	float4 SSDOParams2)
 {
-	float linearDepth = linearizeDepth(coord.xy);
-	float linearDepth2 = abs(linearDepth);
-
-	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
-
-	float sampleJitter = GetJitterOffset(coord.zw);
-	float sampleBias = 0;
-	sampleBias += mSSDOBiasFar * linearDepth2;
-	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
-
-	float maxRadius = SSDOParams2.w;
-	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
-	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
-
-	float2 radius = clamp(SSDOParams2.xy / linearDepth2, SSDOParams2.z, maxRadius);
-
 	float2 sampleRotate[16];
 	float4 sampleOcclustion = 0.0f;
-	float2 sampleSinCos = float2(sin(sampleJitter * PI_2), cos(sampleJitter * PI_2));
+	float2 sampleRadius = SSDOParams2.w * ViewportAspect / SSDO_SAMPLER_COUNT * SSDORadius;
+
+	[unroll]
+	for (int i = 0; i < SSDO_LOW_SAMPLER_COUNT; i++)
+	{
+		float2 angle;
+		sincos(i * 7.0 * PI_2 / SSDO_LOW_SAMPLER_COUNT + SSDOJitter, angle.x, angle.y);
+		sampleRotate[i] = angle * (i * sampleRadius + ViewportOffset2);
+	}
+	
+	[unroll]
+	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
+	{
+		float2 sampleOffset[4];
+		sampleOffset[0] = coord.xy + sampleRotate[j + 0];
+		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
+		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
+		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
+
+		float4 sampleDepths;
+		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
+		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
+		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
+		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
+		sampleDepths = abs(sampleDepths);
+
+		float3 samplePosition[4];
+		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
+		samplePosition[1] = float3(sampleOffset[1] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[1];
+		samplePosition[2] = float3(sampleOffset[2] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[2];
+		samplePosition[3] = float3(sampleOffset[3] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[3];
+
+		float3 sampleDirection[4];
+		sampleDirection[0] = samplePosition[0] - viewPosition;
+		sampleDirection[1] = samplePosition[1] - viewPosition;
+		sampleDirection[2] = samplePosition[2] - viewPosition;
+		sampleDirection[3] = samplePosition[3] - viewPosition;
+
+		float4 sampleLength2 = float4(
+			dot(sampleDirection[0], sampleDirection[0]),
+			dot(sampleDirection[1], sampleDirection[1]),
+			dot(sampleDirection[2], sampleDirection[2]),
+			dot(sampleDirection[3], sampleDirection[3]));
+
+		sampleDirection[0] *= rsqrt(sampleLength2[0]);
+		sampleDirection[1] *= rsqrt(sampleLength2[1]);
+		sampleDirection[2] *= rsqrt(sampleLength2[2]);
+		sampleDirection[3] *= rsqrt(sampleLength2[3]);
+
+		float4 sampleAngle = float4(
+			dot(sampleDirection[0], viewNormal),
+			dot(sampleDirection[1], viewNormal),
+			dot(sampleDirection[2], viewNormal),
+			dot(sampleDirection[3], viewNormal));
+		
+		float emitterScale = 5.0;
+		float emitterRadius = (sampleRadius.x * viewPosition.z) * SSDOParams1.x;
+		float emitterArea = (emitterScale * emitterRadius * emitterRadius) * PI;
+
+		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
+
+		sampleOcclustion.x += sum(sh);
+		sampleOcclustion.yzw += sh.x * sampleDirection[0];
+		sampleOcclustion.yzw += sh.y * sampleDirection[1];
+		sampleOcclustion.yzw += sh.z * sampleDirection[2];
+		sampleOcclustion.yzw += sh.w * sampleDirection[3];
+	}
+
+	sampleOcclustion /= SSDO_LOW_SAMPLER_COUNT;
+
+	return float4(saturate(sampleOcclustion.x), sampleOcclustion.yzw * 0.5 + 0.5);
+}
+#endif
+
+float4 ScreenSpaceDirOccMediumPS(
+	float4 coord,
+	float3 viewNormal,
+	float3 viewPosition,
+	float  SSDOJitter,
+	float  SSDOBias,
+	float  SSDORadius,
+	float4 SSDOParams1,
+	float4 SSDOParams2)
+{
+	float2 sampleRotate[16];
+	float2 sampleRadius = clamp(SSDOParams2.xy / viewPosition.z, SSDOParams2.z, SSDOParams2.w * SSDORadius);
+	float2 sampleSinCos = float2(sin(SSDOJitter), cos(SSDOJitter));
+	float4 sampleOcclustion = 0.0f;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
-
+	
 	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * radius;
-		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * radius;
-		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * radius;
-		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * radius;
+		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleRadius;
+		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleRadius;
+		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleRadius;
+		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleRadius;
 	}
 
 	[unroll]
@@ -168,10 +248,10 @@ float4 ScreenSpaceDirOccPassPS(
 			dot(sampleDirection[3], viewNormal));
 
 		float emitterScale = 2.5;
-		float emitterRadius = (radius.x * linearDepth2) * SSDOParams1.x;
+		float emitterRadius = (sampleRadius.x * viewPosition.z) * SSDOParams1.x;
 		float emitterArea = (emitterScale * emitterRadius * emitterRadius) * PI * 0.25;
 
-		float4 sh = emitterArea * saturate(sampleAngle - sampleBias) / (sampleLength2 + emitterArea);
+		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
 
 		sampleOcclustion.x += sum(sh);
 		sampleOcclustion.yzw += sh.x * sampleDirection[0];
@@ -181,11 +261,44 @@ float4 ScreenSpaceDirOccPassPS(
 	}
 
 	sampleOcclustion /= SSDO_SAMPLER_COUNT;
-	sampleOcclustion.x *= linearDepth < 0.0 ? 0.35 : 1.0;
 
-	float ao = pow(saturate(1 - sampleOcclustion.x) , mSSAOScale);
+	return float4(saturate(sampleOcclustion.x), sampleOcclustion.yzw * 0.5 + 0.5);
+}
 
-	return float4(ao, sampleOcclustion.yzw * 0.5 + 0.5);
+float4 ScreenSpaceDirOccPassPS(
+	in float4 coord : TEXCOORD0,
+	in float4 SSDOParams1 : TEXCOORD1,
+	in float4 SSDOParams2 : TEXCOORD2) : COLOR
+{
+	float linearDepth = linearizeDepth(coord.xy);
+	float linearDepth2 = abs(linearDepth);
+
+	float3 viewNormal = GetNormal(coord.xy);
+	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
+
+	float sampleJitter = GetJitterOffset(coord.zw) * PI_2;
+	float sampleBias = 0;
+	sampleBias += mSSDOBiasFar * linearDepth2;
+	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
+	
+	float maxRadius = 1.0;
+	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
+
+#if SSDO_QUALITY >= 4
+	float4 sh1 = ScreenSpaceDirOccLowPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
+	float4 sh2 = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
+
+	float4 sh = sh1.x > sh2.x ? sh1 : sh2;
+#else
+	float4 sh = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
+#endif
+
+	sh.x = sh.x * (linearDepth < 0.0 ? 0.35 : 1.0);
+	sh.x = 1 - sh.x;
+	sh.x = pow(sh.x, mSSAOScale);
+
+	return sh;
 }
 
 float4 ScreenSpaceDirOccBlurPS(
@@ -219,10 +332,8 @@ float4 ScreenSpaceDirOccBlurPS(
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
 
-#if SSDO_QUALITY >= 4
 		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
 		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
-#endif
 
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
