@@ -93,7 +93,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
 
-#if SHADOW_MAP_SOFT_QUALITY > 0
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
 
@@ -133,11 +132,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
-#else
-	float2 shadow = tex2Dlod(ShadowMapSamp, float4(proj.xy, 0, 0)).rg;
-	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
-	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
-#endif
 }
 
 float ShadingShadow(MaterialParam material, float3 V)
@@ -149,8 +143,7 @@ float ShadingShadow(MaterialParam material, float3 V)
 	}
 
 	float3 P = V * material.linearDepth / V.z;
-	float shadow = ShadowPCF(P, 0);
-	return shadow;
+	return ShadowPCF(P, 0);
 }
 
 #endif

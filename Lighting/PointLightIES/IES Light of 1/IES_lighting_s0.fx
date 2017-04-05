@@ -13,7 +13,6 @@
 // 阴影
 #define SHADOW_MAP_ENABLE 1
 #define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 0 // (0 ~ 3)
 
 #define IES_FILE_PATH "IES.HDR"
 

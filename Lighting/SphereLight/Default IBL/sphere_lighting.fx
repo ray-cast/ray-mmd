@@ -10,7 +10,6 @@
 // 阴影
 #define SHADOW_MAP_ENABLE 0
 #define SHADOW_MAP_QUALITY 0 // (0 ~ 3)
-#define SHADOW_MAP_SOFT_QUALITY 1 // (0 ~ 3)
 
 #define IBL_ENABLE 1
 #define IBL_MIPMAP_LEVEL 7

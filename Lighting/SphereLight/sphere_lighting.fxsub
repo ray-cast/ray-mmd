@@ -124,7 +124,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
-#if SHADOW_MAP_SOFT_QUALITY > 0
 	float2 shadow = 0.0;
 	float shadowWeight = 0.0;
 	
@@ -163,28 +162,12 @@ float ShadowPCF(float3 viewPosition, int samples)
 	shadow = shadow / (shadowWeight * shadowWeight);
 	
 	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
-#else
-	float2 shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).rg;
-	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
-#endif
 }
 
 float ShadingShadow(MaterialParam material, float3 V)
 {
 	float3 P = V * material.linearDepth / V.z;
-
-	float shadow = 1;
-	#if SHADOW_MAP_SOFT_QUALITY == 1
-		shadow *= ShadowPCF(P, 1);
-	#elif SHADOW_MAP_SOFT_QUALITY == 2
-		shadow *= ShadowPCF(P, 2);
-	#elif SHADOW_MAP_SOFT_QUALITY >= 3
-		shadow *= ShadowPCF(P, 3);
-	#else
-		shadow *= ShadowPCF(P, 0);
-	#endif
-
-	return shadow;
+	return ShadowPCF(P, 0);
 }
 
 #endif
