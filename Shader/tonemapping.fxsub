@@ -27,17 +27,10 @@ float3 TonemapHejl2015(float3 hdr, float whitePt)
 	return vf.rgb / vf.www;
 }
 
-float3 TonemapALU(float3 color)
-{
-	color = max(0, color - 0.004f);
-	color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f)+ 0.06f);
-	return color;
-}
-
-float3 TonemapReinhardLumaBased(float3 color)
+float3 TonemapReinhardLumaBased(float3 color, float whitePt)
 {
 	float luma = luminance(color);
-	float toneMappedLuma = luma / (1 + luma);
+	float toneMappedLuma = luma * (1 + luma / (whitePt * whitePt))/ (1 + luma);
 	color *= toneMappedLuma / luma;
 	return color;
 }
@@ -48,13 +41,14 @@ float3 ColorToneMapping(float3 color)
 	float3 curr = TonemapACES(color);
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	float3 curr = TonemapALU(color);
+	float4 curr = TonemapHable(float4(color, 4.0));
+	curr = curr / curr.w;
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
-	float3 curr = TonemapReinhardLumaBased(color);
+	float3 curr = TonemapReinhardLumaBased(color, 4.0);
 	return lerp(curr, color, mTonemapping);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
-	float4 curr = TonemapHable(float4(color * 2, 8.0));
+	float4 curr = TonemapHable(float4(color, 8.0));
 	curr = curr / curr.w;
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
