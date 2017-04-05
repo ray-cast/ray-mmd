@@ -41,7 +41,7 @@ float3 ColorToneMapping(float3 color)
 	float3 curr = TonemapACES(color);
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	float4 curr = TonemapHable(float4(color, 4.0));
+	float4 curr = TonemapHable(float4(pow(color * (1.0 / 0.18), 1.15) * 0.18, 4.0));
 	curr = curr / curr.w;
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
