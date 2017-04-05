@@ -104,15 +104,13 @@ float4 ScreenSpaceDirOccLowPS(
 	float4 sampleOcclustion = 0.0f;
 	float2 sampleRadius = SSDOParams2.w * ViewportAspect / SSDO_SAMPLER_COUNT * SSDORadius;
 
-	[unroll]
 	for (int i = 0; i < SSDO_LOW_SAMPLER_COUNT; i++)
 	{
 		float2 angle;
 		sincos(i * 7.0 * PI_2 / SSDO_LOW_SAMPLER_COUNT + SSDOJitter, angle.x, angle.y);
 		sampleRotate[i] = angle * (i * sampleRadius + ViewportOffset2);
 	}
-	
-	[unroll]
+
 	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
