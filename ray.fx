@@ -202,7 +202,7 @@ technique DeferredLighting<
 	"RenderColorTarget=SSRLightX4MapTemp; Pass=SSRGaussionBlurX4;"
 	"RenderColorTarget=SSRLightX4Map;	  Pass=SSRGaussionBlurY4;"
 
-	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"    
+	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
 #if HDR_BLOOM_MODE > 0
@@ -369,8 +369,8 @@ technique DeferredLighting<
 		StencilFunc = EQUAL;
 		StencilRef = 1;
 		StencilWriteMask = 0;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempSamp, ShadingMapTempSamp, float2(1.0, 0.0));
+		VertexShader = compile vs_3_0 SSSGaussBlurVS();
+		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempPointSamp, ShadingMapTempPointSamp, float2(1.0, 0.0));
 	}
 	pass SSSSBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -379,8 +379,8 @@ technique DeferredLighting<
 		StencilFunc = EQUAL;
 		StencilRef = 1;
 		StencilWriteMask = 0;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapSamp, ShadingMapTempSamp,float2(0.0, 1.0));
+		VertexShader = compile vs_3_0 SSSGaussBlurVS();
+		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapPointSamp, ShadingMapTempPointSamp,float2(0.0, 1.0));
 	}
 	pass ShadingOpacityAlbedo<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;

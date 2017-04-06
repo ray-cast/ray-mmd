@@ -104,7 +104,7 @@ sampler SSRLightX4SampTemp = sampler_state {
 	AddressU  = CLAMP; AddressV  = CLAMP;
 };
 
-bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float smoothness, float jitter, out float2 hitPixel)
+bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float jitter, out float2 hitPixel)
 {
 	float4 startPosition = float4(viewPosition, 1);
 	float4 startScreenPos = mul(startPosition, matProject);
@@ -184,33 +184,24 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
 
 	float3 test = material.albedo + material.specular;
-	clip(sum(test - 1e-5));
+	clip(sum(test) - 1e-5);
 
 	float3 view = normalize(viewdir);
 	float3 viewPosition = view * material.linearDepth / view.z;
 	float3 viewReflect = normalize(reflect(-view, material.normal));
 
-	float maxDistance = material.linearDepth * (1.5 + mSSRRangeP - mSSRRangeM);
-#if SSR_QUALITY == 2
-	maxDistance += viewPosition.z * 0.35 + 100 * pow5(1 - saturate(dot(view, material.normal)));
-#elif SSR_QUALITY == 3
-	maxDistance += viewPosition.z * 0.45 + 100 * pow5(1 - saturate(dot(view, material.normal)));
-#endif
-
 	float atten = dot(viewReflect, -view);
-	if (atten <= 0)
-	{
-		clip(-1);
-	}
+	clip(atten - 1e-5);
 
 	float2 hitPixel = 0;
 
-	float jitter = GetJitterOffset(coord.zw);
-	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, maxDistance, material.smoothness, jitter, hitPixel);
+	float sampleJitter = GetJitterOffset(coord.zw);
+	float sampleDistance = material.linearDepth * (1.3 + 0.2 * SSR_QUALITY + mSSRRangeP - mSSRRangeM);
+	sampleDistance += 40 * SSR_QUALITY * pow5(1 - saturate(dot(view, material.normal)));
+
+	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, sampleDistance, sampleJitter, hitPixel);
 	if (!hitTest)
-	{
 		clip(-1);
-	}
 
 	float2 boundary = abs(coord.xy * 2 - 1);
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
@@ -282,10 +273,9 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	else
 		color = lerp(refl3, refl2, weight);
 
-	float3 V = normalize(viewdir);
 	float3 N = material.normal;
-	float3 f0 = min(0.02, material.specular);
-	
+	float3 V = normalize(viewdir);
+	float3 f0 = min(0.02, material.specular);	
 	float3 fresnel = EnvironmentSpecularUnreal4(N, V, gloss, f0);
 
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
