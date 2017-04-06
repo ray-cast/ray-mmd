@@ -2,7 +2,6 @@
 #include "shader/common.fxsub"
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
-#include "shader/cloud.fxsub"
 
 static const float3 sunScaling = 3000;
 static const float3 sunTranslate = 80000;
@@ -129,109 +128,49 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	return linear2srgb(insctrColor);
 }
 
-float4 ScatteringWithCloudsPS(in float3 viewdir : TEXCOORD0) : COLOR
-{
-	float3 V = normalize(viewdir);
-
-	float scaling = 1000;
-
-	ScatteringParams setting;
-	setting.sunRadiance = mSunRadiance;
-	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
-	setting.earthCenter = float3(0, -setting.earthRadius, 0);
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
-	setting.cloud = mCloudDensity;
-	setting.cloudBias = mCloudBias;
-	setting.cloudTop = 8 * scaling;
-	setting.cloudBottom = 5 * scaling;
-	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
-
-	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
-
-	return linear2srgb(insctrColor);
-}
-
 const float4 BackColor = 0.0;
 
-technique MainTech<string MMDPass = "object";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawJupiter;"
-	"Pass=DrawMoon;"
-	"Pass=DrawSun;"
-	"Pass=DrawScattering;";
->{
-	pass DrawJupiter {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling);
-		PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp);
+#define OBJECT_TEC(name, mmdpass) \
+	technique name<string MMDPass = mmdpass;\
+		string Script =\
+		"RenderColorTarget=;"\
+		"ClearSetColor=BackColor;"\
+		"Clear=Color;"\
+		"Pass=DrawJupiter;"\
+		"Pass=DrawMoon;"\
+		"Pass=DrawSun;"\
+		"Pass=DrawScattering;";\
+	>{\
+		pass DrawJupiter {\
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling);\
+			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp);\
+		}\
+		pass DrawMoon {\
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling);\
+			PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp);\
+		}\
+		pass DrawSun {\
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
+			VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling);\
+			PixelShader  = compile ps_3_0 SunPS(SunMapSamp);\
+		}\
+		pass DrawScattering {\
+			AlphaBlendEnable = true; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			SrcBlend = ONE; DestBlend = SRCALPHA;\
+			VertexShader = compile vs_3_0 ScatteringVS();\
+			PixelShader  = compile ps_3_0 ScatteringPS();\
+		}\
 	}
-	pass DrawMoon {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling);
-		PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp);
-	}
-	pass DrawSun {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling);
-		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
-	}
-	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
-		VertexShader = compile vs_3_0 ScatteringVS();
-		PixelShader  = compile ps_3_0 ScatteringPS();
-	}
-}
-technique MainTechSS<string MMDPass = "object_ss";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawJupiter;"
-	"Pass=DrawMoon;"
-	"Pass=DrawSun;"
-	"Pass=DrawScattering;";
->{
-	pass DrawJupiter {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling);
-		PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp);
-	}
-	pass DrawMoon {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling);
-		PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp);
-	}
-	pass DrawSun {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling);
-		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
-	}
-	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
-		VertexShader = compile vs_3_0 ScatteringVS();
-		PixelShader  = compile ps_3_0 ScatteringWithCloudsPS();
-	}
-}
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTec<string MMDPass = "shadow";>{}

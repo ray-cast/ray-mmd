@@ -1,0 +1,114 @@
+#define NUMS_SAMPLES_SUN 4
+
+struct ScatteringParams
+{
+	float sunSize;
+	float sunRadiance;
+
+	float mieG;
+	float mieHeight;
+
+	float rayleighHeight;
+	
+	float fogRange;
+
+	float3 waveLambda;
+	float3 waveLambdaMie;
+	float3 waveLambdaRayleigh;
+	
+	float earthRadius;
+	float earthAtmTopRadius;
+	float3 earthCenter;
+};
+
+float ChapmanApproximation(float X, float h, float cosZenith)
+{
+	float c = sqrt(X + h);
+	float c_exp_h = c * exp2(-h);
+
+	if (cosZenith >= 0)
+	{
+		return c_exp_h / (c * cosZenith + 1);
+	}
+	else
+	{
+		float x0 = sqrt(1 - cosZenith * cosZenith) * (X + h);
+		float c0 = sqrt(x0);
+
+		return 2 * c0 * exp2(X - x0) - c_exp_h / (1 - c * cosZenith);
+	}
+}
+
+float GetOpticalDepthSchueler(float h, float H, float earthRadius, float cosZenith)
+{
+	return H * ChapmanApproximation(earthRadius / H, h / H, cosZenith);
+}
+
+float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 V, float3 L, float neg)
+{
+	float rl = length(samplePoint);
+	float h = rl - setting.earthRadius;
+	float3 r = samplePoint / rl;
+
+	float cos_chi_sun = dot(r, L);
+	float cos_chi_ray = dot(r, V * neg);
+
+	float opticalDepthSun = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_sun);
+	float opticalDepthCamera = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_ray) * neg;
+
+	return float2(opticalDepthSun, opticalDepthCamera);
+}
+
+void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, bool infinite, out float3 transmittance, out float3 insctrMie, out float3 insctrRayleigh)
+{
+	float inf_neg = infinite ? 1 : -1;
+
+	float3 sampleStep = (end - start) / NUMS_SAMPLES_SUN;
+	float3 samplePoint = end - sampleStep;
+	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh;
+
+	float sampleLength = length(sampleStep);
+
+	float3 scattering = 0;
+	float2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);
+
+	for (int i = 1; i < NUMS_SAMPLES_SUN; i++, samplePoint -= sampleStep)
+	{
+		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
+
+		float3 segment_s = exp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
+		float3 segment_t = exp2(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
+		
+		transmittance = transmittance * segment_t;
+		
+		scattering = scattering * segment_t;
+		scattering += exp2(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
+
+		lastOpticalDepth = opticalDepth;
+	}
+
+	insctrMie = scattering;
+	insctrRayleigh = scattering;
+}
+
+float3 ComputeFogChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance)
+{
+	float3 start = eye - setting.earthCenter;
+	float3 end = start + V * distance * setting.fogRange;
+
+	float3 insctrMie = 0.0;
+	float3 insctrRayleigh = 0.0;
+	float3 insctrOpticalLength = 1;
+	AerialPerspective(setting, start, end, V, -L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
+	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+
+	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
+
+	float3 scattering = insctrTotalMie + insctrTotalRayleigh;
+
+	return float4(scattering * setting.sunRadiance, 1);
+}
