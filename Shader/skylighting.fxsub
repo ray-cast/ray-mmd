@@ -102,10 +102,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-	N = ComputeDiffuseDominantDir(N, V, roughness);
-	R = ComputeSpecularDominantDir(N, R, roughness);
-
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
