@@ -38,21 +38,21 @@ float3 TonemapReinhardLumaBased(float3 color, float whitePt)
 float3 ColorToneMapping(float3 color)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
-	float3 curr = TonemapACES(color);
-	return saturate(curr);
+	float3 curr = TonemapReinhardLumaBased(color, 4.0);
+	return lerp(curr, color, mTonemapping);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
-	float4 curr = TonemapHable(float4(pow(color * (1.0 / 0.18), 1.15) * 0.18, 4.0));
+	float4 curr = TonemapHable(float4(color, 4.0));
 	curr = curr / curr.w;
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
-	float3 curr = TonemapReinhardLumaBased(color, 4.0);
-	return lerp(curr, color, mTonemapping);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
-	float4 curr = TonemapHable(float4(color, 8.0));
+	float4 curr = TonemapHable(float4(color * 2.0, 8.0));
 	curr = curr / curr.w;
 	return saturate(curr);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
 	float3 curr = TonemapHejl2015(color, 8.0);
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
+	float3 curr = TonemapACES(color);
 	return saturate(curr);
 #else
 	return saturate(color);
