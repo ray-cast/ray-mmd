@@ -1,3 +1,4 @@
+#if MAIN_LIGHT_ENABLE
 #if MAIN_LIGHT_ENABLE == 2
 float ComputeSunIntensity(float3 L)
 {
@@ -11,35 +12,35 @@ float ComputeSunIntensity(float3 L)
 
 void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
-#if MAIN_LIGHT_ENABLE
 	float4 energy = SurfaceEnergy(material, material.normal, L, V, 1.0);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
+	diffuse = energy.r + subsurface;
 	specular = energy.gba;
 
-#if SHADOW_QUALITY
-	float3 shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	shadow = min(shadow, saturate(dot(material.normal, L) * 2)) + mSunShadowP * (1 - shadow);
-	diffuse *= shadow;
-	specular *= shadow;
-#endif
-
 	float3 lightColor = LightSpecular * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
+
 #if MAIN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(LightDirection);
 #endif
 
-	diffuse *= lightColor;
-	specular *= lightColor;
+#if SHADOW_QUALITY
+	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+	lightColor *= min(shadow, saturate(dot(material.normal, L) * 2));
+	lightColor += mSunShadowP * (1 - shadow);
+#endif
 
 #if SSDO_QUALITY
 	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).gba;
 	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
 	ssdo = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssdo;
-	diffuse *= ssdo;
+	diffuse = diffuse * ssdo + subsurface * (1 - ssdo);
 	specular *= ssdo;
 #endif
-#endif
+
+	diffuse *= lightColor;
+	specular *= lightColor;
 }
+#endif
 
 void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 screenPosition, float2 coord, float3 V, out float3 diffuse, out float3 specular)
 {
@@ -187,7 +188,7 @@ float4 ShadingTransparentPS(
 		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
 		float3 fresnel = FresnelSchlickGlass(N, V, material.smoothness, material.specular);
 
-		lighting = lerp(prefilteredRefract * dielectricColor, lighting, fresnel * material.alpha);		
+		lighting = lerp(prefilteredRefract * dielectricColor, lighting, fresnel * material.alpha);
 		lighting += material.customDataA * material.customDataB * trans * saturate(dot(N, -L));
 	}
 	else
