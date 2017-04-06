@@ -49,8 +49,12 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 #if SSDO_QUALITY
 	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).r;
 	ssao = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao;
+	ssao = min(ssao, material.visibility);
 	diffuse *= ssao;
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
+#else
+	diffuse *= material.visibility;
+	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, material.visibility, material.smoothness);
 #endif
 
 	float shadow = 1;
@@ -61,8 +65,8 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	shadow = lerp(shadow, shadowDepth, envShadow);
 #endif
 
-	diffuse *= material.visibility * shadow;
-	specular *= material.visibility * shadow * shadow * shadow;
+	diffuse *= shadow;
+	specular *= shadow * shadow * shadow;
 #endif
 }
 
