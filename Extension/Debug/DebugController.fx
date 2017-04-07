@@ -129,8 +129,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 
 	#if SSDO_QUALITY > 0
 		float4 ssao = tex2D(SSDOMapSamp, coord);
-		result += ssao.r * showSSAO;
-		result += ssao.gba * showSSDO;
+		result += ssao.w * showSSAO;
+		result += ssao.xyz * showSSDO;
 	#endif
 
 	#if SSR_QUALITY > 0

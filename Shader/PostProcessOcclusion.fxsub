@@ -140,16 +140,16 @@ float4 ScreenSpaceDirOccLowPS(
 
 		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
 
-		sampleOcclustion.x += sum(sh);
-		sampleOcclustion.yzw += sh.x * sampleDirection[0];
-		sampleOcclustion.yzw += sh.y * sampleDirection[1];
-		sampleOcclustion.yzw += sh.z * sampleDirection[2];
-		sampleOcclustion.yzw += sh.w * sampleDirection[3];
+		sampleOcclustion.w += sum(sh);
+		sampleOcclustion.xyz += sh.x * sampleDirection[0];
+		sampleOcclustion.xyz += sh.y * sampleDirection[1];
+		sampleOcclustion.xyz += sh.z * sampleDirection[2];
+		sampleOcclustion.xyz += sh.w * sampleDirection[3];
 	}
 
 	sampleOcclustion /= SSDO_LOW_SAMPLER_COUNT;
 
-	return float4(saturate(sampleOcclustion.x), sampleOcclustion.yzw * 0.5 + 0.5);
+	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
 }
 #endif
 
@@ -230,16 +230,16 @@ float4 ScreenSpaceDirOccMediumPS(
 
 		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
 
-		sampleOcclustion.x += sum(sh);
-		sampleOcclustion.yzw += sh.x * sampleDirection[0];
-		sampleOcclustion.yzw += sh.y * sampleDirection[1];
-		sampleOcclustion.yzw += sh.z * sampleDirection[2];
-		sampleOcclustion.yzw += sh.w * sampleDirection[3];
+		sampleOcclustion.w += sum(sh);
+		sampleOcclustion.xyz += sh.x * sampleDirection[0];
+		sampleOcclustion.xyz += sh.y * sampleDirection[1];
+		sampleOcclustion.xyz += sh.z * sampleDirection[2];
+		sampleOcclustion.xyz += sh.w * sampleDirection[3];
 	}
 
 	sampleOcclustion /= SSDO_SAMPLER_COUNT;
 
-	return float4(saturate(sampleOcclustion.x), sampleOcclustion.yzw * 0.5 + 0.5);
+	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
 }
 
 float4 ScreenSpaceDirOccPassPS(
@@ -266,14 +266,14 @@ float4 ScreenSpaceDirOccPassPS(
 	float4 sh1 = ScreenSpaceDirOccLowPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
 	float4 sh2 = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
 
-	float4 sh = sh1.x > sh2.x ? sh1 : sh2;
+	float4 sh = sh1.w > sh2.w ? sh1 : sh2;
 #else
 	float4 sh = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
 #endif
 
-	sh.x = sh.x * (linearDepth < 0.0 ? 0.35 : 1.0);
-	sh.x = 1 - sh.x;
-	sh.x = pow(sh.x, mSSAOScale);
+	sh.w = sh.w * (linearDepth < 0.0 ? 0.35 : 1.0);
+	sh.w = 1 - sh.w;
+	sh.w = pow(sh.w, mSSAOScale);
 
 	return sh;
 }
@@ -289,9 +289,6 @@ float4 ScreenSpaceDirOccBlurPS(
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
 
-	float2 offset1 = coord + offset;
-	float2 offset2 = coord - offset;
-
 	float3 normal = GetNormal(coord);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
@@ -300,25 +297,32 @@ float4 ScreenSpaceDirOccBlurPS(
 	sharpness = lerp(mSSDOBlurSharpnessMax * angle, mSSDOBlurSharpnessMin, falloff);
 	sharpness = lerp(mSSDOBlurSharpnessMax, sharpness, saturate(center_d / mSSDOBiasFalloffNear));
 
+	float2 offset1 = coord + offset;
+	float2 offset2 = coord - offset;
+
 	[unroll]
-	for (int r = 1; r <= SSDO_BLUR_RADIUS; r++)
+	for (int r = 1; r < SSDO_BLUR_RADIUS; r++)
 	{
-		float depth1 = linearizeDepth2(offset1);
-		float depth2 = linearizeDepth2(offset2);
+		float depth = linearizeDepth2(offset1);
+		float weight = BilateralWeight(r, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
+		weight *= saturate(dot(GetNormal(offset1), normal));
 
-		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SSDO_BLUR_RADIUS, sharpness);
-		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SSDO_BLUR_RADIUS, sharpness);
-
-		bilateralWeight1 *= saturate(dot(GetNormal(offset1), normal));
-		bilateralWeight2 *= saturate(dot(GetNormal(offset2), normal));
-
-		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * bilateralWeight1;
-		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * bilateralWeight2;
-
-		total_w += bilateralWeight1;
-		total_w += bilateralWeight2;
+		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * weight;
+		total_w += weight;
 
 		offset1 += offset;
+	}
+	
+	[unroll]
+	for (int r = 1; r < SSDO_BLUR_RADIUS; r++)
+	{
+		float depth = linearizeDepth2(offset2);
+		float weight = BilateralWeight(r, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
+		weight *= saturate(dot(GetNormal(offset2), normal));
+
+		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * weight;
+		total_w += weight;
+
 		offset2 -= offset;
 	}
 

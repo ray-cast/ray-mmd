@@ -30,7 +30,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 #endif
 
 #if SSDO_QUALITY
-	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).gba;
+	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).xyz;
 	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
 	ssdo = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssdo;
 	diffuse = diffuse * ssdo + subsurface * (1 - ssdo) * 0.5;
@@ -48,7 +48,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
 #if SSDO_QUALITY
-	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).r;
+	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).w;
 	ssao = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao;
 	ssao = min(ssao, material.visibility);
 	diffuse *= ssao;

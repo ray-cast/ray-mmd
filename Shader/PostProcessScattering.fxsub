@@ -48,7 +48,7 @@ float4 SSSGaussBlurPS(
 
 	float perspectiveScaleX = dot(normalize(N.xz), normalize(-P.xz));
 	float perspectiveScaleY = dot(normalize(N.yz), normalize(-P.yz));
-	float perspectiveScale = max((direction.x > 0.001) ? perspectiveScaleX : perspectiveScaleY, 0.3);
+	float perspectiveScale = max(dot(direction, float2(perspectiveScaleX, perspectiveScaleY)), 0.3);
 
 	float sssAmount = material.customDataA;
 	float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
