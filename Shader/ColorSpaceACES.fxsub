@@ -1,0 +1,460 @@
+/**
+ * https://github.com/ampas/aces-dev
+ *
+ * Academy Color Encoding System (ACES) software and tools are provided by the
+ * Academy under the following terms and conditions: A worldwide, royalty-free,
+ * non-exclusive right to copy, modify, create derivatives, and use, in source and
+ * binary forms, is hereby granted, subject to acceptance of this license.
+ *
+ * Copyright 2015 Academy of Motion Picture Arts and Sciences (A.M.P.A.S.).
+ * Portions contributed by others as indicated. All rights reserved.
+ *
+ * Performance of any of the aforementioned acts indicates acceptance to be bound
+ * by the following terms and conditions:
+ *
+ * * Copies of source code, in whole or in part, must retain the above copyright
+ * notice, this list of conditions and the Disclaimer of Warranty.
+ *
+ * * Use in binary form must retain the above copyright notice, this list of
+ * conditions and the Disclaimer of Warranty in the documentation and/or other
+ * materials provided with the distribution.
+ *
+ * * Nothing in this license shall be deemed to grant any rights to trademarks,
+ * copyrights, patents, trade secrets or any other intellectual property of
+ * A.M.P.A.S. or any contributors, except as expressly stated herein.
+ *
+ * * Neither the name "A.M.P.A.S." nor the name of any other contributors to this
+ * software may be used to endorse or promote products derivative of or based on
+ * this software without express prior written permission of A.M.P.A.S. or the
+ * contributors, as appropriate.
+ *
+ * This license shall be construed pursuant to the laws of the State of
+ * California, and any disputes related thereto shall be subject to the
+ * jurisdiction of the courts therein.
+ *
+ * Disclaimer of Warranty: THIS SOFTWARE IS PROVIDED BY A.M.P.A.S. AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+ * NON-INFRINGEMENT ARE DISCLAIMED. IN NO EVENT SHALL A.M.P.A.S., OR ANY
+ * CONTRIBUTORS OR DISTRIBUTORS, BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, RESITUTIONARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * WITHOUT LIMITING THE GENERALITY OF THE FOREGOING, THE ACADEMY SPECIFICALLY
+ * DISCLAIMS ANY REPRESENTATIONS OR WARRANTIES WHATSOEVER RELATED TO PATENT OR
+ * OTHER INTELLECTUAL PROPERTY RIGHTS IN THE ACADEMY COLOR ENCODING SYSTEM, OR
+ * APPLICATIONS THEREOF, HELD BY PARTIES OTHER THAN A.M.P.A.S.,WHETHER DISCLOSED OR
+ * UNDISCLOSED.
+ */
+static const float3x3 D65_2_D60_CAT = { 1.01303, 0.00610531, -0.014971, 0.00769823, 0.998165, -0.00503203, -0.00284131, 0.00468516, 0.924507 };
+static const float3x3 D60_2_D65_CAT = { 0.987224, -0.00611327, 0.0159533, -0.00759836, 1.00186, 0.00533002, 0.00307257, -0.00509595, 1.08168 };
+
+static const float3x3 XYZ_2_AP0_MAT = { 1.0498110175, 0.0000000000,-0.0000974845,-0.4959030231, 1.3733130458, 0.0982400361, 0.0000000000, 0.0000000000, 0.9912520182 };
+static const float3x3 XYZ_2_AP1_MAT = { 1.6410233797,-0.3248032942,-0.2364246952,-0.6636628587, 1.6153315917, 0.0167563477, 0.0117218943,-0.0082844420, 0.9883948585 };
+static const float3x3 XYZ_2_sRGB_MAT = { 3.2409699419, -1.5373831776, -0.4986107603, -0.9692436363,  1.8759675015,  0.0415550574, 0.0556300797, -0.2039769589,  1.0569715142 };
+static const float3x3 XYZ_2_P3D65_MAT = { 2.4933963, -0.9313459, -0.4026945, -0.8294868, 1.7626597, 0.0236246, 0.0358507, -0.0761827,  0.9570140};
+static const float3x3 XYZ_2_DCIP3_MAT = { 2.7253940305, -1.0180030062, -0.4401631952, -0.7951680258,  1.6897320548,  0.0226471906, 0.0412418914, -0.0876390192, 1.1009293786 };
+static const float3x3 XYZ_2_REC2020_MAT = { 1.7166511880, -0.3556707838, -0.2533662814, -0.6666843518, 1.6164812366, 0.0157685458, 0.0176398574, -0.0427706133, 0.9421031212 };
+
+static const float3x3 AP0_2_XYZ_MAT = { 0.9525523959, 0.0000000000, 0.0000936786, 0.3439664498, 0.7281660966,-0.0721325464, 0.0000000000, 0.0000000000, 1.0088251844 };
+static const float3x3 AP0_2_AP1_MAT = { 1.4514393161,-0.2365107469,-0.2149285693,-0.0765537734, 1.1762296998,-0.0996759264, 0.0083161484,-0.0060324498, 0.9977163014 };
+static const float3x3 AP0_2_sRGB = mul(XYZ_2_sRGB_MAT, mul(D60_2_D65_CAT, AP0_2_XYZ_MAT));
+
+static const float3x3 AP1_2_XYZ_MAT = { 0.6624541811, 0.1340042065, 0.1561876870, 0.2722287168, 0.6740817658, 0.0536895174,-0.0055746495, 0.0040607335, 1.0103391003 };
+static const float3x3 AP1_2_AP0_MAT = { 0.6954522414, 0.1406786965, 0.1638690622, 0.0447945634, 0.8596711185, 0.0955343182,-0.0055258826, 0.0040252103, 1.0015006723 };
+static const float3x3 AP1_2_sRGB = mul(XYZ_2_sRGB_MAT, mul(D60_2_D65_CAT, AP1_2_XYZ_MAT));
+
+static const float3x3 P3D65_2_XYZ_MAT = { 0.4865906, 0.2656683, 0.1981905, 0.2289838, 0.6917402, 0.0792762, 0.0000000, 0.0451135, 1.0438031 };
+static const float3x3 REC2020_2_XYZ_MAT = { 0.6369736, 0.1446172, 0.1688585, 0.2627066, 0.6779996, 0.0592938, 0.0000000, 0.0280728, 1.0608437 };
+
+static const float3x3 sRGB_2_XYZ_MAT = { 0.4124564, 0.3575761, 0.1804375, 0.2126729, 0.7151522, 0.0721750, 0.0193339, 0.1191920, 0.9503041 };
+static const float3x3 sRGB_2_AP0 = mul(XYZ_2_AP0_MAT, mul(D65_2_D60_CAT, sRGB_2_XYZ_MAT));
+static const float3x3 sRGB_2_AP1 = mul(XYZ_2_AP1_MAT, mul(D65_2_D60_CAT, sRGB_2_XYZ_MAT));
+
+static const float3x3 RRT_SAT_MAT = { 0.9708890, 0.0269633, 0.00214758, 0.0108892, 0.9869630, 0.00214758, 0.0108892, 0.0269633, 0.96214800};
+static const float3x3 ODT_SAT_MAT = { 0.949056, 0.0471857, 0.00375827, 0.019056, 0.9771860, 0.00375827, 0.019056, 0.0471857, 0.93375800};
+
+static const float3 AP1_RGB2Y = float3(0.272229, 0.674082, 0.0536895);
+
+static const float HALF_MAX = 65504.0;
+static const float UNITY_PI = 3.141592654;
+
+float3 linear2aces(float3 x)
+{
+	return mul(sRGB_2_AP0, x);
+}
+
+float3 aces2linear(float3 x)
+{
+	return mul(AP0_2_sRGB, x);
+}
+
+float3 linear2acescg(float3 x)
+{
+	return mul(sRGB_2_AP1, x);
+}
+
+float3 acescg2linear(float3 x)
+{
+	return mul(AP1_2_sRGB, x);
+}
+
+float aces2acescc(float x)
+{
+	if (x <= 0.0)
+		return -0.35828683; // = (log2(pow(2.0, -15.0) * 0.5) + 9.72) / 17.52
+	else if (x < pow(2.0, -15.0))
+		return (log2(pow(2.0, -16.0) + x * 0.5) + 9.72) / 17.52;
+	else // (x >= pow(2.0, -15.0))
+		return (log2(x) + 9.72) / 17.52;
+}
+
+float3 aces2acescc(float3 x)
+{
+	x = clamp(x, 0.0, HALF_MAX);
+	return (x < 0.00003051757) ? (log2(0.00001525878 + x * 0.5) + 9.72) / 17.52 : (log2(x) + 9.72) / 17.52;
+}
+
+float acescc2aces(float x)
+{
+	if (x < -0.3013698630)
+		return (pow(2.0, x * 17.52 - 9.72) - pow(2.0, -16.0)) * 2.0;
+	else if (x < (log2(HALF_MAX) + 9.72) / 17.52)
+		return pow(2.0, x * 17.52 - 9.72);
+	else
+		return HALF_MAX;
+}
+
+float3 acescc2aces(float3 x)
+{
+	return float3(acescc2aces(x.r), acescc2aces(x.g), acescc2aces(x.b) );
+}
+
+float3 aces2acescg(float3 x)
+{
+	return mul(AP0_2_AP1_MAT, x);
+}
+
+float3 acescg2aces(float3 x)
+{
+	return mul(AP1_2_AP0_MAT, x);
+}
+
+float rgb_2_saturation( float3 rgb )
+{
+	float minrgb = min( min(rgb.r, rgb.g ), rgb.b );
+	float maxrgb = max( max(rgb.r, rgb.g ), rgb.b );
+	return ( max( maxrgb, 1e-10 ) - max( minrgb, 1e-10 ) ) / max( maxrgb, 1e-2 );
+}
+
+float rgb_2_yc(float3 rgb)
+{
+	const float ycRadiusWeight = 1.75;
+
+	float r = rgb.x;
+	float g = rgb.y;
+	float b = rgb.z;
+	float chroma = sqrt(b * (b - g) + g * (g - r) + r * (r - b));
+	return (b + g + r + ycRadiusWeight * chroma) / 3.0;
+}
+
+float rgb_2_hue(float3 rgb)
+{
+	float hue;
+	if (rgb.x == rgb.y && rgb.y == rgb.z)
+		hue = 0.0; // RGB triplets where RGB are equal have an undefined hue
+	else
+		hue = (180.0 / UNITY_PI) * atan2(sqrt(3.0) * (rgb.y - rgb.z), 2.0 * rgb.x - rgb.y - rgb.z);
+
+	if (hue < 0.0) hue = hue + 360.0;
+
+	return hue;
+}
+
+float center_hue(float hue, float centerH)
+{
+	float hueCentered = hue - centerH;
+	if (hueCentered < -180.0) hueCentered = hueCentered + 360.0;
+	else if (hueCentered > 180.0) hueCentered = hueCentered - 360.0;
+	return hueCentered;
+}
+
+float sigmoid_shaper(float x)
+{
+	float t = max(1.0 - abs(x / 2.0), 0.0);
+	float y = 1.0 + sign(x) * (1.0 - t * t);
+
+	return y / 2.0;
+}
+
+float glow_fwd(float ycIn, float glowGainIn, float glowMid)
+{
+	float glowGainOut;
+
+	if (ycIn <= 2.0 / 3.0 * glowMid)
+		glowGainOut = glowGainIn;
+	else if (ycIn >= 2.0 * glowMid)
+		glowGainOut = 0.0;
+	else
+		glowGainOut = glowGainIn * (glowMid / ycIn - 1.0 / 2.0);
+
+	return glowGainOut;
+}
+
+float glow_inv( float ycOut, float glowGainIn, float glowMid)
+{
+	float glowGainOut;
+
+	if (ycOut <= ((1 + glowGainIn) * 2./3. * glowMid)) {
+		glowGainOut = -glowGainIn / (1 + glowGainIn);
+	} else if ( ycOut >= (2. * glowMid)) {
+		glowGainOut = 0.;
+	} else {
+		glowGainOut = glowGainIn * (glowMid / ycOut - 1./2.) / (glowGainIn / 2. - 1.);
+	}
+
+	return glowGainOut;
+}
+
+static const float3x3 M = {
+	 0.5, -1.0, 0.5,
+	-1.0,  1.0, 0.0,
+	 0.5,  0.5, 0.0
+};
+
+float segmented_spline_c5_fwd(float x)
+{
+	const float coefsLow[6] = { -4.0000000000, -4.0000000000, -3.1573765773, -0.4852499958, 1.8477324706, 1.8477324706 }; // coefs for B-spline between minPoint and midPoint (units of log luminance)
+	const float coefsHigh[6] = { -0.7185482425, 2.0810307172, 3.6681241237, 4.0000000000, 4.0000000000, 4.0000000000 }; // coefs for B-spline between midPoint and maxPoint (units of log luminance)
+	const float2 minPoint = float2(0.18 * exp2(-15.0), 0.0001); // {luminance, luminance} linear extension below this
+	const float2 midPoint = float2(0.18, 0.48); // {luminance, luminance}
+	const float2 maxPoint = float2(0.18 * exp2(18.0), 10000.0); // {luminance, luminance} linear extension above this
+	const float slopeLow = 0.0; // log-log slope of low linear extension
+	const float slopeHigh = 0.0; // log-log slope of high linear extension
+
+	const int N_KNOTS_LOW = 4;
+	const int N_KNOTS_HIGH = 4;
+
+	// Check for negatives or zero before taking the log. If negative or zero,
+	// set to ACESMIN.1
+	float xCheck = x;
+	if (xCheck <= 0.0) xCheck = 0.00006103515; // = pow(2.0, -14.0);
+
+	float logx = log10(xCheck);
+	float logy;
+
+	if (logx <= log10(minPoint.x))
+	{
+		logy = logx * slopeLow + (log10(minPoint.y) - slopeLow * log10(minPoint.x));
+	}
+	else if ((logx > log10(minPoint.x)) && (logx < log10(midPoint.x)))
+	{
+		float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10(minPoint.x)) / (log10(midPoint.x) - log10(minPoint.x));
+		int j = knot_coord;
+		float t = knot_coord - j;
+
+		float3 cf = float3(coefsLow[j], coefsLow[j + 1], coefsLow[j + 2]);
+		float3 monomials = float3(t * t, t, 1.0);
+		logy = dot(monomials, mul(M, cf));
+	}
+	else if ((logx >= log10(midPoint.x)) && (logx < log10(maxPoint.x)))
+	{
+		float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(midPoint.x)) / (log10(maxPoint.x) - log10(midPoint.x));
+		int j = knot_coord;
+		float t = knot_coord - j;
+
+		float3 cf = float3(coefsHigh[j], coefsHigh[j + 1], coefsHigh[j + 2]);
+		float3 monomials = float3(t * t, t, 1.0);
+		logy = dot(monomials, mul(M, cf));
+	}
+	else
+	{ //if (logIn >= log10(maxPoint.x)) {
+		logy = logx * slopeHigh + (log10(maxPoint.y) - slopeHigh * log10(maxPoint.x));
+	}
+
+	return pow(10.0, logy);
+}
+
+float segmented_spline_c9_fwd(float x)
+{
+	const float coefsLow[10] = { -1.6989700043, -1.6989700043, -1.4779000000, -1.2291000000, -0.8648000000, -0.4480000000, 0.0051800000, 0.4511080334, 0.9113744414, 0.9113744414 }; // coefs for B-spline between minPoint and midPoint (units of log luminance)
+	const float coefsHigh[10] = { 0.5154386965, 0.8470437783, 1.1358000000, 1.3802000000, 1.5197000000, 1.5985000000, 1.6467000000, 1.6746091357, 1.6878733390, 1.6878733390 }; // coefs for B-spline between midPoint and maxPoint (units of log luminance)
+	const float2 minPoint = float2(segmented_spline_c5_fwd(0.18 * exp2(-6.5)), 0.02); // {luminance, luminance} linear extension below this
+	const float2 midPoint = float2(segmented_spline_c5_fwd(0.18), 4.8); // {luminance, luminance}
+	const float2 maxPoint = float2(segmented_spline_c5_fwd(0.18 * exp2(6.5)), 48.0); // {luminance, luminance} linear extension above this
+	const float slopeLow = 0.0; // log-log slope of low linear extension
+	const float slopeHigh = 0.04; // log-log slope of high linear extension
+
+	const int N_KNOTS_LOW = 8;
+	const int N_KNOTS_HIGH = 8;
+
+	// Check for negatives or zero before taking the log. If negative or zero,
+	// set to OCESMIN.
+	float xCheck = x;
+	if (xCheck <= 0.0) xCheck = 1e-4;
+
+	float logx = log10(xCheck);
+	float logy;
+
+	if (logx <= log10(minPoint.x))
+	{
+		logy = logx * slopeLow + (log10(minPoint.y) - slopeLow * log10(minPoint.x));
+	}
+	else if ((logx > log10(minPoint.x)) && (logx < log10(midPoint.x)))
+	{
+		float knot_coord = (N_KNOTS_LOW - 1) * (logx - log10(minPoint.x)) / (log10(midPoint.x) - log10(minPoint.x));
+		int j = knot_coord;
+		float t = knot_coord - j;
+
+		float3 cf = float3(coefsLow[j], coefsLow[j + 1], coefsLow[j + 2]);
+		float3 monomials = float3(t * t, t, 1.0);
+		logy = dot(monomials, mul(M, cf));
+	}
+	else if ((logx >= log10(midPoint.x)) && (logx < log10(maxPoint.x)))
+	{
+		float knot_coord = (N_KNOTS_HIGH - 1) * (logx - log10(midPoint.x)) / (log10(maxPoint.x) - log10(midPoint.x));
+		int j = knot_coord;
+		float t = knot_coord - j;
+
+		float3 cf = float3(coefsHigh[j], coefsHigh[j + 1], coefsHigh[j + 2]);
+		float3 monomials = float3(t * t, t, 1.0);
+		logy = dot(monomials, mul(M, cf));
+	}
+	else
+	{ //if (logIn >= log10(maxPoint.x)) {
+		logy = logx * slopeHigh + (log10(maxPoint.y) - slopeHigh * log10(maxPoint.x));
+	}
+
+	return pow(10.0, logy);
+}
+
+static const float RRT_GLOW_GAIN  = 0.05;
+static const float RRT_GLOW_MID   = 0.08;
+static const float RRT_RED_SCALE  = 0.82;
+static const float RRT_RED_PIVOT  = 0.03;
+static const float RRT_RED_HUE    = 0.0;
+static const float RRT_RED_WIDTH  = 135.0;
+static const float RRT_SAT_FACTOR = 0.96;
+static const float ODT_SAT_FACTOR = 0.93;
+
+float3 RRT(float3 aces)
+{
+	float saturation = rgb_2_saturation(aces);
+	float ycIn = rgb_2_yc(aces);
+	float s = sigmoid_shaper((saturation - 0.4) / 0.2);
+	float addedGlow = 1.0 + glow_fwd(ycIn, RRT_GLOW_GAIN * s, RRT_GLOW_MID);
+	aces *= addedGlow;
+
+	float hue = rgb_2_hue(aces);
+	float centeredHue = center_hue(hue, RRT_RED_HUE);
+	float hueWeight = smoothstep(0.0, 1.0, 1.0 - abs(2.0 * centeredHue / RRT_RED_WIDTH));
+	hueWeight *= hueWeight;
+
+	aces.r += hueWeight * saturation * (RRT_RED_PIVOT - aces.r) * (1.0 - RRT_RED_SCALE);
+	aces = clamp(aces, 0.0, HALF_MAX);
+
+	float3 rgbPre = mul(AP0_2_AP1_MAT, aces);
+	rgbPre = clamp(rgbPre, 0, HALF_MAX);
+	rgbPre = lerp(dot(rgbPre, AP1_RGB2Y).xxx, rgbPre, RRT_SAT_FACTOR);
+
+	float3 rgbPost;
+	rgbPost.x = segmented_spline_c5_fwd(rgbPre.x);
+	rgbPost.y = segmented_spline_c5_fwd(rgbPre.y);
+	rgbPost.z = segmented_spline_c5_fwd(rgbPre.z);
+
+	float3 rgbOces = mul(AP1_2_AP0_MAT, rgbPost);
+	return rgbOces;
+}
+
+float3 Y_2_linCV(float3 Y, float Ymax, float Ymin)
+{
+	return (Y - Ymin) / (Ymax - Ymin);
+}
+
+float3 XYZ_2_xyY(float3 XYZ)
+{
+	float divisor = max(dot(XYZ, (1.0).xxx), 1e-4);
+	return float3(XYZ.xy / divisor, XYZ.y);
+}
+
+float3 xyY_2_XYZ(float3 xyY)
+{
+	float m = xyY.z / max(xyY.y, 1e-4);
+	float3 XYZ = float3(xyY.xz, (1.0 - xyY.x - xyY.y));
+	XYZ.xz *= m;
+	return XYZ;
+}
+
+static const float DIM_SURROUND_GAMMA = 0.9811;
+
+float3 darkSurround_to_dimSurround(float3 linearCV)
+{
+	float3 XYZ = mul(AP1_2_XYZ_MAT, linearCV);
+
+	float3 xyY = XYZ_2_xyY(XYZ);
+	xyY.z = clamp(xyY.z, 0.0, HALF_MAX);
+	xyY.z = pow(xyY.z, DIM_SURROUND_GAMMA);
+	XYZ = xyY_2_XYZ(xyY);
+
+	return mul(XYZ_2_AP1_MAT, XYZ);
+}
+
+float3 ODT_RGBmonitor_100nits_dim(float3 oces, float CINEMA_WHITE = 48.0)
+{
+	float3 rgbPre = mul(AP0_2_AP1_MAT, oces);
+
+	float3 rgbPost;
+	rgbPost.x = segmented_spline_c9_fwd(rgbPre.x);
+	rgbPost.y = segmented_spline_c9_fwd(rgbPre.y);
+	rgbPost.z = segmented_spline_c9_fwd(rgbPre.z);
+
+	float3 linearCV = Y_2_linCV(rgbPost, CINEMA_WHITE, CINEMA_WHITE / 2400.0);
+	linearCV = darkSurround_to_dimSurround(linearCV);
+	linearCV = lerp(dot(linearCV, AP1_RGB2Y).xxx, linearCV, ODT_SAT_FACTOR);
+	linearCV = saturate(mul(AP1_2_sRGB, linearCV));
+
+	return linearCV;
+}
+
+float3 FilmicTonemap(float3 color, float CINEMA_WHITE = 48.0)
+{
+#if 0
+	float3 aces = mul(sRGB_2_AP0, color);
+	float3 oces = RRT(aces);
+	float3 odt = ODT_RGBmonitor_100nits_dim(oces);
+	return odt;
+#else
+	float3 aces = mul(sRGB_2_AP0, color);
+
+	float saturation = rgb_2_saturation(aces);
+	float hue = rgb_2_hue(aces);
+	float centeredHue = center_hue( hue, RRT_RED_HUE );
+	float hueWeight = smoothstep(0, 1, 1 - abs(2 * centeredHue / RRT_RED_WIDTH));
+	hueWeight *= hueWeight;
+
+	aces.r += hueWeight * saturation * (RRT_RED_PIVOT - aces.r) * (1. - RRT_RED_SCALE);
+
+	float3 acescg = mul(AP0_2_AP1_MAT, aces);
+	acescg = max(0.0, acescg);
+	acescg = lerp(dot(acescg, AP1_RGB2Y), acescg, RRT_SAT_FACTOR);
+
+	const float a = 278.5085;
+	const float b = 10.7772;
+	const float c = 293.6045;
+	const float d = 88.7122;
+	const float e = 80.6889;
+
+	float3 x = acescg;
+	float3 rgbPost = (x * (a * x + b)) / (x * (c * x + d) + e);
+
+	float3 linearCV = darkSurround_to_dimSurround(rgbPost);
+	linearCV = lerp(dot(linearCV, AP1_RGB2Y).xxx, linearCV, ODT_SAT_FACTOR);
+	linearCV = saturate(mul(AP1_2_sRGB, linearCV));
+
+	return linearCV;
+#endif
+}

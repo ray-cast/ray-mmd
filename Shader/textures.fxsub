@@ -319,3 +319,25 @@ sampler ShadingMapTempSpecularSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+#if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+shared texture SSDOMap : RENDERCOLORTARGET<
+	float2 ViewPortRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+	string Format = "A8R8G8B8";
+>;
+texture SSDOMapTemp : RENDERCOLORTARGET<
+	float2 ViewPortRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+	string Format = "A8R8G8B8";
+>;
+sampler SSDOMapSamp = sampler_state {
+	texture = <SSDOMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
+};
+sampler SSDOMapSampTemp = sampler_state {
+	texture = <SSDOMapTemp>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
+};
+#endif

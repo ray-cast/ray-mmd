@@ -4,12 +4,12 @@
 #define LUT_LINEAR_GREY 0.18
 #define LUT_EXPOSURE_GREY 444
 
-texture ColorGradingLUT : RENDERCOLORTARGET<
+texture ColorGradingMap : RENDERCOLORTARGET<
 	int2 Dimensions = {LUT_WIDTH, LUT_SIZE};
 	string Format = "A2B10G10R10";
 >;
-sampler ColorGradingLUTSamp = sampler_state {
-	texture = <ColorGradingLUT>;
+sampler ColorGradingMapSamp = sampler_state {
+	texture = <ColorGradingMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
@@ -224,85 +224,6 @@ static float3 mColorOffsetHigh     = lerp(lerp(0.0, 3.0, mColorOffsetHighP), 0, 
 static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP) , 0.0, mWeightLowM);
 static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
 
-float3 ColorCorrect(
-	float3 color, 
-	float3 colorContrast, 
-	float3 colorSaturation, 
-	float3 colorGamma, 
-	float3 colorGainP,
-	float3 colorGainM)
-{
-	float3 lum = luminance(color);
-	color = max(0, lerp(lum, color, colorSaturation.rgb));
-	color = pow(color * (1.0 / 0.18), colorContrast.rgb) * 0.18;
-	color = pow(color, 1.0 / colorGamma.rgb);
-	color = color * (colorGainP.rgb + colorGainM.rgb);
-	return color;
-}
-
-float3 ColorCorrectAll(
-	float3 color,
-	float3 colorSaturation,
-	float3 colorContrast,
-	float3 colorGamma,
-	float3 colorGain,
-	float3 colorOffset,
-
-	float3 colorSaturationShadows,
-	float3 colorContrastShadows,
-	float3 colorGammaShadows,
-	float3 colorGainShadows,
-	float3 colorOffsetShadows,
-
-	float3 colorSaturationMidtones,
-	float3 colorContrastMidtones,
-	float3 colorGammaMidtones,
-	float3 colorGainMidtones,
-	float3 colorOffsetMidtones,
-
-	float3 colorSaturationHighlights,
-	float3 colorContrastHighlights,
-	float3 colorGammaHighlights,
-	float3 colorGainHighlights,
-	float3 colorOffsetHighlights,
-
-	float colorCorrectionShadowsMax,
-	float colorCorrectionHighlightsMin)
-{
-	float3 colorShadows = ColorCorrect(color, 
-		colorSaturationShadows*colorSaturation, 
-		colorContrastShadows*colorContrast, 
-		colorGammaShadows*colorGamma, 
-		colorGainShadows*colorGain, 
-		colorOffsetShadows+colorOffset);
-
-	float3 colorHighlights = ColorCorrect(color, 
-		colorSaturationHighlights*colorSaturation, 
-		colorContrastHighlights*colorContrast, 
-		colorGammaHighlights*colorGamma, 
-		colorGainHighlights*colorGain, 
-		colorOffsetHighlights+colorOffset);
-
-	float3 colorMidtones = ColorCorrect(color, 
-		colorSaturationMidtones*colorSaturation, 
-		colorContrastMidtones*colorContrast, 
-		colorGammaMidtones*colorGamma, 
-		colorGainMidtones*colorGain, 
-		colorOffsetMidtones+colorOffset);
-
-	float weightLuma = luminance(color);
-	float weightShadows = 1 - smoothstep(0, colorCorrectionShadowsMax, weightLuma);
-	float weightHighlights = smoothstep(colorCorrectionHighlightsMin, 1, weightLuma);
-	float weightMidtones = 1 - weightShadows - weightHighlights;
-
-	colorShadows *= weightShadows;
-	colorMidtones *= weightMidtones;
-	colorHighlights *= weightHighlights;
-
-	float3 blend = colorShadows + colorMidtones + colorHighlights;
-	return blend;
-}
-
 float3 log2lin(float3 color)
 {
 	return exp2((color - LUT_EXPOSURE_GREY / 1023.0) * LUT_LINEAR_RANGE) * LUT_LINEAR_GREY;
@@ -356,4 +277,53 @@ float4 ColorLookupTable2D(sampler lut, float3 color, float size = LUT_SIZE)
 	float4 col1 = tex2Dlod(lut, float4(uv1, 0, 0));
 
 	return lerp(col0, col1, s);
+}
+
+void GenerateColorLookupVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oTexcoord = Texcoord;
+	oPosition = Position;
+}
+
+float4 GenerateColorLookupPS(in float2 coord : TEXCOORD0) : COLOR 
+{
+	float3 color = CreateColorSpectrum(coord);
+
+	color = ColorTemperature(color, mColorTemperature);
+	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorCorrectAll(
+		color,
+		mColorSaturationAll,
+		mColorContrastAll,
+		mColorGammaAll,
+		mColorGainAll,
+		mColorOffsetAll,
+
+		mColorSaturationLow,
+		mColorContrastLow,
+		mColorGammaLow,
+		mColorGainLow,
+		mColorOffsetLow,
+
+		mColorSaturationMid,
+		mColorContrastMid,
+		mColorGammaMid,
+		mColorGainMid,
+		mColorOffsetMid,
+
+		mColorSaturationHigh,
+		mColorContrastHigh,
+		mColorGammaHigh,
+		mColorGainHigh,
+		mColorOffsetHigh,
+
+		mColorCorrectionLowThreshold,
+		mColorCorrectionHighThreshold);
+	color = ColorToneMapping(color);
+
+	return float4(linear2srgb(color), 0);
 }

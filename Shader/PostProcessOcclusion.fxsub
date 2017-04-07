@@ -16,27 +16,6 @@
 #	define SSDO_LOW_SAMPLER_COUNT 12
 #endif
 
-shared texture SSDOMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-texture SSDOMapTemp : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-sampler SSDOMapSamp = sampler_state {
-	texture = <SSDOMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP;  AddressV = CLAMP;
-};
-sampler SSDOMapSampTemp = sampler_state {
-	texture = <SSDOMapTemp>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP;  AddressV = CLAMP;
-};
-
 static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),

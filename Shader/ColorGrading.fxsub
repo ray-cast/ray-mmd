@@ -1,0 +1,189 @@
+float3 noise3(float2 seed)
+{
+	return frac(sin(dot(seed.xy, float2(34.483, 89.637))) * float3(29156.4765, 38273.5639, 47843.7546));
+}
+
+float3 ColorBanding(float2 uv)
+{
+	float3 noise = noise3(uv) + noise3(uv + 0.5789) - 0.5;
+	return noise / 255.0;
+}
+
+float4 ColorDithering(float3 color, float2 uv)
+{
+	color += ColorBanding(uv * (time + PI));
+	return float4(color, 1);
+}
+
+float3 ColorVignette(float3 color, float2 coord)
+{
+	float L = length(coord * 2 - 1);
+	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);
+}
+
+float3 ColorTemperature(float3 color, float kelvin)
+{
+	float temp = kelvin / 100;
+	float temp60 = max(0, temp - 60);
+	float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
+	float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
+	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
+	float3 balance = saturate(float3(red, green, blue) / 255);
+	return color * balance;
+}
+
+float3 ColorCorrect(
+	float3 color, 
+	float colorContrast, 
+	float colorSaturation, 
+	float colorGamma, 
+	float3 colorGainP,
+	float3 colorGainM)
+{
+	float3 lum = luminance(color);
+	color = max(0, lerp(lum, color, colorSaturation));
+	color = pow(color * (1.0 / 0.18), colorContrast) * 0.18;
+	color = pow(color, colorGamma);
+	color = color * (colorGainP + 1.0 - colorGainM);
+	return color;
+}
+
+float3 ColorCorrect(
+	float3 color, 
+	float3 colorContrast, 
+	float3 colorSaturation, 
+	float3 colorGamma, 
+	float3 colorGainP,
+	float3 colorGainM)
+{
+	float3 lum = luminance(color);
+	color = max(0, lerp(lum, color, colorSaturation.rgb));
+	color = pow(color * (1.0 / 0.18), colorContrast.rgb) * 0.18;
+	color = pow(color, 1.0 / colorGamma.rgb);
+	color = color * (colorGainP.rgb + colorGainM.rgb);
+	return color;
+}
+
+float3 ColorCorrectAll(
+	float3 color,
+	float3 colorSaturation,
+	float3 colorContrast,
+	float3 colorGamma,
+	float3 colorGain,
+	float3 colorOffset,
+
+	float3 colorSaturationShadows,
+	float3 colorContrastShadows,
+	float3 colorGammaShadows,
+	float3 colorGainShadows,
+	float3 colorOffsetShadows,
+
+	float3 colorSaturationMidtones,
+	float3 colorContrastMidtones,
+	float3 colorGammaMidtones,
+	float3 colorGainMidtones,
+	float3 colorOffsetMidtones,
+
+	float3 colorSaturationHighlights,
+	float3 colorContrastHighlights,
+	float3 colorGammaHighlights,
+	float3 colorGainHighlights,
+	float3 colorOffsetHighlights,
+
+	float colorCorrectionShadowsMax,
+	float colorCorrectionHighlightsMin)
+{
+	float3 colorShadows = ColorCorrect(color, 
+		colorSaturationShadows*colorSaturation, 
+		colorContrastShadows*colorContrast, 
+		colorGammaShadows*colorGamma, 
+		colorGainShadows*colorGain, 
+		colorOffsetShadows+colorOffset);
+
+	float3 colorHighlights = ColorCorrect(color, 
+		colorSaturationHighlights*colorSaturation, 
+		colorContrastHighlights*colorContrast, 
+		colorGammaHighlights*colorGamma, 
+		colorGainHighlights*colorGain, 
+		colorOffsetHighlights+colorOffset);
+
+	float3 colorMidtones = ColorCorrect(color, 
+		colorSaturationMidtones*colorSaturation, 
+		colorContrastMidtones*colorContrast, 
+		colorGammaMidtones*colorGamma, 
+		colorGainMidtones*colorGain, 
+		colorOffsetMidtones+colorOffset);
+
+	float weightLuma = luminance(color);
+	float weightShadows = 1 - smoothstep(0, colorCorrectionShadowsMax, weightLuma);
+	float weightHighlights = smoothstep(colorCorrectionHighlightsMin, 1, weightLuma);
+	float weightMidtones = 1 - weightShadows - weightHighlights;
+
+	colorShadows *= weightShadows;
+	colorMidtones *= weightMidtones;
+	colorHighlights *= weightHighlights;
+
+	float3 blend = colorShadows + colorMidtones + colorHighlights;
+	return blend;
+}
+
+float3 TonemapACES(float3 x)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+	return (x * (A * x + B)) / (x * (C * x + D) + E);
+}
+
+float3 TonemapHejl2015(float3 hdr, float whitePt) 
+{
+	float4 vh = float4(hdr, whitePt);
+	float4 va = 1.425 * vh + 0.05;
+	float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
+	return vf.rgb / vf.www;
+}
+
+float4 TonemapHable(float4 x) 
+{
+	float A = 0.22;
+	float B = 0.30;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.01;
+	float F = 0.30;
+	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
+float3 TonemapReinhardLumaBased(float3 color, float whitePt)
+{
+	float luma = luminance(color);
+	float toneMappedLuma = luma * (1 + luma / (whitePt * whitePt))/ (1 + luma);
+	color *= toneMappedLuma / luma;
+	return color;
+}
+
+float3 ColorToneMapping(float3 color)
+{
+#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
+	float3 curr = TonemapReinhardLumaBased(color, 4.0);
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
+	float4 curr = TonemapHable(float4(color, 4.0));
+	curr = curr / curr.w;
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
+	float4 curr = TonemapHable(float4(color * 2.0, 8.0));
+	curr = curr / curr.w;
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
+	float3 curr = TonemapHejl2015(color, 8.0);
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
+	float3 curr = TonemapACES(color);
+	return saturate(curr);
+#else
+	return saturate(color);
+#endif
+}

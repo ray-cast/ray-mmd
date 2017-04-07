@@ -3,15 +3,15 @@ texture EyeLumMap : RENDERCOLORTARGET<
 	string Format = "R16F";
 	int Miplevels = 0;
 >;
+texture EyeLumAveMap : RENDERCOLORTARGET<
+	int2 Dimensions = {1, 1};
+	string Format = "R16F";
+>;
 sampler EyeLumMapSamp = sampler_state {
 	texture = <EyeLumMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = POINT;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-texture EyeLumAveMap : RENDERCOLORTARGET<
-	int2 Dimensions = {1, 1};
-	string Format = "R16F";
->;
 sampler EyeLumAveMapSamp = sampler_state {
 	texture = <EyeLumAveMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;

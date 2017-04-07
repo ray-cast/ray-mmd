@@ -64,47 +64,50 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 #include "shader/textures.fxsub"
+#include "shader/ibl.fxsub"
 #include "shader/gbuffer.fxsub"
 #include "shader/lighting.fxsub"
-#include "shader/ibl.fxsub"
+#include "shader/shading.fxsub"
+#include "shader/ColorGrading.fxsub"
+
+#if SHADOW_QUALITY && MAIN_LIGHT_ENABLE
+#	include "shader/csm.fxsub"
+#	include "shader/shadowmap.fxsub"
+#endif
+
+#if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#	include "shader/PostProcessOcclusion.fxsub"
+#endif
+
+#if SSSS_QUALITY
+#	include "shader/PostProcessScattering.fxsub"
+#endif
+
+#if SSR_QUALITY
+#	include "shader/PostProcessSSR.fxsub"
+#endif
 
 #if POST_COLORGRADING_MODE
-#	include "shader/colorlut.fxsub"
+#	include "shader/PostProcessColorGrading.fxsub"
 #endif
 
 #if HDR_ENABLE && HDR_EYE_ADAPTATION
 #	include "shader/EyeAdaptation.fxsub"
 #endif
 
-#include "shader/bloom.fxsub"
-#include "shader/tonemapping.fxsub"
-
-#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
-#	include "shader/csm.fxsub"
-#	include "shader/shadowmap.fxsub"
+#if HDR_BLOOM_MODE
+#	include "shader/PostProcessBloom.fxsub"
 #endif
 
-#if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
-#	include "shader/ssdo.fxsub"
-#endif
-
-#if SSSS_QUALITY > 0
-#	include "shader/ssss.fxsub"
-#endif
-
-#if SSR_QUALITY > 0
-#	include "shader/ssr.fxsub"
+#if HDR_ENABLE
+#	include "shader/PostProcessHDR.fxsub"
 #endif
 
 #if AA_QUALITY == 1
-#	include "shader/fxaa.fxsub"
+#	include "shader/FXAA3.fxsub"
+#elif AA_QUALITY >= 2 && AA_QUALITY <= 5
+#	include "shader/SMAA.fxsub"
 #endif
-
-#if AA_QUALITY >= 2 && AA_QUALITY <= 5
-#	include "shader/smaa.fxsub"
-#endif
-
-#include "shader/shading.fxsub"
 
 float4 ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
@@ -260,7 +263,7 @@ technique DeferredLighting<
 #endif
 
 #if POST_COLORGRADING_MODE
-	"RenderColorTarget=ColorGradingLUT;"
+	"RenderColorTarget=ColorGradingMap;"
 	"Pass=GenerateColorLUT;"
 #endif
 
@@ -710,8 +713,8 @@ technique DeferredLighting<
 	pass GenerateColorLUT<string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = False; ZWriteEnable = False;
-		VertexShader = compile vs_3_0 GenerateColorLUT_VS();
-		PixelShader  = compile ps_3_0 GenerateColorLUT_PS();
+		VertexShader = compile vs_3_0 GenerateColorLookupVS();
+		PixelShader  = compile ps_3_0 GenerateColorLookupPS();
 	}
 #endif
 	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
