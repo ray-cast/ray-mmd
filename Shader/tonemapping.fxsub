@@ -218,9 +218,9 @@ float4 HDRTonemappingVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = mExposure;
 #if HDR_EYE_ADAPTATION == 1
-	oTexcoord0.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)));
+	oTexcoord0.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
 #elif HDR_EYE_ADAPTATION == 2
-	float EV100 = ComputeEV100(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)));
+	float EV100 = ComputeEV100(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
 	oTexcoord0.zw *= ComputeExposureISO(EV100);
 #endif
 	return Position;

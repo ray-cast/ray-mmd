@@ -246,38 +246,40 @@ float4 HDRDownsamplePS(in float2 coord : TEXCOORD0, uniform sampler source) : CO
 void GlareDetectionVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD,
-	out float2 oTexcoord1 : TEXCOORD0,
-	out float2 oTexcoord2 : TEXCOORD1,
-	out float2 oTexcoord3 : TEXCOORD2,
-	out float2 oTexcoord4 : TEXCOORD3,
-	out float2 oTexcoord5 : TEXCOORD4,
+	out float4 oTexcoord1 : TEXCOORD0,
+	out float4 oTexcoord2 : TEXCOORD1,
+	out float4 oTexcoord3 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
 	float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
 	float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
 
 	oPosition = Position;
-	oTexcoord1 = Texcoord + ViewportOffset;
-	oTexcoord2 = oTexcoord1 + offset0.xy;
-	oTexcoord3 = oTexcoord1 + offset0.zw;
-	oTexcoord4 = oTexcoord1 + offset1.xy;
-	oTexcoord5 = oTexcoord1 + offset1.zw;
+	oTexcoord1 = Texcoord.xyxy + ViewportOffset.xyxy;
+	oTexcoord2 = oTexcoord1.xyxy + offset0;
+	oTexcoord3 = oTexcoord1.xyxy + offset1;
+	
+	oTexcoord1.zw = mExposure;
+#if HDR_EYE_ADAPTATION == 1
+	oTexcoord1.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
+#elif HDR_EYE_ADAPTATION == 2
+	float EV100 = ComputeEV100(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
+	oTexcoord1.zw *= ComputeExposureISO(EV100);
+#endif
 }
 
 float4 GlareDetectionPS(
-	in float2 coord1 : TEXCOORD0,
-	in float2 coord2 : TEXCOORD1,
-	in float2 coord3 : TEXCOORD2,
-	in float2 coord4 : TEXCOORD3,
-	in float2 coord5 : TEXCOORD4,
+	in float4 coord1 : TEXCOORD0,
+	in float4 coord2 : TEXCOORD1,
+	in float4 coord3 : TEXCOORD2,
 	uniform sampler source) : COLOR
 {
 #if HDR_BLOOM_MODE > 0
-	float3 color = tex2Dlod(source, float4(coord1, 0, 0)).rgb;
-	color = min(color, tex2Dlod(source, float4(coord2, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord3, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord4, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord5, 0, 0)).rgb);
+	float3 color = tex2Dlod(source, float4(coord1.xy, 0, 0)).rgb;
+	color = min(color, tex2Dlod(source, float4(coord2.xy, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord2.zw, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord3.xy, 0, 0)).rgb);
+	color = min(color, tex2Dlod(source, float4(coord3.zw, 0, 0)).rgb);
 	color = clamp(color, 0, 65535);
 
 #if HDR_BLOOM_MODE == 1
@@ -288,7 +290,7 @@ float4 GlareDetectionPS(
 	float lum = luminance(color);
 	float3 bloom = saturate(color * (lum - mBloomThreshold));
 #elif HDR_BLOOM_MODE == 4
-	float lum = luminance(color) * mExposure;
+	float lum = luminance(color) * coord1.z;
 	float3 bloom = saturate(color * (lum - mBloomThreshold) * 0.5);
 #endif
 
@@ -297,10 +299,10 @@ float4 GlareDetectionPS(
 	float3 bloom = 0;
 #endif
 
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1.xy, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1.xy, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1.xy, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1.xy, 0, 0));
 
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
