@@ -18,6 +18,14 @@ float3 ComputeSpecularMicroOcclusion(float3 f0)
 	return saturate(dot(f0, 0.33333h) * 50);
 }
 
+float ComputeAmbientMircroOcclusion(float3 N, float3 L, float ao)
+{
+	float nl = dot(N, L);
+	float aperture = 2.0 * pow2(fresnelSchlick(ao, 1.0, saturate(nl)));
+	float shadow = saturate(abs(nl) + aperture - 1.0);
+	return shadow;
+}
+
 float3 SubsurfaceShadingSkinRamp(MaterialParam material, float3 N, float3 L)
 {
 	float nl = dot(N, L);

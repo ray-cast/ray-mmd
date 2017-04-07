@@ -28,7 +28,6 @@ float mBloomRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item
 float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity+";>;
 float mBloomIntensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity-";>;
 float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
-float mTonemapping : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Tonemapping";>;
 float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast+";>;
 float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
 float mSaturationP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Saturation+";>;
@@ -71,6 +70,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if POST_COLORGRADING_MODE
 #	include "shader/colorlut.fxsub"
+#endif
+
+#if HDR_ENABLE && HDR_EYE_ADAPTATION
+#	include "shader/EyeAdaptation.fxsub"
 #endif
 
 #include "shader/bloom.fxsub"
@@ -205,7 +208,12 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
-#if HDR_BLOOM_MODE > 0
+#if HDR_ENABLE && HDR_EYE_ADAPTATION
+	"RenderColorTarget=EyeLumMap; 	 Pass=EyeLum;"
+	"RenderColorTarget=EyeLumAveMap; Pass=EyeAdapation;"
+#endif
+
+#if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
 	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample1st;"
 	"RenderColorTarget=DownsampleMap3rd; Pass=HDRDownsample2nd;"
@@ -259,10 +267,10 @@ technique DeferredLighting<
 #if AA_QUALITY == 0
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
-	"Pass=HDRTonemappingPS;"
+	"Pass=HDRTonemapping;"
 #else
 	"RenderColorTarget=ShadingMapTemp;"
-	"Pass=HDRTonemappingPS;"
+	"Pass=HDRTonemapping;"
 #endif
 
 #if AA_QUALITY == 1
@@ -451,6 +459,20 @@ technique DeferredLighting<
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
+	}
+#endif
+#if HDR_ENABLE && HDR_EYE_ADAPTATION > 0
+	pass EyeLum<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 EyeDownsampleVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(ShadingMapPointSamp);
+	}
+	pass EyeAdapation<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 EyeAdapationPS();
 	}
 #endif
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
@@ -692,10 +714,10 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 GenerateColorLUT_PS();
 	}
 #endif
-	pass HDRTonemappingPS<string Script= "Draw=Buffer;";>{
+	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
 		 AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 HDRTonemappingVS();
 		PixelShader  = compile ps_3_0 HDRTonemappingPS(ShadingMapPointSamp);
 	}
 #if AA_QUALITY == 1

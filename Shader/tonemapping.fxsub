@@ -8,6 +8,14 @@ float3 TonemapACES(float3 x)
 	return (x * (A * x + B)) / (x * (C * x + D) + E);
 }
 
+float3 TonemapHejl2015(float3 hdr, float whitePt) 
+{
+	float4 vh = float4(hdr, whitePt);
+	float4 va = 1.425 * vh + 0.05;
+	float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
+	return vf.rgb / vf.www;
+}
+
 float4 TonemapHable(float4 x) 
 {
 	float A = 0.22;
@@ -17,14 +25,6 @@ float4 TonemapHable(float4 x)
 	float E = 0.01;
 	float F = 0.30;
 	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
-}
-
-float3 TonemapHejl2015(float3 hdr, float whitePt) 
-{
-	float4 vh = float4(hdr, whitePt);
-	float4 va = 1.425 * vh + 0.05;
-	float4 vf = (vh * va + 0.004) / (vh * (va + 0.55) + 0.0491) - 0.0821;
-	return vf.rgb / vf.www;
 }
 
 float3 TonemapReinhardLumaBased(float3 color, float whitePt)
@@ -39,7 +39,7 @@ float3 ColorToneMapping(float3 color)
 {
 #if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
 	float3 curr = TonemapReinhardLumaBased(color, 4.0);
-	return lerp(curr, color, mTonemapping);
+	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
 	float4 curr = TonemapHable(float4(color, 4.0));
 	curr = curr / curr.w;
@@ -208,36 +208,54 @@ float4 GenerateColorLUT_PS(in float2 coord : TEXCOORD0) : COLOR
 }
 #endif
 
-float4 HDRTonemappingPS(in float2 coord: TEXCOORD0, uniform sampler source) : COLOR
+float4 HDRTonemappingVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float3 color = ColorDispersion(source, coord, mDispersionRadius, 1.0 + mDispersionRadius);
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = mExposure;
+#if HDR_EYE_ADAPTATION == 1
+	oTexcoord0.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)));
+#elif HDR_EYE_ADAPTATION == 2
+	float EV100 = ComputeEV100(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)));
+	oTexcoord0.zw *= ComputeExposureISO(EV100);
+#endif
+	return Position;
+}
+
+float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : COLOR
+{
+	float3 color = ColorDispersion(source, coord.xy, mDispersionRadius, 1.0 + mDispersionRadius);
 
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
-	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord, 0, 0)).rgb;
+	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord.xy, 0, 0)).rgb;
 	color += bloom;
 #endif
 
 #if POST_COLORGRADING_MODE == 0
-	color *= mExposure;
+	color *= coord.z;
 
 	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
-	color = ColorVignette(color, coord);
+	color = ColorVignette(color, coord.xy);
 	color = ColorToneMapping(color);
 
 	color = linear2srgb(color);
 #else
-	color = ColorVignette(color, coord);
+	color = ColorVignette(color, coord.xy);
 	color = ColorLookupTable2D(ColorGradingLUTSamp, color * mExposure).rgb;
 
 #if POST_COLORGRADING_MODE == 2
-	color = CreateColorSpectrumDebug(color, ColorGradingLUTSamp, coord, ViewportAspect, mVisualizationLUT);
+	color = CreateColorSpectrumDebug(color, ColorGradingLUTSamp, coord.xy, ViewportAspect, mVisualizationLUT);
 #endif
 #endif
 
 #if AA_QUALITY > 0
 	return float4(color, luminance(color));
 #else
-	return ColorDithering(color, coord);
+	return ColorDithering(color, coord.xy);
 #endif
 }

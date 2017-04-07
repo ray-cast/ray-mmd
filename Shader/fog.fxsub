@@ -8,6 +8,11 @@ struct LightParam
 	float gloss;
 };
 
+float ComputeFogMip(float near, float far, float depth)
+{
+	return (1 - saturate((depth - near) / (far - near)));
+}
+
 float ComputeOpticalDepth(float depth)
 {
 	return exp(-depth * 0.025);
