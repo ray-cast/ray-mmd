@@ -394,7 +394,7 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, floa
 
 	float3x3 tbnTransform;
 	tbnTransform[0] = normalize(T * scaleT);
-	tbnTransform[1] = normalize(B * scaleB);
+	tbnTransform[1] = -normalize(B * scaleB);
 	tbnTransform[2] = N;
 
 	return normalize(mul(tangentNormal, tbnTransform));
@@ -950,8 +950,8 @@ float3 GetNormal(float3 N, float3 viewdir, float2 coord)
 		float3 tangentNormal = GetSubNormal(coord);
 	#endif
 
-	#if NORMAL_MAP_UV_FLIP == 2
-		N.x *= -1;
+	#if NORMAL_MAP_UV_FLIP
+		coord.y = 1 - coord.y;
 	#endif
 	return ComputeTangentBinormalNormal(N, viewdir, coord, tangentNormal);
 #else
