@@ -42,14 +42,6 @@ static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_ENABLE
-	static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
-	static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
-	static float4x4 matLightViewProject = mul(matLightView, matLightProject);
-	static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-	static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-#endif
-
-#if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
 #   define SHADOW_MAP_SIZE 256
 #elif SHADOW_MAP_QUALITY == 1
@@ -87,7 +79,13 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
 static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
-float ShadowPCF(float3 viewPosition, int samples) 
+static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
+static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
+static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
+
+float ShadowPCF(float3 viewPosition) 
 {
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
@@ -138,12 +136,9 @@ float ShadingShadow(MaterialParam material, float3 V)
 {
 	float angle = saturate(dot(material.normal, -viewLightDirection));
 	if (angle < 0.0)
-	{
 		clip(-1);
-	}
 
-	float3 P = V * material.linearDepth / V.z;
-	return ShadowPCF(P, 0);
+	return ShadowPCF(V * material.linearDepth / V.z);
 }
 
 #endif
@@ -176,7 +171,7 @@ void LightSourceVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
-{    
+{
 	if (length(Position.xyz - LightPosition) > 0.1)
 	{
 		Position.xyz = lerp(mDirection, Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + LightAngle), LightAngle);
@@ -198,14 +193,6 @@ void LightSourcePS(
 	coord = PosToCoord(coord);
 	coord += ViewportOffset;
 
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -214,7 +201,15 @@ void LightSourcePS(
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 
-	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
 	float3 V = normalize(viewdir);
 
@@ -253,14 +248,6 @@ void LightSourceShadowlessPS(
 	coord = PosToCoord(coord);
 	coord += ViewportOffset;
 
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
@@ -269,7 +256,15 @@ void LightSourceShadowlessPS(
 	MaterialParam materialAlpha;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 
-	clip(sum(materialAlpha.albedo + materialAlpha.specular)  - 1e-5);
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
 	float3 V = normalize(viewdir);
 
@@ -322,6 +317,6 @@ technique MainTecBS0<string MMDPass = "object_ss";
 	}
 }
 
-technique EdgeTec<string MMDPass = "edge"; > {}
-technique ShadowTech<string MMDPass = "shadow";  > {}
-technique ZplotTec<string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
