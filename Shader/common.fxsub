@@ -1,7 +1,7 @@
 float time : TIME<bool SyncInEditMode=true;>;
 float elapsed : ELAPSEDTIME;
 
-float2 MousePositionn : MOUSEPOSITION;
+float2 MousePosition : MOUSEPOSITION;
 
 float4x4 matWorld              : WORLD;
 float4x4 matWorldInverse       : WORLDINVERSE;

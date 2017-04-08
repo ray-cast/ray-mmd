@@ -292,8 +292,6 @@ float segmented_spline_c9_fwd(float x)
 	const int N_KNOTS_LOW = 8;
 	const int N_KNOTS_HIGH = 8;
 
-	// Check for negatives or zero before taking the log. If negative or zero,
-	// set to OCESMIN.
 	float xCheck = x;
 	if (xCheck <= 0.0) xCheck = 1e-4;
 
@@ -325,7 +323,7 @@ float segmented_spline_c9_fwd(float x)
 		logy = dot(monomials, mul(M, cf));
 	}
 	else
-	{ //if (logIn >= log10(maxPoint.x)) {
+	{
 		logy = logx * slopeHigh + (log10(maxPoint.y) - slopeHigh * log10(maxPoint.x));
 	}
 
