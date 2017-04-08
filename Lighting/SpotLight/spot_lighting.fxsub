@@ -28,7 +28,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
-static float LightAngle = radians(lerp(60.0f, 45.0f, mAngleM));
+static float LightAngle = radians(lerp(60.0f, 30.0f, mAngleM));
 static float LightHardness = lerp(0.15, 0.5, mHardnessP);
 static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
@@ -36,7 +36,7 @@ static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax,
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 
 static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
@@ -56,15 +56,14 @@ static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matV
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for SpotLight";
-	int Width = SHADOW_MAP_SIZE;
-	int Height = SHADOW_MAP_SIZE;
 	string Format = "G32R32F";
+	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
-		"*controller.pmx=hide;"
+		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
 		"*.pmx = ../spot_shadow.fx;"
 		"*.pmd = ../spot_shadow.fx;"

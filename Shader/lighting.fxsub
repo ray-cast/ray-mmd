@@ -68,7 +68,7 @@ float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 	return material.customDataB * brdf;
 }
 
-float3 SubsurfaceShadingScatter(MaterialParam material, float3 N, float3 L, float3 V)
+float3 SubsurfaceShadingScattering(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	float w = 0.5;
 	float nl = saturate((dot(-N, L) + w) / pow2(1 + w));
@@ -101,7 +101,7 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothness, float3 specular, float NormalizationFactor)
 {
 	float alpha = exp2(10 * smoothness + 1);
-	float D = ((alpha + 2) / (8 * PI)) * pow(nh, alpha) * NormalizationFactor;
+	float D = ((alpha + 2) / 8) * pow(nh, alpha) * NormalizationFactor;
 	return D;
 }
 
@@ -223,7 +223,7 @@ float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 	if (material.lightModel == SHADINGMODELID_SKIN)
 		return SubsurfaceShadingPreIntegratedSkin(material, N, L);
 	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-		return SubsurfaceShadingScatter(material, N, L, V);
+		return SubsurfaceShadingScattering(material, N, L, V);
 	else
 		return 0;
 }
@@ -233,7 +233,7 @@ float3 SubsurfaceShadingFast(MaterialParam material, float3 N, float3 L, float3 
 	if (material.lightModel == SHADINGMODELID_SKIN)
 		return SubsurfaceShadingSkinRamp(material, N, L);
 	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-		return SubsurfaceShadingScatter(material, N, L, V);
+		return SubsurfaceShadingScattering(material, N, L, V);
 	else
 		return 0;
 }
