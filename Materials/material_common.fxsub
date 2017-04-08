@@ -513,6 +513,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
 	gbuffer.buffer3.w = 0;
 
+#if CUSTOM_ENABLE || EMISSIVE_ENABLE
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_GLASS ||
@@ -528,6 +529,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 		gbuffer.buffer3.yz = material.emissive.gb;
 		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
 	}	
+#endif
 
 	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
 	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);    
