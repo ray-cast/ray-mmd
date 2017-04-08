@@ -116,10 +116,10 @@ float3 rgb2ycbcr(float3 col)
 	return float3(encode.x, encode.y * MIDPOINT_8_BIT + MIDPOINT_8_BIT, encode.z * MIDPOINT_8_BIT + MIDPOINT_8_BIT);
 }
 
-float3 ComputeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord, float3 tangentNormal)
+float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tangentNormal)
 {
-	float3 dp1 = ddx(viewdir);
-	float3 dp2 = ddy(viewdir);
+	float3 dp1 = ddx(P);
+	float3 dp2 = ddy(P);
 	float2 duv1 = ddx(coord);
 	float2 duv2 = ddy(coord);
 
@@ -237,7 +237,7 @@ float2 GetParalaxOffset(sampler source, float2 coord, float3 V)
 	return paralaxOffset;
 }
 
-float3 GetWaveNormal(float2 coord, float3 N, float3 V)
+float3 GetWaveNormal(float2 coord, float3 N, float3 V, float3 P)
 {
 #if WAVE_MAP_ENABLE || WAVE_RIPPLE_MAP_ENABLE
 	float3 bumpNormal = 0;
@@ -257,7 +257,7 @@ float3 GetWaveNormal(float2 coord, float3 N, float3 V)
 	bumpNormal.xy += tex2D(WaveRippleMapSamp, ripple.xy).xy;
 #endif
 
-	return ComputeTangentBinormalNormal(N, V, coord, bumpNormal);
+	return ComputeTangentBinormalNormal(N, P, coord, bumpNormal);
 #else
 	return N;
 #endif
@@ -289,7 +289,7 @@ GbufferParam MaterialPS(
 {
 	MaterialParam material = (MaterialParam)0;
 	material.albedo = scatteringLow;
-	material.normal = GetWaveNormal(coord, normal, normalize(viewdir.xyz));
+	material.normal = GetWaveNormal(coord, normal, normalize(viewdir.xyz), worldPos);
 	material.smoothness = smoothness;
 	material.specular = smoothnessBaseSpecular;
 	material.customDataA = 0;
