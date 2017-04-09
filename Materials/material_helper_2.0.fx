@@ -116,13 +116,13 @@ const float metalnessMapLoopNum = 1.0;
 // Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
 // For example: Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The reflectance is equal to (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Convert specular to reflection coefficient is 0.16 * (specular ^ 2) = 0.04
+// Specular to reflection coefficient is 0.16 * (specular ^ 2), if specular is equal 0.5 the result is 0.04.
 #define SPECULAR_MAP_FROM 0			// see ALBEDO_MAP_FROM for more information.
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;
+const float3 specular = 0.5;		// see Specular to reflection coefficient
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
