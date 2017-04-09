@@ -509,6 +509,7 @@ float3 RNMBlendUnpacked(float3 n1, float3 n2)
 	return n1 * dot(n1, n2) / n1.z - n2;
 }
 
+#if NORMAL_MAP_TYPE == 2 || NORMAL_SUB_MAP_TYPE == 2
 float3 BumpMapToNormal(float3 N, float3 P, float height)
 {
 	float3 dp1 = ddx(P);
@@ -518,12 +519,14 @@ float3 BumpMapToNormal(float3 N, float3 P, float height)
 	float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
 
 	float det = dot(dp1, I[0]);
+
 	float slope1 = ddx(height);
 	float slope2 = ddy(height);
 
 	float3 surf = sign(det) * mul(float2(slope1, slope2), I);
 	return normalize(abs(det) * N - surf);
 }
+#endif
 #endif
 
 #if PARALLAX_MAP_FROM
