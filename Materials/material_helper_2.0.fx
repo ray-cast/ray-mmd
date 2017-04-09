@@ -12,9 +12,9 @@
 #define ALBEDO_MAP_FROM 3
 
 // You can flip your texture for the U and V axis mirror by change ALBEDO_MAP_UV_FLIP
-// 1 : Filp x axis
-// 2 : Filp y axis
-// 3 : Filp x & y axis
+// 1 : Flip x axis
+// 2 : Flip y axis
+// 3 : Flip x & y axis
 #define ALBEDO_MAP_UV_FLIP 0
 
 // You can apply values for color of texture change by change ALBEDO_MAP_APPLY_SCALE
