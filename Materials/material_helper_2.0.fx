@@ -26,20 +26,12 @@
 // 2 : map values ^ albedo;
 #define ALBEDO_MAP_APPLY_SCALE 0
 
-// Texture colors to multiply with diffuse from the PMX.
-#define ALBEDO_MAP_APPLY_DIFFUSE 1
+#define ALBEDO_MAP_APPLY_DIFFUSE 1		// Texture colors to multiply with diffuse from the PMX.
+#define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from controller (R+/G+/B+).
+#define ALBEDO_MAP_FILE "albedo.png"	// If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. parent folder ref is "../"
 
-// Texture colors to multiply with color from controller (R+/G+/B+).
-#define ALBEDO_MAP_APPLY_MORPH_COLOR 0
-
-// If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. parent folder ref is "../"
-#define ALBEDO_MAP_FILE "albedo.png"
-
-// Constant value or scale color, between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
-const float3 albedo = 1.0;
-
-// You can tile your texture for the U and V axis separately by change albedoMapLoopNum = float2(x, y)
-const float2 albedoMapLoopNum = 1.0; // Between 0.0 ~ inf
+const float3 albedo = 1.0;	// Base color between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
+const float2 albedoMapLoopNum = 1.0; // You can tile your texture for the U and V axis separately by change albedoMapLoopNum = float2(x, y)
 
 // You can apply second values for color of texture (albedo) change by change ALBEDO_SUB_ENABLE
 // 0 : None
@@ -64,7 +56,7 @@ const float2 albedoSubMapLoopNum = 1.0;
 const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
-#define NORMAL_MAP_FROM 0		     // see ALBEDO_MAP_FROM for more information.
+#define NORMAL_MAP_FROM 0  // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
 // see UE4 docs for more information.
