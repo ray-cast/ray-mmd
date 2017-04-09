@@ -104,11 +104,6 @@ const float smoothness = 0.0;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0				// see ALBEDO_MAP_FROM for more information.
-
-// Other parameter types for metalness
-// 0 : Metalness
-// 1 : Convert specular coefficient to metalness by 0.16 * (specular ^ 2)
-#define METALNESS_MAP_TYPE 0
 #define METALNESS_MAP_UV_FLIP 0				// see ALBEDO_MAP_UV_FLIP for more information.
 #define METALNESS_MAP_SWIZZLE 0				// see ALPHA_MAP_SWIZZLE for more information.
 #define METALNESS_MAP_APPLY_SCALE 0			// see ALBEDO_MAP_APPLY_SCALE for more information.
@@ -118,10 +113,18 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 
 // Minimum coefficient of specular reflection
-// Anything less than 2% is physically impossible and is instead considered to be shadowing
+// Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
 // For example: Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The reflectance is equal to (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-const float metalnessBaseSpecular = 0.04; 
+// Convert specular to reflection coefficient is 0.16 * (specular ^ 2)
+#define SPECULAR_MAP_FROM 0
+#define SPECULAR_MAP_UV_FLIP 0
+#define SPECULAR_MAP_SWIZZLE 0
+#define SPECULAR_MAP_APPLY_SCALE 0
+#define SPECULAR_MAP_FILE "specular.png"
+
+const float3 specular = 0.5;
+const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
 #define OCCLUSION_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.

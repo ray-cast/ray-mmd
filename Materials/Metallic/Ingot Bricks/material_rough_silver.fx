@@ -52,7 +52,6 @@ const float smoothness = 0.5;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
-#define METALNESS_MAP_TYPE 0
 #define METALNESS_MAP_UV_FLIP 0
 #define METALNESS_MAP_SWIZZLE 0
 #define METALNESS_MAP_APPLY_SCALE 0
@@ -60,7 +59,15 @@ const float smoothnessMapLoopNum = 1.0;
 
 const float metalness = 1.0;
 const float metalnessMapLoopNum = 1.0;
-const float metalnessBaseSpecular = 0.04;
+
+#define SPECULAR_MAP_FROM 0
+#define SPECULAR_MAP_UV_FLIP 0
+#define SPECULAR_MAP_SWIZZLE 0
+#define SPECULAR_MAP_APPLY_SCALE 0
+#define SPECULAR_MAP_FILE "specular.png"
+
+const float3 specular = 0.5;
+const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 1
 #define OCCLUSION_MAP_UV_FLIP 0

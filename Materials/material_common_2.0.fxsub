@@ -86,7 +86,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
 #if ALBEDO_MAP_FROM == 3 || ALBEDO_SUB_MAP_FROM == 3 || ALPHA_MAP_FROM == 3 ||\
 	NORMAL_MAP_FROM == 3|| NORMAL_SUB_MAP_FROM == 3||\
-	SMOOTHNESS_MAP_FROM == 3 || METALNESS_MAP_FROM == 3 ||\
+	SMOOTHNESS_MAP_FROM == 3 || METALNESS_MAP_FROM == 3 || SPECULAR_MAP_FROM == 3||\
 	EMISSIVE_MAP_FROM == 3 || OCCLUSION_MAP_FROM == 3 ||\
 	PARALLAX_MAP_FROM == 3|| CUSTOM_A_MAP_FROM == 3|| CUSTOM_B_MAP_FROM == 3
 	texture DiffuseMap: MATERIALTEXTURE;
@@ -94,7 +94,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
 #if ALBEDO_MAP_FROM == 4 || ALBEDO_SUB_MAP_FROM == 4  || ALPHA_MAP_FROM == 4 ||\
 	NORMAL_MAP_FROM == 4|| NORMAL_SUB_MAP_FROM == 4||\
-	SMOOTHNESS_MAP_FROM == 4 || METALNESS_MAP_FROM == 4 ||\
+	SMOOTHNESS_MAP_FROM == 4 || METALNESS_MAP_FROM == 4 || SPECULAR_MAP_FROM == 4||\
 	EMISSIVE_MAP_FROM == 4 || OCCLUSION_MAP_FROM == 4 ||\
 	PARALLAX_MAP_FROM == 4|| CUSTOM_A_MAP_FROM == 4|| CUSTOM_B_MAP_FROM == 4
 	texture SphereMap : MATERIALSPHEREMAP;
@@ -102,7 +102,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
 #if ALBEDO_MAP_FROM == 5 || ALBEDO_SUB_MAP_FROM == 5 || ALPHA_MAP_FROM == 5 ||\
 	NORMAL_MAP_FROM == 5|| NORMAL_SUB_MAP_FROM == 5||\
-	SMOOTHNESS_MAP_FROM == 5 || METALNESS_MAP_FROM == 5 ||\
+	SMOOTHNESS_MAP_FROM == 5 || METALNESS_MAP_FROM == 5 || SPECULAR_MAP_FROM == 5||\
 	EMISSIVE_MAP_FROM == 5 || OCCLUSION_MAP_FROM == 5 ||\
 	PARALLAX_MAP_FROM == 5|| CUSTOM_A_MAP_FROM == 5|| CUSTOM_B_MAP_FROM == 5
 	texture ToonMap : MATERIALTOONTEXTURE;
@@ -110,7 +110,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 
 #if ALBEDO_MAP_FROM == 6 || ALBEDO_SUB_MAP_FROM == 6 || ALPHA_MAP_FROM == 6 ||\
 	NORMAL_MAP_FROM == 6|| NORMAL_SUB_MAP_FROM == 6||\
-	SMOOTHNESS_MAP_FROM == 6 || METALNESS_MAP_FROM == 6 ||\
+	SMOOTHNESS_MAP_FROM == 6 || METALNESS_MAP_FROM == 6 || SPECULAR_MAP_FROM == 6||\
 	EMISSIVE_MAP_FROM == 6 || OCCLUSION_MAP_FROM == 6 ||\
 	PARALLAX_MAP_FROM == 6|| CUSTOM_A_MAP_FROM == 6|| CUSTOM_B_MAP_FROM == 6
 	shared texture2D DummyScreenTex : RENDERCOLORTARGET;
@@ -284,6 +284,31 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 		texture = DummyScreenTex;
 #else
 		texture = MetalnessMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if SPECULAR_MAP_FROM >= 1 && SPECULAR_MAP_FROM <= 6
+	#if SPECULAR_MAP_FROM == 1
+		texture SpecularMap<string ResourceName = SPECULAR_MAP_FILE;>; 
+	#elif SPECULAR_MAP_FROM == 2
+		texture SpecularMap : ANIMATEDTEXTURE<string ResourceName = SPECULAR_MAP_FILE;>;
+	#endif
+	sampler SpecularMapSamp = sampler_state
+	{
+#if SPECULAR_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif SPECULAR_MAP_FROM == 4
+		texture = SphereMap;
+#elif SPECULAR_MAP_FROM == 5
+		texture = ToonMap;
+#elif SPECULAR_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = SpecularMap;
 #endif
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
@@ -1027,10 +1052,6 @@ float GetMetalness(float2 coord)
 		float metalnessValue = metalnessValues.a;
 	#endif
 
-	#if METALNESS_MAP_TYPE == 1
-		metalnessValue = 0.16 * (metalnessValue * metalnessValue);
-	#endif
-
 	#if METALNESS_MAP_APPLY_SCALE == 1
 		metalnessValue *= metalness;
 	#elif METALNESS_MAP_APPLY_SCALE == 2
@@ -1040,6 +1061,45 @@ float GetMetalness(float2 coord)
 	return saturate(metalnessValue);
 #else
 	return metalness;
+#endif
+}
+
+float3 GetSpecular(float2 coord)
+{
+#if SPECULAR_MAP_FROM
+	#if SPECULAR_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif SPECULAR_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif SPECULAR_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if SPECULAR_MAP_FROM == 3
+		float3 specularColor = use_texture ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+	#elif SPECULAR_MAP_FROM == 4
+		float3 specularColor = use_spheremap ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+	#elif SPECULAR_MAP_FROM == 5
+		float3 specularColor = use_toon ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+	#elif SPECULAR_MAP_FROM == 7
+		float3 specularColor = MaterialAmbient.rgb;
+	#elif SPECULAR_MAP_FROM == 8
+		float3 specularColor = MaterialSpecular.rgb;
+	#elif SPECULAR_MAP_FROM == 9
+		#error Unsupported options 9.
+	#else
+		float3 specularColor = tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb;
+	#endif
+	
+	#if SPECULAR_MAP_APPLY_SCALE == 1
+		specularColor *= specular;
+	#elif SPECULAR_MAP_APPLY_SCALE == 2
+		specularColor = pow(specularColor, specular);
+	#endif
+
+	return saturate(0.16 * (specularColor * specularColor));
+#else
+	return saturate(0.16 * (specular * specular));
 #endif
 }
 
@@ -1331,7 +1391,7 @@ GbufferParam MaterialPS(
 	material.normal = GetNormal(normal, worldPos, coord.xy);
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
+	material.specular = lerp(GetSpecular(coord), max(0.02, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 #if CUSTOM_ENABLE == SHADINGMODELID_GLASS
 	material.customDataB = GetCustomDataB(coord.xy);
@@ -1381,7 +1441,7 @@ GbufferParam Material2PS(
 #endif
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(metalnessBaseSpecular, max(metalnessBaseSpecular, albedoColor), MaterialMetalness);
+	material.specular = lerp(GetSpecular(coord), max(0.02, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 #if CUSTOM_ENABLE == SHADINGMODELID_GLASS
 	material.customDataB = GetCustomDataB(coord.xy);
