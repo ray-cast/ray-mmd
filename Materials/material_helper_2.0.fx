@@ -65,6 +65,7 @@ const float alphaMapLoopNum = 1.0;
 // Other parameter types for tangent normal
 // 0 : RGB tangent normal
 // 1 : Convert RG texture to RGB tangent normal.
+// 2 : Convert R/bump texture to RGB tanget normal
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
