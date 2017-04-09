@@ -294,29 +294,29 @@ float4 GenerateColorLookupPS(in float2 coord : TEXCOORD0) : COLOR
 	float3 color = CreateColorSpectrum(coord);
 
 	color = ColorTemperature(color, mColorTemperature);
-	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorCorrect(color, mColorSaturation, mColorContrast, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorCorrectAll(
 		color,
-		mColorContrastAll,
 		mColorSaturationAll,
+		mColorContrastAll,
 		mColorGammaAll,
 		mColorGainAll,
 		mColorOffsetAll,
 
-		mColorContrastLow,
 		mColorSaturationLow,
+		mColorContrastLow,
 		mColorGammaLow,
 		mColorGainLow,
 		mColorOffsetLow,
 
-		mColorContrastMid,
 		mColorSaturationMid,
+		mColorContrastMid,
 		mColorGammaMid,
 		mColorGainMid,
 		mColorOffsetMid,
 
-		mColorContrastHigh,
 		mColorSaturationHigh,
+		mColorContrastHigh,
 		mColorGammaHigh,
 		mColorGainHigh,
 		mColorOffsetHigh,

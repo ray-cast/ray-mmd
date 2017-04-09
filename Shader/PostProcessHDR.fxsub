@@ -78,7 +78,7 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	color *= coord.z;
 
 	color = ColorTemperature(color, mColorTemperature);
-	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorCorrect(color, mColorSaturation, mColorContrast, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorVignette(color, coord.xy);
 	color = ColorToneMapping(color);
 

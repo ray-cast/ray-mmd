@@ -33,10 +33,10 @@ float3 ColorTemperature(float3 color, float kelvin)
 }
 
 float3 ColorCorrect(
-	float3 color, 
-	float colorContrast, 
-	float colorSaturation, 
-	float colorGamma, 
+	float3 color,
+	float colorSaturation,
+	float colorContrast,
+	float colorGamma,
 	float3 colorGainP,
 	float3 colorGainM)
 {
@@ -49,10 +49,10 @@ float3 ColorCorrect(
 }
 
 float3 ColorCorrect(
-	float3 color, 
-	float3 colorContrast, 
-	float3 colorSaturation, 
-	float3 colorGamma, 
+	float3 color,
+	float3 colorSaturation,
+	float3 colorContrast,
+	float3 colorGamma,
 	float3 colorGain,
 	float3 colorOffset)
 {
@@ -66,8 +66,8 @@ float3 ColorCorrect(
 
 float3 ColorCorrectAll(
 	float3 color,
-	float3 colorContrast,
 	float3 colorSaturation,
+	float3 colorContrast,
 	float3 colorGamma,
 	float3 colorGain,
 	float3 colorOffset,
