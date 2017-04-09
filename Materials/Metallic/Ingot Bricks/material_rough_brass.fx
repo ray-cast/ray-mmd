@@ -1,11 +1,11 @@
-#define ALBEDO_MAP_FROM 0
+#define ALBEDO_MAP_FROM 1
 #define ALBEDO_MAP_UV_FLIP 0
-#define ALBEDO_MAP_APPLY_SCALE 0
+#define ALBEDO_MAP_APPLY_SCALE 1
 #define ALBEDO_MAP_APPLY_DIFFUSE 0
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0
-#define ALBEDO_MAP_FILE "albedo.png"
+#define ALBEDO_MAP_FILE "bricks_ao.dds"
 
-const float3 albedo = float3(0.955, 0.637, 0.538);
+const float3 albedo = float3(0.7294, 0.4314, 0.2509);
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -25,10 +25,10 @@ const float2 albedoSubMapLoopNum = 1.0;
 const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
-#define NORMAL_MAP_FROM 0
+#define NORMAL_MAP_FROM 1
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_FILE "normal.png"
+#define NORMAL_MAP_FILE "bricks_n.dds"
 
 const float normalMapScale = -1.0;
 const float normalMapLoopNum = 1.0;
@@ -41,15 +41,15 @@ const float normalMapLoopNum = 1.0;
 const float normalMapSubScale = 1.0;
 const float normalMapSubLoopNum = 1.0;
 
-#define SMOOTHNESS_MAP_FROM 1
+#define SMOOTHNESS_MAP_FROM 0
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
-#define SMOOTHNESS_MAP_FILE "worn_metal.png"
+#define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.0;
-const float smoothnessMapLoopNum = 2.0;
+const float smoothness = 0.5;
+const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
 #define METALNESS_MAP_TYPE 0
@@ -62,11 +62,11 @@ const float metalness = 1.0;
 const float metalnessMapLoopNum = 1.0;
 const float metalnessBaseSpecular = 0.04;
 
-#define OCCLUSION_MAP_FROM 0
+#define OCCLUSION_MAP_FROM 1
 #define OCCLUSION_MAP_UV_FLIP 0
 #define OCCLUSION_MAP_SWIZZLE 0
 #define OCCLUSION_MAP_APPLY_SCALE 0 
-#define OCCLUSION_MAP_FILE "occlusion.png"
+#define OCCLUSION_MAP_FILE "bricks_ao.dds"
 
 const float occlusion = 1.0;
 const float occlusionMapLoopNum = 1.0;

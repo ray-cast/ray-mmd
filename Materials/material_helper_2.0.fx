@@ -1,3 +1,7 @@
+// What does Physically Based Materials mean?
+// You can see the UE4 docs for more information
+// https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
+
 // Paramters in the data fetch from code
 // 0 : Fixed value
 // 1 : Image (bmp, png, jpg, tga, dds)
@@ -63,9 +67,11 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_FROM 0		     // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
+// see UE4 docs for more information.
+// https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : RGB tangent normal
 // 1 : Convert RG texture to RGB tangent normal.
-// 2 : Convert R/bump texture to RGB tanget normal
+// 2 : Convert R/bump texture to RGB tanget normal by PerturbNormalLQ
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
@@ -84,8 +90,8 @@ const float normalSubMapLoopNum = 1.0;
 #define SMOOTHNESS_MAP_FROM 0			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for smoothness
-// 0 : Smoothness
-// 1 : Convert roughtness to smoothness by 1.0 - Roughness ^ 0.5 (UE4 / CE5 textures)
+// 0 : Smoothness (from CE5 textures)
+// 1 : Convert roughtness to smoothness by 1.0 - Roughness ^ 0.5 (from UE4 textures)
 // 2 : Convert roughtness to smoothness by 1.0 - Roughness
 // 3 : Convert shininess  to smoothness by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0

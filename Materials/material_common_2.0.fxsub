@@ -510,7 +510,7 @@ float3 RNMBlendUnpacked(float3 n1, float3 n2)
 }
 
 #if NORMAL_MAP_TYPE == 2 || NORMAL_SUB_MAP_TYPE == 2
-float3 BumpMapToNormal(float3 N, float3 P, float height)
+float3 PerturbNormalLQ(float3 N, float3 P, float height)
 {
 	float3 dp1 = ddx(P);
 	float3 dp2 = ddy(P);
@@ -838,7 +838,7 @@ float3 GetMainNormal(float3 N, float3 P, float2 coord)
 	#if NORMAL_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
 	#elif NORMAL_MAP_TYPE == 2
-		tangentNormal = BumpMapToNormal(N, P, tangentNormal.x * normalMapScale);
+		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalMapScale);
 		#if NORMAL_SUB_MAP_FROM
 			#error Unsupported bump map with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
 		#endif
@@ -881,7 +881,7 @@ float3 GetSubNormal(float3 N, float3 P, float2 coord)
 	#if NORMAL_SUB_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
 	#elif NORMAL_SUB_MAP_TYPE == 2
-		tangentNormal = BumpMapToNormal(N, P, tangentNormal.x * normalSubMapScale);
+		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalSubMapScale);
 		#if NORMAL_MAP_FROM
 			#error Unsupported bump map with second normal map. Please set NORMAL_MAP_FROM to 0.
 		#endif
