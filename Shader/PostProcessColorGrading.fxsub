@@ -201,25 +201,25 @@ static float3 mColorContrastAll   = lerp(lerp(1.0, 3.0, mColorContrastAllP), 0, 
 static float3 mColorSaturationAll = lerp(lerp(1.0, 3.0, mColorSaturationAllP), 0, mColorSaturationAllM);
 static float3 mColorGammaAll      = lerp(lerp(1.0, 3.0, mColorGammaAllP), 0, mColorGammaAllM);
 static float3 mColorGainAll       = lerp(lerp(1.0, 3.0, mColorGainAllP), 0, mColorGainAllM);
-static float3 mColorOffsetAll     = lerp(lerp(0.0, 3.0, mColorOffsetAllP), 0, mColorOffsetAllM);
+static float3 mColorOffsetAll     = lerp(lerp(0.0, 3.0, mColorOffsetAllP), -3.0, mColorOffsetAllM);
 
 static float3 mColorContrastLow   = lerp(lerp(1.0, 3.0, mColorContrastLowP), 0, mColorContrastLowM);
 static float3 mColorSaturationLow = lerp(lerp(1.0, 3.0, mColorSaturationLowP), 0, mColorSaturationLowM);
 static float3 mColorGammaLow      = lerp(lerp(1.0, 3.0, mColorGammaLowP), 0, mColorGammaLowM);
 static float3 mColorGainLow       = lerp(lerp(1.0, 3.0, mColorGainLowP), 0, mColorGainLowM);
-static float3 mColorOffsetLow     = lerp(lerp(0.0, 3.0, mColorOffsetLowP), 0, mColorOffsetLowM);
+static float3 mColorOffsetLow     = lerp(lerp(0.0, 3.0, mColorOffsetLowP), -3.0, mColorOffsetLowM);
 
 static float3 mColorContrastMid   = lerp(lerp(1.0, 3.0, mColorContrastMidP), 0, mColorContrastMidM);
 static float3 mColorSaturationMid = lerp(lerp(1.0, 3.0, mColorSaturationMidP), 0, mColorSaturationMidM);
 static float3 mColorGammaMid      = lerp(lerp(1.0, 3.0, mColorGammaMidP), 0, mColorGammaMidM);
 static float3 mColorGainMid       = lerp(lerp(1.0, 3.0, mColorGainMidP), 0, mColorGainMidM);
-static float3 mColorOffsetMid     = lerp(lerp(0.0, 3.0, mColorOffsetMidP), 0, mColorOffsetMidM);
+static float3 mColorOffsetMid     = lerp(lerp(0.0, 3.0, mColorOffsetMidP), -3.0, mColorOffsetMidM);
 
 static float3 mColorContrastHigh   = lerp(lerp(1.0, 3.0, mColorContrastHighP), 0, mColorContrastHighM);
 static float3 mColorSaturationHigh = lerp(lerp(1.0, 3.0, mColorSaturationHighP), 0, mColorSaturationHighM);
 static float3 mColorGammaHigh      = lerp(lerp(1.0, 3.0, mColorGammaHighP), 0, mColorGammaHighM);
 static float3 mColorGainHigh       = lerp(lerp(1.0, 3.0, mColorGainHighP), 0, mColorGainHighM);
-static float3 mColorOffsetHigh     = lerp(lerp(0.0, 3.0, mColorOffsetHighP), 0, mColorOffsetHighM);
+static float3 mColorOffsetHigh     = lerp(lerp(0.0, 3.0, mColorOffsetHighP), -3.0, mColorOffsetHighM);
 
 static float mColorCorrectionLowThreshold  = lerp(lerp(0.5, 1.0, mWeightLowP) , 0.0, mWeightLowM);
 static float mColorCorrectionHighThreshold = lerp(lerp(0.5, 0.0, mWeightHighP), 1.0, mWeightHighM);
@@ -297,26 +297,26 @@ float4 GenerateColorLookupPS(in float2 coord : TEXCOORD0) : COLOR
 	color = ColorCorrect(color, mColorContrast, mColorSaturation, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorCorrectAll(
 		color,
-		mColorSaturationAll,
 		mColorContrastAll,
+		mColorSaturationAll,
 		mColorGammaAll,
 		mColorGainAll,
 		mColorOffsetAll,
 
-		mColorSaturationLow,
 		mColorContrastLow,
+		mColorSaturationLow,
 		mColorGammaLow,
 		mColorGainLow,
 		mColorOffsetLow,
 
-		mColorSaturationMid,
 		mColorContrastMid,
+		mColorSaturationMid,
 		mColorGammaMid,
 		mColorGainMid,
 		mColorOffsetMid,
 
-		mColorSaturationHigh,
 		mColorContrastHigh,
+		mColorSaturationHigh,
 		mColorGammaHigh,
 		mColorGainHigh,
 		mColorOffsetHigh,

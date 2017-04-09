@@ -114,7 +114,7 @@ const float occlusionMapLoopNum = 1.0;
 #define PARALLAX_MAP_SUPPORT_ALPHA 0
 #define PARALLAX_MAP_FILE "height.png"
 
-const float parallaxMapScale = 0.01;
+const float parallaxMapScale = 1.0;
 const float parallaxMapLoopNum = 1.0;
 
 #define CUSTOM_ENABLE 0

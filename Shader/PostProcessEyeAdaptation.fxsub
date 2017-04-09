@@ -50,11 +50,11 @@ void EyeDownsampleVS(
 	out float4 oPosition : POSITION,
 	uniform float2 step)
 {
-	oPosition = Position;
 	oTexcoord1 = Texcoord + step * 0.5;
 	oTexcoord2 = oTexcoord1 + float2(step.x, 0);
 	oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
 	oTexcoord4 = oTexcoord1 + float2(0, step.y);
+	oPosition = Position;
 }
 
 float4 EyeDownsamplePS(
@@ -76,6 +76,5 @@ float4 EyeAdapationPS(in float2 coord: TEXCOORD0) : COLOR
 {
 	float lum = tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r;
 	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
-
 	return CalcAdaptedLum(adaptedLum, lum, elapsed);
 }

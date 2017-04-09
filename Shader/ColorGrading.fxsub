@@ -53,21 +53,21 @@ float3 ColorCorrect(
 	float3 colorContrast, 
 	float3 colorSaturation, 
 	float3 colorGamma, 
-	float3 colorGainP,
-	float3 colorGainM)
+	float3 colorGain,
+	float3 colorOffset)
 {
 	float3 lum = luminance(color);
 	color = max(0, lerp(lum, color, colorSaturation.rgb));
 	color = pow(color * (1.0 / 0.18), colorContrast.rgb) * 0.18;
 	color = pow(color, 1.0 / colorGamma.rgb);
-	color = color * (colorGainP.rgb + colorGainM.rgb);
-	return color;
+	color = color * colorGain.rgb + colorOffset.rgb;
+	return max(0, color);
 }
 
 float3 ColorCorrectAll(
 	float3 color,
-	float3 colorSaturation,
 	float3 colorContrast,
+	float3 colorSaturation,
 	float3 colorGamma,
 	float3 colorGain,
 	float3 colorOffset,
@@ -94,22 +94,22 @@ float3 ColorCorrectAll(
 	float colorCorrectionHighlightsMin)
 {
 	float3 colorShadows = ColorCorrect(color, 
-		colorSaturationShadows*colorSaturation, 
 		colorContrastShadows*colorContrast, 
+		colorSaturationShadows*colorSaturation, 
 		colorGammaShadows*colorGamma, 
 		colorGainShadows*colorGain, 
 		colorOffsetShadows+colorOffset);
 
 	float3 colorHighlights = ColorCorrect(color, 
-		colorSaturationHighlights*colorSaturation, 
 		colorContrastHighlights*colorContrast, 
+		colorSaturationHighlights*colorSaturation, 
 		colorGammaHighlights*colorGamma, 
 		colorGainHighlights*colorGain, 
 		colorOffsetHighlights+colorOffset);
 
 	float3 colorMidtones = ColorCorrect(color, 
-		colorSaturationMidtones*colorSaturation, 
 		colorContrastMidtones*colorContrast, 
+		colorSaturationMidtones*colorSaturation, 
 		colorGammaMidtones*colorGamma, 
 		colorGainMidtones*colorGain, 
 		colorOffsetMidtones+colorOffset);
