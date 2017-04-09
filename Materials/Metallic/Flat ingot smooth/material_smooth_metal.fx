@@ -60,6 +60,7 @@ const float metalness = 1.0;
 const float metalnessMapLoopNum = 1.0;
 
 #define SPECULAR_MAP_FROM 0
+#define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0
 #define SPECULAR_MAP_SWIZZLE 0
 #define SPECULAR_MAP_APPLY_SCALE 0

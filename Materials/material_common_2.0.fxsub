@@ -1076,19 +1076,35 @@ float3 GetSpecular(float2 coord)
 	#endif
 
 	#if SPECULAR_MAP_FROM == 3
-		float3 specularColor = use_texture ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+		float4 specularColor = use_texture ? tex2D(SpecularMapSamp, coord * specularMapLoopNum) : 0.5;
 	#elif SPECULAR_MAP_FROM == 4
-		float3 specularColor = use_spheremap ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+		float4 specularColor = use_spheremap ? tex2D(SpecularMapSamp, coord * specularMapLoopNum) : 0.5;
 	#elif SPECULAR_MAP_FROM == 5
-		float3 specularColor = use_toon ? tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb : 0.5;
+		float4 specularColor = use_toon ? tex2D(SpecularMapSamp, coord * specularMapLoopNum) : 0.5;
 	#elif SPECULAR_MAP_FROM == 7
-		float3 specularColor = MaterialAmbient.rgb;
+		float4 specularColor = MaterialAmbient;
 	#elif SPECULAR_MAP_FROM == 8
-		float3 specularColor = MaterialSpecular.rgb;
+		float4 specularColor = MaterialSpecular;
 	#elif SPECULAR_MAP_FROM == 9
 		#error Unsupported options 9.
 	#else
-		float3 specularColor = tex2D(SpecularMapSamp, coord * specularMapLoopNum).rgb;
+		float4 specularColor = tex2D(SpecularMapSamp, coord * specularMapLoopNum);
+	#endif
+	
+	#if (SPECULAR_MAP_TYPE == 2 || SPECULAR_MAP_TYPE == 3) && SPECULAR_MAP_SWIZZLE == 0
+		specularColor = specularColor.r;
+	#elif (SPECULAR_MAP_TYPE == 2 || SPECULAR_MAP_TYPE == 3) && SPECULAR_MAP_SWIZZLE == 1
+		specularColor = specularColor.g;
+	#elif (SPECULAR_MAP_TYPE == 2 || SPECULAR_MAP_TYPE == 3) && SPECULAR_MAP_SWIZZLE == 2
+		specularColor = specularColor.b;
+	#elif SPECULAR_MAP_TYPE == 2 || SPECULAR_MAP_TYPE == 3
+		specularColor = specularColor.a;
+	#endif
+
+	#if SPECULAR_MAP_TYPE == 1 || SPECULAR_MAP_TYPE == 3
+		specularColor = 0.08 * specularColor;
+	#else
+		specularColor = 0.16 * specularColor * specularColor;
 	#endif
 	
 	#if SPECULAR_MAP_APPLY_SCALE == 1
@@ -1097,9 +1113,13 @@ float3 GetSpecular(float2 coord)
 		specularColor = pow(specularColor, specular);
 	#endif
 
-	return saturate(0.16 * (specularColor * specularColor));
+	return saturate(specularColor.rgb);
 #else
-	return saturate(0.16 * (specular * specular));
+	#if SPECULAR_MAP_TYPE == 1
+		return saturate(0.08 * specular);
+	#else
+		return saturate(0.16 * specular * specular);
+	#endif
 #endif
 }
 
