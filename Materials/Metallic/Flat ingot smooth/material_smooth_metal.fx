@@ -53,7 +53,6 @@ const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
 #define METALNESS_MAP_UV_FLIP 0
-#define METALNESS_MAP_SWIZZLE 0
 #define METALNESS_MAP_APPLY_SCALE 0
 #define METALNESS_MAP_FILE "metalness.png"
 
