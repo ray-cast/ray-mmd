@@ -1,5 +1,5 @@
 static const float3 albedo = 0;
-static const float3 specular = 0.5;
+static const float3 specular = 0.0;
 static const float alpha = 1.0;
 static const float smoothness = 0.0;
 static const float occlusion = 0.0;
