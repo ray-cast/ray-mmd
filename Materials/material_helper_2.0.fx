@@ -8,7 +8,7 @@
 // 6 : Params fetch from avi/screen from the DummyScreen.x
 // 7 : Params fetch from Ambient Color from the pmx
 // 8 : Params fetch from Specular Color from the pmx
-// 9 : Params fetch from Specular Power from the pmx
+// 9 : Params fetch from Specular Power from the pmx // for smoothness, see SMOOTHNESS_MAP_TYPE at 3
 #define ALBEDO_MAP_FROM 3
 
 // You can flip your texture for the U and V axis mirror by change ALBEDO_MAP_UV_FLIP
@@ -31,7 +31,7 @@
 // If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. parent folder ref is "../"
 #define ALBEDO_MAP_FILE "albedo.png"
 
-// Fixed value or scale color, between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
+// Constant value or scale color, between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
 const float3 albedo = 1.0;
 
 // You can tile your texture for the U and V axis separately by change albedoMapLoopNum = float2(x, y)
@@ -86,7 +86,7 @@ const float normalSubMapLoopNum = 1.0;
 // 0 : Smoothness
 // 1 : Convert roughtness to smoothness by 1.0 - Roughness ^ 0.5 (UE4 / CE5 textures)
 // 2 : Convert roughtness to smoothness by 1.0 - Roughness
-// 3 : Convert shininess  to smoothness by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25 (from Specular power from PMX)
+// 3 : Convert shininess  to smoothness by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
