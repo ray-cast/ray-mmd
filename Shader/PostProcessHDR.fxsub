@@ -50,17 +50,16 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 float4 HDRTonemappingVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1) : POSITION
+	out float4 oTexcoord : TEXCOORD0) : POSITION
 {
-	oTexcoord0 = Texcoord;
-	oTexcoord0.xy += ViewportOffset;
-	oTexcoord0.zw = mExposure;
+	oTexcoord = Texcoord;
+	oTexcoord.xy += ViewportOffset;
+	oTexcoord.zw = mExposure;
 #if HDR_EYE_ADAPTATION == 1
-	oTexcoord0.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
+	oTexcoord.zw *= ComputeExposure(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
 #elif HDR_EYE_ADAPTATION == 2
 	float EV100 = ComputeEV100(tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r);
-	oTexcoord0.zw *= ComputeExposureISO(EV100);
+	oTexcoord.zw *= ComputeExposureISO(EV100);
 #endif
 	return Position;
 }

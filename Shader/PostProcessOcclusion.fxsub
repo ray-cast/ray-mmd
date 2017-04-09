@@ -301,10 +301,10 @@ float4 ScreenSpaceDirOccBlurPS(
 	float2 offset2 = coord - offset;
 
 	[unroll]
-	for (int r = 1; r < SSDO_BLUR_RADIUS; r++)
+	for (int i = 1; i < SSDO_BLUR_RADIUS; i++)
 	{
 		float depth = linearizeDepth2(offset1);
-		float weight = BilateralWeight(r, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
+		float weight = BilateralWeight(i, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
 		weight *= saturate(dot(GetNormal(offset1), normal));
 
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * weight;
@@ -314,10 +314,10 @@ float4 ScreenSpaceDirOccBlurPS(
 	}
 	
 	[unroll]
-	for (int r = 1; r < SSDO_BLUR_RADIUS; r++)
+	for (int j = 1; j < SSDO_BLUR_RADIUS; j++)
 	{
 		float depth = linearizeDepth2(offset2);
-		float weight = BilateralWeight(r, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
+		float weight = BilateralWeight(j, depth, center_d, SSDO_BLUR_RADIUS, sharpness);
 		weight *= saturate(dot(GetNormal(offset2), normal));
 
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * weight;

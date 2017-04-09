@@ -705,7 +705,7 @@ technique DeferredLighting<
 	pass GlareLightComp<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		VertexShader = compile vs_3_0 GlareLightCompVS();
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}
 #endif
