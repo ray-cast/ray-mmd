@@ -142,6 +142,7 @@ const float occlusionMapLoopNum = 1.0;
 // 1 : calculate parallax occlusion with transparency and SSDO
 #define PARALLAX_MAP_TYPE 0
 #define PARALLAX_MAP_UV_FLIP 0			// see ALBEDO_MAP_UV_FLIP for more information.
+#define PARALLAX_MAP_SWIZZLE 0			// see ALPHA_MAP_SWIZZLE for more information.
 #define PARALLAX_MAP_FILE "height.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float parallaxMapScale = 1.0;
