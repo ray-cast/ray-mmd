@@ -1067,6 +1067,10 @@ float GetMetalness(float2 coord)
 float3 GetSpecular(float2 coord)
 {
 #if SPECULAR_MAP_FROM
+	#if CUSTOM_ENABLE && SPECULAR_MAP_TYPE <= 1
+		#error Unsupported material, When CUSTOM_ENABLE and specular with color enable, Please set CUSTOM_ENABLE to 0
+	#endif
+
 	#if SPECULAR_MAP_UV_FLIP == 1
 		coord.x = 1 - coord.x;
 	#elif SPECULAR_MAP_UV_FLIP == 2
@@ -1108,12 +1112,12 @@ float3 GetSpecular(float2 coord)
 	#endif
 	
 	#if SPECULAR_MAP_APPLY_SCALE == 1
-		specularColor *= specular;
+		specularColor.rgb *= specular;
 	#elif SPECULAR_MAP_APPLY_SCALE == 2
-		specularColor = pow(specularColor, specular);
+		specularColor.rgb = pow(specularColor.rgb, specular);
 	#endif
 
-	return saturate(specularColor.rgb);
+	return clamp(specularColor.rgb, 0.01, 1.0);
 #else
 	#if SPECULAR_MAP_TYPE == 1
 		return saturate(0.08 * specular);
@@ -1481,31 +1485,30 @@ GbufferParam Material2PS(
 	return EncodeGbuffer(material, coord.z);
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; \
-	string Script = \
-		"RenderColorTarget0=;" \
-		"RenderColorTarget1=Gbuffer2RT;" \
-		"RenderColorTarget2=Gbuffer3RT;" \
-		"RenderColorTarget3=Gbuffer4RT;" \
-		"Pass=DrawObject;" \
-		"RenderColorTarget0=Gbuffer5RT;" \
-		"RenderColorTarget1=Gbuffer6RT;" \
-		"RenderColorTarget2=Gbuffer7RT;" \
-		"RenderColorTarget3=Gbuffer8RT;" \
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	string Script =\
+		"RenderColorTarget0=;"\
+		"RenderColorTarget1=Gbuffer2RT;"\
+		"RenderColorTarget2=Gbuffer3RT;"\
+		"RenderColorTarget3=Gbuffer4RT;"\
+		"Pass=DrawObject;"\
+		"RenderColorTarget0=Gbuffer5RT;"\
+		"RenderColorTarget1=Gbuffer6RT;"\
+		"RenderColorTarget2=Gbuffer7RT;"\
+		"RenderColorTarget3=Gbuffer8RT;"\
 		"Pass=DrawAlphaObject;"\
-	; \
-	> { \
-		pass DrawObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 MaterialVS(); \
-			PixelShader  = compile ps_3_0 MaterialPS(); \
-		} \
-		pass DrawAlphaObject { \
-			AlphaTestEnable = false; AlphaBlendEnable = false; \
-			VertexShader = compile vs_3_0 MaterialVS(); \
-			PixelShader  = compile ps_3_0 Material2PS(); \
-		} \
+	;> {\
+		pass DrawObject {\
+			AlphaTestEnable = false; AlphaBlendEnable = false;\
+			VertexShader = compile vs_3_0 MaterialVS();\
+			PixelShader  = compile ps_3_0 MaterialPS();\
+		}\
+		pass DrawAlphaObject {\
+			AlphaTestEnable = false; AlphaBlendEnable = false;\
+			VertexShader = compile vs_3_0 MaterialVS();\
+			PixelShader  = compile ps_3_0 Material2PS();\
+		}\
 	}
 
 OBJECT_TEC(MainTec0, "object")
