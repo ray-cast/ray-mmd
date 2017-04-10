@@ -115,8 +115,8 @@ const float metalnessMapLoopNum = 1.0;
 // Other parameter types for Specular
 // 0 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
 // 1 : Convert specular color to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
-// 2 : Convert specular  gray to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
-// 3 : Convert specular  gray to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
+// 2 : Convert specular grays to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 3 : Convert specular grays to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
@@ -138,8 +138,8 @@ const float occlusionMapLoopNum = 1.0;
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for parallax
-// 0 : without alpha and SSDO calculate
-// 1 : calculate parallax occlusion with transparency and SSDO
+// 0 : calculate without transparency
+// 1 : calculate parallax occlusion with transparency and best SSDO
 #define PARALLAX_MAP_TYPE 0
 #define PARALLAX_MAP_UV_FLIP 0			// see ALBEDO_MAP_UV_FLIP for more information.
 #define PARALLAX_MAP_SWIZZLE 0			// see ALPHA_MAP_SWIZZLE for more information.
