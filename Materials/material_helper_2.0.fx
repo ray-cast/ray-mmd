@@ -114,15 +114,15 @@ const float metalnessMapLoopNum = 1.0;
 // Other parameter types for Specular
 // 0 : Convert specular color to reflection coefficient by 0.16 * specular^2 (from Frostbite/CE5 textures)
 // 1 : Convert specular color to reflection coefficient by 0.08 * specular   (from UE4 textures)
-// 2 : Convert specular gray to reflection coefficient by 0.16 * specular^2 (from Frostbite/CE5 textures)
-// 3 : Convert specular gray to reflection coefficient by 0.08 * specular   (from UE4 textures)
+// 2 : Convert specular gray to reflection coefficient by 0.16 * specular^2  (from Frostbite/CE5 textures)
+// 3 : Convert specular gray to reflection coefficient by 0.08 * specular    (from UE4 textures)
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;		// see Specular to reflection coefficient
+const float3 specular = 0.5;		// see Specular to reflection coefficient, between 0 ~ 1, Default is 0.5 for 0.04
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
@@ -156,6 +156,15 @@ const float3 emissiveBlink = 1.0;
 const float  emissiveIntensity = 1.0;
 const float2 emissiveMapLoopNum = 1.0;
 
+// Shading Material ID
+// 0 : Default            // customA = invalid,    customB = invalid
+// 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
+// 2 : Unlit placeholder  // customA = invalid,    customB = invalid
+// 3 : Reserved
+// 4 : Glass              // customA = curvature   customB = transmittance color
+// 5 : Cloth              // customA = sheen,      customB = Fuzz Color
+// 6 : Clear Coat         // customA = smoothness, customB = invalid;
+// 7 : Subsurface         // customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0
 
 #define CUSTOM_A_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
