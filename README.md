@@ -22,6 +22,8 @@ Download :
 	- Added skylighting_hdr_fast.fx
 	- Added SoundSpectrum
 	- Added Eye Adaptation
+	- Added Bump Map Support
+	- Added Specular Map Support
 	- Removed melanin material (it's still available in old materials, just removed the description)
 	- Improved bloom
 	- Improved SSAO

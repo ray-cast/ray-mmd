@@ -1044,9 +1044,9 @@ float GetMetalness(float2 coord)
 	#endif
 
 	#if METALNESS_MAP_FROM == 3
-		float4 metalnessValues = use_texture ? tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum) : 0.0;
+		float4 metalnessValues = use_texture ? tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum) : 0;
 	#elif METALNESS_MAP_FROM == 4
-		float4 metalnessValues = use_spheremap ? tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum) : 0.0;
+		float4 metalnessValues = use_spheremap ? tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum) : 0;
 	#elif METALNESS_MAP_FROM == 5
 		float4 metalnessValues = use_toon ? tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum) : 0;
 	#elif METALNESS_MAP_FROM == 7
@@ -1159,10 +1159,10 @@ float3 GetEmissiveColor(float2 coord)
 		#endif
 
 		#if EMISSIVE_MAP_FROM == 3
-			float4 emissiveTexCol = use_texture ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0.0;
+			float4 emissiveTexCol = use_texture ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
 			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
 		#elif EMISSIVE_MAP_FROM == 4
-			float4 emissiveTexCol = use_spheremap ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0.0;
+			float4 emissiveTexCol = use_spheremap ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
 			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
 		#elif EMISSIVE_MAP_FROM == 5
 			float4 emissiveTexCol = use_toon ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
@@ -1224,9 +1224,9 @@ float GetOcclusion(float2 coord)
 	#endif
 
 	#if OCCLUSION_MAP_FROM == 3
-		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0.0;
+		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
 	#elif OCCLUSION_MAP_FROM == 4
-		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0.0;
+		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
 	#elif OCCLUSION_MAP_FROM == 5
 		float4 occlusionValues = use_toon ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
 	#elif OCCLUSION_MAP_FROM == 7
@@ -1276,9 +1276,9 @@ float GetCustomDataA(float2 coord)
 		#endif
 
 		#if CUSTOM_A_MAP_FROM == 3
-			float4 customValues = use_texture ? tex2D(CustomAMapSamp, coord * customAMapLoopNum) : 0.0;
+			float4 customValues = use_texture ? tex2D(CustomAMapSamp, coord * customAMapLoopNum) : 0;
 		#elif CUSTOM_A_MAP_FROM == 4
-			float4 customValues = use_spheremap ? tex2D(CustomAMapSamp, coord * customAMapLoopNum) : 0.0;
+			float4 customValues = use_spheremap ? tex2D(CustomAMapSamp, coord * customAMapLoopNum) : 0;
 		#elif CUSTOM_A_MAP_FROM == 5
 			float4 customValues = use_toon ? tex2D(CustomAMapSamp, coord * customAMapLoopNum) : 0;
 		#elif CUSTOM_A_MAP_FROM == 7
@@ -1341,9 +1341,9 @@ float3 GetCustomDataB(float2 coord)
 		#endif
 
 		#if CUSTOM_B_MAP_FROM == 3
-			customData = use_texture ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0.0;
+			customData = use_texture ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0;
 		#elif CUSTOM_B_MAP_FROM == 4
-			customData = use_spheremap ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0.0;
+			customData = use_spheremap ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0;
 		#elif CUSTOM_B_MAP_FROM == 5
 			customData = use_toon ? tex2D(CustomBMapSamp, coord * customBMapLoopNum) : 0;
 		#elif CUSTOM_B_MAP_FROM == 7
@@ -1421,7 +1421,7 @@ GbufferParam MaterialPS(
 
 	float alpha = GetAlpha(coord.xy);
 	clip(alpha - ALPHA_THRESHOLD);
-#if ALPHA_MAP_ANIMATION_ENABLE
+#if ALPHA_MAP_FROM == 2
 	clip(-1);
 #endif
 
@@ -1495,7 +1495,7 @@ GbufferParam Material2PS(
 	material.emissiveIntensity = GetEmissiveIntensity();
 	material.visibility = GetOcclusion(coord.xy);
 	material.lightModel = GetLightMode(material);
-#if ALPHA_MAP_ANIMATION_ENABLE
+#if ALPHA_MAP_FROM == 2
 	material.alpha = alpha;
 #else
 	material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
