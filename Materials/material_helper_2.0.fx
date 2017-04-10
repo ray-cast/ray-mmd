@@ -106,16 +106,17 @@ const float metalnessMapLoopNum = 1.0;
 
 // Minimum coefficient of specular reflection, it has no effect on metals.
 // Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
-// For example: Consider light that is incident upon a transparent medium with a refractive index of 1.5
-// The reflectance is equal to (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Specular to reflection coefficient is 0.16 * (specular ^ 2), if specular is equal 0.5 the result is 0.04.
+// For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
+// Consider light that is incident upon a transparent medium with a refractive index of 1.5
+// The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
+// Specular to reflection coefficient is F(x) = 0.16 * x^2, if x is equal 0.5 the result is 0.04.
 #define SPECULAR_MAP_FROM 0			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
-// 0 : Convert specular color to reflection coefficient by 0.16 * specular^2 (from Frostbite/CE5 textures)
-// 1 : Convert specular color to reflection coefficient by 0.08 * specular   (from UE4 textures)
-// 2 : Convert specular gray to reflection coefficient by 0.16 * specular^2  (from Frostbite/CE5 textures)
-// 3 : Convert specular gray to reflection coefficient by 0.08 * specular    (from UE4 textures)
+// 0 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 1 : Convert specular color to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
+// 2 : Convert specular  gray to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 3 : Convert specular  gray to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
@@ -134,9 +135,13 @@ const float2 specularMapLoopNum = 1.0;
 const float occlusion = 1.0;	// between 0 ~ 1
 const float occlusionMapLoopNum = 1.0;
 
-#define PARALLAX_MAP_FROM 0				// see ALBEDO_MAP_FROM for more information.
+#define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
+
+// Other parameter types for parallax
+// 0 : without alpha and SSDO calculate
+// 1 : calculate parallax occlusion with transparency and SSDO
+#define PARALLAX_MAP_TYPE 0
 #define PARALLAX_MAP_UV_FLIP 0			// see ALBEDO_MAP_UV_FLIP for more information.
-#define PARALLAX_MAP_SUPPORT_ALPHA 0 	// calculate parallax occlusion with transparency
 #define PARALLAX_MAP_FILE "height.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float parallaxMapScale = 1.0;

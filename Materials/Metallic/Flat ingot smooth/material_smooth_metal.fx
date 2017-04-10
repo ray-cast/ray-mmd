@@ -79,8 +79,8 @@ const float occlusion = 1.0;
 const float occlusionMapLoopNum = 1.0;
 
 #define PARALLAX_MAP_FROM 0
+#define PARALLAX_MAP_TYPE 0
 #define PARALLAX_MAP_UV_FLIP 0
-#define PARALLAX_MAP_SUPPORT_ALPHA 0
 #define PARALLAX_MAP_FILE "height.png"
 
 const float parallaxMapScale = 1.0;

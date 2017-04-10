@@ -1434,7 +1434,7 @@ GbufferParam Material2PS(
 {
 	normal = normalize(normal);
 
-#if PARALLAX_MAP_FROM && PARALLAX_MAP_SUPPORT_ALPHA
+#if PARALLAX_MAP_FROM && PARALLAX_MAP_TYPE
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
