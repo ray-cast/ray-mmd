@@ -38,8 +38,8 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_SUB_MAP_UV_FLIP 0
 #define NORMAL_SUB_MAP_FILE "normal.png"
 
-const float normalMapSubScale = 1.0;
-const float normalMapSubLoopNum = 1.0;
+const float normalSubMapScale = 1.0;
+const float normalSubMapLoopNum = 1.0;
 
 #define SMOOTHNESS_MAP_FROM 1
 #define SMOOTHNESS_MAP_TYPE 0

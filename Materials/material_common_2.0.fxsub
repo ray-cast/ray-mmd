@@ -531,7 +531,7 @@ float3 RNMBlendUnpacked(float3 n1, float3 n2)
 {
 	n1 += float3( 0,  0, 1);
 	n2 *= float3(-1, -1, 1);
-	return n1 * dot(n1, n2) / n1.z - n2;
+	return normalize(n1 * dot(n1, n2) / n1.z - n2);
 }
 
 #if NORMAL_MAP_TYPE == 2 || NORMAL_SUB_MAP_TYPE == 2
@@ -930,27 +930,31 @@ float3 GetNormal(float3 N, float3 P, float2 coord)
 #endif
 #if NORMAL_MAP_FROM || NORMAL_SUB_MAP_FROM
 	#if NORMAL_MAP_FROM
-		float3 tangentNormal = GetMainNormal(N, P, coord);
-
-		#if NORMAL_SUB_MAP_FROM
-			float3 tangentSubNormal = GetSubNormal(N, P, coord);        
-			tangentNormal = RNMBlendUnpacked(tangentNormal, tangentSubNormal);
-			tangentNormal = normalize(tangentNormal);
-		#endif
-	#elif NORMAL_SUB_MAP_FROM
-		float3 tangentNormal = GetSubNormal(N, P, coord);
+		float3 tangentNormal1 = GetMainNormal(N, P, coord);
 	#endif
-	#if NORMAL_MAP_UV_FLIP == 1
-		coord.x = 1 - coord.x;
-	#elif NORMAL_MAP_UV_FLIP == 2
-		coord.y = 1 - coord.y;
-	#elif NORMAL_MAP_UV_FLIP == 3
-		coord = 1 - coord;
+
+	#if NORMAL_SUB_MAP_FROM
+		float3 tangentNormal2 = GetSubNormal(N, P, coord);
 	#endif
 	
-	#if NORMAL_MAP_FROM && NORMAL_MAP_TYPE == 2 || NORMAL_SUB_MAP_FROM && NORMAL_SUB_MAP_TYPE == 2
+	#if NORMAL_MAP_FROM && NORMAL_SUB_MAP_FROM
+		float3 tangentNormal = RNMBlendUnpacked(tangentNormal1, tangentNormal2);
+	#elif NORMAL_MAP_FROM
+		float3 tangentNormal = tangentNormal1;
+	#else
+		float3 tangentNormal = tangentNormal2;
+	#endif
+
+	#if (NORMAL_MAP_FROM && NORMAL_MAP_TYPE == 2) || (NORMAL_SUB_MAP_FROM && NORMAL_SUB_MAP_TYPE == 2)
 		return tangentNormal;
 	#else
+		#if NORMAL_MAP_UV_FLIP == 1
+			coord.x = 1 - coord.x;
+		#elif NORMAL_MAP_UV_FLIP == 2
+			coord.y = 1 - coord.y;
+		#elif NORMAL_MAP_UV_FLIP == 3
+			coord = 1 - coord;
+		#endif
 		return ComputeTangentBinormalNormal(N, P, coord, tangentNormal);
 	#endif
 #else
