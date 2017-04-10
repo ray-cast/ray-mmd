@@ -17,7 +17,7 @@ const float2 albedoMapLoopNum = 1.0;
 const float3 albedoSub = 1.0;
 const float2 albedoSubMapLoopNum = 1.0;
 
-#define ALPHA_MAP_FROM 0
+#define ALPHA_MAP_FROM 3
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"
