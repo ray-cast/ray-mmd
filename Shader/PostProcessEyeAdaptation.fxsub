@@ -23,20 +23,10 @@ float CalcAdaptedLum(float adaptedLum, float lum, float delta)
     return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta)));
 }
 
-float ComputeExposure(float avgLum)
+float ComputeExposureISO(float avgLum, float middleGray = 18.0)
 {
-	float middleGray = 1.03 - 2.0 / (2.0 + log2(avgLum + 1.0));
-	return middleGray / avgLum;
-}
-
-float ComputeEV100(float avgLum)
-{
-	return log2(avgLum * 100.0f / 12.5);
-}
-
-float ComputeExposureISO(float EV100)
-{
-	float maxLuminance = 1.2f * pow(2.0f, EV100);
+	float EV100 = log2(avgLum * 100.0f / middleGray);
+	float maxLuminance = 1.2f * exp2(EV100);
 	return 1.0 / maxLuminance;
 }
 
@@ -76,5 +66,12 @@ float4 EyeAdapationPS(in float2 coord: TEXCOORD0) : COLOR
 {
 	float lum = tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r;
 	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
+	
+  if (!all(isfinite(lum)))
+		lum = 1.0f;
+
+  if (!all(isfinite(adaptedLum)))
+		adaptedLum = 1.0f;
+
 	return CalcAdaptedLum(adaptedLum, lum, elapsed);
 }
