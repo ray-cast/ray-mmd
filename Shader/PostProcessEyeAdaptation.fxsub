@@ -66,11 +66,11 @@ float4 EyeAdapationPS(in float2 coord: TEXCOORD0) : COLOR
 {
 	float lum = tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r;
 	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
-	
-  if (!all(isfinite(lum)))
+
+	if (!all(isfinite(lum)))
 		lum = 1.0f;
 
-  if (!all(isfinite(adaptedLum)))
+	if (!all(isfinite(adaptedLum)))
 		adaptedLum = 1.0f;
 
 	return CalcAdaptedLum(adaptedLum, lum, elapsed);
