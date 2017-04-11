@@ -288,11 +288,11 @@ float4 GlareDetectionPS(
 #elif HDR_BLOOM_MODE == 2
 	float3 bloom = saturate(color - mBloomThreshold);
 #elif HDR_BLOOM_MODE == 3
-	float lum = luminance(color);
-	float3 bloom = saturate(color * (lum - mBloomThreshold));
-#elif HDR_BLOOM_MODE == 4
 	float lum = luminance(color) * coord1.z;
 	float3 bloom = saturate(color * (lum - mBloomThreshold) * 0.5);
+#elif HDR_BLOOM_MODE == 4
+	float lum = luminance(color) * coord1.z;
+	float3 bloom = color * saturate((lum - mBloomThreshold) * 0.5);
 #endif
 
 	bloom *= mBloomIntensity;
