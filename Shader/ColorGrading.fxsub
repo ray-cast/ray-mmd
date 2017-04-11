@@ -9,10 +9,10 @@ float3 ColorBanding(float2 uv)
 	return noise / 255.0;
 }
 
-float4 ColorDithering(float3 color, float2 uv)
+float3 ColorDithering(float3 color, float2 uv)
 {
 	color += ColorBanding(uv * (time + PI));
-	return float4(color, 1);
+	return color;
 }
 
 float3 ColorVignette(float3 color, float2 coord)
