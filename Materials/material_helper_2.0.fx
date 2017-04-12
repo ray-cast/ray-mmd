@@ -61,9 +61,9 @@ const float alphaMapLoopNum = 1.0;
 // Other parameter types for tangent normal
 // see UE4 docs for more information.
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
-// 0 : RGB tangent normal
-// 1 : Convert RG texture to RGB tangent normal.
-// 2 : Convert R/bump texture to RGB tanget normal by PerturbNormalLQ
+// 0 : Calculate world-space normal from RGB tangent-space map.
+// 1 : Calculate world-space normal from RG  compressed tangent-space map.
+// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ.
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
@@ -72,7 +72,7 @@ const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
 
 #define NORMAL_SUB_MAP_FROM 0			 // see ALBEDO_MAP_FROM for more information.
-#define NORMAL_SUB_MAP_TYPE 0	 		 // see NORMAL_MAP_IS_TYPES  for more information.
+#define NORMAL_SUB_MAP_TYPE 0	 		 // see NORMAL_MAP_TYPE  for more information.
 #define NORMAL_SUB_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_SUB_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
 
@@ -83,9 +83,9 @@ const float normalSubMapLoopNum = 1.0;
 
 // Other parameter types for smoothness
 // 0 : Smoothness (from Frostbite / CE5 textures)
-// 1 : Convert roughtness to smoothness by 1.0 - Roughness ^ 0.5 (from UE4 textures)
-// 2 : Convert roughtness to smoothness by 1.0 - Roughness
-// 3 : Convert shininess  to smoothness by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
+// 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4 textures)
+// 2 : Calculate smoothness from roughtness by 1.0 - Roughness
+// 3 : Calculate smoothness from shininess  by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
@@ -110,7 +110,7 @@ const float metalnessMapLoopNum = 1.0;
 // Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
 // Specular to reflection coefficient is F(x) = 0.16 * x^2, if x is equal 0.5 the result is 0.04.
-#define SPECULAR_MAP_FROM 0			// see ALBEDO_MAP_FROM for more information.
+#define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
 // 0 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
@@ -158,8 +158,8 @@ const float parallaxMapLoopNum = 1.0;
 #define EMISSIVE_MAP_FILE "emissive.png"
 
 const float3 emissive = 1.0;
-const float3 emissiveBlink = 1.0;
-const float  emissiveIntensity = 1.0;
+const float3 emissiveBlink = 1.0; // between 0 ~ 10
+const float  emissiveIntensity = 1.0; // between 0 ~ 100 and above
 const float2 emissiveMapLoopNum = 1.0;
 
 // Shading Material ID

@@ -21,7 +21,7 @@ float3 ComputeSpecularMicroOcclusion(float3 f0)
 float ComputeAmbientMircroOcclusion(float3 N, float3 L, float ao)
 {
 	float nl = dot(N, L);
-	float aperture = 2.0 * pow2(fresnelSchlick(ao, 1.0, saturate(nl)));
+	float aperture = 2.0 * pow2(ao);
 	float shadow = saturate(abs(nl) + aperture - 1.0);
 	return shadow;
 }

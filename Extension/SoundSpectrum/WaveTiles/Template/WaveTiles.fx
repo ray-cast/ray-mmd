@@ -15,6 +15,6 @@ static float3 waveBlockColorBg  = float3(0.8, 1.0, 1.0); // hsv, h & s 0 ~ 1, v 
 // ignore USE_CUSTOM_PARAMS
 #define USE_RGB_SPACE 0
 
-#define FFT_MAP_FILE "../../Media/Experiment by IQ/Experiment by IQ.wav.fft.png"
+#define FFT_MAP_FILE "fft.png"
 
 #include "WaveTiles.fxsub"
