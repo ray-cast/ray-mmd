@@ -83,7 +83,7 @@ const float normalSubMapLoopNum = 1.0;
 
 // Other parameter types for smoothness
 // 0 : Smoothness (from Frostbite / CE5 textures)
-// 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4 textures)
+// 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
 // 2 : Calculate smoothness from roughtness by 1.0 - Roughness
 // 3 : Calculate smoothness from shininess  by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0
@@ -113,10 +113,10 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
-// 0 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
-// 1 : Convert specular color to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
-// 2 : Convert specular grays to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
-// 3 : Convert specular grays to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
+// 0 : Convert specular color to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
+// 1 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 2 : Convert specular grays to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
+// 3 : Convert specular grays to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
@@ -127,6 +127,11 @@ const float3 specular = 0.5;		// see Specular to reflection coefficient, between
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
+
+// Other parameter types for occlusion
+// Fetch ambient occlusion from linear color-space
+// Fetch ambient occlusion from sRGB   color-space
+#define OCCLUSION_MAP_TYPE 0
 #define OCCLUSION_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define OCCLUSION_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
 #define OCCLUSION_MAP_APPLY_SCALE 0 // see ALBEDO_MAP_APPLY_SCALE for more information.
