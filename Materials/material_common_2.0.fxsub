@@ -1125,9 +1125,9 @@ float3 GetSpecular(float2 coord)
 	#endif
 
 	#if SPECULAR_MAP_TYPE == 1 || SPECULAR_MAP_TYPE == 3
-		specularColor = 0.08 * specularColor;
-	#else
 		specularColor = 0.16 * specularColor * specularColor;
+	#else
+		specularColor = 0.08 * specularColor;
 	#endif
 	
 	#if SPECULAR_MAP_APPLY_SCALE == 1
