@@ -1438,7 +1438,7 @@ GbufferParam MaterialPS(
 	material.normal = GetNormal(normal, worldPos, coord.xy);
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(GetSpecular(coord), max(0.02, albedoColor), MaterialMetalness);
+	material.specular = lerp(GetSpecular(coord.xy), max(0.02, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 #if CUSTOM_ENABLE == SHADINGMODELID_GLASS
 	material.customDataB = GetCustomDataB(coord.xy);
@@ -1488,7 +1488,7 @@ GbufferParam Material2PS(
 #endif
 	material.smoothness = GetSmoothness(coord.xy);
 	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(GetSpecular(coord), max(0.02, albedoColor), MaterialMetalness);
+	material.specular = lerp(GetSpecular(coord.xy), max(0.02, albedoColor), MaterialMetalness);
 	material.customDataA = GetCustomDataA(coord.xy);
 #if CUSTOM_ENABLE == SHADINGMODELID_GLASS
 	material.customDataB = GetCustomDataB(coord.xy);
