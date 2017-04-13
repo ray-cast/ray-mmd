@@ -56,13 +56,6 @@ float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, floa
 	return float4(prefilteredSpeculr, fresnel);
 }
 
-float3 ImageBasedLightCloth(MaterialParam material, float3 N, float3 V)
-{
-	float3 f9 = max(0.04, material.customDataB);
-	float3 fresnel = lerp(material.specular, f9, pow(1 - max(abs(dot(N, V)), 0.1), 5) / (40 - 39 * material.smoothness));
-	return fresnel;
-}
-
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
 	float3 dependentSplit = 0.5;
@@ -114,11 +107,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
 		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse) * (1 + fresnel);
-	}
-	else if (material.lightModel == SHADINGMODELID_CLOTH)
-	{
-		float3 specular2 = ImageBasedLightCloth(material, worldNormal, worldView);
-		specular = lerp(specular, prefilteredSpeculr * specular2, material.customDataA);
 	}
 
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
