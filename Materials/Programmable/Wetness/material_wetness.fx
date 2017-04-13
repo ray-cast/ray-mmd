@@ -124,14 +124,30 @@ const float customAMapLoopNum = 1.0;
 const float3 customB = 0.0;
 const float2 customBMapLoopNum = 1.0;
 
-#define WETNESS_MAP_FROM 1
+// see this links for more information.
+// https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/
+// http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf
+#define WETNESS_ENABLE 1
+
+#define WETNESS_MAP_FROM 1 // 1 & 2 only
 #define WETNESS_MAP_UV_FLIP 0
 #define WETNESS_MAP_APPLY_SCALE 0
 #define WETNESS_MAP_FILE "wetness.png"
 
 const float wetness = 1.0;
-const float wetnessBump = 0.0;
 const float2 wetnessMapLoopNum = 1.0;
+const float2 wetnessMapOffsetNum = 1.0;
+
+#define WETNESS_POROSITY_MAP_FROM 0 // 1 & 2 only
+#define WETNESS_POROSITY_MAP_UV_FLIP 0
+#define WETNESS_POROSITY_MAP_APPLY_SCALE 0
+#define WETNESS_POROSITY_MAP_FILE "wetness.png"
+
+const float wetnessPorosity = 1.0;
+const float2 wetnessPorosityMapLoopNum = 1.0;
+const float2 wetnessPorosityMapOffsetNum = 1.0;
+
+const float wetnessBump = 0.0;
 
 #include "material_header.fxsub"
 #include "material_functions.fxsub"
