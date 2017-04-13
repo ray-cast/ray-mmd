@@ -32,7 +32,9 @@
 #define ALBEDO_MAP_FILE "albedo.png"	// If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. parent folder ref is "../"
 
 const float3 albedo = 1.0;	// Base color between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
-const float2 albedoMapLoopNum = 1.0; // You can tile your texture for the U and V axis separately by change albedoMapLoopNum = float2(x, y)
+
+// You can tile your texture for the X and Y axis separately by change albedoMapLoopNum = float2(x, y)
+const float2 albedoMapLoopNum = 1.0;
 
 // You can apply second values for color of texture (albedo) change by change ALBEDO_SUB_ENABLE
 // 0 : None
@@ -47,7 +49,7 @@ const float2 albedoMapLoopNum = 1.0; // You can tile your texture for the U and 
 #define ALBEDO_SUB_MAP_FILE "albedo.png" // see ALBEDO_MAP_FILE for more information.
 
 const float3 albedoSub = 1.0;
-const float2 albedoSubMapLoopNum = 1.0;
+const float2 albedoSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define ALPHA_MAP_FROM 3	 		// see ALBEDO_MAP_FROM for more information.
 #define ALPHA_MAP_UV_FLIP 0	 		// see ALBEDO_MAP_UV_FLIP for more information.
@@ -55,12 +57,12 @@ const float2 albedoSubMapLoopNum = 1.0;
 #define ALPHA_MAP_FILE "alpha.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float alpha = 1.0;
-const float alphaMapLoopNum = 1.0;
+const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define NORMAL_MAP_FROM 0  // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
-// see UE4 docs for more information.
+// see UE4 docs for PerturbNormalLQ and PerturbNormalHQ.
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : Calculate world-space normal from RGB tangent-space map.
 // 1 : Calculate world-space normal from RG  compressed tangent-space map.
@@ -71,7 +73,7 @@ const float alphaMapLoopNum = 1.0;
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
 
 const float normalMapScale = 1.0;
-const float normalMapLoopNum = 1.0;
+const float normalMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define NORMAL_SUB_MAP_FROM 0			 // see ALBEDO_MAP_FROM for more information.
 #define NORMAL_SUB_MAP_TYPE 0	 		 // see NORMAL_MAP_TYPE  for more information.
@@ -79,7 +81,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_SUB_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
 
 const float normalSubMapScale = 1.0;
-const float normalSubMapLoopNum = 1.0;
+const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Default data will be fetch params from SpecularPower from the pmx.
 // And Convert SpecularPower to smoothness by SMOOTHNESS_MAP_TYPE with 3
@@ -97,7 +99,7 @@ const float normalSubMapLoopNum = 1.0;
 #define SMOOTHNESS_MAP_FILE "smoothness.png" // see ALBEDO_MAP_FILE for more information.
 
 const float smoothness = 0.0;
-const float smoothnessMapLoopNum = 1.0;
+const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define METALNESS_MAP_FROM 0				// see ALBEDO_MAP_FROM for more information.
 #define METALNESS_MAP_UV_FLIP 0				// see ALBEDO_MAP_UV_FLIP for more information.
@@ -106,7 +108,7 @@ const float smoothnessMapLoopNum = 1.0;
 #define METALNESS_MAP_FILE "metalness.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float metalness = 0.0;
-const float metalnessMapLoopNum = 1.0;
+const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Minimum coefficient of specular reflection, it has no effect on metals.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
@@ -130,7 +132,7 @@ const float metalnessMapLoopNum = 1.0;
 // Specular to reflection coefficient is F(x) = 0.08 * x, if x is equal 0.5 the result is 0.04.
 // So default is 0.5 for 0.04.
 const float3 specular = 0.5; // between 0 ~ 1
-const float2 specularMapLoopNum = 1.0;
+const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
 
@@ -144,7 +146,7 @@ const float2 specularMapLoopNum = 1.0;
 #define OCCLUSION_MAP_FILE "occlusion.png" // see ALBEDO_MAP_FILE for more information.
 
 const float occlusion = 1.0;	// between 0 ~ 1
-const float occlusionMapLoopNum = 1.0;
+const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 
@@ -157,7 +159,7 @@ const float occlusionMapLoopNum = 1.0;
 #define PARALLAX_MAP_FILE "height.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float parallaxMapScale = 1.0;
-const float parallaxMapLoopNum = 1.0;
+const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
@@ -171,7 +173,7 @@ const float parallaxMapLoopNum = 1.0;
 const float3 emissive = 1.0;
 const float3 emissiveBlink = 1.0; // between 0 ~ 10
 const float  emissiveIntensity = 1.0; // between 0 ~ 100 and above
-const float2 emissiveMapLoopNum = 1.0;
+const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Shading Material ID
 // 0 : Default            // customA = invalid,    customB = invalid
@@ -195,7 +197,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_FILE "custom.png"
 
 const float customA = 0.0;
-const float customAMapLoopNum = 1.0;
+const float customAMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define CUSTOM_B_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 #define CUSTOM_B_MAP_UV_FLIP 0
@@ -204,6 +206,6 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_FILE "custom.png"
 
 const float3 customB = 0.0;
-const float2 customBMapLoopNum = 1.0;
+const float2 customBMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #include "material_common_2.0.fxsub"
