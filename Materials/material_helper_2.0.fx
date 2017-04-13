@@ -2,20 +2,21 @@
 // You can see the UE4 docs for more information
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
-// Paramters in the data fetch from code
-// 0 : Fixed value
-// 1 : Image (bmp, png, jpg, tga, dds)
-// 2 : Animation (gif, apng)
-// 3 : Params fetch from Texture from the pmx
-// 4 : Params fetch from Sphere map from the pmx
-// 5 : Params fetch from Toon map from the pmx
-// 6 : Params fetch from avi/screen from the DummyScreen.x
-// 7 : Params fetch from Ambient Color from the pmx
-// 8 : Params fetch from Specular Color from the pmx
-// 9 : Params fetch from Specular Power from the pmx // for smoothness, see SMOOTHNESS_MAP_TYPE at 3
+// This also called "Base Color", default data will be fetch params from texture from the pmx.
+// You can use a base color or texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
+// 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
+// 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
+// 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
+// 3 : Params fetch from Texture from the pmx.
+// 4 : Params fetch from Sphere map from the pmx.
+// 5 : Params fetch from Toon map from the pmx.
+// 6 : Params fetch from avi/screen from the DummyScreen.x.
+// 7 : Params fetch from Ambient Color from the pmx.
+// 8 : Params fetch from Specular Color from the pmx.
+// 9 : Params fetch from Specular Power from the pmx. // for smoothness, see SMOOTHNESS_MAP_TYPE at 3
 #define ALBEDO_MAP_FROM 3
 
-// You can flip your texture for the U and V axis mirror by change ALBEDO_MAP_UV_FLIP
+// You can flip your texture for the X and Y axis mirror by change ALBEDO_MAP_UV_FLIP
 // 1 : Flip x axis
 // 2 : Flip y axis
 // 3 : Flip x & y axis
@@ -63,7 +64,8 @@ const float alphaMapLoopNum = 1.0;
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : Calculate world-space normal from RGB tangent-space map.
 // 1 : Calculate world-space normal from RG  compressed tangent-space map.
-// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ.
+// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ. It has no effect on small objects.
+// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalHQ.
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
@@ -79,7 +81,9 @@ const float normalMapLoopNum = 1.0;
 const float normalSubMapScale = 1.0;
 const float normalSubMapLoopNum = 1.0;
 
-#define SMOOTHNESS_MAP_FROM 0			// see ALBEDO_MAP_FROM for more information.
+// Default data will be fetch params from SpecularPower from the pmx.
+// And Convert SpecularPower to smoothness by SMOOTHNESS_MAP_TYPE with 3
+#define SMOOTHNESS_MAP_FROM 9			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for smoothness
 // 0 : Smoothness (from Frostbite / CE5 textures)
@@ -105,25 +109,27 @@ const float metalness = 0.0;
 const float metalnessMapLoopNum = 1.0;
 
 // Minimum coefficient of specular reflection, it has no effect on metals.
-// Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
-// For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
-// Consider light that is incident upon a transparent medium with a refractive index of 1.5
-// The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Specular to reflection coefficient is F(x) = 0.16 * x^2, if x is equal 0.5 the result is 0.04.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
 // 0 : Convert specular color to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
-// 1 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 1 : Convert specular color to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite textures)
 // 2 : Convert specular grays to reflection coefficient by F(x) = 0.08*(x  ) (from UE4 textures)
-// 3 : Convert specular grays to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite/CE5 textures)
+// 3 : Convert specular grays to reflection coefficient by F(x) = 0.16*(x^2) (from Frostbite textures)
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;		// see Specular to reflection coefficient, between 0 ~ 1, Default is 0.5 for 0.04
+// Default value is 0.5
+// Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
+// For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
+// Consider light that is incident upon a transparent medium with a refractive index of 1.5
+// The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
+// Specular to reflection coefficient is F(x) = 0.08 * x, if x is equal 0.5 the result is 0.04.
+// So default is 0.5 for 0.04.
+const float3 specular = 0.5; // between 0 ~ 1
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
@@ -173,7 +179,10 @@ const float2 emissiveMapLoopNum = 1.0;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
 // 4 : Glass              // customA = curvature   customB = transmittance color
+
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
+// see paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
+
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0

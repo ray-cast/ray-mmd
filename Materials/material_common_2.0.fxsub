@@ -553,6 +553,25 @@ float3 PerturbNormalLQ(float3 N, float3 P, float height)
 	return normalize(abs(det) * N - surf);
 }
 #endif
+
+#if NORMAL_MAP_TYPE == 3 || NORMAL_SUB_MAP_TYPE == 3
+float3 PerturbNormalHQ(sampler source, float2 coord, float center)
+{
+	float2 duv1 = ddx (coord);
+	float2 duv2 = ddy (coord);
+
+	float2 uv1 = coord + duv1;
+	float2 uv2 = coord + duv2;
+
+	float right = tex2D(source, uv1).x;
+	float bottom = tex2D(source, uv2).x;
+
+	float slope1 = right - center;
+	float slope2 = center - bottom;
+	
+	return normalize(float3(slope1, slope2, 1.0));
+}
+#endif
 #endif
 
 #if PARALLAX_MAP_FROM
@@ -879,10 +898,12 @@ float3 GetMainNormal(float3 N, float3 P, float2 coord)
 
 	#if NORMAL_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalMapSamp, coord * normalMapLoopNum, tangentNormal.x);
 	#elif NORMAL_MAP_TYPE == 2
 		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalMapScale);
 		#if NORMAL_SUB_MAP_FROM
-			#error Unsupported bump map with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
 		#endif
 	#endif
 
@@ -922,10 +943,12 @@ float3 GetSubNormal(float3 N, float3 P, float2 coord)
 
 	#if NORMAL_SUB_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_SUB_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalSubMapSamp, coord * normalSubMapLoopNum, tangentNormal.x);
 	#elif NORMAL_SUB_MAP_TYPE == 2
 		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalSubMapScale);
 		#if NORMAL_MAP_FROM
-			#error Unsupported bump map with second normal map. Please set NORMAL_MAP_FROM to 0.
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_MAP_FROM to 0.
 		#endif
 	#endif
 
