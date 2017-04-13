@@ -168,7 +168,7 @@ float3 ClearCoatShading(MaterialParam material, float nh, float nl, float vh, fl
 	return lerp(spec1, spec2.rgb, spec2.a);
 }
 
-float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor)
+float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float normalizeFactor = 1.0)
 {
 	float3 H = normalize(V + L);
 
@@ -193,7 +193,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	return float4(diffuse, specular) * nl;
 }
 
-float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor)
+float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor = 1.0)
 {
 	float3 H = normalize(V + Ls);
 

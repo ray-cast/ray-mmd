@@ -12,8 +12,8 @@ float ComputeSunIntensity(float3 L)
 
 void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
-	float4 energy = SurfaceEnergy(material, material.normal, L, V, 1.0);
-	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
+	float4 energy = SurfaceEnergy(material, N, L, V);
+	float3 subsurface = SubsurfaceShading(material, N, L, V);
 	diffuse = energy.r + subsurface;
 	specular = energy.gba;
 
@@ -25,7 +25,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 
 #if SHADOW_QUALITY
 	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	lightColor *= min(shadow, saturate(dot(material.normal, L) * 2));
+	lightColor *= min(shadow, saturate(dot(N, L) * 2));
 	lightColor += mSunShadowP * (1 - shadow);
 #endif
 
