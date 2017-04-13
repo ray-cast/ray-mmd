@@ -23,11 +23,11 @@ float CalcAdaptedLum(float adaptedLum, float lum, float delta)
     return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta)));
 }
 
-float ComputeExposureISO(float avgLum, float middleGray = 18.0)
+float ComputeExposureISO(float avgLum, float middleGray = 12.5)
 {
 	float EV100 = log2(avgLum * 100.0f / middleGray);
 	float maxLuminance = 1.2f * exp2(EV100);
-	return 1.0 / maxLuminance;
+	return 0.5 / maxLuminance; // mExposureMin = 2.0, Need to multiply with 0.5
 }
 
 void EyeDownsampleVS(
@@ -54,17 +54,18 @@ float4 EyeDownsamplePS(
 	in float2 coord4 : TEXCOORD3,
 	uniform sampler source) : COLOR
 {
-	float4 color = luminance(tex2Dlod(source, float4(coord1, 0, 0)).rgb);
-	color += luminance(tex2Dlod(source, float4(coord2, 0, 0)).rgb);
-	color += luminance(tex2Dlod(source, float4(coord3, 0, 0)).rgb);
-	color += luminance(tex2Dlod(source, float4(coord4, 0, 0)).rgb);
+	float color = log(luminance(tex2Dlod(source, float4(coord1, 0, 0)).rgb) + 1e-6);
+	color += log(luminance(tex2Dlod(source, float4(coord2, 0, 0)).rgb) + 1e-6);
+	color += log(luminance(tex2Dlod(source, float4(coord3, 0, 0)).rgb) + 1e-6);
+	color += log(luminance(tex2Dlod(source, float4(coord4, 0, 0)).rgb) + 1e-6);
+	color *= 0.25;
 
-	return color * 0.25;
+	return color;
 }
 
 float4 EyeAdapationPS(in float2 coord: TEXCOORD0) : COLOR
 {
-	float lum = tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r;
+	float lum = exp(tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r);
 	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
 
 	if (!all(isfinite(lum)))
