@@ -447,8 +447,9 @@ struct MaterialParam
 	float3 albedo;
 	float3 specular;
 	float3 emissive;
-	float emissiveIntensity;
 	float smoothness;
+	float metalness;
+	float emissiveIntensity;
 	float alpha;
 	float visibility;
 	float customDataA;
@@ -480,7 +481,7 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-	return pow(rgb, 2.2);
+	return pow(abs(rgb), 2.2);
 }
 
 float4 srgb2linear(float4 c)
@@ -654,13 +655,13 @@ float RoughnessToSmoothness(float roughness)
 
 float ShininessToSmoothness(float spec)
 {
-	return 1.0f - pow(2.0 / (spec + 2), 0.25);
+	return 1.0f - pow(max(0, 2.0 / (spec + 2)), 0.25);
 }
 
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
 	GbufferParam gbuffer;
-	gbuffer.buffer1.xyz = material.albedo;
+	gbuffer.buffer1.xyz = material.albedo * (1 - material.metalness);
 	gbuffer.buffer1.w = material.smoothness;
 
 	material.normal = mul(material.normal, (float3x3)matWorldView);
@@ -669,7 +670,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer2.xyz = EncodeNormal(material.normal);
 	gbuffer.buffer2.w = material.customDataA;
 
-	gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
+	gbuffer.buffer3.xyz = rgb2ycbcr(lerp(material.specular, max(0.02, material.albedo), material.metalness));
 	gbuffer.buffer3.w = 0;
 
 #if CUSTOM_ENABLE || EMISSIVE_ENABLE
@@ -678,6 +679,9 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 		material.lightModel == SHADINGMODELID_GLASS ||
 		material.lightModel == SHADINGMODELID_CLOTH)
 	{
+#if CUSTOM_ENABLE != SHADINGMODELID_GLASS
+		material.customDataB *= (1 - material.metalness);
+#endif
 		material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
 		gbuffer.buffer3.yz = material.customDataB.gb;
 		gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
@@ -1395,20 +1399,20 @@ void MaterialVS(
 	in float3 Normal : NORMAL, 
 	in float2 Texcoord: TEXCOORD0,
 	out float3 oNormal   : TEXCOORD0,
-	out float3 oTexcoord : TEXCOORD1,
+	out float2 oTexcoord : TEXCOORD1,
 	out float4 oWorldPos : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
 	oNormal = Normal;
-	oWorldPos = mul(Position, matWorld);
+	oTexcoord = Texcoord;
 	oPosition = mul(Position, matWorldViewProject);
-	oTexcoord = float3(Texcoord, oPosition.w);
+	oWorldPos = float4(mul(Position, matWorld).xyz, oPosition.w);
 }
 
 GbufferParam MaterialPS(
 	in float3 normal   : TEXCOORD0,
-	in float3 coord    : TEXCOORD1,
-	in float3 worldPos : TEXCOORD2)
+	in float2 coord    : TEXCOORD1,
+	in float4 worldPos : TEXCOORD2)
 {
 	normal = normalize(normal);
 
@@ -1416,48 +1420,40 @@ GbufferParam MaterialPS(
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy * parallaxMapLoopNum);
-	coord.xy = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord * parallaxMapLoopNum);
+	coord = ParallaxOcclusionMap(ParallaxMapSamp, coord * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
 #endif
 
-	float alpha = GetAlpha(coord.xy);
+	float alpha = GetAlpha(coord);
 	clip(alpha - ALPHA_THRESHOLD);
 #if ALPHA_MAP_FROM == 2
 	clip(-1);
 #endif
 
-	float3 albedoColor = GetAlbedo(coord.xy);
-	albedoColor = GetSubAlbedo(albedoColor, coord.xy);
-
-	float3 MaterialMetalness = GetMetalness(coord.xy);
-
-	MaterialParam material = (MaterialParam)0;
-	material.normal = GetNormal(normal, worldPos, coord.xy);
-	material.smoothness = GetSmoothness(coord.xy);
-	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(GetSpecular(coord.xy), max(0.02, albedoColor), MaterialMetalness);
-	material.customDataA = GetCustomDataA(coord.xy);
-#if CUSTOM_ENABLE == SHADINGMODELID_GLASS
-	material.customDataB = GetCustomDataB(coord.xy);
-#else
-	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
-#endif
-	material.emissive = GetEmissiveColor(coord.xy);
+	MaterialParam material;
+	material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
+	material.normal = GetNormal(normal, worldPos.xyz, coord);
+	material.smoothness = GetSmoothness(coord);
+	material.metalness = GetMetalness(coord);
+	material.specular = GetSpecular(coord);
+	material.customDataA = GetCustomDataA(coord);
+	material.customDataB = GetCustomDataB(coord);
+	material.emissive = GetEmissiveColor(coord);
 	material.emissiveIntensity = GetEmissiveIntensity();
-	material.visibility = GetOcclusion(coord.xy);
+	material.visibility = GetOcclusion(coord);
 	material.lightModel = GetLightMode(material);
 	material.alpha = 1;
 
-	return EncodeGbuffer(material, coord.z);
+	return EncodeGbuffer(material, worldPos.w);
 }
 
 GbufferParam Material2PS(
 	in float3 normal   : TEXCOORD0,
-	in float3 coord    : TEXCOORD1,
-	in float3 worldPos : TEXCOORD2)
+	in float2 coord    : TEXCOORD1,
+	in float4 worldPos : TEXCOORD2)
 {
 	normal = normalize(normal);
 
@@ -1465,39 +1461,27 @@ GbufferParam Material2PS(
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord.xy);
-	coord.xy = ParallaxOcclusionMap(ParallaxMapSamp, coord.xy * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord);
+	coord = ParallaxOcclusionMap(ParallaxMapSamp, coord * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
 #endif
 
-	float alpha = GetAlpha(coord.xy);
+	float alpha = GetAlpha(coord);
 	clip(alpha - 0.01);
 
-	float3 albedoColor = GetAlbedo(coord.xy);
-	albedoColor = GetSubAlbedo(albedoColor, coord.xy);
-
-	float3 MaterialMetalness = GetMetalness(coord.xy);
-
-	MaterialParam material = (MaterialParam)0;
-#if CUSTOM_ENABLE == SHADINGMODELID_CLEAR_COAT
-	material.normal = normal;
-#else
-	material.normal = GetNormal(normal, worldPos, coord.xy);
-#endif
-	material.smoothness = GetSmoothness(coord.xy);
-	material.albedo = albedoColor * (1.0 - MaterialMetalness);
-	material.specular = lerp(GetSpecular(coord.xy), max(0.02, albedoColor), MaterialMetalness);
-	material.customDataA = GetCustomDataA(coord.xy);
-#if CUSTOM_ENABLE == SHADINGMODELID_GLASS
-	material.customDataB = GetCustomDataB(coord.xy);
-#else
-	material.customDataB = GetCustomDataB(coord.xy) * (1.0 - MaterialMetalness);
-#endif
-	material.emissive = GetEmissiveColor(coord.xy);
+	MaterialParam material;
+	material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
+	material.normal = GetNormal(normal, worldPos.xyz, coord);
+	material.smoothness = GetSmoothness(coord);
+	material.metalness = GetMetalness(coord);
+	material.specular = GetSpecular(coord);
+	material.customDataA = GetCustomDataA(coord);
+	material.customDataB = GetCustomDataB(coord);
+	material.emissive = GetEmissiveColor(coord);
 	material.emissiveIntensity = GetEmissiveIntensity();
-	material.visibility = GetOcclusion(coord.xy);
+	material.visibility = GetOcclusion(coord);
 	material.lightModel = GetLightMode(material);
 #if ALPHA_MAP_FROM == 2
 	material.alpha = alpha;
@@ -1505,7 +1489,7 @@ GbufferParam Material2PS(
 	material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
 #endif
 
-	return EncodeGbuffer(material, coord.z);
+	return EncodeGbuffer(material, worldPos.w);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
