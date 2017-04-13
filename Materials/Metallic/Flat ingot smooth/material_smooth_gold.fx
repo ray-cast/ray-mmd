@@ -71,6 +71,7 @@ const float3 specular = 0.5;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
+#define OCCLUSION_MAP_TYPE 0
 #define OCCLUSION_MAP_UV_FLIP 0
 #define OCCLUSION_MAP_SWIZZLE 0
 #define OCCLUSION_MAP_APPLY_SCALE 0 
