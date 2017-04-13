@@ -1,0 +1,135 @@
+#if WETNESS_MAP_FROM >= 1 && WETNESS_MAP_FROM <= 6
+	#if WETNESS_MAP_FROM == 1
+		texture WetnessMap<string ResourceName = WETNESS_MAP_FILE;>;
+	#elif WETNESS_MAP_FROM == 2
+		texture WetnessMap : ANIMATEDTEXTURE<string ResourceName = WETNESS_MAP_FILE;>;
+	#endif
+	sampler WetnessMapSamp = sampler_state
+	{
+#if WETNESS_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif WETNESS_MAP_FROM == 4
+		texture = SphereMap;
+#elif WETNESS_MAP_FROM == 5
+		texture = ToonMap;
+#elif WETNESS_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = WetnessMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if WETNESS_PIPPLE_ENABLE
+texture WetnessRippleMap<string ResourceName = "ripple.tga";>;
+sampler WetnessRippleMapSamp = sampler_state
+{
+	texture = WetnessRippleMap;
+	MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+	MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+
+
+float3 ComputeRipple(float2 coord, float CurrentTime, float Weight)
+{
+    float4 Ripple = tex2Dlod(WetnessRippleMapSamp, float4(coord,0,0));
+    Ripple.yz = Ripple.yz * 2 - 1;
+
+    float DropFrac = frac(Ripple.w + CurrentTime);
+    float TimeFrac = DropFrac - 1.0f + Ripple.x;
+    float DropFactor = saturate(0.2f + Weight * 0.8f - DropFrac);
+    float FinalFactor = DropFactor * Ripple.x * sin(clamp(TimeFrac * 15.0f, 0.0f, 3.0f) * 3.1415926);
+
+    return float3(Ripple.yz * FinalFactor * 0.25, 1.0f);
+}
+#endif
+
+float WetLerp(float minimum, float maximum, float wetness)
+{
+	return saturate((wetness - minimum) / (maximum - minimum));
+}
+
+MaterialParam WetnessEffect(MaterialParam material, float3 N, float2 coord, float3 P, float wetness)
+{
+#if WETNESS_PIPPLE_ENABLE
+	float3 ripple1 = ComputeRipple(coord * 0.8*3 + float2( 0.25f,0.0f), (time+1.0) * 1.5, 0.5*2);
+	float3 ripple2 = ComputeRipple(coord * 0.7*3 + float2(-0.55f,0.3f), (time+1.0) * 1.4, 0.4*2);
+	float3 ripple3 = ComputeRipple(coord * 0.6*3 + float2(0.6f, 0.85f), (time+1.0) * 1.2, 0.3*2);
+	float3 ripple4 = ComputeRipple(coord * 0.5*3 + float2(0.5f,-0.75f), (time+1.0) * 1.1, 0.2*2);
+
+	float4 weights = saturate(4.0 * (0.9 - float4(0, 0.25, 0.5, 0.75)));
+
+	float4 Z = lerp(1, float4(ripple1.z, ripple2.z, ripple3.z, ripple4.z), weights);
+	float3 Normal = float3( weights.x * ripple1.xy +
+	                        weights.y * ripple2.xy + 
+	                        weights.z * ripple3.xy + 
+	                        weights.w * ripple4.xy, 
+	                        Z.x * Z.y * Z.z * Z.w);
+                  
+	float3 N2 =  ComputeTangentBinormalNormal(N, P, coord, normalize(Normal));
+#endif
+
+	float3 deepAlbedo = material.albedo * float3(0.55,0.55,0.6)*0.5;
+	material.albedo = lerp(material.albedo, deepAlbedo, WetLerp(0.0, 0.35, wetness));
+	material.smoothness = lerp(material.smoothness, 1.0, WetLerp(0.2, 1.0, wetness));
+	material.specular = lerp(material.specular, 0.02, WetLerp(0.25, 0.5, wetness));
+	material.visibility = lerp(material.visibility, 1.0, WetLerp(0.45, 0.95, wetness));
+	material.normal = lerp(material.normal, N, WetLerp(0.45, 0.95, wetness * (1 - luminance(material.albedo) * wetnessBump)));
+	material.metalness = lerp(material.metalness, 0.0, WetLerp(0.25, 1.0, wetness));
+	return material;
+}
+
+void onFetchDataBefore(inout float3 N, inout float2 coord, inout float4 worldPos)
+{
+}
+
+void onFetchDataAfter(inout MaterialParam material, float3 N, float2 coord, float4 worldPos)
+{
+#if WETNESS_MAP_FROM
+	#if WETNESS_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif WETNESS_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif WETNESS_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if WETNESS_MAP_FROM == 3
+		float4 wetnessColors = use_texture ? tex2D(WetnessMapSamp, coord * wetnessMapLoopNum) : 0;
+	#elif WETNESS_MAP_FROM == 4
+		float4 wetnessColors = use_spheremap ? tex2D(WetnessMapSamp, coord * wetnessMapLoopNum) : 0;
+	#elif WETNESS_MAP_FROM == 5
+		float4 wetnessColors = use_toon ? tex2D(WetnessMapSamp, coord * wetnessMapLoopNum) : 0;
+	#elif WETNESS_MAP_FROM == 7
+		float4 wetnessColors = MaterialAmbient;
+	#elif WETNESS_MAP_FROM == 8
+		float4 wetnessColors = MaterialSpecular;
+	#elif WETNESS_MAP_FROM == 9
+		float4 wetnessColors = MaterialPower;
+	#else
+		float4 wetnessColors = tex2D(WetnessMapSamp, coord * wetnessMapLoopNum);
+	#endif
+
+	#if WETNESS_MAP_SWIZZLE == 1
+		float wetnessValue = wetnessColors.g;
+	#elif WETNESS_MAP_SWIZZLE == 2
+		float wetnessValue = wetnessColors.b;
+	#elif WETNESS_MAP_SWIZZLE == 3
+		float wetnessValue = wetnessColors.a;
+	#else
+		float wetnessValue = wetnessColors.r;
+	#endif
+
+	#if WETNESS_MAP_APPLY_SCALE == 1
+		wetnessValue *= wetness;
+	#elif WETNESS_MAP_APPLY_SCALE == 2
+		wetnessValue = pow(wetnessValue, wetness);
+	#endif
+
+	material = WetnessEffect(material, N, coord, worldPos.xyz, wetnessValue);
+#endif
+}

@@ -1,0 +1,113 @@
+float4x4 matView : VIEW;
+float4x4 matWorld : WORLD;
+float4x4 matWorldView : WORLDVIEW;
+float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
+
+float4 MaterialDiffuse : DIFFUSE<string Object = "Geometry";>;
+float4 MaterialAmbient : AMBIENT<string Object = "Geometry";>;
+float4 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
+float  MaterialPower : SPECULARPOWER<string Object = "Geometry";>;
+
+float time : TIME<bool SyncInEditMode=true;>;
+
+bool use_texture;
+bool use_subtexture;
+bool use_spheremap;
+bool use_toon;
+
+#define TEXTURE_FILTER ANISOTROPIC
+#define TEXTURE_MIP_FILTER ANISOTROPIC
+#define TEXTURE_ANISOTROPY_LEVEL 16
+
+#define SHADINGMODELID_DEFAULT    0
+#define SHADINGMODELID_SKIN       1
+#define SHADINGMODELID_EMISSIVE   2
+#define SHADINGMODELID_GLASS      4
+#define SHADINGMODELID_CLOTH      5
+#define SHADINGMODELID_CLEAR_COAT 6
+#define SHADINGMODELID_SUBSURFACE 7
+#define SHADINGMODELID_MASK       0xF
+
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+#define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
+#define TWO_BITS_EXTRACTION_FACTOR (3.0f + MAX_FRACTIONAL_8_BIT)
+#define EMISSIVE_EPSILON (2.0f / 255.0f)
+
+#define ALPHA_THRESHOLD 0.999
+
+shared texture Gbuffer2RT: RENDERCOLORTARGET;
+shared texture Gbuffer3RT: RENDERCOLORTARGET;
+shared texture Gbuffer4RT: RENDERCOLORTARGET;
+shared texture Gbuffer5RT: RENDERCOLORTARGET;
+shared texture Gbuffer6RT: RENDERCOLORTARGET;
+shared texture Gbuffer7RT: RENDERCOLORTARGET;
+shared texture Gbuffer8RT: RENDERCOLORTARGET;
+
+struct MaterialParam
+{
+	float3 normal;
+	float3 albedo;
+	float3 specular;
+	float3 emissive;
+	float smoothness;
+	float metalness;
+	float alpha;
+	float emissiveIntensity;
+	float visibility;
+	float customDataA;
+	float3 customDataB;
+	int lightModel;
+};
+
+float luminance(float3 rgb)
+{
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+float3 srgb2linear(float3 rgb)
+{
+	return pow(rgb, 2.2);
+}
+
+float4 srgb2linear(float4 c)
+{
+	return float4(srgb2linear(c.rgb), c.a);
+}
+
+float SmoothnessToRoughness(float smoothness)
+{
+	return (1.0f - smoothness) * (1.0f - smoothness);
+}
+
+float RoughnessToSmoothness(float roughness)
+{
+	return 1.0f - sqrt(roughness);
+}
+
+float ShininessToSmoothness(float spec)
+{
+	return 1.0f - pow(2.0 / (spec + 2), 0.25);
+}
+
+float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tangentNormal)
+{
+	float3 dp1 = ddx(P);
+	float3 dp2 = ddy(P);
+	float2 duv1 = ddx(coord);
+	float2 duv2 = ddy(coord);
+
+	float3x3 M = float3x3(dp1, dp2, N);
+	float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+	float3 T = mul(float2(duv1.x, duv2.x), I);
+	float3 B = mul(float2(duv1.y, duv2.y), I);
+
+	float scaleT = 1.0f / (dot(T, T) + 1e-6);
+	float scaleB = 1.0f / (dot(B, B) + 1e-6);
+
+	float3x3 tbnTransform;
+	tbnTransform[0] = normalize(T * scaleT);
+	tbnTransform[1] = -normalize(B * scaleB);
+	tbnTransform[2] = N;
+
+	return normalize(mul(tangentNormal, tbnTransform));
+}
