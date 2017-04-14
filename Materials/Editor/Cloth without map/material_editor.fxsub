@@ -2,6 +2,11 @@ float mAlbedoH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Albed
 float mAlbedoS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoS";>;
 float mAlbedoV : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoV";>;
 float mAlbedoLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "AlbedoLoops";>;
+float mSpecularH : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SpecularH";>;
+float mSpecularS : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SpecularS";>;
+float mSpecularVP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SpecularV+";>;
+float mSpecularVM : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SpecularV-";>;
+float mSpecularLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SpecularLoops";>;
 float mEmissiveR : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveR";>;
 float mEmissiveG : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveG";>;
 float mEmissiveB : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "EmissiveB";>;
@@ -17,7 +22,6 @@ float mNormalSubLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item 
 float mSmoothness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Smoothness";>;
 float mSmoothnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "SmoothnessLoops";>;
 float mMetalness : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Metalness";>;
-float mMetalnessBaseSpecularP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "BaseSpecular";>;
 float mMetalnessLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MetalnessLoops";>;
 float mMelanin : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "Melanin";>;
 float mMelaninLoopsP : CONTROLOBJECT<string name=CONTROLLER_NAME; string item = "MelaninLoops";>;
@@ -35,10 +39,12 @@ float3 hsv2rgb(float3 hsv)
 }
 
 static const float3 mAlbedoColor = hsv2rgb(float3(mAlbedoH, mAlbedoS, 1 - mAlbedoV));
+static const float3 mSpecularColor = hsv2rgb(float3(mSpecularH, mSpecularS, lerp(lerp(0.5, 1.0, mSpecularVP), 0.15, mSpecularVM)));
 static const float3 mEmissiveColor = float3(mEmissiveR, mEmissiveG, mEmissiveB);
 static const float3 mCustomBColor = float3(mCustom2R, mCustom2G, mCustom2B);
 
 static const float mAlbedoLoops = lerp(1, 10, mAlbedoLoopsP);
+static const float mSpecularLoops = lerp(1, 10, mSpecularLoopsP);
 static const float mEmissiveLoops = lerp(1, 10, mEmissiveLoopsP);
 static const float mNormalLoops = lerp(1, 10, mNormalLoopsP);
 static const float mNormalSubLoops = lerp(1, 10, mNormalSubLoopsP);
@@ -53,5 +59,3 @@ static const float mNormalSubScale = lerp(lerp(1, 20, mNormalSubScaleP), -20, mN
 
 static const float mEmissiveBlink = lerp(0, 10, mEmissiveBlinkP);
 static const float mEmissiveIntensity = lerp(1, 8, mEmissiveIntensityP);
-
-static const float mMetalnessBaseSpecular = lerp(0.04, 1.0, mMetalnessBaseSpecularP);
