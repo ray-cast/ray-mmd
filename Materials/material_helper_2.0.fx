@@ -34,7 +34,7 @@
 const float3 albedo = 1.0;	// Base color between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
 
 // You can tile your texture for the X and Y axis separately by change albedoMapLoopNum = float2(x, y)
-const float2 albedoMapLoopNum = 1.0;
+const float2 albedoMapLoopNum = 1.0; // between float2(0, 0) ~ float2(inf, inf) 
 
 // You can apply second values for color of texture (albedo) change by change ALBEDO_SUB_ENABLE
 // 0 : None
@@ -72,7 +72,7 @@ const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
 
-const float normalMapScale = 1.0;
+const float normalMapScale = 1.0;	// between 0 ~ inf
 const float normalMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define NORMAL_SUB_MAP_FROM 0			 // see ALBEDO_MAP_FROM for more information.
@@ -80,11 +80,11 @@ const float normalMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define NORMAL_SUB_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_SUB_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
 
-const float normalSubMapScale = 1.0;
+const float normalSubMapScale = 1.0;	// between 0 ~ inf
 const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Default data will be fetch params from SpecularPower from the pmx.
-// And Convert SpecularPower to smoothness by SMOOTHNESS_MAP_TYPE with 3
+// Default data will fetched params from SpecularPower from the pmx.
+// And Convert SpecularPower to smoothness by SMOOTHNESS_MAP_TYPE at 3
 #define SMOOTHNESS_MAP_FROM 9			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for smoothness
@@ -98,7 +98,7 @@ const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define SMOOTHNESS_MAP_APPLY_SCALE 0	// see ALBEDO_MAP_APPLY_SCALE for more information.
 #define SMOOTHNESS_MAP_FILE "smoothness.png" // see ALBEDO_MAP_FILE for more information.
 
-const float smoothness = 0.0;
+const float smoothness = 0.0;	// between 0 ~ 1
 const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define METALNESS_MAP_FROM 0				// see ALBEDO_MAP_FROM for more information.
@@ -107,7 +107,7 @@ const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define METALNESS_MAP_APPLY_SCALE 0			// see ALBEDO_MAP_APPLY_SCALE for more information.
 #define METALNESS_MAP_FILE "metalness.png"	// see ALBEDO_MAP_FILE for more information.
 
-const float metalness = 0.0;
+const float metalness = 0.0;	// between 0 ~ 1
 const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Minimum coefficient of specular reflection, it has no effect on metals.
@@ -130,7 +130,7 @@ const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 // Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
 // Specular to reflection coefficient is F(x) = 0.08 * x, if x is equal 0.5 the result is 0.04.
-// So default is 0.5 for 0.04.
+// So default value is 0.5 for 0.04.
 const float3 specular = 0.5; // between 0 ~ 1
 const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 
@@ -170,7 +170,7 @@ const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define EMISSIVE_MAP_APPLY_BLINK 0
 #define EMISSIVE_MAP_FILE "emissive.png"
 
-const float3 emissive = 1.0;
+const float3 emissive = 1.0;	// emissive color
 const float3 emissiveBlink = 1.0; // between 0 ~ 10
 const float  emissiveIntensity = 1.0; // between 0 ~ 100 and above
 const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
