@@ -72,7 +72,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.alpha = buffer4.w;
 
 	material.linearDepth = buffer4.x;
-	material.visibility = frac(buffer4.y) + 1e-5;
+	material.visibility = saturate(frac(buffer4.y) + 1e-4);
 	material.lightModel = (int)floor(abs(buffer4.z));
 
 	if (material.lightModel == SHADINGMODELID_SKIN || 
