@@ -23,86 +23,23 @@ static float2 SSROffsetY2 = float2(0.0, ViewportOffset2.y * 2) * SSRScale2;
 static float2 SSROffsetY3 = float2(0.0, ViewportOffset2.y * 4) * SSRScale3;
 static float2 SSROffsetY4 = float2(0.0, ViewportOffset2.y * 8) * SSRScale4;
 
-texture SSRLightX1Map: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {1.0, 1.0};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX1MapTemp: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {1.0, 1.0};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX2Map: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.5, 0.5};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX2MapTemp: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.5, 0.5};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX3MapTemp: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.25, 0.25};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX3Map: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.25, 0.25};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX4MapTemp: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.125, 0.125};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-texture SSRLightX4Map: RENDERCOLORTARGET <
-	float2 ViewPortRatio = {0.125, 0.125};
-	float4 ClearColor = { 0, 0, 0, 0};
-	string Format = "A8B8G8R8";
->;
-sampler SSRLightX1Samp = sampler_state {
-	texture = <SSRLightX1Map>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX1SampTemp = sampler_state {
-	texture = <SSRLightX1MapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX2Samp = sampler_state {
-	texture = <SSRLightX2Map>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX2SampTemp = sampler_state {
-	texture = <SSRLightX2MapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX3Samp = sampler_state {
-	texture = <SSRLightX3Map>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX3SampTemp = sampler_state {
-	texture = <SSRLightX3MapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX4Samp = sampler_state {
-	texture = <SSRLightX4Map>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
-sampler SSRLightX4SampTemp = sampler_state {
-	texture = <SSRLightX4MapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU  = CLAMP; AddressV  = CLAMP;
-};
+texture SSRLightX1Map : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
+texture SSRLightX2Map : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
+texture SSRLightX3Map : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
+texture SSRLightX4Map : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
+texture SSRLightX1MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
+texture SSRLightX2MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
+texture SSRLightX3MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
+texture SSRLightX4MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
+
+sampler SSRLightX1Samp = sampler_state { texture = <SSRLightX1Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX2Samp = sampler_state { texture = <SSRLightX2Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX3Samp = sampler_state { texture = <SSRLightX3Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX4Samp = sampler_state { texture = <SSRLightX4Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX1SampTemp = sampler_state { texture = <SSRLightX1MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX2SampTemp = sampler_state { texture = <SSRLightX2MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX3SampTemp = sampler_state { texture = <SSRLightX3MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX4SampTemp = sampler_state { texture = <SSRLightX4MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
 
 bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float jitter, out float2 hitPixel)
 {
@@ -196,8 +133,9 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float2 hitPixel = 0;
 
 	float sampleJitter = GetJitterOffset(coord.zw);
-	float sampleDistance = material.linearDepth * (1.3 + 0.2 * SSR_QUALITY + mSSRRangeP - mSSRRangeM);
-	sampleDistance += 40 * SSR_QUALITY * pow5(1 - saturate(dot(view, material.normal)));
+	float sampleDistance = mSSRRangeScale;
+	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth);
+	sampleDistance *= pow5(1 - saturate(dot(view, material.normal)));
 
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, sampleDistance, sampleJitter, hitPixel);
 	if (!hitTest)
@@ -227,7 +165,7 @@ float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, un
 	float2 offset1 = coord.xy - offset;
 
 	[unroll]
-	for (int i = 1; i < 5; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
 

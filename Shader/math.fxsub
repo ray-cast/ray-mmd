@@ -7,6 +7,8 @@
 #define PI 3.1415926535f
 #define PI_2 (3.1415926535f * 2.0)
 
+#define ALN2I 1.442695022
+
 #define EPSILON 1e-5f
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
@@ -62,6 +64,11 @@ float luminance(float3 rgb)
 }
 
 float pow2(float x)
+{
+	return x * x;
+}
+
+float2 pow2(float2 x)
 {
 	return x * x;
 }
