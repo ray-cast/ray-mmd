@@ -2,7 +2,7 @@
 // You can see the UE4 docs for more information
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
-// This also called "Base Color", default data will be fetch params from texture from the pmx.
+// This also called "Base Color", default data will be fetched params from texture from the pmx.
 // You can use a base color or texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
 // 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
