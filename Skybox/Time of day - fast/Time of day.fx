@@ -121,7 +121,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.cloudBias = mCloudBias;
 	setting.cloudTop = 8 * scaling;
 	setting.cloudBottom = 5 * scaling;
-	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
+	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
