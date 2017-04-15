@@ -130,13 +130,12 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float atten = dot(viewReflect, -view);
 	clip(atten - 1e-5);
 
-	float2 hitPixel = 0;
-
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleDistance = mSSRRangeScale;
 	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth);
 	sampleDistance *= pow5(1 - saturate(dot(view, material.normal)));
 
+	float2 hitPixel = 0;
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, sampleDistance, sampleJitter, hitPixel);
 	if (!hitTest)
 		clip(-1);
@@ -150,7 +149,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float fadeOnPerpendicular = saturate(atten);
 	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
 
-	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel.xy, 0, 0));
+	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel, 0, 0));
 	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
 }
 
