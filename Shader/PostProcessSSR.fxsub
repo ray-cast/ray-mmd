@@ -150,29 +150,24 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-	float3 incrementalGaussian = IncrementalGaussianCofficent(4);
+	static const float weights[5] = {0.20236, 0.179044, 0.124009, 0.067234, 0.028532};
 
-	float weight = incrementalGaussian.x;
-	float4 color = tex2Dlod(source, float4(coord.xy, 0, 0)) * weight;
+	float4 color = tex2Dlod(source, float4(coord.xy, 0, 0)) * weights[0];
 
 	float2 offset0 = coord.xy + offset;
 	float2 offset1 = coord.xy - offset;
 
 	[unroll]
-	for (int i = 0; i < 4; ++i)
+	for (int i = 1; i < 5; ++i)
 	{
-		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
-
-		color += tex2Dlod(source, float4(offset0, 0, 0)) * incrementalGaussian.x;
-		color += tex2Dlod(source, float4(offset1, 0, 0)) * incrementalGaussian.x;
+		color += tex2Dlod(source, float4(offset0, 0, 0)) * weights[i];
+		color += tex2Dlod(source, float4(offset1, 0, 0)) * weights[i];
 
 		offset0 += offset;
 		offset1 -= offset;
-
-		weight += 2 * incrementalGaussian.x;
 	}
 
-	return color / weight;
+	return color;
 }
 
 float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
