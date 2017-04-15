@@ -101,8 +101,7 @@ static float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight))
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for SpotLight";
-	int Width = SHADOW_MAP_SIZE;
-	int Height = SHADOW_MAP_SIZE;
+	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -117,7 +116,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 

@@ -57,8 +57,7 @@ static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for PointLight";
-	int Width = SHADOW_MAP_WIDTH;
-	int Height = SHADOW_MAP_HEIGHT;
+	int2 Dimensions = {SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT};
 	string Format = "G32R32F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
