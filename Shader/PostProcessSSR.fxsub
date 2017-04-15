@@ -148,24 +148,22 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
 }
 
-float4 SSRGaussionBlurPS(in float4 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
+float4 SSRGaussionBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
 	static const float weights[5] = {0.20236, 0.179044, 0.124009, 0.067234, 0.028532};
 
-	float4 color = tex2Dlod(source, float4(coord.xy, 0, 0)) * weights[0];
+	float2 start = coord - offset * 4;
 
-	float2 offset0 = coord.xy + offset;
-	float2 offset1 = coord.xy - offset;
-
-	[unroll]
-	for (int i = 1; i < 5; ++i)
-	{
-		color += tex2Dlod(source, float4(offset0, 0, 0)) * weights[i];
-		color += tex2Dlod(source, float4(offset1, 0, 0)) * weights[i];
-
-		offset0 += offset;
-		offset1 -= offset;
-	}
+	float4 color = 0;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[4]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[3]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[2]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[1]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[0]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[1]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[2]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[3]; start += offset;
+	color += tex2Dlod(source, float4(start, 0, 0)) * weights[4];
 
 	return color;
 }
