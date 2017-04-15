@@ -11,11 +11,11 @@
 #endif
 
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
-	float2 ViewPortRatio = {1.0,1.0};
+	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";
 >;
 texture2D ScnMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0,1.0};
+	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
 sampler ScnSamp = sampler_state {
@@ -26,7 +26,7 @@ sampler ScnSamp = sampler_state {
 #if FOG_ENABLE
 texture FogMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -44,7 +44,7 @@ sampler FogMapSamp = sampler_state {
 #endif
 texture LightMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi light source map for ray";
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -61,11 +61,11 @@ texture LightMap: OFFSCREENRENDERTARGET<
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0,1.0};
+	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
 shared texture LightAlphaMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0,1.0};
+	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
 sampler LightSpecMapSamp = sampler_state {
@@ -86,7 +86,7 @@ sampler LightAlphaMapSamp = sampler_state {
 #if IBL_QUALITY
 texture EnvLightMap: OFFSCREENRENDERTARGET<
 	string Description = "Image-based-lighting map for ray";
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0.5, 0, 0.5 };
 	float ClearDepth = 1.0;
@@ -95,7 +95,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
 sampler EnvLightMapSamp = sampler_state {
@@ -111,7 +111,7 @@ sampler EnvLightAlphaMapSamp = sampler_state {
 #endif
 shared texture MaterialMap: OFFSCREENRENDERTARGET<
 	string Description = "Material cache map for ray";
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string Format = "A8R8G8B8";
@@ -136,7 +136,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 >;
 texture DepthMap : OFFSCREENRENDERTARGET<
 	string Description = "SSAO and shadow rendering for ray";
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "R32F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -190,11 +190,11 @@ shared texture PSSM : OFFSCREENRENDERTARGET<
 		"*.x=hide;";
 >;
 shared texture2D ShadowmapMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
 texture2D ShadowmapMapTemp : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
 sampler PSSMsamp = sampler_state {
@@ -214,31 +214,31 @@ sampler ShadowmapSampTemp = sampler_state {
 };
 #endif
 shared texture Gbuffer2RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 >;
 shared texture Gbuffer3RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 >;
 shared texture Gbuffer4RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
 shared texture Gbuffer5RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 >;
 shared texture Gbuffer6RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 >;
 shared texture Gbuffer7RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8R8G8B8";
 >;
 shared texture Gbuffer8RT: RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 	int Miplevels = 0;
 >;
@@ -283,15 +283,15 @@ sampler Gbuffer8Map = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 texture ShadingMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
 texture ShadingMapTemp : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
 texture ShadingMapTempSpecular : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
 sampler ShadingMapSamp = sampler_state {
@@ -321,12 +321,12 @@ sampler ShadingMapTempSpecularSamp = sampler_state {
 };
 #if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
 shared texture SSDOMap : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	bool AntiAlias = false;
 	string Format = "A8R8G8B8";
 >;
 texture SSDOMapTemp : RENDERCOLORTARGET<
-	float2 ViewPortRatio = {1.0, 1.0};
+	float2 ViewportRatio = {1.0, 1.0};
 	bool AntiAlias = false;
 	string Format = "A8R8G8B8";
 >;

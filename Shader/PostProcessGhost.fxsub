@@ -1,0 +1,69 @@
+#if HDR_FLARE_MODE == 1
+static const float4 ghost_modulation1st[4] = {float4(0.1, 0.10, 1.00, 1.0), float4(0.2, 0.30, 1.0, 1.0), float4(0.10, 0.20, 0.60, 1.0), float4(0.60, 0.30, 1.00, 1.0)};
+static const float4 ghost_modulation2nd[4] = {float4(0.6, 0.20, 0.20, 1.0), float4(0.2, 0.06, 0.6, 1.0), float4(0.15, 0.00, 0.10, 1.0), float4(0.06, 0.00, 0.55, 1.0)};
+#elif HDR_FLARE_MODE == 2
+static const float4 ghost_modulation1st[4] = {float4(1.0, 0.89, 0.80, 1.0), float4(1.0, 0.60, 0.5, 1.0), float4(0.50, 0.50, 0.30, 1.0), float4(0.50, 0.50, 0.30, 1.0)};
+static const float4 ghost_modulation2nd[4] = {float4(0.2, 0.06, 0.14, 1.0), float4(0.5, 0.15, 0.1, 1.0), float4(0.10, 0.05, 0.02, 1.0), float4(0.10, 0.05, 0.02, 1.0)};
+#elif HDR_FLARE_MODE == 3
+static const float4 ghost_modulation1st[4] = {float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0)};
+static const float4 ghost_modulation2nd[4] = {float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0), float4(0.5, 0.5, 0.5, 1.0)};
+#endif
+
+static const float4 ghost_scalar1st = float4(-4.0, 3.0, -2.0,  0.30);
+static const float4 ghost_scalar2nd = float4( 3.6, 2.0,  0.9, -0.77);
+
+texture GhostMaskMap<string ResourceName = "shader/textures/mask.png";>; 
+sampler GhostMaskMapSamp = sampler_state
+{
+	texture = <GhostMaskMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+texture GhostImageMap : RENDERCOLORTARGET <
+	float2 ViewportRatio = {0.5, 0.5};
+	string Format="A2B10G10R10";
+>;
+sampler GhostImageMapSamp = sampler_state {
+	texture = <GhostImageMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+void GhostImageVS(
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float2 oTexcoord1 : TEXCOORD1,
+	out float2 oTexcoord2 : TEXCOORD2,
+	out float2 oTexcoord3 : TEXCOORD3,
+	out float4 oPosition : POSITION,
+	uniform float4 scalar)
+{
+	oTexcoord0 = (Texcoord - 0.5) * scalar[0] + 0.5;
+	oTexcoord1 = (Texcoord - 0.5) * scalar[1] + 0.5;
+	oTexcoord2 = (Texcoord - 0.5) * scalar[2] + 0.5;
+	oTexcoord3 = (Texcoord - 0.5) * scalar[3] + 0.5;
+	oPosition = Position;
+}
+
+float4 GhostImagePS(
+	in float2 coord0 : TEXCOORD0,
+	in float2 coord1 : TEXCOORD1,
+	in float2 coord2 : TEXCOORD2,
+	in float2 coord3 : TEXCOORD3,
+	uniform sampler source1,
+	uniform sampler source2,
+	uniform sampler source3,
+	uniform float4 colorCoeff[4], uniform float threshold) : COLOR
+{
+	float ghostThreshold = threshold / (1 - threshold + EPSILON) * mBloomGhostThresholdMax;
+	float4 color1 = saturate(tex2Dlod(source1, float4(coord0, 0, 0)) - ghostThreshold) * colorCoeff[0];
+	float4 color2 = saturate(tex2Dlod(source1, float4(coord1, 0, 0)) - ghostThreshold) * colorCoeff[1];
+	float4 color3 = saturate(tex2Dlod(source2, float4(coord2, 0, 0)) - ghostThreshold) * colorCoeff[2];
+	float4 color4 = saturate(tex2Dlod(source3, float4(coord3, 0, 0)) - ghostThreshold) * colorCoeff[3];
+	color1 *= tex2Dlod(GhostMaskMapSamp, float4(coord0, 0, 0));
+	color2 *= tex2Dlod(GhostMaskMapSamp, float4(coord1, 0, 0));
+	color3 *= tex2Dlod(GhostMaskMapSamp, float4(coord2, 0, 0));
+	color4 *= tex2Dlod(GhostMaskMapSamp, float4(coord3, 0, 0));
+	return color1 + color2 + color3 + color4;
+}

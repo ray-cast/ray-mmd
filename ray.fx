@@ -95,6 +95,14 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
+#if HDR_ENABLE && HDR_STAR_MODE
+#	include "shader/PostProcessLensflare.fxsub"
+#endif
+
+#if HDR_ENABLE && HDR_FLARE_MODE
+#	include "shader/PostProcessGhost.fxsub"
+#endif
+
 #if HDR_ENABLE && HDR_BLOOM_MODE
 #	include "shader/PostProcessBloom.fxsub"
 #endif
@@ -219,7 +227,9 @@ technique DeferredLighting<
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
 	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample1st;"
+#if HDR_STAR_MODE || HDR_FLARE_MODE
 	"RenderColorTarget=DownsampleMap3rd; Pass=HDRDownsample2nd;"
+#endif
 	"RenderColorTarget=BloomMap1stTemp;  Pass=BloomBlurX1;"
 	"RenderColorTarget=BloomMap1st;		 Pass=BloomBlurY1;"
 	"RenderColorTarget=BloomMap2nd;		 Pass=BloomDownsampleX2;"
@@ -491,12 +501,14 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2);
 		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp1st);
 	}
+#if HDR_STAR_MODE || HDR_FLARE_MODE
 	pass HDRDownsample2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2 * 2);
 		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp2nd);
 	}
+#endif
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
