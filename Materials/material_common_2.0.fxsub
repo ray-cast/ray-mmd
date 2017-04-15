@@ -1165,10 +1165,12 @@ float3 GetSpecular(float2 coord)
 
 	return clamp(specularColor.rgb, 0.01, 1.0);
 #else
-	#if SPECULAR_MAP_TYPE == 1
-		return saturate(0.08 * specular);
-	#else
+	#if SPECULAR_MAP_TYPE == 1 || SPECULAR_MAP_TYPE == 3
 		return saturate(0.16 * specular * specular);
+	#elif SPECULAR_MAP_TYPE == 4
+		return saturate(specular);
+	#else
+		return saturate(0.08 * specular);
 	#endif
 #endif
 }

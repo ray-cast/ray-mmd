@@ -1028,10 +1028,12 @@ float3 GetSpecular(float2 coord)
 
 	return clamp(specularColor.rgb, 0.01, 1.0);
 #else
-	#if SPECULAR_MAP_TYPE == 1
-		return saturate(0.08 * specular);
-	#else
+	#if SPECULAR_MAP_TYPE == 1 || SPECULAR_MAP_TYPE == 3
 		return saturate(0.16 * specular * specular);
+	#elif SPECULAR_MAP_TYPE == 4
+		return saturate(specular);
+	#else
+		return saturate(0.08 * specular);
 	#endif
 #endif
 }
@@ -1092,51 +1094,49 @@ float GetOcclusion(float2 coord)
 float3 GetEmissiveColor(float2 coord)
 {
 #if EMISSIVE_ENABLE
-	#if EMISSIVE_MAP_FROM
-		#if EMISSIVE_MAP_UV_FLIP == 1
-			coord.x = 1 - coord.x;
-		#elif EMISSIVE_MAP_UV_FLIP == 2
-			coord.y = 1 - coord.y;
-		#elif EMISSIVE_MAP_UV_FLIP == 3
-			coord = 1 - coord;
-		#endif
-
-		#if EMISSIVE_MAP_FROM == 3
-			float4 emissiveTexCol = use_texture ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
-			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
-		#elif EMISSIVE_MAP_FROM == 4
-			float4 emissiveTexCol = use_spheremap ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
-			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
-		#elif EMISSIVE_MAP_FROM == 5
-			float4 emissiveTexCol = use_toon ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
-			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
-		#elif EMISSIVE_MAP_FROM == 7
-			float3 metalnessValues = MaterialAmbient.rgb;
-		#elif EMISSIVE_MAP_FROM == 8
-			float3 metalnessValues = MaterialSpecular.rgb;
-		#elif EMISSIVE_MAP_FROM == 9
-			float3 metalnessValues = MaterialPower;
-		#else
-			float4 emissiveTexCol = srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum));
-			float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
-		#endif
-
-		#if EMISSIVE_MAP_APPLY_SCALE
-			emissiveColor *= emissive.rgb;
-		#endif
-
-		#if EMISSIVE_MAP_APPLY_MORPH_COLOR
-			emissiveColor *= MorphColor;
-		#endif
-
-		#if EMISSIVE_MAP_APPLY_BLINK
-			emissiveColor *= LightBlink;
-		#endif
-
-		return emissiveColor;
-	#else
-		return emissive.rgb;
+	#if EMISSIVE_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif EMISSIVE_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif EMISSIVE_MAP_UV_FLIP == 3
+		coord = 1 - coord;
 	#endif
+
+	#if EMISSIVE_MAP_FROM == 1 || EMISSIVE_MAP_FROM == 2
+		float4 emissiveTexCol = srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum));
+		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
+	#elif EMISSIVE_MAP_FROM == 3
+		float4 emissiveTexCol = use_texture ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
+		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
+	#elif EMISSIVE_MAP_FROM == 4
+		float4 emissiveTexCol = use_spheremap ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
+		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
+	#elif EMISSIVE_MAP_FROM == 5
+		float4 emissiveTexCol = use_toon ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
+		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
+	#elif EMISSIVE_MAP_FROM == 7
+		float3 metalnessValues = MaterialAmbient.rgb;
+	#elif EMISSIVE_MAP_FROM == 8
+		float3 metalnessValues = MaterialSpecular.rgb;
+	#elif EMISSIVE_MAP_FROM == 9
+		float3 metalnessValues = MaterialPower;
+	#else
+		float3 emissiveColor = emissive;
+	#endif
+
+	#if EMISSIVE_MAP_APPLY_SCALE
+		emissiveColor *= emissive.rgb;
+	#endif
+
+	#if EMISSIVE_MAP_APPLY_MORPH_COLOR
+		emissiveColor *= MorphColor;
+	#endif
+
+	#if EMISSIVE_MAP_APPLY_BLINK
+		emissiveColor *= LightBlink;
+	#endif
+
+	return emissiveColor;
 #else
 	return 0;
 #endif
