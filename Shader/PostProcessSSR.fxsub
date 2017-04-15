@@ -127,8 +127,8 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 	float sampleJitter = GetJitterOffset(coord.zw);
 	float sampleDistance = mSSRRangeScale;
-	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth);
-	sampleDistance *= pow5(1 - saturate(dot(view, material.normal)));
+	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth) +  material.linearDepth;
+	sampleDistance *= pow(1 - saturate(dot(view, material.normal)) * (1 - SSR_QUALITY * 0.1), 5 - SSR_QUALITY);
 
 	float2 hitPixel = 0;
 	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, sampleDistance, sampleJitter, hitPixel);
