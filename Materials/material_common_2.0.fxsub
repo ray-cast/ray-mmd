@@ -767,7 +767,7 @@ float3 GetAlbedo(float2 coord)
 		albedoColor = pow(albedoColor, albedo);
 	#endif
 
-	#if ALBEDO_APPLY_MORPH_COLOR
+	#if ALBEDO_MAP_APPLY_MORPH_COLOR
 		albedoColor *= MorphColor;
 	#endif
 
@@ -1199,11 +1199,11 @@ float3 GetEmissiveColor(float2 coord)
 		float4 emissiveTexCol = use_toon ? srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum)) : 0;
 		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
 	#elif EMISSIVE_MAP_FROM == 7
-		float3 metalnessValues = MaterialAmbient.rgb;
+		float3 emissiveColor = MaterialAmbient.rgb;
 	#elif EMISSIVE_MAP_FROM == 8
-		float3 metalnessValues = MaterialSpecular.rgb;
+		float3 emissiveColor = MaterialSpecular.rgb;
 	#elif EMISSIVE_MAP_FROM == 9
-		float3 metalnessValues = MaterialPower;
+		float3 emissiveColor = MaterialPower;
 	#else
 		float3 emissiveColor = emissive;
 	#endif
