@@ -1478,12 +1478,16 @@ GbufferParam Material2PS(
 {
 	normal = normalize(normal);
 
-#if PARALLAX_MAP_FROM && PARALLAX_MAP_TYPE
+#if PARALLAX_MAP_FROM
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
 	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord);
+#if PARALLAX_MAP_TYPE
 	coord = ParallaxOcclusionMap(ParallaxMapSamp, coord * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
+#else
+	coord *= parallaxMapLoopNum;
+#endif
 	#if PARALLAX_MAP_UV_FLIP
 		coord.y = 1 - coord.y;
 	#endif
