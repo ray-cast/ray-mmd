@@ -70,16 +70,11 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 		float4 samplePos4 = startScreenPos + deltaScreenPos * sampleLength.w;
 		float4 samplePosZ = float4(samplePos1.w, samplePos2.w, samplePos3.w, samplePos4.w);
 
-		samplePos1.xy /= samplePos1.w;
-		samplePos2.xy /= samplePos2.w;
-		samplePos3.xy /= samplePos3.w;
-		samplePos4.xy /= samplePos4.w;
-
 		float4 sampleDepth;
-		sampleDepth.r = tex2Dlod(Gbuffer8Map, float4(samplePos1.xy, 0, 0)).r;
-		sampleDepth.g = tex2Dlod(Gbuffer8Map, float4(samplePos2.xy, 0, 0)).r;
-		sampleDepth.b = tex2Dlod(Gbuffer8Map, float4(samplePos3.xy, 0, 0)).r;
-		sampleDepth.a = tex2Dlod(Gbuffer8Map, float4(samplePos4.xy, 0, 0)).r;
+		sampleDepth.r = tex2Dproj(Gbuffer8Map, samplePos1).r;
+		sampleDepth.g = tex2Dproj(Gbuffer8Map, samplePos2).r;
+		sampleDepth.b = tex2Dproj(Gbuffer8Map, samplePos3).r;
+		sampleDepth.a = tex2Dproj(Gbuffer8Map, samplePos4).r;
 
 		float4 depthDiff = samplePosZ - abs(sampleDepth);
 
