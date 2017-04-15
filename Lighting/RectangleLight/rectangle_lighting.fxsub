@@ -14,24 +14,24 @@
 #define RECTANGLELIGHT_MAX_WIDTH 50
 #define RECTANGLELIGHT_MAX_HEIGHT 50
 
-float mR : CONTROLOBJECT < string name="(self)"; string item = "R+"; >;
-float mG : CONTROLOBJECT < string name="(self)"; string item = "G+"; >;
-float mB : CONTROLOBJECT < string name="(self)"; string item = "B+"; >;
-float mBlink : CONTROLOBJECT < string name="(self)"; string item = "Blink"; >;
-float mRangeP : CONTROLOBJECT < string name="(self)"; string item = "Range+"; >;
-float mWidthP : CONTROLOBJECT < string name="(self)"; string item = "Width+"; >;
-float mHeightP : CONTROLOBJECT < string name="(self)"; string item = "Height+"; >;
-float mHardnessP : CONTROLOBJECT<string name="(self)"; string item = "Hardness";>;
-float mIntensityP : CONTROLOBJECT < string name="(self)"; string item = "Intensity+"; >;
-float mIntensityM : CONTROLOBJECT < string name="(self)"; string item = "Intensity-"; >;
-float mAttenuationBulbP : CONTROLOBJECT < string name="(self)"; string item = "AttenuationBulb+"; >;
-float mMultiLightP : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight+"; >;
-float mMultiLightM : CONTROLOBJECT < string name="ray_controller.pmx"; string item = "MultiLight-"; >;
+float mR : CONTROLOBJECT<string name = "(self)"; string item = "R+"; >;
+float mG : CONTROLOBJECT<string name = "(self)"; string item = "G+"; >;
+float mB : CONTROLOBJECT<string name = "(self)"; string item = "B+"; >;
+float mBlink : CONTROLOBJECT<string name = "(self)"; string item = "Blink"; >;
+float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+"; >;
+float mWidthP : CONTROLOBJECT<string name = "(self)"; string item = "Width+"; >;
+float mHeightP : CONTROLOBJECT<string name = "(self)"; string item = "Height+"; >;
+float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
+float mIntensityP : CONTROLOBJECT<string name = "(self)"; string item = "Intensity+"; >;
+float mIntensityM : CONTROLOBJECT<string name = "(self)"; string item = "Intensity-"; >;
+float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+"; >;
+float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+"; >;
+float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-"; >;
 
-float3 mPosition : CONTROLOBJECT < string name="(self)"; string item = "Position"; >;
-float3 mDirection : CONTROLOBJECT < string name="(self)"; string item = "Direction"; >;
-float3 mRightTop : CONTROLOBJECT < string name="(self)"; string item = "RightTop"; >;
-float3 mRightBottom : CONTROLOBJECT < string name="(self)"; string item = "RightBottom"; >;
+float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position"; >;
+float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction"; >;
+float3 mRightTop : CONTROLOBJECT<string name = "(self)"; string item = "RightTop"; >;
+float3 mRightBottom : CONTROLOBJECT<string name = "(self)"; string item = "RightBottom"; >;
 
 static float LightHardness = lerp(0.15, 0.5, mHardnessP);
 static float LightRange = lerp(1, LIGHTSOURCE_MAX_RANGE, mRangeP);
@@ -153,7 +153,7 @@ float ShadowPCF(float3 viewPosition)
 float ShadingShadow(MaterialParam material, float3 V)
 {
 	float angle = saturate(dot(material.normal, -viewLightDirection));
-	if (angle < 0.0)
+	if (angle<0.0)
 	{
 		clip(-1);
 	}
@@ -176,15 +176,15 @@ float4 FastBlur(sampler source, float2 uv, float2 offset, float level)
 
 	float gamma = 2.0 + 1.0 / 3.0;
 
-    float4 blurred = 0;
-    blurred += pow(a, gamma) * 4.0;
+	float4 blurred = 0;
+	blurred += pow(a, gamma) * 4.0;
 	blurred += pow(b, gamma) * 4.0;
 	blurred += pow(c, gamma) * 4.0;
 	blurred += pow(d, gamma) * 4.0;
 	blurred += pow(e, gamma);
-    blurred /= 17;
-    
-    return blurred;
+	blurred /= 17;
+
+	return blurred;
 }
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
@@ -203,7 +203,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, roughness, material.specular, coord2);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
 	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
-	
+
 #if LIGHTSOURCE_DIFFUSE_ONLY
 	specular = 0.0;
 #else
@@ -221,7 +221,7 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 
 	float3 prefilterDiffuse = FastBlur(VideoMapSamp, coord1, ViewportOffset2, 2).rgb;
 	diffuse *= prefilterDiffuse;
-	
+
 #if LIGHTSOURCE_DIFFUSE_ONLY == 0
 	float3 prefilterSpecular = FastBlur(VideoMapSamp, coord2, ViewportOffset2, mip).rgb;
 	specular *= prefilterSpecular;
@@ -236,7 +236,7 @@ void LightSourceVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
-{   
+{
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
 	oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
 	oTexcoord1 = -mul(oPosition, matProjectInverse);
@@ -335,7 +335,7 @@ void LightSourceShadowlessPS(
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
 
-technique MainTech0 < string MMDPass = "object";
+technique MainTech0<string MMDPass = "object";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -352,7 +352,7 @@ technique MainTech0 < string MMDPass = "object";
 	}
 }
 
-technique MainTecBS0 < string MMDPass = "object_ss";
+technique MainTecBS0<string MMDPass = "object_ss";
 	string Script = 
 		"RenderColorTarget0=;"
 		"RenderColorTarget1=LightSpecMap;"
@@ -369,6 +369,6 @@ technique MainTecBS0 < string MMDPass = "object_ss";
 	}
 }
 
-technique EdgeTec < string MMDPass = "edge"; > {}
-technique ShadowTech < string MMDPass = "shadow";  > {}
-technique ZplotTec < string MMDPass = "zplot"; > {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

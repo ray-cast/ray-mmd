@@ -10,7 +10,7 @@ float mIntensityM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = 
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float LightAngle = radians(lerp(60.0f, 45.0f, mAngleM));
+static float LightAngle = radians(lerp(60.0f, 30.0f, mAngleM));
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
