@@ -80,10 +80,10 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
 static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
 
-float ShadowPCF(float3 viewPosition, int samples) 
+float ShadowPCF(float3 viewPosition) 
 {
-	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
-	float3 L = worldPosition.xyz - LightPosition;
+	float3 P = mul(float4(viewPosition, 1), matViewInverse).xyz;
+	float3 L = P - LightPosition;
 
 	float linearDepth = length(L);
 	float depth = (mPointLightFar - (mPointLightFar / linearDepth) * mPointLightNear) / (mPointLightFar - mPointLightNear);
@@ -101,8 +101,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 		for (int y = -radius; y <= radius; y++)
 		{
 			float2 pos = coord + float2(x, y) * ShadowmapOffset2;
-			float weight = kernel[radius+x] * kernel[radius+y];
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * kernel[radius+x] * kernel[radius+y];
 		}
 	}
 
@@ -112,9 +111,8 @@ float ShadowPCF(float3 viewPosition, int samples)
 float ShadingShadow(MaterialParam material, float3 V)
 {
 	float3 P = V * material.linearDepth / V.z;
-	return ShadowPCF(P, 0);
+	return ShadowPCF(P);
 }
-
 #endif
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)

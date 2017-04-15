@@ -87,7 +87,7 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
 static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
-float ShadowPCF(float3 viewPosition, int samples) 
+float ShadowPCF(float3 viewPosition) 
 {
 	static const float radius = 3;
 	static const float kernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
@@ -105,8 +105,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 		for (int y = -radius; y <= radius; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			float weight = kernel[radius+x] * kernel[radius+y];
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * kernel[radius+x] * kernel[radius+y];
 		}
 	}
 
@@ -123,9 +122,8 @@ float ShadingShadow(MaterialParam material, float3 V)
 	}
 
 	float3 P = V * material.linearDepth / V.z;
-	return ShadowPCF(P, 0);
+	return ShadowPCF(P);
 }
-
 #endif
 
 texture IESTexture<string ResourceName = IES_FILE_PATH;>; 

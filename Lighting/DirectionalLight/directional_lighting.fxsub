@@ -112,8 +112,7 @@ float ShadowPCF(float3 viewPosition)
 		for (int y = -radius; y <= radius; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			float weight = kernel[radius+x] * kernel[radius+y];
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * kernel[radius+x] * kernel[radius+y];
 		}
 	}
 
