@@ -86,34 +86,14 @@ float ShadowPCF(float3 viewPosition, int samples)
 	float3 L = worldPosition.xyz - LightPosition;
 
 	float linearDepth = length(L);
-
 	float depth = (mPointLightFar - (mPointLightFar / linearDepth) * mPointLightNear) / (mPointLightFar - mPointLightNear);
 
+	float2 shadow = 0.0;
 	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
 
-	float2 shadow = 0.0;
-	float shadowWeight = 0.0;
-	
-	static const float width = 7;
-	float radius = (width - 1) / 2;
-	float kernel[width];
+	static const float radius = 3;
+	static const float kernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
 
-	float3 incrementalGaussian = IncrementalGaussianCofficent(width);
-
-	[unroll]
-	for (int i = 0; i <= radius; ++i)
-	{
-		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
-		kernel[radius - i] = incrementalGaussian.x;
-		kernel[radius + i] = incrementalGaussian.x;
-	}
-	
-	[unroll]
-	for (int i = 0; i < width; ++i)
-	{
-		shadowWeight += kernel[i];
-	}
-	
 	[unroll]
 	for (int x = -radius; x <= radius; x++) 
 	{
@@ -125,9 +105,7 @@ float ShadowPCF(float3 viewPosition, int samples)
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
-	
-	shadow = shadow / (shadowWeight * shadowWeight);
-	
+
 	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
 }
 

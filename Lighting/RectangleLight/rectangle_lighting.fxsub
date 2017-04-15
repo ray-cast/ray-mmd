@@ -126,32 +126,14 @@ static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
 float ShadowPCF(float3 viewPosition, int samples) 
 {
+	static const float radius = 3;
+	static const float kernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
+	
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
 
 	float2 shadow = 0.0;
-	float shadowWeight = 0.0;
-
-	static const float width = 7;
-	float radius = (width - 1) / 2;
-	float kernel[width];
-
-	float3 incrementalGaussian = IncrementalGaussianCofficent(width);
-
-	[unroll]
-	for (int i = 0; i <= radius; ++i)
-	{
-		incrementalGaussian = IncrementalGaussian(incrementalGaussian);
-		kernel[radius - i] = incrementalGaussian.x;
-		kernel[radius + i] = incrementalGaussian.x;
-	}
-
-	[unroll]
-	for (int i = 0; i < width; ++i)
-	{
-		shadowWeight += kernel[i];
-	}
 
 	[unroll]
 	for (int x = -radius; x <= radius; x++) 
@@ -164,8 +146,6 @@ float ShadowPCF(float3 viewPosition, int samples)
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * weight;
 		}
 	}
-
-	shadow = shadow / (shadowWeight * shadowWeight);
 
 	float linearDepth = dot(float4(viewPosition,1), matLightViewFromCameraView._13_23_33_43);
 	return ChebyshevUpperBound(shadow, linearDepth, 0.1, LightHardness);
