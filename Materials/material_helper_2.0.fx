@@ -150,9 +150,6 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float occlusion = 1.0;	// between 0 ~ 1
 const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Calculate parallax coordinates from height map 
-// That are then used to access textures with albedo, normals, smoothness, metalness, etc
-// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for parallax
@@ -164,6 +161,11 @@ const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define PARALLAX_MAP_FILE "height.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float parallaxMapScale = 1.0;
+
+// Why increase loops of parallax map will increase the loops/tile of albedo, normals, etc
+// Calculate parallax coordinates from height map 
+// That are then used to access textures with albedo, normals, smoothness, metalness, etc
+// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define EMISSIVE_ENABLE 0
