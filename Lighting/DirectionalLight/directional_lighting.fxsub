@@ -24,17 +24,17 @@ float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string it
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
-static float LightRange = lerp(50, 200, mRange);
-static float LightHardness = lerp(0.15, 0.5, mHardnessP);
-static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
-static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
+static const float LightRange = lerp(50, 200, mRange);
+static const float LightHardness = lerp(0.15, 0.5, mHardnessP);
+static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
+static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
-static float3 LightPosition = mPosition;
-static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 
-static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
-static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
+static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_ENABLE
 #if SHADOW_MAP_QUALITY == 0
@@ -88,28 +88,25 @@ float ShadowPCF(float3 viewPosition)
 	if (proj.x <= 0.0 || proj.x >= 1.0 ||
 		proj.y <= 0.0 || proj.y >= 1.0)
 	{
-#if DIRECTIONLIGHT_OUT_OF_RANGE
-		return 1;
-#else
+#if LIGHT_PARAMS_TYPE == 2 || LIGHT_PARAMS_TYPE == 3
 		float2 v = proj.xy - saturate(proj.xy);
-		float falloff = smoothstep(0.0001, 0.0, dot(v, v));
+		float falloff = smoothstep(1e-4, 0.0, dot(v, v));
 		return saturate(falloff);
+#else
+		return 1;
 #endif
 	}
-
-	static const float radius = 3;
-	static const float kernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
 
 	float2 shadow = 0.0;
 
 	[unroll]
-	for (int x = -radius; x <= radius; x++) 
+	for (int x = -sampleRadius; x <= sampleRadius; x++) 
 	{
 		[unroll]
-		for (int y = -radius; y <= radius; y++)
+		for (int y = -sampleRadius; y <= sampleRadius; y++)
 		{
 			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * kernel[radius+x] * kernel[radius+y];
+			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * sampleKernel[sampleRadius+x] * sampleKernel[sampleRadius+y];
 		}
 	}
 
@@ -128,7 +125,6 @@ float ShadingShadow(MaterialParam material, float3 V)
 	float3 P = V * material.linearDepth / V.z;
 	return ShadowPCF(P);
 }
-
 #endif
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
@@ -136,16 +132,21 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
+	
+	float3 shadingColor = LightColor * LightIntensity * LightIntensity2;
+#if LIGHT_PARAMS_FROM == 0 && LIGHT_PARAMS_APPLY_SCALE
+	shadingColor *= lightColor;
+#endif
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L, V);
-	diffuse *= LightColor * LightIntensity * LightIntensity2;
+	diffuse *= shadingColor;
 
-#if LIGHTSOURCE_DIFFUSE_ONLY
+#if LIGHT_PARAMS_TYPE == 1 || LIGHT_PARAMS_TYPE == 3
 	specular = 0;
 #else
 	specular = energy.gba;
-	specular *= LightColor * LightIntensity * LightIntensity2;
+	specular *= shadingColor;
 #endif
 }
 
