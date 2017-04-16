@@ -11,11 +11,11 @@
 #	include "../../../shader/shadowcommon.fxsub"
 #endif
 
-float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
-float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
-
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
+
+float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
+float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
 
 #if LIGHT_PARAMS_FROM == 0
 float mR : CONTROLOBJECT<string name = "(self)"; string item = "R+";>;
@@ -99,11 +99,9 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
-float ShadingShadow(MaterialParam material, float3 V)
+float ShadingShadow(MaterialParam material, float3 P, float3 V)
 {
-	float3 viewPosition = V * material.linearDepth / V.z;
-
-	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
+	float4 proj = mul(float4(P, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += ShadowmapOffset;
 
@@ -120,14 +118,13 @@ float ShadingShadow(MaterialParam material, float3 V)
 		}
 	}
 
-	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
+	float linearDepth = length(mul(float4(P,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
 }
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, out float3 diffuse, out float3 specular)
 {
-	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
 
@@ -198,11 +195,14 @@ void LightSourcePS(
 
 	float3 V = normalize(viewdir);
 
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
+
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, V, diffuse, specular);
+	ShadingMaterial(material, P1, V, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
@@ -215,7 +215,7 @@ void LightSourcePS(
 #if SHADOW_MAP_FROM > 0
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 
-	float shadow = ShadingShadow(materialAlpha, V);
+	float shadow = ShadingShadow(materialAlpha, P2, V);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
@@ -234,12 +234,15 @@ void LightSourceShadowlessPS(
 	GetGbufferParams(texcoord, material, materialAlpha);
 
 	float3 V = normalize(viewdir);
+	
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, V, diffuse, specular);
+	ShadingMaterial(material, P1, V, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
