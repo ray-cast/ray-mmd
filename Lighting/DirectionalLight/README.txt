@@ -25,10 +25,11 @@ static const float shadowHardness = 0.15; 	// 0.15 ~ 0.5
 static const float sampleRadius = 2;  // suggest 2 or 3
 static const float sampleKernel[5] = {0.1784, 0.210431, 0.222338, 0.210431, 0.1784};
 
-// static const float radius = 1;
-// static const float kernel[3] = {0.27901, 0.44198, 0.27901};
+// Example :
+// static const float sampleRadius = 1;
+// static const float sampleKernel[3] = {0.27901, 0.44198, 0.27901};
 
-// static const float radius = 3;
-// static const float kernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
+// static const float sampleRadius = 3;
+// static const float sampleKernel[7] = {0.071303, 0.131514, 0.189879, 0.214607, 0.189879, 0.131514, 0.071303};
 
 #include "directional_lighting.fxsub"
