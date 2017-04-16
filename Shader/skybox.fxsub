@@ -26,7 +26,7 @@ sampler ShadowmapSamp = sampler_state {
 #endif
 
 #if SKYBOX_BLUR_ENABLE
-texture SkyboxBlurMap<string ResourceName = SKYBOX_BLUR_MAP_FILE;>; 
+texture SkyboxBlurMap<string ResourceName = SKYBOX_BLUR_MAP_FILE;>;
 sampler SkyboxBlurMapSamp = sampler_state {
 	texture = <SkyboxBlurMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
@@ -36,9 +36,9 @@ sampler SkyboxBlurMapSamp = sampler_state {
 
 #if SKYBOX_BLUR_ENABLE == 0
 	#if SKYBOX_HDR_ENABLE
-		texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE;>; 
+		texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE; int Miplevels = 1;>;
 	#else
-		texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE;>; 
+		texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE; int Miplevels = 1;>;
 	#endif
 	sampler SkyboxMapSamp = sampler_state
 	{
@@ -67,7 +67,7 @@ float3 ApplyColorBalance(float3 color)
 
 void SkyboxVS(
 	in float4 Position : POSITION,
-	out float4 oNormal   : TEXCOORD0,
+	out float4 oNormal : TEXCOORD0,
 	out float4 oPosition : SV_Position)
 {
 #if SKYDOME_ENABLE
@@ -85,9 +85,9 @@ void SkyboxVS(
 float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
 	float3 N = normalize(mul(matTransform, normal));
-	
+
 	float2 uv = ComputeSphereCoord(N);
-	
+
 #if SKYBOX_BLUR_ENABLE
 	float4 color = tex2Dlod(SkyboxBlurMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
 	#if SKYBOX_BLUR_COLOR_RANGE == 1024
@@ -107,9 +107,9 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 		color *= lerp(1, tex2Dlod(ShadowmapSamp, float4(screenPosition.xy / ViewportSize + ViewportOffset, 0, 0)).r, 0.5);
 	}
 #endif
-	
+
 	color.rgb = ApplyColorBalance(color.rgb);
-	
+
 #if SKYBOX_HDR_ENABLE
 	return float4(linear2srgb(color.rgb), 1);
 #else
@@ -117,14 +117,14 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 #endif
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass; \
-	> { \
-		pass DrawObject { \
-			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
-			VertexShader = compile vs_3_0 SkyboxVS(); \
-			PixelShader  = compile ps_3_0 SkyboxPS(); \
-		} \
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	> {\
+		pass DrawObject {\
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
+			VertexShader = compile vs_3_0 SkyboxVS();\
+			PixelShader  = compile ps_3_0 SkyboxPS();\
+		}\
 	}
 
 OBJECT_TEC(MainTec0, "object")

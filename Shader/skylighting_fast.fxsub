@@ -22,7 +22,7 @@ static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE;>;
+texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
