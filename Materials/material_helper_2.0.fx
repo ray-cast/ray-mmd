@@ -51,6 +51,7 @@ const float2 albedoMapLoopNum = 1.0; // between float2(0, 0) ~ float2(inf, inf)
 const float3 albedoSub = 1.0;
 const float2 albedoSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
+// it has no effect on opaque objects.
 #define ALPHA_MAP_FROM 3	 		// see ALBEDO_MAP_FROM for more information.
 #define ALPHA_MAP_UV_FLIP 0	 		// see ALBEDO_MAP_UV_FLIP for more information.
 #define ALPHA_MAP_SWIZZLE 3 		// The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
@@ -149,6 +150,9 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float occlusion = 1.0;	// between 0 ~ 1
 const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
+// Calculate parallax coordinates from height map 
+// That are then used to access textures with albedo, normals, smoothness, metalness, etc
+// Like fetched data from parallax coordinates * parallaxMapLoopNum
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for parallax
