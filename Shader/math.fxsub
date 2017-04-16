@@ -234,12 +234,27 @@ float SmoothCurve(float x)
 	return x * x * (3.0 - 2.0 * x);
 }
 
+float3 SmoothCurve(float3 x)
+{
+	return x * x * (3.0 - 2.0 * x);
+}
+
 float TriangleWave(float x)
 {
 	return abs(frac(x + 0.5) * 2.0 - 1.0);
 }
 
+float3 TriangleWave(float3 x)
+{
+	return abs(frac(x + 0.5) * 2.0 - 1.0);
+}
+
 float SmoothTriangleWave(float x)
+{
+	return SmoothCurve(TriangleWave(x));
+}
+
+float3 SmoothTriangleWave(float3 x)
 {
 	return SmoothCurve(TriangleWave(x));
 }
