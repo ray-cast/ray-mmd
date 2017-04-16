@@ -1,3 +1,13 @@
+float ComputeSpecularMicroOcclusion(float f0)
+{
+	return saturate(dot(f0, 0.33333h) * 50);
+}
+
+float ComputeSpecularMicroOcclusion(float3 f0)
+{
+	return saturate(dot(f0, 0.33333h) * 50);
+}
+
 float fresnelSchlick(float f0, float f9, float vh)
 {
 	return lerp(f0, f9, pow5(1 - vh));
@@ -8,17 +18,7 @@ float3 fresnelSchlick(float3 f0, float3 f9, float vh)
 	return lerp(f0, f9, pow5(1 - vh));
 }
 
-float ComputeSpecularMicroOcclusion(float f0)
-{
-	return saturate(dot(f0, 0.33333h) * 50);
-}
-
-float3 ComputeSpecularMicroOcclusion(float3 f0)
-{
-	return saturate(dot(f0, 0.33333h) * 50);
-}
-
-float ComputeAmbientMircroOcclusion(float3 N, float3 L, float ao)
+float ComputeAmbientMicroOcclusion(float3 N, float3 L, float ao)
 {
 	float nl = dot(N, L);
 	float aperture = 2.0 * pow2(ao);
@@ -81,8 +81,8 @@ float BurleyBRDF(float nl, float vh, float nv, float roughness)
 	float energyFactor = lerp(1, 1 / 1.51, roughness);
 
 	float Fd90 = energyBias + 2.0 * vh * vh * roughness;
-	float FdV = 1 + (Fd90 - 1) * pow5(1 - max(nv, 0.1));
-	float FdL = 1 + (Fd90 - 1) * pow5(1 - nl);
+	float FdV = lerp(1, Fd90, pow5(1 - max(nv, 0.1)));
+	float FdL = lerp(1, Fd90, pow5(1 - nl));
 
 	return FdV * FdL * energyFactor;
 }
@@ -115,9 +115,26 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 	float Gl = nv * (nl * (1 - m2) + m2);
 	spec *= 0.5 / (Gv + Gl);
 
-	float3 f0 = max(0.02, specular);
+	float3 f0 = specular;
 	float3 f90 = ComputeSpecularMicroOcclusion(f0);
 	float3 fresnel = fresnelSchlick(f0, f90, vh);
+
+	return fresnel * spec;
+}
+
+float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
+{
+	float m = roughness * roughness;
+	float m2 = m * m;
+	float A = 4;
+	float spec = (nh - nh * m2) * nh + m2;
+	spec = (1 + 4 * m2 * m2 / (spec * spec)) / (PI * (1 + A * m2)) * NormalizationFactor;
+
+	float G = 4 * (nl + nv - nl * nv);
+	spec /= G;
+
+	float3 f0 = specular;
+	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
 
 	return fresnel * spec;
 }
@@ -133,23 +150,6 @@ float4 SpecularBRDF_ClearCoat(float nh, float nl, float vh, float nv, float roug
 
 	float fresnel = fresnelSchlick(specular, 1.0, vh);
 	return float4(spec, spec, spec, fresnel);
-}
-
-float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
-{
-	float m = roughness * roughness;
-	float m2 = m * m;
-	float A = 4;
-	float spec = (nh - nh * m2) * nh + m2;
-	spec = (1 + 4 * m2 * m2 / (spec * spec)) / (PI * (1 + A * m2)) * NormalizationFactor;
-
-	float G = 4 * (nl + nv - nl * nv);
-	spec /= G;
-
-	float3 f0 = max(0.02, specular);
-	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
-
-	return fresnel * spec;
 }
 
 float3 ClothShading(MaterialParam material, float nh, float nl, float vh, float nv, float roughness, float normalizeFactor)

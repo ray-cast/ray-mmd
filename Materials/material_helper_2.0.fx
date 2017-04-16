@@ -111,7 +111,7 @@ const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float metalness = 0.0;	// between 0 ~ 1
 const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Minimum coefficient of specular reflection, it has no effect on metals.
+// Minimum coefficient of specular reflection, it has no effect on metals and CUSTOM_ENABLE > 0.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
