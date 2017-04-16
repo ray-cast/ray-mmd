@@ -1,18 +1,24 @@
-// 最大范围
-#define LIGHTSOURCE_MAX_RANGE 200
+#define LIGHT_PARAMS_FROM 0
+#define LIGHT_PARAMS_TYPE 1
 
-// 最小强度
-#define LIGHTSOURCE_MIN_INTENSITY 100
+static const float lightRange = 200.0;
+static const float lightSpotAngle = 60.0;
+static const float lightSpotFalloff = 2.0;
+static const float lightAttenuationBulb = 1.0;
 
-// 最大强度
-#define LIGHTSOURCE_MAX_INTENSITY 2000
+static const float3 lightBlink = 0.0;
+static const float3 lightColor = float3(1.0, 1.0, 1.0) * 1000.0;
 
-// 是否去掉镜面光
-#define LIGHTSOURCE_DIFFUSE_ONLY 1
+static const float2 lightRangeLimits = float2(1.0, 200.0);
+static const float2 lightIntensityLimits = float2(100.0, 2000.0);
 
-// 阴影
-#define SHADOW_MAP_ENABLE 1
-#define SHADOW_MAP_QUALITY 1 // (0 ~ 3)
-#define SHADOW_MAP_BLUR_QUALITY 1 // (0 ~ 2)
+#define SHADOW_MAP_FROM 1
+#define SHADOW_MAP_QUALITY 1
+
+static const float shadowHardness = 0.15;
+
+// NOTICE : DO NOT MODIFY IT IF YOU CANT'T UNDERSTAND WHAT IT IS
+static const float sampleRadius = 2;
+static const float sampleKernel[5] = {0.1784, 0.210431, 0.222338, 0.210431, 0.1784};
 
 #include "../spot_lighting.fxsub"
