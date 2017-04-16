@@ -162,10 +162,10 @@ const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 const float parallaxMapScale = 1.0;
 
-// Why increase loops of parallax map will increase the loops/tile of albedo, normals, etc
+// Why increase number of parallaxMapLoopNum will increase the loops/tile/number of albedo, normals, etc
 // Calculate parallax coordinates from height map 
 // That are then used to access textures with albedo, normals, smoothness, metalness, etc
-// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum
+// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define EMISSIVE_ENABLE 0
