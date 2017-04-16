@@ -152,7 +152,7 @@ const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Calculate parallax coordinates from height map 
 // That are then used to access textures with albedo, normals, smoothness, metalness, etc
-// Like fetched data from parallax coordinates * parallaxMapLoopNum
+// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for parallax
