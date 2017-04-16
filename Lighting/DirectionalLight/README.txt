@@ -1,5 +1,5 @@
 // 0 : Params fetch from moprh controller from the pmx.
-// 1 : Use the below params : lightRange, lightHardness, lightColor, lightBlink
+// 1 : Use the below params : lightBlink, lightColor, shadowRange, shadowHardness
 #define LIGHT_PARAMS_FROM 0
 
 // 0 : Diffuse & Specular
