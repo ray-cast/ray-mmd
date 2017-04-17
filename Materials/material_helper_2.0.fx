@@ -3,7 +3,7 @@
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
 // This also called "Base Color", default data will be fetched params from texture from the pmx.
-// You can use a base color or texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
+// You can use a fixed color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
 // 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
@@ -17,12 +17,12 @@
 #define ALBEDO_MAP_FROM 3
 
 // You can flip your texture for the X and Y axis mirror by change ALBEDO_MAP_UV_FLIP
-// 1 : Flip x axis
-// 2 : Flip y axis
-// 3 : Flip x & y axis
+// 1 : Flip axis x
+// 2 : Flip axis y
+// 3 : Flip axis x & y
 #define ALBEDO_MAP_UV_FLIP 0
 
-// You can apply values for color of texture change by change ALBEDO_MAP_APPLY_SCALE
+// You can apply color from "const float3 albedo = 1.0;" to change colors in your texture by set code to ALBEDO_MAP_APPLY_SCALE
 // 1 : map values * albedo;
 // 2 : map values ^ albedo;
 #define ALBEDO_MAP_APPLY_SCALE 0
@@ -92,7 +92,7 @@ const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Smoothness (from Frostbite / CE5 textures)
 // 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
 // 2 : Calculate smoothness from roughtness by 1.0 - Roughness
-// 3 : Calculate smoothness from shininess  by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
+// 3 : Calculate smoothness from SpecularPower by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
@@ -163,9 +163,9 @@ const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float parallaxMapScale = 1.0;
 
 // Why increase number of parallaxMapLoopNum will increase the loops/tile/number of albedo, normals, etc
-// Calculate parallax coordinates from height map 
+// Bacause parallax coordinates can be calculated from height map 
 // That are then used to access textures with albedo, normals, smoothness, metalness, etc
-// In other words like fetched (albedo, normals, etc) data from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
+// In other words like fetched data (albedo, normals, etc) from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define EMISSIVE_ENABLE 0
