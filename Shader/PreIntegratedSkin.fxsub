@@ -1,0 +1,25 @@
+texture ShadowLut<string ResourceName = "shader/textures/shadowLUT.bmp"; int Miplevels = 1;>; 
+sampler ShadowLutSamp = sampler_state
+{
+	texture = <ShadowLut>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+float3 SubsurfaceShadingPreIntegratedSkinLUT(MaterialParam material, float3 N, float3 L)
+{
+	float nl = saturate(dot(N, L) * 0.5 + 0.5);
+	float curvature = material.customDataA;
+	float3 PreintegratedBRDF = tex2Dlod(ShadowLutSamp, float4(nl, curvature, 0, 0));
+	return PreintegratedBRDF * material.customDataB;
+}
+
+float3 SubsurfaceShadingLUT(MaterialParam material, float3 N, float3 L, float3 V)
+{
+	if (material.lightModel == SHADINGMODELID_SKIN)
+		return SubsurfaceShadingPreIntegratedSkin(material, N, L);
+	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
+		return SubsurfaceShadingScattering(material, N, L, V);
+	else
+		return 0;
+}

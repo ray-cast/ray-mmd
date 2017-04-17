@@ -124,8 +124,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
-static float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static const float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static const float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
 {

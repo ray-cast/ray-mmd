@@ -90,12 +90,16 @@ float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float r
 	return rectangleAngle;
 }
 
-float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, float roughness, float3 f0, out float2 coord)
+float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
 {
 	float3 R = reflect(V, N);
 	float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
 	float3 L2 = normalize(Lw);
-	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, SphereNormalization(Lw, Lwh.y, roughness));
+
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float normFactor = SphereNormalization(Lw, Lwh.y, roughness);
+	
+	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
 	return energy;
 }
 
