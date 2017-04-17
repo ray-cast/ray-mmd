@@ -207,7 +207,7 @@ float4 ShadingTransparentPS(
 	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
 
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
-	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
+	float3 emissive1 = material.customDataB * material.emissiveIntensity * any(material.lightModel == SHADINGMODELID_EMISSIVE);
 
 	lighting += lerp(emissive0, emissive1, MRT8.a);
 
