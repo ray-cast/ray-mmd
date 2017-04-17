@@ -138,7 +138,7 @@ float3 ComputeIESLightProfile1D(float3 L, float3 Ld)
 	return tex2Dlod(IESTextureSamp, float4(angle, 0, 0, 0)).rgb;
 }
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 V, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 diffuse, inout float3 specular)
 {
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);

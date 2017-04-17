@@ -123,7 +123,7 @@ float ShadingShadow(MaterialParam material, float3 P, float3 V)
 }
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 V, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 diffuse, inout float3 specular)
 {
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
