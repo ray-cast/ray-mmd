@@ -31,6 +31,7 @@ float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction
 
 static float LightHardness = lerp(0.2, 0.995, mHardnessP);
 static float LightSize = (1 + mSizeP * SPHERELIGHT_MAX_SIZE);
+static float LightBlink = saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 static float LightRange = (1 + (mSizeP * SPHERELIGHT_MAX_SIZE + mRangeP * LIGHTSOURCE_MAX_RANGE));
 static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_MAX_INTENSITY, mIntensityP), 0, mIntensityM);
 static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
@@ -38,12 +39,12 @@ static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuati
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
-static float3 LightColor = float3(mR, mG, mB) * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
 
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 
 #if IBL_ENABLE
-texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE;>; 
+texture IBLDiffuseTexture<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>; 
 sampler IBLDiffuseSampler = sampler_state {
 	texture = <IBLDiffuseTexture>;	
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;	
@@ -89,12 +90,11 @@ float3 DecodeHDR(float4 rgbx)
 #endif
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
-	string Description = "Shadow Rendering for PointLight";
+	string Description = "Shadow Rendering for SphereLight";
 	int2 Dimensions = {SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT};
 	string Format = "G32R32F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
-	int MipLevels = 1;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -110,11 +110,13 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = float2(0.5 / SHADOW_MAP_WIDTH, 0.5 / SHADOW_MAP_HEIGHT);
-static float2 ShadowmapOffset2 = float2(1.0 / SHADOW_MAP_WIDTH, 1.0 / SHADOW_MAP_HEIGHT);
+static float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 
-float ShadowPCF(float3 viewPosition) 
+float ShadingShadow(MaterialParam material, float3 V)
 {
+	float3 viewPosition = V * material.linearDepth / V.z;
+
 	float3 P = mul(float4(viewPosition, 1), matViewInverse).xyz;
 	float3 L = P - LightPosition;
 
@@ -140,12 +142,6 @@ float ShadowPCF(float3 viewPosition)
 
 	return ChebyshevUpperBound(shadow, depth, 1e-4, LightHardness);
 }
-
-float ShadingShadow(MaterialParam material, float3 V)
-{
-	float3 P = V * material.linearDepth / V.z;
-	return ShadowPCF(P);
-}
 #endif
 
 void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
@@ -154,19 +150,21 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
-		
-	float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
+
+	float3 atten = GetPhysicalLightAttenuation(L - L2 * LightSize, LightRange, LightAttenuationBulb);
+	atten *= LightColor;
+
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	
 	float4 energy = SphereAreaLightEnergy(material, material.normal, L, V, LightSize, roughness, material.specular);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
-	diffuse *= atten * LightColor * LightIntensity * LightIntensity2;
+	diffuse *= atten;
 	
 #if LIGHTSOURCE_DIFFUSE_ONLY
 	specular = 0;
 #else
 	specular = energy.gba;
-	specular *= atten * LightColor * LightIntensity * LightIntensity2;
+	specular *= atten;
 #endif
 	
 #if IBL_ENABLE
@@ -181,6 +179,27 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 #endif
 }
 
+void GetGbufferParams(float4 texcoord, out MaterialParam material, out MaterialParam materialAlpha)
+{
+	float2 coord = texcoord.xy / texcoord.w;
+
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+}
+
 void LightSourceVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
@@ -190,8 +209,10 @@ void LightSourceVS(
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = LightPosition + Normal * LightRange;
-	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord1 = -mul(Position, matView);
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
 void LightSourcePS(
@@ -201,29 +222,9 @@ void LightSourcePS(
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
 {
-	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
-
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
 	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
 	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-	
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+	GetGbufferParams(texcoord, material, materialAlpha);
 
 	float3 V = normalize(viewdir);
 	
@@ -258,29 +259,9 @@ void LightSourceShadowlessPS(
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
 {
-	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
-
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
 	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
-	
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
 	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-
-	float3 sum1 = material.albedo + material.specular;
-	float3 sum2 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1 + sum2 - 1e-5));
+	GetGbufferParams(texcoord, material, materialAlpha);
 
 	float3 V = normalize(viewdir);
 	
@@ -333,6 +314,6 @@ technique MainTecBS0<string MMDPass = "object_ss";
 	}
 }
 
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTech<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
