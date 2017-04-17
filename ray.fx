@@ -50,14 +50,14 @@ static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
-static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
 static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
-static float3 mSunShadowP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
+static float mColorTemperature = lerp(lerp(6000, 1000, mTemperatureP), 40000, mTemperatureM);
+static float3 mColorShadowSunP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
 static float3 mColorBalanceP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
 static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
 

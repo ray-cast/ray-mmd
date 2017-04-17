@@ -14,7 +14,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 {
 	float4 energy = SurfaceEnergy(material, N, L, V);
 	float3 subsurface = SubsurfaceShading(material, N, L, V);
-	diffuse = energy.r + subsurface;
+	diffuse = energy.r;
 	specular = energy.gba;
 
 	float3 lightColor = LightSpecular * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
@@ -25,16 +25,18 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 
 #if SHADOW_QUALITY
 	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	lightColor *= min(shadow, saturate(dot(N, L) * 2));
-	lightColor += mSunShadowP * (1 - shadow);
+	lightColor *= min(shadow, saturate(dot(N, L) * 3));
+	lightColor += mColorShadowSunP * (1 - shadow);
 #endif
 
 #if SSDO_QUALITY
-	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).xyz;
-	float ssdo = pow(1 - saturate(dot(bentNormal * 2 - 1, L)), mSSDOScale);
+	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).xyz * 2 - 1;
+	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mSSDOScale);
 	ssdo = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssdo;
-	diffuse = diffuse * ssdo + subsurface * (1 - ssdo) * 0.5;
+	diffuse = diffuse * ssdo + subsurface;
 	specular *= ssdo;
+#else
+	diffuse += subsurface;
 #endif
 
 	diffuse *= lightColor;
