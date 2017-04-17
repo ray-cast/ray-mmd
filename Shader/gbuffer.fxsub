@@ -75,19 +75,19 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.visibility = saturate(frac(buffer4.y));
 	material.lightModel = (int)floor(buffer4.z);
 
-	if (material.lightModel == SHADINGMODELID_SKIN || 
-		material.lightModel == SHADINGMODELID_SUBSURFACE ||
-		material.lightModel == SHADINGMODELID_GLASS ||
-		material.lightModel == SHADINGMODELID_CLOTH)
-	{
-		material.specular = buffer3.xxx;
-		material.customDataB = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-	}
-	else if (material.lightModel == SHADINGMODELID_EMISSIVE)
+	if (material.lightModel >= SHADINGMODELID_MASK)
+		material.lightModel = SHADINGMODELID_DEFAULT;
+
+	if (material.lightModel == SHADINGMODELID_EMISSIVE)
 	{
 		material.specular = buffer3.xxx;
 		material.emissive = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
 		material.emissiveIntensity = floor(buffer4.y) / 100.0;
+	}
+	else if (material.lightModel != SHADINGMODELID_DEFAULT)
+	{
+		material.specular = buffer3.xxx;
+		material.customDataB = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
 	}
 	else
 	{
