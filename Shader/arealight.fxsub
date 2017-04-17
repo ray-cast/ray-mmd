@@ -38,11 +38,15 @@ float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 	return normalize(closestPoint);
 }
 
-float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius, float roughness, float3 f0)
+float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius)
 {
 	float3 Lw = SphereLightDirection(N, V, L, radius);
 	float3 L2 = normalize(Lw);
-	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, SphereNormalization(Lw, radius, roughness));
+
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float normFactor = SphereNormalization(Lw, radius, roughness);
+
+	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
 	return energy;
 }
 

@@ -41,7 +41,7 @@ static const float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM
 static const float LightHardness = lerp(0.2, 0.995, mHardnessP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 static const float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
-static const float LightRange = (LightRadius + mRangeP * lightRangeLimits.y);
+static const float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
 static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
@@ -57,8 +57,8 @@ static const float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;
 static const float LightWidth = lightSize.x;
 static const float LightRadius = lightSize.y;
 static const float LightHardness = shadowHardness;
+static const float LightRange = lightRange;
 static const float LightAttenuationBulb = lightAttenuationBulb;
-static const float LightRange = LightRadius + lightRange;
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static const float3 LightPosition = mPosition;
