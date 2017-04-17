@@ -29,15 +29,21 @@ float mIntensityP : CONTROLOBJECT<string name = "(self)"; string item = "Intensi
 float mIntensityM : CONTROLOBJECT<string name = "(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 
-static float LightFalloff = 2;
-static float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
-static float LightAngle = radians(lerp(60.0f, 30.0f, mAngleM));
-static float LightHardness = lerp(0.15, 0.5, mHardnessP);
-static float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
-static float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
-static float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
+static const float LightFalloff = 2;
+static const float LightHardness = lerp(0.15, 0.5, mHardnessP);
+static const float LightAngle = radians(lerp(60.0f, 30.0f, mAngleM));
+static const float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
+static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
+static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
+static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
-static float3 LightColor = float3(mR, mG, mB) * LightIntensity * saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightBlink;
+
+static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 #else
 static const float LightRange = lightRange;
 static const float LightAngle = radians(lightSpotAngle);
@@ -46,14 +52,13 @@ static const float LightHardness = shadowHardness;
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 static const float LightAttenuationBulb = lightAttenuationBulb;
 
-static const float3 LightColor = lightColor * saturate(1 - SmoothTriangleWave(time * lightBlink));
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
+
+static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 #endif
-
-static float3 LightPosition = mPosition;
-static float3 LightDirection = normalize(mDirection - mPosition);
-
-static float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
-static float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_FROM > 0
 #if SHADOW_MAP_QUALITY == 0
@@ -146,14 +151,15 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, LightAngle, LightFalloff);
 	atten *= ComputeIESLightProfile1D(L2, LightDirection);
+	atten *= LightColor;
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
-	diffuse *= atten * LightColor * LightIntensity2;
+	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
 	specular = energy.gba;
-	specular *= atten * LightColor * LightIntensity2;
+	specular *= atten;
 #endif
 }
 

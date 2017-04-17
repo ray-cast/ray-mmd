@@ -28,23 +28,28 @@ float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness
 
 static const float LightRange = lerp(50, 200, mRange);
 static const float LightHardness = lerp(0.15, 0.5, mHardnessP);
+static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
-static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
+
+static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 #else
 static const float LightRange = shadowRange;
 static const float LightHardness = shadowHardness;
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
-static const float3 LightColor = lightColor * saturate(1 - SmoothTriangleWave(time * lightBlink));
-#endif
-
 static const float3 LightPosition = mPosition;
 static const float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
 
 static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
+#endif
 
 #if SHADOW_MAP_FROM >= 1
 #if SHADOW_MAP_QUALITY == 0
@@ -143,17 +148,15 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
 
-	float3 shadingColor = LightColor * LightIntensity2;
-
 	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L, V);
-	diffuse *= shadingColor;
+	diffuse *= LightColor;
 
 #if LIGHT_PARAMS_TYPE == 1 || LIGHT_PARAMS_TYPE == 3
 	specular = 0;
 #else
 	specular = energy.gba;
-	specular *= shadingColor;
+	specular *= LightColor;
 #endif
 }
 

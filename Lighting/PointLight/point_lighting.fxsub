@@ -27,14 +27,15 @@ float mIntensityP : CONTROLOBJECT<string name = "(self)"; string item = "Intensi
 float mIntensityM : CONTROLOBJECT<string name = "(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 
-static const float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
 static const float LightHardness = lerp(0.2, 0.995, mHardnessP);
+static const float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
+static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
 static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static const float3 LightPosition = mPosition;
-static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightBlink;
 
 static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 #else
@@ -44,7 +45,7 @@ static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensi
 static const float LightAttenuationBulb = lightAttenuationBulb;
 
 static const float3 LightPosition = mPosition;
-static const float3 LightColor = lightColor * saturate(1 - SmoothTriangleWave(time * lightBlink));
+static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
 
 static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 #endif
@@ -122,15 +123,16 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
 
-	float atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
+	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
+	atten *= LightColor;
 
 	float4 energy = SurfaceEnergy(material, material.normal, L2, V, 1.0);
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
-	diffuse *= atten * LightColor * LightIntensity2;
+	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
 	specular = energy.gba;
-	specular *= atten * LightColor * LightIntensity2;
+	specular *= atten;
 #endif
 }
 

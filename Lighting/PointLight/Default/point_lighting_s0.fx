@@ -1,4 +1,4 @@
-#define LIGHT_PARAMS_FROM 0
+#define LIGHT_PARAMS_FROM 1
 #define LIGHT_PARAMS_TYPE 0
 
 static const float lightRange = 200.0;
