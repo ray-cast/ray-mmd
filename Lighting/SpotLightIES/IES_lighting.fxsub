@@ -104,7 +104,7 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
-float ShadingShadow(MaterialParam material, float3 P, float3 V)
+float ShadingShadow(MaterialParam material, float3 P)
 {
 	float4 proj = mul(float4(P, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
@@ -232,7 +232,7 @@ void LightSourcePS(
 #if SHADOW_MAP_FROM > 0
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 
-	float shadow = ShadingShadow(materialAlpha, P2, V);
+	float shadow = ShadingShadow(materialAlpha, P2);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;

@@ -118,11 +118,15 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 	return closestPoint + centerToRay * saturate(radius / length(centerToRay));
 }
 
-float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius, float roughness, float3 f0)
+float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius)
 {
 	float3 R = reflect(V, N);
 	float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
 	float3 Ls = normalize(Lw);
-	float4 energy = SurfaceEnergy(material, N, L, Ls, V, SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness));
+
+	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float normFactor = SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness);
+
+	float4 energy = SurfaceEnergy(material, N, L, Ls, V, normFactor);
 	return energy;
 }

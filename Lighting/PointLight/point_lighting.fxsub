@@ -47,7 +47,7 @@ static const float LightAttenuationBulb = lightAttenuationBulb;
 static const float3 LightPosition = mPosition;
 static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
 
-static float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+static cosnt float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 #endif
 
 #if SHADOW_MAP_FROM > 0
@@ -92,7 +92,7 @@ sampler ShadowMapSamp = sampler_state {
 static float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 static float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 
-float ShadingShadow(MaterialParam material, float3 viewPosition, float3 V)
+float ShadingShadow(MaterialParam material, float3 viewPosition)
 {
 	float3 P = mul(float4(viewPosition, 1), matViewInverse).xyz;
 	float3 L = P - LightPosition;
@@ -205,7 +205,7 @@ void LightSourcePS(
 #if SHADOW_MAP_FROM > 0
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 
-	float shadow = ShadingShadow(materialAlpha, P2, V);
+	float shadow = ShadingShadow(materialAlpha, P2);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
