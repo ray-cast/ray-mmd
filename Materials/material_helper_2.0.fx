@@ -13,7 +13,7 @@
 // 6 : Params fetch from avi/screen from the DummyScreen.x.
 // 7 : Params fetch from Ambient Color from the pmx.
 // 8 : Params fetch from Specular Color from the pmx.
-// 9 : Params fetch from Specular Power from the pmx. // for smoothness, see SMOOTHNESS_MAP_TYPE at 3
+// 9 : Params fetch from Specular Power from the pmx. // fetch Smoothness from the pmx.
 #define ALBEDO_MAP_FROM 3
 
 // You can flip your texture for the X and Y axis mirror by change ALBEDO_MAP_UV_FLIP
@@ -92,7 +92,6 @@ const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Smoothness (from Frostbite / CE5 textures)
 // 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
 // 2 : Calculate smoothness from roughtness by 1.0 - Roughness
-// 3 : Calculate smoothness from SpecularPower by 1.0 - (2.0 / (Shininess + 2)) ^ 0.25
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.

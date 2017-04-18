@@ -129,8 +129,8 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"TubeLight*.* =./materials/Emissive/material_lighting.fx;"
 		"RectangleLight*.* =./materials/Emissive/material_lighting.fx;"
 		"IESLight*.* =./materials/Emissive/material_lighting.fx;"
-		"*.pmd = ./materials/material.fx;"
-		"*.pmx = ./materials/material.fx;"
+		"*.pmd = ./materials/material_2.0.fx;"
+		"*.pmx = ./materials/material_2.0.fx;"
 		"*.x = hide;"
 		"* = hide;";
 >;

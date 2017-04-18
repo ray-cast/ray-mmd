@@ -42,7 +42,7 @@ const float normalSubMapScale = 1.0;
 const float normalSubMapLoopNum = 1.0;
 
 #define SMOOTHNESS_MAP_FROM 9
-#define SMOOTHNESS_MAP_TYPE 3
+#define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_APPLY_SCALE 0

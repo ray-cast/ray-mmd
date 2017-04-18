@@ -112,21 +112,6 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	};
 #endif
 
-#if USE_CUSTOM_MATERIAL && ALBEDO_SUB_MAP_ENABLE
-	#if ALBEDO_SUB_MAP_ANIMATION_ENABLE
-		texture AlbedoSubMap : ANIMATEDTEXTURE<string ResourceName = ALBEDO_SUB_MAP_FILE;>;
-	#else
-		texture AlbedoSubMap<string ResourceName = ALBEDO_SUB_MAP_FILE;>; 
-	#endif
-	sampler AlbedoSubMapSamp = sampler_state
-	{
-		texture = AlbedoSubMap;
-		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
-		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP;
-	};
-#endif
-
 #if USE_CUSTOM_MATERIAL && ALPHA_MAP_ENABLE && ALPHA_MAP_IN_TEXTURE != 1
 	#if ALPHA_MAP_ANIMATION_ENABLE
 		texture AlphaMap : ANIMATEDTEXTURE<string ResourceName = ALPHA_MAP_FILE;>;
@@ -757,39 +742,7 @@ float GetMelanin(float2 coord)
 
 float3 GetSubAlbedo(float3 albedo, float2 coord, bool use_texture)
 {
-#if USE_CUSTOM_MATERIAL && ALBEDO_SUB_ENABLE
-	#if ALBEDO_SUB_MAP_ENABLE
-		#if ALBEDO_SUB_MAP_UV_FLIP
-			coord.y = 1 - coord.y;
-		#endif
-
-		#if ALBEDO_SUB_MAP_IN_TOONMAP
-			float3 albedoSubValue = tex2D(DiffuseMapSamp, coord * albedoSubMapLoopNum).rgb;
-		#else
-			float3 albedoSubValue = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb;
-		#endif
-
-		#if ALBEDO_SUB_MAP_APPLY_SCALE == 1
-			albedoSubValue *= albedoSub;
-		#elif ALBEDO_SUB_MAP_APPLY_SCALE == 2
-			albedoSubValue = pow(albedoSubValue, albedoSub);
-		#endif
-	#else
-		float3 albedoSubValue = albedoSub;
-	#endif
-	
-	#if ALBEDO_SUB_ENABLE == 1
-		albedo *= albedoSubValue;
-	#elif ALBEDO_SUB_ENABLE == 2
-		albedo = pow(albedo, albedoSubValue);
-	#elif ALBEDO_SUB_ENABLE == 3
-		albedo += albedoSubValue;
-	#elif ALBEDO_SUB_ENABLE == 4
-		albedo = ColorSynthesis(albedo, albedoSubValue);
-	#endif
-
-	return saturate(albedo);
-#elif USE_CUSTOM_MATERIAL && defined(MELANIN_MAP_ENABLE)
+#if USE_CUSTOM_MATERIAL && defined(MELANIN_MAP_ENABLE)
 	return ColorSynthesis(albedo, GetMelanin(coord.xy));
 #else
 	return albedo;

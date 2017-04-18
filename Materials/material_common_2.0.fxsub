@@ -742,7 +742,7 @@ float3 GetAlbedo(float2 coord)
 	#elif ALBEDO_MAP_FROM == 8
 		float3 albedoColor = MaterialSpecular.rgb;
 	#elif ALBEDO_MAP_FROM == 9
-		float3 albedoColor = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float3 albedoColor = tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb;
 	#endif
@@ -800,7 +800,7 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 		#elif ALBEDO_SUB_MAP_FROM == 8
 			float3 albedoSubColor = MaterialSpecular.rgb;
 		#elif ALBEDO_SUB_MAP_FROM == 9
-			float3 albedoSubColor = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			float3 albedoSubColor = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb;
 		#endif
@@ -852,7 +852,7 @@ float GetAlpha(float2 coord)
 	#elif ALPHA_MAP_FROM == 8
 		float4 alphaValues = MaterialSpecular;
 	#elif ALPHA_MAP_FROM == 9
-		float4 alphaValues = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float4 alphaValues = tex2D(AlphaMapSamp, coord * alphaMapLoopNum);
 	#endif
@@ -1043,8 +1043,6 @@ float GetSmoothness(float2 coord)
 		smoothnessValue = RoughnessToSmoothness(smoothnessValue);
 	#elif SMOOTHNESS_MAP_TYPE == 2
 		smoothnessValue = 1 - smoothnessValue;
-	#elif SMOOTHNESS_MAP_TYPE == 3
-		smoothnessValue = ShininessToSmoothness(smoothnessValue);
 	#endif
 
 	#if SMOOTHNESS_MAP_APPLY_SCALE == 1
@@ -1081,7 +1079,7 @@ float GetMetalness(float2 coord)
 	#elif METALNESS_MAP_FROM == 8
 		float4 metalnessValues = MaterialSpecular;
 	#elif METALNESS_MAP_FROM == 9
-		float4 metalnessValues = MaterialPower;
+		float4 metalnessValues = ShininessToSmoothness(MaterialPower);
 	#else
 		float4 metalnessValues = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum);
 	#endif
@@ -1203,7 +1201,7 @@ float3 GetEmissiveColor(float2 coord)
 	#elif EMISSIVE_MAP_FROM == 8
 		float3 emissiveColor = MaterialSpecular.rgb;
 	#elif EMISSIVE_MAP_FROM == 9
-		float3 emissiveColor = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float3 emissiveColor = emissive;
 	#endif
@@ -1261,7 +1259,7 @@ float GetOcclusion(float2 coord)
 	#elif OCCLUSION_MAP_FROM == 8
 		float4 occlusionValues = MaterialSpecular;
 	#elif OCCLUSION_MAP_FROM == 9
-		float4 occlusionValues = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float4 occlusionValues = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum);
 	#endif
@@ -1317,7 +1315,7 @@ float GetCustomDataA(float2 coord)
 		#elif CUSTOM_A_MAP_FROM == 8
 			float4 customValues = MaterialSpecular;
 		#elif CUSTOM_A_MAP_FROM == 9
-			float4 customValues = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			float4 customValues = tex2D(CustomAMapSamp, coord * customAMapLoopNum);
 		#endif
@@ -1382,7 +1380,7 @@ float3 GetCustomDataB(float2 coord)
 		#elif CUSTOM_B_MAP_FROM == 8
 			customData = MaterialSpecular;
 		#elif CUSTOM_B_MAP_FROM == 9
-			customData = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
 		#endif
