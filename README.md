@@ -29,7 +29,7 @@ Download :
 	- Improved bloom
 	- Improved SSAO & SSDO
 	- Improved Multiple Light Source
-	- Improved cmft for (fps optimize, GPU memory, 8k limit), it will output a skybox.dds instead of skybox.hdr
+	- Improved cmft (fps optimize, GPU memory, 8k limit), it will output a skybox.dds instead of skybox.hdr
 	- Fixed some bugs
 
 Requirement :
