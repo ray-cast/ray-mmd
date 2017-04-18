@@ -18,15 +18,17 @@ Download :
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Added a Time of day & night
-	- Added a albedo sub map
 	- Added a skylighting_hdr_fast.fx
-	- Added a SoundSpectrum
-	- Added a Eye Adaptation
-	- Added a Bump Map Support
-	- Added a Specular Map Support
+	- Added a SoundSpectrum extension
+	- Added a Eye Adaptation postprocess
+	- Added a Albedo sub map support
+	- Added a Bump map support
+	- Added a Specular map support
+	- Added a Material description with 2.0 version (It doesn't support old versions of material.fx)
 	- Removed melanin material (it's still available in old materials, just removed the description)
 	- Improved bloom
 	- Improved SSAO
+	- Improved Multiple Light Source
 	- Optimize fps
 
 Requirement :
