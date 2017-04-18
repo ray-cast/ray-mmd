@@ -146,14 +146,14 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 {
 	float3 L0 = viewLightLeft - P;
 	float3 L1 = viewLightRight - P;
-	float3 L = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
-	float3 L2 = normalize(L);
-	
-	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
+	float3 Lw = TubeLightDirection(material.normal, V, L0, L1, P, LightRadius);
+	float3 L = normalize(Lw);
+
+	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
 	atten *= LightColor;
-	
-	float4 energy = TubeLightEnergy(material, P, material.normal, V, L2, L0, L1, LightWidth, LightRadius);
-	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
+
+	float4 energy = TubeLightEnergy(material, P, material.normal, V, L, L0, L1, LightWidth, LightRadius);
+	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L, V);
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
@@ -191,7 +191,7 @@ void LightSourceVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	Position.xyz = LightPosition + (Position.xyz - LightPosition) * 10000;
+	Position.xyz = LightPosition + (Position.xyz - LightPosition) * LightRange * 5;
 	oTexcoord1 = -mul(Position, matView);
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
@@ -213,13 +213,13 @@ void LightSourcePS(
 
 	float3 P1 = V * material.linearDepth / V.z;
 	float3 P2 = V * materialAlpha.linearDepth / V.z;
-	
+
 	float3 diffuse, specular = 0;
 	ShadingMaterial(material, P1, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha = 0;
 	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else
@@ -227,10 +227,10 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-	
+
 #if SHADOW_MAP_FROM > 0
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-	
+
 	float shadow = ShadingShadow(materialAlpha, P2);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
@@ -256,10 +256,10 @@ void LightSourceShadowlessPS(
 
 	float3 diffuse, specular = 0;
 	ShadingMaterial(material, P1, V, diffuse, specular);
-	
+
 	float3 diffuseAlpha, specularAlpha = 0;
 	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
-	
+
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
 #else

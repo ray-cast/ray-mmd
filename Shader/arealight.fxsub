@@ -35,7 +35,7 @@ float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 	float3 R = reflect(V, N);
 	float3 centerToRay = dot(L, R) * R - L;
 	float3 closestPoint = L + centerToRay * saturate(lightRadius / (length(centerToRay) + 1e-6));
-	return normalize(closestPoint);
+	return closestPoint;
 }
 
 float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius)
@@ -107,7 +107,7 @@ float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, fl
 {
 	float3 Ld = L1 - L0;
 	float t = dot(-L0, Ld) / dot(Ld, Ld);
-	float3 d = (L0 + Ld * saturate(t));
+	float3 d = L0 + Ld * saturate(t);
 	return d - normalize(d) * radius;
 }
 
@@ -128,7 +128,6 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 
 float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius)
 {
-	float3 R = reflect(V, N);
 	float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
 	float3 Ls = normalize(Lw);
 
