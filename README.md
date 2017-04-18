@@ -19,16 +19,18 @@ Download :
 - Latest changes - Major allocator changes:
 	- Added a Time of day & night
 	- Added a skylighting_hdr_fast.fx
-	- Added a SoundSpectrum extension
-	- Added a Eye Adaptation postprocess
+	- Added a Sound Spectrum Extension Effect
+	- Added a Eye Adapation PostProcess Effect
 	- Added a Albedo sub map support
 	- Added a Bump map support
 	- Added a Specular map support
+	- Added a Wetness map support
 	- Added a Material description with 2.0 version (old materials still available in this version)
 	- Improved bloom
-	- Improved SSAO
+	- Improved SSAO & SSDO
 	- Improved Multiple Light Source
-	- Optimize fps
+	- Improved cmft for (fps optimize, GPU memory, 8k limit), it will output a skybox.dds instead of skybox.hdr
+	- Fixed some bugs
 
 Requirement :
 ------------

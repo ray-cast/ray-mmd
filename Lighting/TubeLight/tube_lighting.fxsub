@@ -11,7 +11,7 @@
 #	include "../../../shader/shadowcommon.fxsub"
 #endif
 
-#define TUBELIGHT_MAX_WIDTH 55
+#define TUBELIGHT_MAX_WIDTH 50
 #define TUBELIGHT_MAX_RADIUS 10
 
 float mMultiLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MultiLight+";>;
@@ -20,7 +20,6 @@ float mMultiLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item
 float3 mLeft : CONTROLOBJECT<string name="(self)"; string item = "Left";>;
 float3 mRight : CONTROLOBJECT<string name="(self)"; string item = "Right";>;
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
-float3 mDirection : CONTROLOBJECT<string name="(self)"; string item = "Direction";>;
 
 #if LIGHT_PARAMS_FROM == 0
 float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
@@ -36,8 +35,8 @@ float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name="(self)"; string item = "AttenuationBulb+";>;
 
-static const float LightWidth = (1 + mWidthP * TUBELIGHT_MAX_WIDTH);
-static const float LightRadius = (1 + mRadiusP * TUBELIGHT_MAX_RADIUS - mRadiusM);
+static const float LightWidth = (2 + mWidthP * TUBELIGHT_MAX_WIDTH);
+static const float LightRadius = lerp(lerp(1, TUBELIGHT_MAX_RADIUS, mRadiusP), 0.1, mRadiusM);
 static const float LightHardness = lerp(0.2, 0.995, mHardnessP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
 static const float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
@@ -46,7 +45,6 @@ static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightInten
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static const float3 LightPosition = mPosition;
-static const float3 LightDirection = normalize(mDirection - mPosition);
 static const float3 LightLeft = mLeft - (mLeft - LightPosition) * LightWidth;
 static const float3 LightRight = mRight + (mLeft - LightPosition) * LightWidth;
 static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
@@ -62,7 +60,6 @@ static const float LightAttenuationBulb = lightAttenuationBulb;
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static const float3 LightPosition = mPosition;
-static const float3 LightDirection = normalize(mDirection - mPosition);
 static const float3 LightLeft = mLeft - (mLeft - LightPosition) * LightWidth;
 static const float3 LightRight = mRight + (mLeft - LightPosition) * LightWidth;
 static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
