@@ -1,11 +1,9 @@
 #include "skybox.conf"
-#include "../../ray.conf"
-#include "../../ray_advanced.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/ibl.fxsub"
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
+#include "shader/gbuffer.fxsub"
+#include "shader/gbuffer_sampler.fxsub"
+#include "shader/ibl.fxsub"
 
 #if USE_CUSTOM_PARAMS == 0
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
@@ -50,9 +48,9 @@ float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string it
 float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
 float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
 
-static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP),  0, mEnvSSSLightM);
-static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
-static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
+static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
@@ -97,7 +95,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	}
 
 	specular *= mEnvIntensitySpec;
-	specular *= step(0, sum(material.specular) - 1e-5);
+	specular *= step(0, dot(material.specular, 1) - 1e-5);
 }
 
 void EnvLightingVS(
@@ -131,7 +129,7 @@ void EnvLightingPS(
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
 
 	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
-	clip(sum(sum1) - 1e-5);
+	clip(dot(sum1, 1) - 1e-5);
 
 	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
 	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));

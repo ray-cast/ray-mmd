@@ -1,6 +1,6 @@
 #include "skybox.conf"
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
 
 #if USE_CUSTOM_PARAMS == 0
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
