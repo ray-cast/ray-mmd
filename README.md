@@ -25,7 +25,6 @@ Download :
 	- Added a Bump map support
 	- Added a Specular map support
 	- Added a Material description with 2.0 version (It doesn't support old versions of material.fx)
-	- Removed melanin material (it's still available in old materials, just removed the description)
 	- Improved bloom
 	- Improved SSAO
 	- Improved Multiple Light Source

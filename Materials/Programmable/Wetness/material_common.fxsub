@@ -454,6 +454,25 @@ float3 PerturbNormalLQ(float3 N, float3 P, float height)
 	return normalize(abs(det) * N - surf);
 }
 #endif
+
+#if NORMAL_MAP_TYPE == 3 || NORMAL_SUB_MAP_TYPE == 3
+float3 PerturbNormalHQ(sampler source, float2 coord, float center)
+{
+	float2 duv1 = ddx (coord);
+	float2 duv2 = ddy (coord);
+
+	float2 uv1 = coord + duv1;
+	float2 uv2 = coord + duv2;
+
+	float right = tex2D(source, uv1).x;
+	float bottom = tex2D(source, uv2).x;
+
+	float slope1 = right - center;
+	float slope2 = center - bottom;
+	
+	return normalize(float3(slope1, slope2, 1.0));
+}
+#endif
 #endif
 
 #if PARALLAX_MAP_FROM
@@ -609,7 +628,7 @@ float3 GetAlbedo(float2 coord)
 	#elif ALBEDO_MAP_FROM == 8
 		float3 albedoColor = MaterialSpecular.rgb;
 	#elif ALBEDO_MAP_FROM == 9
-		float3 albedoColor = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float3 albedoColor = tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb;
 	#endif
@@ -634,7 +653,7 @@ float3 GetAlbedo(float2 coord)
 		albedoColor = pow(albedoColor, albedo);
 	#endif
 
-	#if ALBEDO_APPLY_MORPH_COLOR
+	#if ALBEDO_MAP_APPLY_MORPH_COLOR
 		albedoColor *= MorphColor;
 	#endif
 
@@ -667,7 +686,7 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 		#elif ALBEDO_SUB_MAP_FROM == 8
 			float3 albedoSubColor = MaterialSpecular.rgb;
 		#elif ALBEDO_SUB_MAP_FROM == 9
-			float3 albedoSubColor = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			float3 albedoSubColor = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb;
 		#endif
@@ -709,17 +728,17 @@ float GetAlpha(float2 coord)
 	#endif
 
 	#if ALPHA_MAP_FROM == 3
-		float4 alphaValues = use_texture ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse;
+		float4 alphaValues = use_texture ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 4
-		float4 alphaValues = use_spheremap ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse;
+		float4 alphaValues = use_spheremap ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 5
-		float4 alphaValues = use_toon ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse;
+		float4 alphaValues = use_toon ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 7
 		float4 alphaValues = MaterialAmbient;
 	#elif ALPHA_MAP_FROM == 8
 		float4 alphaValues = MaterialSpecular;
 	#elif ALPHA_MAP_FROM == 9
-		float4 alphaValues = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float4 alphaValues = tex2D(AlphaMapSamp, coord * alphaMapLoopNum);
 	#endif
@@ -765,10 +784,12 @@ float3 GetMainNormal(float3 N, float3 P, float2 coord)
 
 	#if NORMAL_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalMapSamp, coord * normalMapLoopNum, tangentNormal.x);
 	#elif NORMAL_MAP_TYPE == 2
 		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalMapScale);
 		#if NORMAL_SUB_MAP_FROM
-			#error Unsupported bump map with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
 		#endif
 	#endif
 
@@ -808,10 +829,12 @@ float3 GetSubNormal(float3 N, float3 P, float2 coord)
 
 	#if NORMAL_SUB_MAP_TYPE == 1
 		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_SUB_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalSubMapSamp, coord * normalSubMapLoopNum, tangentNormal.x);
 	#elif NORMAL_SUB_MAP_TYPE == 2
 		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalSubMapScale);
 		#if NORMAL_MAP_FROM
-			#error Unsupported bump map with second normal map. Please set NORMAL_MAP_FROM to 0.
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_MAP_FROM to 0.
 		#endif
 	#endif
 
@@ -906,8 +929,6 @@ float GetSmoothness(float2 coord)
 		smoothnessValue = RoughnessToSmoothness(smoothnessValue);
 	#elif SMOOTHNESS_MAP_TYPE == 2
 		smoothnessValue = 1 - smoothnessValue;
-	#elif SMOOTHNESS_MAP_TYPE == 3
-		smoothnessValue = ShininessToSmoothness(smoothnessValue);
 	#endif
 
 	#if SMOOTHNESS_MAP_APPLY_SCALE == 1
@@ -944,7 +965,7 @@ float GetMetalness(float2 coord)
 	#elif METALNESS_MAP_FROM == 8
 		float4 metalnessValues = MaterialSpecular;
 	#elif METALNESS_MAP_FROM == 9
-		float4 metalnessValues = MaterialPower;
+		float4 metalnessValues = ShininessToSmoothness(MaterialPower);
 	#else
 		float4 metalnessValues = tex2D(MetalnessMapSamp, coord * metalnessMapLoopNum);
 	#endif
@@ -1060,7 +1081,7 @@ float GetOcclusion(float2 coord)
 	#elif OCCLUSION_MAP_FROM == 8
 		float4 occlusionValues = MaterialSpecular;
 	#elif OCCLUSION_MAP_FROM == 9
-		float4 occlusionValues = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float4 occlusionValues = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum);
 	#endif
@@ -1119,7 +1140,7 @@ float3 GetEmissiveColor(float2 coord)
 	#elif EMISSIVE_MAP_FROM == 8
 		float3 emissiveColor = MaterialSpecular.rgb;
 	#elif EMISSIVE_MAP_FROM == 9
-		float3 emissiveColor = MaterialPower;
+		#error Unsupported options 9.
 	#else
 		float3 emissiveColor = emissive;
 	#endif
@@ -1180,7 +1201,7 @@ float GetCustomDataA(float2 coord)
 		#elif CUSTOM_A_MAP_FROM == 8
 			float4 customValues = MaterialSpecular;
 		#elif CUSTOM_A_MAP_FROM == 9
-			float4 customValues = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			float4 customValues = tex2D(CustomAMapSamp, coord * customAMapLoopNum);
 		#endif
@@ -1245,7 +1266,7 @@ float3 GetCustomDataB(float2 coord)
 		#elif CUSTOM_B_MAP_FROM == 8
 			customData = MaterialSpecular;
 		#elif CUSTOM_B_MAP_FROM == 9
-			customData = MaterialPower;
+			#error Unsupported options 9.
 		#else
 			customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
 		#endif

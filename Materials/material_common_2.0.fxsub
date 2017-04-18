@@ -1173,6 +1173,59 @@ float3 GetSpecular(float2 coord)
 #endif
 }
 
+float GetOcclusion(float2 coord)
+{
+#if OCCLUSION_MAP_FROM
+	#if OCCLUSION_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif OCCLUSION_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif OCCLUSION_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if OCCLUSION_MAP_FROM == 3
+		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+	#elif OCCLUSION_MAP_FROM == 4
+		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+	#elif OCCLUSION_MAP_FROM == 5
+		float4 occlusionValues = use_toon ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+	#elif OCCLUSION_MAP_FROM == 7
+		float4 occlusionValues = MaterialAmbient;
+	#elif OCCLUSION_MAP_FROM == 8
+		float4 occlusionValues = MaterialSpecular;
+	#elif OCCLUSION_MAP_FROM == 9
+		#error Unsupported options 9.
+	#else
+		float4 occlusionValues = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum);
+	#endif
+
+	#if OCCLUSION_MAP_SWIZZLE == 1
+		float occlusionValue = occlusionValues.g;
+	#elif OCCLUSION_MAP_SWIZZLE == 2
+		float occlusionValue = occlusionValues.b;
+	#elif OCCLUSION_MAP_SWIZZLE == 3
+		float occlusionValue = occlusionValues.a;
+	#else
+		float occlusionValue = occlusionValues.r;
+	#endif
+	
+	#if OCCLUSION_MAP_TYPE == 1
+		occlusionValue = pow(occlusionValue, 2.2);
+	#endif
+
+	#if OCCLUSION_MAP_APPLY_SCALE == 1
+		occlusionValue *= occlusion;
+	#elif OCCLUSION_MAP_APPLY_SCALE == 2
+		occlusionValue = pow(occlusionValue, occlusion);
+	#endif
+
+	return saturate(occlusionValue);
+#else
+	return saturate(occlusion);
+#endif
+}
+
 float3 GetEmissiveColor(float2 coord)
 {
 #if EMISSIVE_ENABLE
@@ -1234,59 +1287,6 @@ float GetEmissiveIntensity()
 	#endif
 #else
 	return 0;
-#endif
-}
-
-float GetOcclusion(float2 coord)
-{
-#if OCCLUSION_MAP_FROM
-	#if OCCLUSION_MAP_UV_FLIP == 1
-		coord.x = 1 - coord.x;
-	#elif OCCLUSION_MAP_UV_FLIP == 2
-		coord.y = 1 - coord.y;
-	#elif OCCLUSION_MAP_UV_FLIP == 3
-		coord = 1 - coord;
-	#endif
-
-	#if OCCLUSION_MAP_FROM == 3
-		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
-	#elif OCCLUSION_MAP_FROM == 4
-		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
-	#elif OCCLUSION_MAP_FROM == 5
-		float4 occlusionValues = use_toon ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
-	#elif OCCLUSION_MAP_FROM == 7
-		float4 occlusionValues = MaterialAmbient;
-	#elif OCCLUSION_MAP_FROM == 8
-		float4 occlusionValues = MaterialSpecular;
-	#elif OCCLUSION_MAP_FROM == 9
-		#error Unsupported options 9.
-	#else
-		float4 occlusionValues = tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum);
-	#endif
-
-	#if OCCLUSION_MAP_SWIZZLE == 1
-		float occlusionValue = occlusionValues.g;
-	#elif OCCLUSION_MAP_SWIZZLE == 2
-		float occlusionValue = occlusionValues.b;
-	#elif OCCLUSION_MAP_SWIZZLE == 3
-		float occlusionValue = occlusionValues.a;
-	#else
-		float occlusionValue = occlusionValues.r;
-	#endif
-	
-	#if OCCLUSION_MAP_TYPE == 1
-		occlusionValue = pow(occlusionValue, 2.2);
-	#endif
-
-	#if OCCLUSION_MAP_APPLY_SCALE == 1
-		occlusionValue *= occlusion;
-	#elif OCCLUSION_MAP_APPLY_SCALE == 2
-		occlusionValue = pow(occlusionValue, occlusion);
-	#endif
-
-	return saturate(occlusionValue);
-#else
-	return saturate(occlusion);
 #endif
 }
 
