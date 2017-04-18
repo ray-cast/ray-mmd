@@ -26,7 +26,7 @@ Download :
 	- Added a Bump map support
 	- Added a Specular map support
 	- Added a Wetness map support
-	- Added a Material description with 2.0 version (old materials still available in this version)
+	- Added a 2.0 version of Material description (old materials still available in this version)
 	- Improved bloom
 	- Improved SSAO & SSDO
 	- Improved Multiple Light Source
