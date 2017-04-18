@@ -28,7 +28,7 @@ static const float3 mBottomColor = hsv2rgb(float3(mBottomColorHP, mBottomColorSP
 static const float3 mMediumColor = hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM)));
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 0, mTopExponentM);
-static const float mBottomExponent = lerp(lerp(1, 4, mBottomExponentP), 0, mBottomExponentM);
+static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 0, mBottomExponentM);
 #else
 static const float3 mTopColor = hsv2rgb(TopColor);
 static const float3 mBottomColor = hsv2rgb(BottomColor);

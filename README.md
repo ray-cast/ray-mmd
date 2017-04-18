@@ -18,6 +18,7 @@ Download :
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Added a Time of day & night
+	- Added a Sky Hemisphere
 	- Added a skylighting_hdr_fast.fx
 	- Added a Sound Spectrum Extension Effect
 	- Added a Eye Adapation PostProcess Effect
