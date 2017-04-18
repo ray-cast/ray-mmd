@@ -50,7 +50,7 @@ float4 ScatteringFogPS(
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 	setting.fogRange = mFogRange;
 	
 	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);

@@ -118,7 +118,7 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.w);
 	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection).rgb;

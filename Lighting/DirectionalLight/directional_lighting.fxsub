@@ -94,7 +94,7 @@ static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
-float ShadowPCF(float3 viewPosition) 
+float ShadingShadow(MaterialParam material, float3 viewPosition)
 {
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
@@ -128,23 +128,10 @@ float ShadowPCF(float3 viewPosition)
 	float linearDepth = length(mul(float4(viewPosition,1), matLightViewFromCameraView));
 	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
 }
-
-float ShadingShadow(MaterialParam material, float3 V)
-{
-	float angle = saturate(dot(material.normal, viewLightDirection));
-	if (angle < 0.0)
-	{
-		clip(-1);
-	}
-
-	float3 P = V * material.linearDepth / V.z;
-	return ShadowPCF(P);
-}
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 diffuse, inout float3 specular)
 {
-	float3 P = V * material.linearDepth / V.z;
 	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
 
@@ -152,12 +139,29 @@ void ShadingMaterial(MaterialParam material, float3 V, out float3 diffuse, out f
 	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L, V);
 	diffuse *= LightColor;
 
-#if LIGHT_PARAMS_TYPE == 1 || LIGHT_PARAMS_TYPE == 3
-	specular = 0;
-#else
+#if LIGHT_PARAMS_TYPE == 0 || LIGHT_PARAMS_TYPE == 2
 	specular = energy.gba;
 	specular *= LightColor;
 #endif
+}
+
+void GetGbufferParams(float2 coord, out MaterialParam material, out MaterialParam materialAlpha)
+{
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 }
 
 void LightSourceVS(
@@ -179,31 +183,20 @@ void LightSourcePS(
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
-	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-
-	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
-
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
 	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	MaterialParam materialAlpha;
+	GetGbufferParams(coord, material, materialAlpha);
 
 	float3 V = normalize(viewdir);
 
-	float3 diffuse, specular;
-	ShadingMaterial(material, V, diffuse, specular);
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
-	float3 diffuseAlpha, specularAlpha;
-	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	float3 diffuse, specular = 0;
+	ShadingMaterial(material, P1, V, diffuse, specular);
+
+	float3 diffuseAlpha, specularAlpha = 0;
+	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
@@ -216,7 +209,7 @@ void LightSourcePS(
 #if SHADOW_MAP_FROM >= 1
 	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
 
-	float shadow = ShadingShadow(materialAlpha, V);
+	float shadow = ShadingShadow(materialAlpha, P2);
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
@@ -230,31 +223,20 @@ void LightSourceShadowlessPS(
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
-	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
-
-	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
-
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
-
 	MaterialParam material;
-	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+	MaterialParam materialAlpha;
+	GetGbufferParams(coord, material, materialAlpha);
 
 	float3 V = normalize(viewdir);
 
-	float3 diffuse, specular;
-	ShadingMaterial(material, V, diffuse, specular);
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
-	float3 diffuseAlpha, specularAlpha;
-	ShadingMaterial(materialAlpha, V, diffuseAlpha, specularAlpha);
+	float3 diffuse, specular = 0;
+	ShadingMaterial(material, P1, V, diffuse, specular);
+
+	float3 diffuseAlpha, specularAlpha = 0;
+	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
@@ -299,6 +281,6 @@ technique MainTecBS0<string MMDPass = "object_ss";
 	}
 }
 
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTech<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

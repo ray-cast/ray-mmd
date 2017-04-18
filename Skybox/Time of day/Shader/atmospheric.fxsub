@@ -161,8 +161,8 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie / (4 * PI);
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh / (4 * PI);
+	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 sky = insctrTotalMie + insctrTotalRayleigh;
 

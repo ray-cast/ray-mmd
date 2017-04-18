@@ -16,12 +16,6 @@ struct ScatteringParams
 	float earthRadius;
 	float earthAtmTopRadius;
 	float3 earthCenter;
-
-	float cloud;
-	float cloudBias;
-	float cloudTop;
-	float cloudBottom;
-	float3 clouddir;
 };
 
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
@@ -161,8 +155,8 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie / (4 * PI);
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh / (4 * PI);
+	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 sky = insctrTotalMie + insctrTotalRayleigh;
 

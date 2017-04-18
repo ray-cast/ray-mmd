@@ -26,51 +26,35 @@ float mSunRadiusP : CONTROLOBJECT<string name="(self)"; string item = "SunRadius
 float mSunRadiusM : CONTROLOBJECT<string name="(self)"; string item = "SunRadius-";>;
 float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance+";>;
 float mSunRadianceM : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance-";>;
-float mFogRangeP : CONTROLOBJECT<string name="(self)"; string item = "FogRange+";>;
-float mFogRangeM : CONTROLOBJECT<string name="(self)"; string item = "FogRange-";>;
 float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
 float mMieHeightP : CONTROLOBJECT<string name="(self)"; string item = "MieHeight+";>;
 float mMieHeightM : CONTROLOBJECT<string name="(self)"; string item = "MieHeight-";>;
 float mMieTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
 float mMieTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
-
-float mCloudP : CONTROLOBJECT<string name="(self)"; string item = "Cloud+";>;
-float mCloudM : CONTROLOBJECT<string name="(self)"; string item = "Cloud-";>;
-float mCloudSpeedP : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed+";>;
-float mCloudSpeedM : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed-";>;
-float mCloudBiasP : CONTROLOBJECT<string name="(self)"; string item = "CloudBias+";>;
-float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias-";>;
-
-float mRayleightR : CONTROLOBJECT<string name="(self)"; string item = "RayleighR-";>;
-float mRayleightG : CONTROLOBJECT<string name="(self)"; string item = "RayleighG-";>;
-float mRayleightB : CONTROLOBJECT<string name="(self)"; string item = "RayleighB-";>;
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
+
+float mFogRangeP : CONTROLOBJECT<string name="(self)"; string item = "FogRange+";>;
+float mFogRangeM : CONTROLOBJECT<string name="(self)"; string item = "FogRange-";>;
+float mFogColorHP : CONTROLOBJECT<string name="(self)"; string item = "FogColorH+";>;
+float mFogColorSP : CONTROLOBJECT<string name="(self)"; string item = "FogColorS+";>;
+float mFogColorVP : CONTROLOBJECT<string name="(self)"; string item = "FogColorV+";>;
+float mFogColorVM : CONTROLOBJECT<string name="(self)"; string item = "FogColorV-";>;
 
 static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 
 static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
-static float mFogRange       = lerp(lerp(1, 10, mFogRangeP), 0.1, mFogRangeM);
-static float mMiePhase       = lerp(lerp(0.86, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
+static float mFogRange       = lerp(lerp(1, 20, mFogRangeP), 0.1, mFogRangeM);
+static float mMiePhase       = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
 static float mMieTurbidity   = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
 static float mRayleighHeight = lerp(lerp(8, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
-static float mCloudDensity   = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias      = lerp(lerp(0.1, 1.0, mCloudBiasP), 0, mCloudBiasM) * time;
-static float mCloudSpeed     = lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM) * time;
 
-static float3 mMieColor = float3(0.686, 0.678, 0.666) * LightSpecular;
-static float3 mRayleighColor = 1.0 - float3(mRayleightR, mRayleightG, mRayleightB);
+static float3 mMieColor = LightSpecular;
+static float3 mFogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(lerp(1, 2, mFogColorVP), 0, mFogColorVM)));
 
 static float2 ViewportOffset  = float2(0.5,0.5) / ViewportSize;
 static float2 ViewportOffset2 = float2(1.0,1.0) / ViewportSize;
 static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
-
-uniform bool use_texture;
-uniform bool use_subtexture;
-uniform bool use_spheremap;
-uniform bool use_toon;
-
-uniform bool opadd;

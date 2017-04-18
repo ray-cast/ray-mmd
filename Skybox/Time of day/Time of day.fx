@@ -4,7 +4,7 @@
 #include "shader/atmospheric.fxsub"
 #include "shader/cloud.fxsub"
 
-static const float3 sunScaling = 3000;
+static const float3 sunScaling = 2000;
 static const float3 sunTranslate = 80000;
 
 static const float3 moonScaling = 2000;
@@ -117,7 +117,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
 	setting.cloudTop = 8 * scaling;
@@ -144,7 +144,7 @@ float4 ScatteringWithCloudsPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 	setting.cloud = mCloudDensity;
 	setting.cloudBias = mCloudBias;
 	setting.cloudTop = 8 * scaling;

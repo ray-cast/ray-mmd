@@ -3,7 +3,7 @@
 #include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 sunScaling = 3000;
+static const float3 sunScaling = 2000;
 static const float3 sunTranslate = 80000;
 
 static const float3 moonScaling = 2000;
@@ -116,12 +116,7 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
-	setting.cloud = mCloudDensity;
-	setting.cloudBias = mCloudBias;
-	setting.cloudTop = 8 * scaling;
-	setting.cloudBottom = 5 * scaling;
-	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
+	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 

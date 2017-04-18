@@ -126,13 +126,13 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie / (4.0 * PI);
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh / (4.0 * PI);
+	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 sky = insctrTotalMie + insctrTotalRayleigh;
 	float3 cloud = cloudsMie * (insctrTotalRayleigh + insctrTotalMie);
 
-	float3 scattering = lerp(cloud, sky, exp(-0.0000002 * cloudsOpticalLength));
+	float3 scattering = lerp(cloud, sky, exp(-0.0000001 * cloudsOpticalLength));
 	scattering = lerp(sky, scattering, V.y * V.y);
 
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
