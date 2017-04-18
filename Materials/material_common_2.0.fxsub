@@ -790,28 +790,28 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 		#endif
 
 		#if ALBEDO_SUB_MAP_FROM == 3
-			float3 albedoSubColor = use_texture ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb : MaterialDiffuse.rgb;
+			float4 albedoSubColor = use_texture ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum) : MaterialDiffuse;
 		#elif ALBEDO_SUB_MAP_FROM == 4
-			float3 albedoSubColor = use_spheremap ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb : MaterialDiffuse.rgb;
+			float4 albedoSubColor = use_spheremap ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum) : MaterialDiffuse;
 		#elif ALBEDO_SUB_MAP_FROM == 5
-			float3 albedoSubColor = use_toon ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb : MaterialDiffuse.rgb;
+			float4 albedoSubColor = use_toon ? tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum) : MaterialDiffuse;
 		#elif ALBEDO_SUB_MAP_FROM == 7
-			float3 albedoSubColor = MaterialAmbient.rgb;
+			float4 albedoSubColor = MaterialAmbient;
 		#elif ALBEDO_SUB_MAP_FROM == 8
-			float3 albedoSubColor = MaterialSpecular.rgb;
+			float4 albedoSubColor = MaterialSpecular;
 		#elif ALBEDO_SUB_MAP_FROM == 9
 			#error Unsupported options 9.
 		#else
-			float3 albedoSubColor = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum).rgb;
+			float4 albedoSubColor = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum);
 		#endif
 		
 		#if ALBEDO_SUB_MAP_APPLY_SCALE == 1
-			albedoSubColor *= albedoSub;
+			albedoSubColor.rgb *= albedoSub;
 		#elif ALBEDO_SUB_MAP_APPLY_SCALE == 2
-			albedoSubColor = pow(albedoSubColor, albedoSub);
+			albedoSubColor.rgb = pow(albedoSubColor.rgb, albedoSub);
 		#endif
 	#else
-		float3 albedoSubColor = albedoSub;
+		float4 albedoSubColor = float4(albedoSub, 1);
 	#endif
 
 	#if ALBEDO_SUB_ENABLE == 1
@@ -822,6 +822,8 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 		albedo += albedoSubColor;
 	#elif ALBEDO_SUB_ENABLE == 4
 		albedo = ColorSynthesis(albedo, albedoSubColor);
+	#elif ALBEDO_SUB_ENABLE == 5
+		albedo = lerp(albedo, albedoSubColor.rgb, albedoSubColor.a);
 	#endif
 
 	return saturate(albedo);

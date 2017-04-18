@@ -42,6 +42,7 @@ const float2 albedoMapLoopNum = 1.0; // between float2(0, 0) ~ float2(inf, inf)
 // 2 : albedo ^ albedoSub
 // 3 : albedo + albedoSub
 // 4 : melanin
+// 5 : Alpha Blend
 #define ALBEDO_SUB_ENABLE 0
 #define ALBEDO_SUB_MAP_FROM 0 	 		 // see ALBEDO_MAP_FROM for more information.
 #define ALBEDO_SUB_MAP_UV_FLIP 0 		 // see ALBEDO_MAP_UV_FLIP for more information.
