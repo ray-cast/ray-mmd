@@ -24,7 +24,7 @@ Download :
 	- Added a Albedo sub map support
 	- Added a Bump map support
 	- Added a Specular map support
-	- Added a Material description with 2.0 version (It doesn't support old versions of material.fx)
+	- Added a Material description with 2.0 version (old materials still available in this version)
 	- Improved bloom
 	- Improved SSAO
 	- Improved Multiple Light Source
