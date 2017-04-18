@@ -32,11 +32,11 @@ float ComputePhaseMie(float theta, float g)
 	float rightTop = 1.0 + theta2;
 	float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * theta), 1.5);
 
-	return ((leftTop / leftBottom) * (rightTop / rightBottom));
+	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4 * PI);
 }
 
 float ComputePhaseRayleigh(float theta)
 {
 	float theta2 = theta * theta;
-	return theta2 * 0.75 + 0.75;
+	return (theta2 * 0.75 + 0.75) / (4 * PI);
 }

@@ -178,7 +178,7 @@ float4 GenDiffuseMapPS(
 
 	coord.y = 1 - coord.y;
 	float3 diffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord.xy / coord.w - float2(time / 1000, 0.0), 0, 0)));
-	return EncodeRGBT(irradiance / PI + diffuse * step(0.5, coord.y));
+	return EncodeRGBT(irradiance + diffuse * step(0.5, coord.y));
 }
 
 void EnvLightingVS(

@@ -54,7 +54,7 @@ static float3 mWaveLength    = float3(670e-9,620e-9,580e-9);
 
 static float mSunRadius      = lerp(lerp(1.0, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(5, 10, mSunRadianceP), 1.0, mSunRadianceM);
-static float mFogRange       = lerp(lerp(2, 10, mFogRangeP), 0.1, mFogRangeM);
+static float mFogRange       = lerp(lerp(2, 20, mFogRangeP), 0.1, mFogRangeM);
 static float mMiePhase       = lerp(lerp(0.86, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
 static float mMieTurbidity   = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
