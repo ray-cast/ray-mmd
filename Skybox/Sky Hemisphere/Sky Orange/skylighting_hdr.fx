@@ -59,7 +59,7 @@ float3 SampleSky(float3 N, float smoothness)
 	float3 color = 0;
 	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, pow2(smoothness))));
 	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, pow2(smoothness))));
-	return color;
+	return color / PI;
 }
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
@@ -81,7 +81,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
-	float3 prefilteredDiffuse = SampleSky(N, 0);
+	float3 prefilteredDiffuse = SampleSky(N, 0) * (1 - fresnel);
 	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
