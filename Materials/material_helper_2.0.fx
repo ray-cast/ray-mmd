@@ -183,6 +183,10 @@ const float  emissiveIntensity = 1.0; // between 0 ~ 100 and above
 const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Shading Material ID
+// What does curvature/opacity means?
+// You can see the UE4 docs for more information
+// https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html
+
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
