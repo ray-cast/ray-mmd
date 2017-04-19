@@ -94,7 +94,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);	
 	prefilteredSpeculr += DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2 - float2(time / 1000, 0.0), 0, mipLayer))) * saturate(worldNormal.y);
 
-	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff * saturate(1 - fresnel);
 
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)

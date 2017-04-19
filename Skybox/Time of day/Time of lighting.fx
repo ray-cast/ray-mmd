@@ -76,8 +76,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
 	float3 prefilteredSpeculr = GetSpecularColor(ComputeSphereCoord(R), mipLayer, fresnel, roughness);
 
-	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
-	
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff * saturate(1 - fresnel);
+
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
