@@ -12,7 +12,7 @@ float GhostAllBrightness = 10.0;
 // y = Camera scale
 // z = Offset
 // w = Brightness
-float4 GhostFlareParams = float4(1.8, 0.0, 0.0, 1.0);
+float4 GhostFlareParams = float4(1.8, 0.0, 0.0, 2.0);
 
 // x = Fixed scale
 // y = Camera scale

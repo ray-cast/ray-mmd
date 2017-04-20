@@ -99,7 +99,8 @@ float4 GhostImageVS(
 	out float4 oTexcoord1: TEXCOORD1,
 	uniform int index) : POSITION
 {
-	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + saturate(position.xy + 0.5) * 0.25;
+	oTexcoord0 = float2(index % 4, index / 4) * 0.25;
+	oTexcoord0 = oTexcoord0 + saturate(position.xy + 0.5) * 0.25;
 	oTexcoord1 = float4((index == LENSFLARE_INDEX ? LightSpecular : 1) * GhostParams[index].w * GhostAllBrightness, index);
 
 	return float4(GetGhostImagePos(position, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
