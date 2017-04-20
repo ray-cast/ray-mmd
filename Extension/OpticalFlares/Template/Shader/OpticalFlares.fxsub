@@ -4,8 +4,6 @@
 	static const float3 LightPosition = -LightDirection * 80000;
 #elif GHOST_MAP_TYPE == 1
 	static const float3 LightPosition = AcsPosition;
-#elif GHOST_MAP_TYPE == 2
-	static const float3 LightPosition = AcsBonePosition;
 #endif
 
 texture ScnMap : RENDERCOLORTARGET <
@@ -33,13 +31,6 @@ sampler GhostMapSamp = sampler_state
 
 int GhostCount = 16;
 int GhostIndex = 0;
-
-float4 GhostParams[16] = { 
-	float4(0.100, 1.0,-0.5, 1.0), float4(0.800, 0.0, 0.0, 1.0), float4(0.175, 1.0, 0.5, 1.0), float4(0.200, 1.0, 1.0, 0.5),
-	float4(0.225, 1.0, 1.5, 1.0), float4(0.250, 1.0, 2.0, 1.0), float4(0.275, 1.0, 2.5, 1.0), float4(0.300, 1.0, 3.0, 1.0), 
-	float4(0.325, 1.0, 3.5, 1.0), float4(0.350, 1.0, 4.0, 1.0), float4(0.375, 1.0, 4.5, 1.0), float4(0.400, 1.0, 5.0, 1.0),
-	float4(0.425, 1.0, 5.5, 1.0), float4(0.350, 1.0, 6.0, 1.0), float4(0.125, 1.0, 6.5, 1.0), float4(0.125, 1.0, 7.0, 1.0)
-};
 
 float luminance(float3 rgb)
 {
@@ -70,11 +61,7 @@ float3 ChromaticAberration(sampler source, float2 coord, float2 offset, int samp
 	return totalColor / totalWeight;
 }
 
-float4 LensflareVS(
-	in float4 position: POSITION, 
-	in float2 texcoord : TEXCOORD0, 
-	out float2 oTexcoord0: TEXCOORD0,
-	out float4 oTexcoord1: TEXCOORD1) : POSITION
+float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset, float index)
 {
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
 	screenPosition.xyz /= screenPosition.w;
@@ -84,17 +71,38 @@ float4 LensflareVS(
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
 
 	float2 posScale = float2(1, ViewportAspect);
-	posScale *= GhostParams[1].x * 2;
-	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostParams[1].y);
+	posScale *= scale;
+	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, scale2);
 
 	float2 pos = 0;
 	pos = position.xy * posScale;
-	pos += screenPosition.xy + deltaScreenPos.xy * GhostParams[1].z;
+	pos += screenPosition.xy + deltaScreenPos.xy * (index - 1) * 0.5 * offset;
 
+	return pos;
+}
+
+float4 LensflareVS(
+	in float4 position: POSITION, 
+	in float2 texcoord : TEXCOORD0, 
+	out float2 oTexcoord0: TEXCOORD0,
+	out float4 oTexcoord1: TEXCOORD1) : POSITION
+{
 	oTexcoord0 = texcoord;
-	oTexcoord1 = float4(LightSpecular * GhostParams[1].w, 0);
+	oTexcoord1 = float4(LightSpecular * GhostFlareParams.w, 0);
+	return float4(GetGhostImagePos(position, GhostFlareParams.x, GhostFlareParams.y, GhostFlareParams.z, 1), 0, 1);
+}
 
-	return float4(pos.xy, 0, 1);
+float4 GhostImageVS(
+	in float4 position: POSITION, 
+	in float2 texcoord : TEXCOORD0, 
+	out float2 oTexcoord0: TEXCOORD0,
+	out float4 oTexcoord1: TEXCOORD1,
+	uniform int index) : POSITION
+{
+	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + saturate(position.xy + 0.5) * 0.25;
+	oTexcoord1 = float4((index == LENSFLARE_INDEX ? LightSpecular : 1) * GhostParams[index].w * GhostAllBrightness, index);
+
+	return float4(GetGhostImagePos(position, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
 }
 
 float4 LensflarePS(
@@ -106,7 +114,7 @@ float4 LensflarePS(
 	screenPosition.xyz /= screenPosition.w;
 
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
-	deltaScreenPos *= float2(0.02,0.02);
+	deltaScreenPos *= 0.02;
 
 	float3 color = ChromaticAberration(LensFlareMapSamp, coord0, deltaScreenPos, 8).rgb * coord1.xyz;
 #if GHOST_MAP_TYPE == 0
@@ -115,34 +123,6 @@ float4 LensflarePS(
 	color = pow(color, 1.0 / 2.2);
 
 	return float4(color, luminance(color) * 0.5);
-}
-
-float4 GhostImageVS(
-	in float4 position: POSITION, 
-	in float2 texcoord : TEXCOORD0, 
-	out float2 oTexcoord0: TEXCOORD0,
-	out float4 oTexcoord1: TEXCOORD1,
-	uniform int index) : POSITION
-{
-	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
-	screenPosition.xyz /= screenPosition.w;
-
-	if (screenPosition.w < 0) return 0;
-
-	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
-
-	float2 posScale = float2(1, ViewportAspect);
-	posScale *= GhostParams[index].x;
-	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostParams[index].y);
-
-	float2 pos = 0;
-	pos = position.xy * posScale;
-	pos += screenPosition.xy + deltaScreenPos.xy * GhostParams[index].z;
-
-	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
-	oTexcoord1 = float4((index == 0 ? LightSpecular : 2) * GhostParams[index].w, index);
-
-	return float4(pos.xy, 0, 1);
 }
 
 float4 GhostImagePS(
@@ -157,7 +137,7 @@ float4 GhostImagePS(
 	deltaScreenPos *= float2(0.035,0.035);
 
 	float3 color = ChromaticAberration(GhostMapSamp, coord0, deltaScreenPos * lerp(0.2, 1, saturate(coord1.w / 16)), 24);
-	color *= coord1.xyz * 9;
+	color *= coord1.xyz;
 #if GHOST_MAP_TYPE == 0
 	color *= saturate(normalize(LightPosition).y);
 #endif
