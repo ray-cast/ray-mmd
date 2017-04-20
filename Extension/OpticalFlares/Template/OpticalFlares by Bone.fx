@@ -25,4 +25,4 @@ float4 GhostParams[16] = {
 	float4(0.425, 1.0, 1.0, 1.0), float4(0.450, 1.0, 1.0, 1.0), float4(0.475, 1.0, 1.0, 1.0), float4(0.500, 1.0, 1.0, 1.0)
 };
 
-#include "OpticalFlares.fxsub"
+#include "Shader/OpticalFlares.fxsub"
