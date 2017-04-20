@@ -135,9 +135,9 @@ float4 GhostImagePS(
 	screenPosition.xyz /= screenPosition.w;
 
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
-	deltaScreenPos *= float2(0.035,0.035);
+	deltaScreenPos *= 0.035;
 
-	float3 color = ChromaticAberration(GhostMapSamp, coord0, deltaScreenPos * lerp(0.2, 1, saturate(coord1.w / 16)), 24);
+	float3 color = ChromaticAberration(GhostMapSamp, coord0, deltaScreenPos * lerp(0.2, 0.4, saturate(coord1.w / 16)), 16);
 	color *= coord1.xyz;
 #if GHOST_MAP_TYPE == 0
 	color *= saturate(normalize(LightPosition).y);
