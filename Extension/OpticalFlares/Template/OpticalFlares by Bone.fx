@@ -25,4 +25,15 @@ float4 GhostParams[16] = {
 	float4(0.425, 1.0, 1.0, 1.0), float4(0.450, 1.0, 1.0, 1.0), float4(0.475, 1.0, 1.0, 1.0), float4(0.500, 1.0, 1.0, 1.0)
 };
 
+#define COLOR_SHIFT_ENABLE 1
+
+float4 GhostAllShift = float4(0.02, 0.035, 0.2, 1.0);
+
+float GhostShiftParams[16] = { 
+	1.0, 1.0, 1.0, 1.0,
+	1.0, 1.0, 1.0, 1.0, 
+	1.0, 1.0, 1.0, 1.0,
+	1.0, 1.0, 0.4, 0.5
+};
+
 #include "Shader/OpticalFlares.fxsub"
