@@ -11,7 +11,7 @@
 // R = Fixed Scale
 // G = Fixed Scale by camera
 // B = Accum Scale by ID
-float3 GhostAllScale = float3(0.125, 0.025, 0.5);
+float3 GhostAllScale = float3(0.125, 0.5, 0.025);
 
 // R = Fixed offset
 // G = Accum offset by ID
