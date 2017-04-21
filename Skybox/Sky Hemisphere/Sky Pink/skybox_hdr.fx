@@ -1,3 +1,4 @@
+#include "skybox.conf"
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 
@@ -23,8 +24,8 @@ static const float3 mTopColor = hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(le
 static const float3 mBottomColor = hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM)));
 static const float3 mMediumColor = hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM)));
 
-static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 0, mTopExponentM);
-static const float mBottomExponent = lerp(lerp(1, 4, mBottomExponentP), 0, mBottomExponentM);
+static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
+static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 #else
 static const float3 mTopColor = hsv2rgb(TopColor);
 static const float3 mBottomColor = hsv2rgb(BottomColor);
@@ -33,6 +34,12 @@ static const float3 mMediumColor = hsv2rgb(MediumColor);
 static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
 #endif
+
+float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
+
+static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
 void SkyboxVS(
 	in float4 Position   : POSITION,
@@ -45,7 +52,7 @@ void SkyboxVS(
 
 float4 SkyboxPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
-  	float3 V = normalize(viewdir);
+  	float3 V = mul(matTransform, normalize(viewdir));
 
   	float3 color = 0;
   	color = lerp(mMediumColor, mTopColor, pow(max(0, V.y), mTopExponent));
@@ -56,36 +63,18 @@ float4 SkyboxPS(in float3 viewdir : TEXCOORD0) : COLOR
 
 const float4 ClearColor = 0.0;
 
-technique MainTech<string MMDPass = "object";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=ClearColor;"
-	"Clear=Color;"
-	"Pass=DrawSkybox;";
->{
-	pass DrawSkybox {
-		AlphaBlendEnable = true; AlphaTestEnable = false;\
-		ZEnable = false; ZWriteEnable = false;\
-		SrcBlend = ONE; DestBlend = SRCALPHA;\
-		VertexShader = compile vs_3_0 SkyboxVS();
-		PixelShader  = compile ps_3_0 SkyboxPS();
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	> {\
+		pass DrawObject {\
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
+			VertexShader = compile vs_3_0 SkyboxVS();\
+			PixelShader  = compile ps_3_0 SkyboxPS();\
+		}\
 	}
-}
-technique MainTechSS<string MMDPass = "object_ss";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=ClearColor;"
-	"Clear=Color;"
-	"Pass=DrawSkybox;";
->{
-	pass DrawSkybox {
-		AlphaBlendEnable = true; AlphaTestEnable = false;\
-		ZEnable = false; ZWriteEnable = false;\
-		SrcBlend = ONE; DestBlend = SRCALPHA;\
-		VertexShader = compile vs_3_0 SkyboxVS();
-		PixelShader  = compile ps_3_0 SkyboxPS();
-	}
-}
+
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTec1, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTec<string MMDPass = "shadow";>{}
