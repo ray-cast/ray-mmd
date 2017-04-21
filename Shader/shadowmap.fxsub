@@ -27,33 +27,22 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples)
 	return saturate(shadow / (samples * samples));
 }
 
-float4 ShadowMapGenVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1) : POSITION
-{
-	oTexcoord0 = Texcoord.xyxy;
-	oTexcoord0.xy += ViewportOffset;
-	oTexcoord1 = GetProjConstant();
-	return Position;
-}
-
 float4 ShadowMapGenPS(
-	in float4 coord : TEXCOORD0,
-	in float4 projConstant : TEXCOORD1) : COLOR
+	in float2 coord : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1) : COLOR
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord.xy, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0));
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord.xy, 0, 0)).r);
+	float linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
 
-	float3 viewPosition = float3(projConstant.xy * coord.zw + projConstant.zw, 1) * linearDepth;
+	float3 view = normalize(viewdir);
+	float3 viewPosition = view * linearDepth / view.z;
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
 	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
