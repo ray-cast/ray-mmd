@@ -11,12 +11,12 @@ texture2D ScnMap2 : RENDERCOLORTARGET <
 >;
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
-	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+	MinFilter = POINT;   MagFilter = POINT;   MipFilter = NONE;
 	AddressU  = CLAMP;  AddressV = CLAMP;
 };
 sampler ScnSamp2 = sampler_state {
 	texture = <ScnMap2>;
-	MinFilter = LINEAR;   MagFilter = LINEAR;   MipFilter = NONE;
+	MinFilter = POINT;   MagFilter = POINT;   MipFilter = NONE;
 	AddressU  = WRAP;  AddressV = WRAP;
 };
 sampler NoiseMapSamp = sampler_state
@@ -28,21 +28,25 @@ sampler NoiseMapSamp = sampler_state
 float time : TIME;
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 
-static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
-static float2 ViewportOffset2 = (float2(1.0,1.0) / ViewportSize);
+static float2 ViewportOffset  = 0.5 / ViewportSize;
+static float2 ViewportOffset2 = 1.0 / ViewportSize;
+static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
 
-float mFilmGrain : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "FilmGrain"; >;
-float mFilmLine : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "FilmLine"; >;
-float mFilmLoop : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "FilmLoop"; >;
-float mFilmLoopX : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "FilmLoopX"; >;
-float mFilmLoopY : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "FilmLoopY"; >;
-float mDispersion : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "Dispersion"; >;
-float mDispersionRadius : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "DispersionRadius"; >;
-float mVignette : CONTROLOBJECT < string name="FilmGrainController.pmx"; string item = "Vignette"; >;
+float mFilmGrain : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmGrain";>;
+float mFilmLineX : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLineX";>;
+float mFilmLineY : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLineY";>;
+float mFilmLineFadeX : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLineFadeX";>;
+float mFilmLineFadeY : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLineFadeY";>;
+float mFilmLoop : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoop";>;
+float mFilmLoopX : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoopX";>;
+float mFilmLoopY : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoopY";>;
+float mDispersion : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "Dispersion";>;
+float mDispersionRadius : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "DispersionRadius";>;
+float mVignette : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "Vignette";>;
 
 float3 Overlay(float3 a, float3 b)
 {
-	return pow(abs(b), 2.2) < 0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
+	return pow(abs(b), 2.2)<0.5? 2 * a * b : 1.0 - 2 * (1.0 - a) * (1.0 - b);
 }
 
 float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
@@ -61,8 +65,19 @@ float3 AppleFilmGrain(float3 color, float2 coord, float exposure)
 
 float3 AppleFilmLine(float3 color, float2 coord, int2 screenPosition)
 {
-	bool pattern = fmod(screenPosition.y, 2.0) > 0 ? 1 : 0;
-	return lerp(color, 0, mFilmLine * pattern);
+	float pattenX = floor(mFilmLineX * 50) * 0.4;
+	float pattenY = floor(mFilmLineY * 50) * 0.4;
+	
+	float s1 = fmod(screenPosition.x, pattenX * 2);
+	float s2 = fmod(screenPosition.y, pattenY * 2);
+
+	s1 = step(pattenX, s1);
+	s2 = step(pattenY, s2);
+
+	s1 = lerp(s1, 1.0, mFilmLineFadeX);
+	s2 = lerp(s2, 1.0, mFilmLineFadeY);
+
+	return lerp(0, color, s1 * s2);
 }
 
 float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
@@ -107,7 +122,7 @@ float4 FimicLoopPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Pos
 	return float4(tex2Dlod(ScnSamp2, float4(coord * loop, 0, 0)));
 }
 
-float Script : STANDARDSGLOBAL <
+float Script : STANDARDSGLOBAL<
 	string ScriptOutput = "color";
 	string ScriptClass  = "scene";
 	string ScriptOrder  = "postprocess";
@@ -134,15 +149,15 @@ technique FimicGrain <
 	"RenderColorTarget=;"
 	"Pass=FimicLoop;"
 ;> {
-	pass FimicGrain < string Script= "Draw=Buffer;"; > {
+	pass FimicGrain<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 FimicGrainVS();
 		PixelShader  = compile ps_3_0 FimicGrainPS();
 	}
-	pass FimicLoop < string Script= "Draw=Buffer;"; > {
+	pass FimicLoop<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 FimicGrainVS();
 		PixelShader  = compile ps_3_0 FimicLoopPS();
 	}
