@@ -15,7 +15,7 @@ float3 GhostAllScale = float3(0.125, 0.025, 0.5);
 float2 GhostAllOffset = float2(0.0, 0.25);
 
 // r = Fixed Brightness, g = brightness by id
-float2 GhostAllBrightness = float2(10.0, 1.0);
+float2 GhostAllBrightness = float2(10.0, 0.0);
 
 // r = Fixed Flare shift
 // g = Fixed Ghost shift
@@ -32,7 +32,7 @@ float4 GhostFlareParams = float4(10, 0.0, 0.0, 2.0);
 // Control of single image params
 // float4(x, y, z, w) = float4(Fixed scale, Scale by camera, Offset, Brightness)
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(3.5, 0.0, 0.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 0.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
