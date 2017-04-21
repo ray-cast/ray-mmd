@@ -92,8 +92,8 @@ float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
 
 	float2 posScale = float2(1, ViewportAspect);
-	posScale *= (GhostAllScale.x + GhostAllScale.y * index) * scale;
-	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostAllScale.z * scale2);
+	posScale *= (GhostAllScale.x + GhostAllScale.z * index) * scale;
+	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostAllScale.y * scale2);
 
 	float2 pos = 0;
 	pos = position.xy * posScale;

@@ -8,29 +8,36 @@
 #define LENSFLARE_COLOR_SHIFT_ENABLE 1
 #define LENSFLARE_MAP_FILE "textures by 2gou/lensflare.png"
 
-// r = Fixed Scale, g = scale by id, b = scale by camera
+// R = Fixed Scale
+// G = Fixed Scale by camera
+// B = Accum Scale by ID
 float3 GhostAllScale = float3(0.125, 0.025, 0.5);
 
-// r = Fixed offset, g = offset by id
+// R = Fixed offset
+// G = Accum offset by ID
 float2 GhostAllOffset = float2(0.0, 0.25);
 
-// r = Fixed Brightness, g = brightness by id
+// R = Fixed Brightness
+// G = Accum Brightness by id
 float2 GhostAllBrightness = float2(10.0, 0.0);
 
-// r = Fixed Flare shift
-// g = Fixed Ghost shift
-// b = Begin ID shift
-// a = End ID shift
+// R = Fixed Flare shift
+// G = Fixed Ghost shift
+// B = Begin Accum shift by ID
+// A = End   Accum shift by ID
 float4 GhostAllColorShift = float4(0.02, 0.035, 0.2, 1.0);
 
-// r = Fixed scale
-// g = Camera scale
-// b = Offset
-// a = Brightness
+// R = Fixed scale
+// G = Fixed scale by camera
+// B = Fixed Offset
+// A = Fixed Brightness
 float4 GhostFlareParams = float4(10, 0.0, 0.0, 2.0);
 
-// Control of single image params
-// float4(x, y, z, w) = float4(Fixed scale, Scale by camera, Offset, Brightness)
+// Control of single ghost image params
+// R = Fixed scale
+// G = Fixed scale by camera
+// B = Fixed Offset
+// A = Fixed Brightness
 float4 GhostParams[16] = { 
 	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 0.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
@@ -38,6 +45,7 @@ float4 GhostParams[16] = {
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
 };
 
+// Control of single color shift params
 float GhostShiftParams[16] = { 
 	1.0, 1.0, 1.0, 1.0,
 	1.0, 1.0, 1.0, 1.0, 
