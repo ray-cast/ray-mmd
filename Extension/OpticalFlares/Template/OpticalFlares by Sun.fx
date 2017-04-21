@@ -8,8 +8,8 @@
 #define LENSFLARE_COLOR_SHIFT_ENABLE 1
 #define LENSFLARE_MAP_FILE "textures by 2gou/lensflare.png"
 
-// r = Fixed Scale, g = scale by id
-float2 GhostAllScale = float2(0.125, 0.025);
+// r = Fixed Scale, g = scale by id, b = scale by camera
+float3 GhostAllScale = float3(0.125, 0.025, 0.5);
 
 // r = Fixed offset, g = offset by id
 float2 GhostAllOffset = float2(0.0, 0.25);
