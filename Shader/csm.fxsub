@@ -1,13 +1,15 @@
-#if SHADOW_QUALITY == 1
-#   define SHADOW_MAP_SIZE 1024
-#elif SHADOW_QUALITY == 2
-#   define SHADOW_MAP_SIZE 2048
-#elif SHADOW_QUALITY == 3
-#   define SHADOW_MAP_SIZE 4096
-#elif SHADOW_QUALITY == 4
-#   define SHADOW_MAP_SIZE 8192
-#elif SHADOW_QUALITY == 5
-#   define SHADOW_MAP_SIZE 16384
+#ifndef SHADOW_MAP_SIZE
+#	if SHADOW_QUALITY == 1
+#		define SHADOW_MAP_SIZE 1024
+#	elif SHADOW_QUALITY == 2
+#		define SHADOW_MAP_SIZE 2048
+#	elif SHADOW_QUALITY == 3
+#		define SHADOW_MAP_SIZE 4096
+#	elif SHADOW_QUALITY == 4
+#		define SHADOW_MAP_SIZE 8192
+#	elif SHADOW_QUALITY == 5
+#		define SHADOW_MAP_SIZE 16384
+#	endif
 #endif
 
 #define WARP_RANGE 8
