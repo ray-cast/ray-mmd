@@ -5,7 +5,7 @@
 #define GHOST_MAP_FILE "textures/ghost.png"
 
 #define LENSFLARE_INDEX 1
-#define LENSFLARE__COLOR_SHIFT_ENABLE 1
+#define LENSFLARE_COLOR_SHIFT_ENABLE 1
 #define LENSFLARE_MAP_FILE "textures/lensflare.png"
 
 // r = Fixed Scale, g = scale by id

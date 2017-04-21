@@ -136,7 +136,7 @@ float4 LensflarePS(
 	in float2 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1) : COLOR
 {
-#if LENSFLARE__COLOR_SHIFT_ENABLE
+#if LENSFLARE_COLOR_SHIFT_ENABLE
 	float3 test = tex2Dlod(LensFlareMapSamp, float4(coord0, 0, 0)).rgb;
 	clip(test - 1e-5);
 
