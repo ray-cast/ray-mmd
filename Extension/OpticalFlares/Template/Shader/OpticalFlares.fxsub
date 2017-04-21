@@ -11,21 +11,21 @@ texture ScnMap : RENDERCOLORTARGET <
 >;
 sampler2D ScnSamp = sampler_state {
 	texture = <ScnMap>;
-	MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
+	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 texture LensFlareMap<string ResourceName = LENSFLARE_MAP_FILE; int Miplevels = 1;>;
 sampler LensFlareMapSamp = sampler_state
 {
 	Texture = LensFlareMap;
-	MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
+	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 texture GhostMap<string ResourceName = GHOST_MAP_FILE; int Miplevels = 1;>;
 sampler GhostMapSamp = sampler_state
 {
 	Texture = GhostMap;
-	MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
+	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
