@@ -12,7 +12,7 @@
 float2 GhostAllScale = float2(0.125, 0.025);
 
 // r = Fixed offset, g = offset by id
-float2 GhostAllOffset = float2(0.0, 0.5);
+float2 GhostAllOffset = float2(0.0, 0.25);
 
 // r = Fixed Brightness, g = brightness by id
 float2 GhostAllBrightness = float2(10.0, 1.0);
