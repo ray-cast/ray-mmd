@@ -121,8 +121,7 @@ float4 GhostImageVS(
 	out float4 oTexcoord2: TEXCOORD2,
 	uniform int index) : POSITION
 {
-	oTexcoord0 = float2(index % 4, index / 4) * 0.25;
-	oTexcoord0 = oTexcoord0 + saturate(position.xy + 0.5) * 0.25;
+	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
 	oTexcoord1 = float4(float2(index % 4, index / 4) * 0.25, float2(index % 4, index / 4) * 0.25 + 0.25);
 	oTexcoord2.rgb = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2.rgb += (index - LENSFLARE_INDEX) * GhostAllBrightness.y;
@@ -141,6 +140,7 @@ float4 LensflarePS(
 	clip(test - 1e-5);
 
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 	
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
@@ -166,6 +166,7 @@ float4 GhostImagePS(
 {
 #if GHOST_COLOR_SHIFT_ENABLE
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 	
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
