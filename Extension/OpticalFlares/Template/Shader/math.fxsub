@@ -34,3 +34,57 @@ float2 CoordToPos(float2 coord)
 	coord.y = 1 - coord.y;
 	return coord * 2 - 1;
 }
+
+float3x3 CreateRotationX(float theta)
+{
+	float c, s;
+	sincos(s, c, theta);
+	return float3x3(1, 0, 0, 0, c, -s, 0, s, c);
+}
+
+float3x3 CreateRotationY(float theta)
+{
+	float c, s;
+	sincos(s, c, theta);
+	return float3x3(c, 0, s, 0, 1, 0, -s, 0, c);
+}
+
+float3x3 CreateRotationZ(float theta)
+{
+	float c, s;
+	sincos(s, c, theta);
+	return float3x3(c, -s, 0, s, c, 0, 0, 0, 1);
+}
+
+float3x3 CreateRotate(float3 euler)
+{
+	float sj, cj, si, ci, sh, ch;
+
+	sincos(euler.x, si, ci);
+	sincos(euler.y, sj, cj);
+	sincos(euler.z, sh, ch);
+
+	float cc = ci * ch;
+	float cs = ci * sh;
+	float sc = si * ch;
+	float ss = si * sh;
+
+	float a1 = cj * ch;
+	float a2 = sj * sc - cs;
+	float a3 = sj * cc + ss;
+
+	float b1 = cj * sh;
+	float b2 = sj * ss + cc;
+	float b3 = sj * cs - sc;
+
+	float c1 = -sj;
+	float c2 = cj * si;
+	float c3 = cj * ci;
+	
+	float3x3 rotate;
+	rotate[0] = float3(a1, a2, a3);
+	rotate[1] = float3(b1, b2, b3);
+	rotate[2] = float3(c1, c2, c3);
+	
+	return rotate;
+}

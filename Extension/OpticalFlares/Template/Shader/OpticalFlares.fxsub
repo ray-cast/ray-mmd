@@ -1,7 +1,7 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 
-#if OCCLUSION_CULLING
+#if OCCLUSION_MAP_FROM
 #	include "shader/EyeAdaptation.fxsub"
 #endif
 
@@ -102,7 +102,7 @@ float4 LensflareVS(
 {
 	oTexcoord0 = texcoord;
 	oTexcoord1 = float4(LightSpecular * GhostFlareParams.z, 0);
-#if OCCLUSION_CULLING
+#if OCCLUSION_MAP_FROM
 	oTexcoord1 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
 #endif
 	return float4(GetGhostImagePos(position, GhostFlareParams.x, GhostFlareParams.y, 0, 1), 0, 1);
@@ -151,7 +151,7 @@ float4 GhostImageVS(
 	oTexcoord2.rgb = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2.rgb += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
 	oTexcoord2.rgb *= index == LENSFLARE_MAP_INDEX ? LightSpecular : 1;
-#if OCCLUSION_CULLING
+#if OCCLUSION_MAP_FROM
 	oTexcoord2.rgb *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
 #endif
 	oTexcoord2.a = index;
@@ -224,7 +224,7 @@ technique OpticalLight<
 		"Clear=Depth;"
 		"ScriptExternal=Color;"
 
-#if OCCLUSION_CULLING
+#if OCCLUSION_MAP_FROM
 		"RenderColorTarget=EyeLumAveMap;"
 		"Pass=EyeAdapation;"
 #endif
@@ -252,7 +252,7 @@ technique OpticalLight<
 		VertexShader = compile vs_3_0 ShowScreenVS();
 		PixelShader  = compile ps_3_0 ShowScreenPS();
 	}
-#if OCCLUSION_CULLING
+#if OCCLUSION_MAP_FROM
 	pass EyeAdapation<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

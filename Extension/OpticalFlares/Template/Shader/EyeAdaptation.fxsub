@@ -1,6 +1,6 @@
 texture EyeLumMap : OFFSCREENRENDERTARGET<
 	string Description = "Depth Map";
-	float2 ViewPortRatio = {0.25, 0.25};
+	int2 Dimensions = {256, 256};
 	string Format = "R16F";
 	float4 ClearColor = 0.0;
 	float ClearDepth = 1.0;

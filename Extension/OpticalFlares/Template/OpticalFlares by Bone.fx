@@ -60,7 +60,9 @@ float GhostShiftParams[16] = {
 	1.0, 1.0, 0.4, 0.5
 };
 
-#define OCCLUSION_CULLING 1
+// 0 : None
+// 1 : Calculate occlusion by create depth map tab
+#define OCCLUSION_MAP_FROM 1
 // R = FadeIn Speed
 // G = FadeOut Speed
 // B = Max occlusion distance
