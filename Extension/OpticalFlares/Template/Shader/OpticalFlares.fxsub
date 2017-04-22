@@ -143,7 +143,7 @@ float4 LensflarePS(
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 	
-	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
+	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.x;
 
 	float3 color = ChromaticAberration(LensFlareMapSamp, coord0, deltaScreenPos, 8).rgb * coord1.xyz;
@@ -169,7 +169,7 @@ float4 GhostImagePS(
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 	
-	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
+	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.y;
 	deltaScreenPos *= lerp(GhostAllColorShift.z, GhostAllColorShift.w, saturate(coord2.w / 16));
 	deltaScreenPos *= GhostShiftParams[int(coord2.w)];

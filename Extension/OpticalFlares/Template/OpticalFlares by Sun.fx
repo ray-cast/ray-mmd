@@ -25,7 +25,7 @@ float2 GhostAllBrightness = float2(10.0, 0.0);
 // G = Fixed Ghost shift
 // B = Begin Accum shift by ID
 // A = End   Accum shift by ID
-float4 GhostAllColorShift = float4(0.02, 0.05, 0.2, 1.0);
+float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 
 // R = Fixed scale
 // G = Fixed scale by camera
