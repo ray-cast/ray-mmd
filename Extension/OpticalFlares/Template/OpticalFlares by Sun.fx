@@ -60,4 +60,9 @@ float GhostShiftParams[16] = {
 	1.0, 1.0, 0.4, 0.5
 };
 
+#define OCCLUSION_CULLING 1
+// R = FadeIn
+// G = FadeOut
+static float2 fadeSpeed = float2(500, 1000);
+
 #include "Shader/OpticalFlares.fxsub"

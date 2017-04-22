@@ -1,6 +1,10 @@
 #include "shader/math.fxsub"
 #include "shader/common.fxsub"
 
+#if OCCLUSION_CULLING
+#	include "shader/EyeAdaptation.fxsub"
+#endif
+
 #if FOLLOW_POSITION == 0
 	static const float3 LightPosition = -LightDirection * 80000;
 #elif FOLLOW_POSITION == 1
@@ -74,7 +78,7 @@ float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
 	screenPosition.xyz /= screenPosition.w;
 
-	if (screenPosition.w < 0) return 0;
+	if (screenPosition.w < 1e-5) return 0;
 
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
 
@@ -98,6 +102,9 @@ float4 LensflareVS(
 {
 	oTexcoord0 = texcoord;
 	oTexcoord1 = float4(LightSpecular * GhostFlareParams.z, 0);
+#if OCCLUSION_CULLING
+	oTexcoord1 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
+#endif
 	return float4(GetGhostImagePos(position, GhostFlareParams.x, GhostFlareParams.y, 0, 1), 0, 1);
 }
 
@@ -144,6 +151,9 @@ float4 GhostImageVS(
 	oTexcoord2.rgb = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2.rgb += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
 	oTexcoord2.rgb *= index == LENSFLARE_MAP_INDEX ? LightSpecular : 1;
+#if OCCLUSION_CULLING
+	oTexcoord2.rgb *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
+#endif
 	oTexcoord2.a = index;
 
 	return float4(GetGhostImagePos(position, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
@@ -214,13 +224,20 @@ technique OpticalLight<
 		"Clear=Depth;"
 		"ScriptExternal=Color;"
 
+#if OCCLUSION_CULLING
+		"RenderColorTarget=EyeLumAveMap;"
+		"Pass=EyeAdapation;"
+#endif
+
 		"RenderColorTarget=;"
 		"Clear=Color;"
 		"Clear=Depth;"
 		"Pass=ShowScreen;"
+		
 #if LENSFLARE_MAP_FROM
 		"Pass=GenLensflare;"
 #endif
+
 #if GHOST_MAP_FROM
 		"LoopByCount=GhostCount;"
 		"LoopGetIndex=GhostIndex;"
@@ -235,6 +252,14 @@ technique OpticalLight<
 		VertexShader = compile vs_3_0 ShowScreenVS();
 		PixelShader  = compile ps_3_0 ShowScreenPS();
 	}
+#if OCCLUSION_CULLING
+	pass EyeAdapation<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 EyeAdapationVS();
+		PixelShader  = compile ps_3_0 EyeAdapationPS(LightPosition, fadeSpeed);
+	}
+#endif
 #if LENSFLARE_MAP_FROM
 	pass GenLensflare<string Script= "Draw=Buffer;";>
 	{

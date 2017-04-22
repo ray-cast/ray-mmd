@@ -22,3 +22,15 @@ float4 linear2srgb(float4 c)
 {
 	return float4(linear2srgb(c.rgb), c.a);
 }
+
+float2 PosToCoord(float2 position)
+{
+	position = position * 0.5 + 0.5;
+	return float2(position.x, 1 - position.y);
+}
+
+float2 CoordToPos(float2 coord)
+{
+	coord.y = 1 - coord.y;
+	return coord * 2 - 1;
+}
