@@ -1,3 +1,4 @@
+#include "shader/math.fxsub"
 #include "shader/common.fxsub"
 
 #if FOLLOW_POSITION == 0
@@ -42,34 +43,6 @@ sampler2D ScnSamp = sampler_state {
 		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
 #endif
-
-int GhostCount = 16;
-int GhostIndex = 0;
-
-float luminance(float3 rgb)
-{
-	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
-}
-
-float3 srgb2linear(float3 rgb)
-{
-	return pow(rgb, 2.2);
-}
-
-float4 srgb2linear(float4 c)
-{
-	return float4(srgb2linear(c.rgb), c.a);
-}
-
-float3 linear2srgb(float3 srgb)
-{
-	return pow(srgb, 1.0 / 2.2);
-}
-
-float4 linear2srgb(float4 c)
-{
-	return float4(linear2srgb(c.rgb), c.a);
-}
 
 float3 SampleSpectrum(float x)
 {
@@ -219,6 +192,9 @@ float4 ShowScreenPS(in float2 coord: TEXCOORD0) : COLOR
 	return tex2Dlod(ScnSamp, float4(coord, 0, 0));
 }
 
+int GhostCount = 16;
+int GhostIndex = 0;
+
 float4 ClearColor = 0.0;
 float ClearDepth  = 1.0;
 
@@ -254,7 +230,7 @@ technique OpticalLight<
 ;>{
 	pass ShowScreen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
 		CULLMODE = NONE;
 		VertexShader = compile vs_3_0 ShowScreenVS();
 		PixelShader  = compile ps_3_0 ShowScreenPS();

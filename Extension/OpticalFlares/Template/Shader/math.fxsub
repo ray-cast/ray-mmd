@@ -1,0 +1,24 @@
+float luminance(float3 rgb)
+{
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+float3 srgb2linear(float3 rgb)
+{
+	return pow(rgb, 2.2);
+}
+
+float4 srgb2linear(float4 c)
+{
+	return float4(srgb2linear(c.rgb), c.a);
+}
+
+float3 linear2srgb(float3 srgb)
+{
+	return pow(srgb, 1.0 / 2.2);
+}
+
+float4 linear2srgb(float4 c)
+{
+	return float4(linear2srgb(c.rgb), c.a);
+}
