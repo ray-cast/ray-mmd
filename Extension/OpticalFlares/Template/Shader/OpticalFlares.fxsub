@@ -11,10 +11,11 @@
 	static const float3 LightPosition = AcsPosition;
 #endif
 
-texture ScnMap : RENDERCOLORTARGET <
+texture ScnMap : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A2B10G10R10";
 >;
-sampler2D ScnSamp = sampler_state {
+sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
 	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
@@ -230,10 +231,7 @@ technique OpticalLight<
 		"Pass=EyeAdapation;"
 #endif
 
-		"RenderColorTarget=;"
-		"Clear=Color;"
-		"Clear=Depth;"
-		"Pass=ShowScreen;"
+		"RenderColorTarget=ScnMap;"
 		
 #if LENSFLARE_MAP_FROM
 		"Pass=GenLensflare;"
@@ -245,6 +243,11 @@ technique OpticalLight<
 		"Pass=GenGhostImage;"
 		"LoopEnd=;"
 #endif
+
+		"RenderColorTarget=;"
+		"Clear=Color;"
+		"Clear=Depth;"
+		"Pass=ShowScreen;"
 ;>{
 	pass ShowScreen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
