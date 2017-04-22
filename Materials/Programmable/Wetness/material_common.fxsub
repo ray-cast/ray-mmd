@@ -1125,7 +1125,7 @@ float3 GetEmissiveColor(float2 coord)
 		coord = 1 - coord;
 	#endif
 
-	#if EMISSIVE_MAP_FROM == 1 || EMISSIVE_MAP_FROM == 2
+	#if EMISSIVE_MAP_FROM == 1 || EMISSIVE_MAP_FROM == 2 || EMISSIVE_MAP_FROM == 6
 		float4 emissiveTexCol = srgb2linear(tex2D(EmissiveMapSamp, coord * emissiveMapLoopNum));
 		float3 emissiveColor = lerp(0, emissiveTexCol.rgb, emissiveTexCol.a);
 	#elif EMISSIVE_MAP_FROM == 3
