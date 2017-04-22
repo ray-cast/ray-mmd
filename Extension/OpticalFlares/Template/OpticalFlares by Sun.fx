@@ -1,12 +1,28 @@
 // 0 : Fetch Position from Sun
 // 1 : Fetch Position from X/Y/Z or Bone but you need to set your follow bone
-#define GHOST_MAP_TYPE 0
-#define GHOST_COLOR_SHIFT_ENABLE 1
-#define GHOST_MAP_FILE "textures by 2gou/ghost.png"
+#define FOLLOW_POSITION 0
 
-#define LENSFLARE_INDEX 1
-#define LENSFLARE_COLOR_SHIFT_ENABLE 1
+// 0 : None
+// 1 : File path
+#define LENSFLARE_MAP_FROM 1
+// 0 : Normal
+// 1 : Chromatic Aberration
+#define LENSFLARE_MAP_TYPE 1
+#define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
 #define LENSFLARE_MAP_FILE "textures by 2gou/lensflare.png"
+
+// R = Fixed scale
+// G = Fixed scale by camera
+// B = Fixed Brightness
+float3 GhostFlareParams = float3(10, 0.0, 2.0);
+
+// 0 : None
+// 1 : File path
+#define GHOST_MAP_FROM 1
+// 0 : Normal
+// 1 : Chromatic Aberration
+#define GHOST_MAP_TYPE 1
+#define GHOST_MAP_FILE "textures by 2gou/ghost.png"
 
 // R = Fixed Scale
 // G = Fixed Scale by camera
@@ -27,25 +43,19 @@ float2 GhostAllBrightness = float2(10.0, 0.0);
 // A = End   Accum shift by ID
 float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 
-// R = Fixed scale
-// G = Fixed scale by camera
-// B = Fixed Offset
-// A = Fixed Brightness
-float4 GhostFlareParams = float4(10, 0.0, 0.0, 2.0);
-
 // Control of single ghost image params
 // R = Fixed scale
 // G = Fixed scale by camera
 // B = Fixed Offset
 // A = Fixed Brightness
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 0.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 1.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
 };
 
-// Control of single color shift params
+// Control of single chromatic aberration params
 float GhostShiftParams[16] = { 
 	1.0, 1.0, 1.0, 1.0,
 	1.0, 1.0, 1.0, 1.0, 

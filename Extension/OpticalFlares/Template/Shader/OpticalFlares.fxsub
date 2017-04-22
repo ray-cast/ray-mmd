@@ -1,8 +1,8 @@
 #include "shader/common.fxsub"
 
-#if GHOST_MAP_TYPE == 0
+#if FOLLOW_POSITION == 0
 	static const float3 LightPosition = -LightDirection * 80000;
-#elif GHOST_MAP_TYPE == 1
+#elif FOLLOW_POSITION == 1
 	static const float3 LightPosition = AcsPosition;
 #endif
 
@@ -14,6 +14,8 @@ sampler2D ScnSamp = sampler_state {
 	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+
+#if LENSFLARE_MAP_FROM
 texture LensFlareMap<string ResourceName = LENSFLARE_MAP_FILE; int Miplevels = 1;>;
 sampler LensFlareMapSamp = sampler_state
 {
@@ -21,6 +23,9 @@ sampler LensFlareMapSamp = sampler_state
 	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+#endif
+
+#if GHOST_MAP_FROM
 texture GhostMap<string ResourceName = GHOST_MAP_FILE; int Miplevels = 1;>;
 sampler GhostMapSamp = sampler_state
 {
@@ -28,6 +33,7 @@ sampler GhostMapSamp = sampler_state
 	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+#endif
 
 int GhostCount = 16;
 int GhostIndex = 0;
@@ -97,11 +103,12 @@ float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset
 
 	float2 pos = 0;
 	pos = position.xy * posScale;
-	pos += screenPosition.xy + deltaScreenPos.xy * (GhostAllOffset.x + (index - LENSFLARE_INDEX) * GhostAllOffset.y) * offset;
+	pos += screenPosition.xy + deltaScreenPos.xy * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
 
 	return pos;
 }
 
+#if LENSFLARE_MAP_FROM
 float4 LensflareVS(
 	in float4 position: POSITION, 
 	in float2 texcoord : TEXCOORD0, 
@@ -109,33 +116,15 @@ float4 LensflareVS(
 	out float4 oTexcoord1: TEXCOORD1) : POSITION
 {
 	oTexcoord0 = texcoord;
-	oTexcoord1 = float4(LightSpecular * GhostFlareParams.w, 0);
-	return float4(GetGhostImagePos(position, GhostFlareParams.x, GhostFlareParams.y, GhostFlareParams.z, 1), 0, 1);
-}
-
-float4 GhostImageVS(
-	in float4 position: POSITION, 
-	in float2 texcoord : TEXCOORD0, 
-	out float2 oTexcoord0: TEXCOORD0,
-	out float4 oTexcoord1: TEXCOORD1,
-	out float4 oTexcoord2: TEXCOORD2,
-	uniform int index) : POSITION
-{
-	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
-	oTexcoord1 = float4(float2(index % 4, index / 4) * 0.25, float2(index % 4, index / 4) * 0.25 + 0.25);
-	oTexcoord2.rgb = GhostParams[index].w * GhostAllBrightness.x;
-	oTexcoord2.rgb += (index - LENSFLARE_INDEX) * GhostAllBrightness.y;
-	oTexcoord2.rgb *= index == LENSFLARE_INDEX ? LightSpecular : 1;
-	oTexcoord2.a = index;
-
-	return float4(GetGhostImagePos(position, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
+	oTexcoord1 = float4(LightSpecular * GhostFlareParams.z, 0);
+	return float4(GetGhostImagePos(position, GhostFlareParams.x, GhostFlareParams.y, 0, 1), 0, 1);
 }
 
 float4 LensflarePS(
 	in float2 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1) : COLOR
 {
-#if LENSFLARE_COLOR_SHIFT_ENABLE
+#if LENSFLARE_MAP_TYPE
 	float3 test = tex2Dlod(LensFlareMapSamp, float4(coord0, 0, 0)).rgb;
 	clip(test - 1e-5);
 
@@ -151,12 +140,32 @@ float4 LensflarePS(
 	float3 color = srgb2linear(tex2Dlod(LensFlareMapSamp, float4(coord0, 0, 0)).rgb) * coord1.xyz;
 #endif
 
-#if GHOST_MAP_TYPE == 0
+#if FOLLOW_POSITION == 0
 	color *= saturate(normalize(LightPosition).y);
 #endif
 	color = linear2srgb(color);
 
 	return float4(color, luminance(color) * 0.5);
+}
+#endif
+
+#if GHOST_MAP_FROM
+float4 GhostImageVS(
+	in float4 position: POSITION, 
+	in float2 texcoord : TEXCOORD0, 
+	out float2 oTexcoord0: TEXCOORD0,
+	out float4 oTexcoord1: TEXCOORD1,
+	out float4 oTexcoord2: TEXCOORD2,
+	uniform int index) : POSITION
+{
+	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
+	oTexcoord1 = float4(float2(index % 4, index / 4) * 0.25, float2(index % 4, index / 4) * 0.25 + 0.25);
+	oTexcoord2.rgb = GhostParams[index].w * GhostAllBrightness.x;
+	oTexcoord2.rgb += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
+	oTexcoord2.rgb *= index == LENSFLARE_MAP_INDEX ? LightSpecular : 1;
+	oTexcoord2.a = index;
+
+	return float4(GetGhostImagePos(position, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
 }
 
 float4 GhostImagePS(
@@ -164,7 +173,7 @@ float4 GhostImagePS(
 	in float4 coord1: TEXCOORD1,
 	in float4 coord2 : TEXCOORD2) : COLOR
 {
-#if GHOST_COLOR_SHIFT_ENABLE
+#if GHOST_MAP_TYPE
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
@@ -179,13 +188,14 @@ float4 GhostImagePS(
 	float3 color = srgb2linear(tex2Dlod(GhostMapSamp, float4(coord0, 0, 0)).rgb) * coord2.xyz;
 #endif
 
-#if GHOST_MAP_TYPE == 0
+#if FOLLOW_POSITION == 0
 	color *= saturate(normalize(LightPosition).y);
 #endif
 	color = linear2srgb(color);
 
 	return float4(color, luminance(color) * 0.5);
 }
+#endif
 
 float4 ShowScreenVS(
 	in float4 position: POSITION,
@@ -224,13 +234,15 @@ technique OpticalLight<
 		"Clear=Color;"
 		"Clear=Depth;"
 		"Pass=ShowScreen;"
-
+#if LENSFLARE_MAP_FROM
 		"Pass=GenLensflare;"
-
+#endif
+#if GHOST_MAP_FROM
 		"LoopByCount=GhostCount;"
 		"LoopGetIndex=GhostIndex;"
 		"Pass=GenGhostImage;"
 		"LoopEnd=;"
+#endif
 ;>{
 	pass ShowScreen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -239,6 +251,7 @@ technique OpticalLight<
 		VertexShader = compile vs_3_0 ShowScreenVS();
 		PixelShader  = compile ps_3_0 ShowScreenPS();
 	}
+#if LENSFLARE_MAP_FROM
 	pass GenLensflare<string Script= "Draw=Buffer;";>
 	{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
@@ -248,6 +261,8 @@ technique OpticalLight<
 		VertexShader = compile vs_3_0 LensflareVS();
 		PixelShader  = compile ps_3_0 LensflarePS();
 	}
+#endif
+#if GHOST_MAP_FROM
 	pass GenGhostImage<string Script= "Draw=Buffer;";>
 	{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
@@ -257,4 +272,5 @@ technique OpticalLight<
 		VertexShader = compile vs_3_0 GhostImageVS(GhostIndex);
 		PixelShader  = compile ps_3_0 GhostImagePS();
 	}
+#endif
 }
