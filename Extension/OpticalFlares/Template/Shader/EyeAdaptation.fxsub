@@ -1,0 +1,71 @@
+texture EyeLumMap : OFFSCREENRENDERTARGET<
+	string Description = "Depth Map";
+	float2 ViewPortRatio = {0.25, 0.25};
+	string Format = "R16F";
+	float4 ClearColor = 0.0;
+	float ClearDepth = 1.0;
+	string DefaultEffect =
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"*.pmx=Shader/Depth.fx;"
+		"*.pmd=Shader/Depth.fx;"
+		"*.x=hide;";
+>;
+sampler EyeLumMapSamp = sampler_state {
+	texture = <EyeLumMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+texture EyeLumAveMap : RENDERCOLORTARGET<
+	int2 Dimensions = {1, 1};
+	string Format = "R16F";
+>;
+sampler EyeLumAveMapSamp = sampler_state {
+	texture = <EyeLumAveMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+float CalcAdaptedLum(float adaptedLum, float lum, float speed, float delta)
+{
+    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, speed * delta)));
+}
+
+float4 EyeAdapationVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	return Position;
+}
+
+float4 EyeAdapationPS(
+	in float2 coord: TEXCOORD0, 
+	uniform float3 lightPosition,
+	uniform float3 cameraPosition,
+	uniform float3 fadeSpeed) : COLOR
+{
+	float4 proj = mul(float4(lightPosition, 1), matViewProject);
+	proj.xy = PosToCoord(proj.xy / proj.w);
+
+	float mask =  tex2Dlod(EyeLumMapSamp, float4(proj.xy, 0, 0)).r;
+	float maskDistance = min(fadeSpeed.z, distance(cameraPosition, lightPosition));
+
+	float lum = (mask < maskDistance && mask > 0.0) ? 0 : 1;
+	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
+
+	if (!all(isfinite(lum)))
+		lum = 1.0f;
+
+	if (!all(isfinite(adaptedLum)))
+		adaptedLum = 1.0f;
+
+	float speed = lum > adaptedLum ? fadeSpeed.x : fadeSpeed.y;
+
+	return CalcAdaptedLum(adaptedLum, lum, speed, elapsed);
+}

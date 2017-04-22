@@ -257,7 +257,7 @@ technique OpticalLight<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 EyeAdapationVS();
-		PixelShader  = compile ps_3_0 EyeAdapationPS(LightPosition, OcclusionParams);
+		PixelShader  = compile ps_3_0 EyeAdapationPS(LightPosition, CameraPosition, OcclusionParams);
 	}
 #endif
 #if LENSFLARE_MAP_FROM
