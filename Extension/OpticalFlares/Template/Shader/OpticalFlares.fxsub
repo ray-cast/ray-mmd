@@ -193,7 +193,7 @@ float4 ShowScreenVS(
 	in float4 texcoord : TEXCOORD,
 	out float4 oTexcoord : TEXCOORD0) : POSITION
 {
-	oTexcoord = texcoord;
+	oTexcoord = texcoord + ViewportOffset2.xyxy;
 	return position;
 }
 
