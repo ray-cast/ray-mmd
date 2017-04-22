@@ -89,6 +89,7 @@ float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset
 	float2 pos = 0;
 	pos = position.xy * posScale;
 	pos += screenPosition.xy + deltaScreenPos.xy * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
+	pos -= deltaScreenPos.xy * index * GhostAllOffset.z;
 
 	return pos;
 }

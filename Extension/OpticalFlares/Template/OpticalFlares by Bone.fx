@@ -23,21 +23,22 @@ float3 GhostFlareParams = float3(10, 0.0, 2.0);
 
 // R = Fixed Scale
 // G = Fixed Scale by camera
-// B = Accum Scale by ID
+// B = Increase Scale by ID
 float3 GhostAllScale = float3(0.125, 0.25, 0.025);
 
 // R = Fixed offset
-// G = Accum offset by ID
-float2 GhostAllOffset = float2(0.0, 0.25);
+// G = Increase offset by ID
+// B = Decrease offset by ID
+float3 GhostAllOffset = float3(0.0, 0.25, 0.02);
 
 // R = Fixed Brightness
-// G = Accum Brightness by id
+// G = Increase Brightness by ID
 float2 GhostAllBrightness = float2(10.0, 0.0);
 
 // R = Fixed Flare shift
 // G = Fixed Ghost shift
-// B = Begin Accum shift by ID
-// A = End   Accum shift by ID
+// B = Begin Increase shift by ID
+// A = End   Increase shift by ID
 float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 
 // Control of single ghost image params
