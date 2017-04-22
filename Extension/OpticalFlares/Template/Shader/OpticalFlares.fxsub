@@ -50,7 +50,7 @@ float3 SampleSpectrum(float x)
 	return saturate(float3(-t, 1 - abs(t), t));
 }
 
-float3 ChromaticAberration(sampler source, float2 coord, float2 offset, int samples, float4 limits = float4(0,0,1,1))
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset, int samples, float4 limits = float2(0,0,1,1))
 {
 	float3 color = 0.0;
 	float3 weight = 0.0;
@@ -93,8 +93,8 @@ float2 GetGhostImagePos(float4 position, float scale, float scale2, float offset
 float4 LensflareVS(
 	in float4 position : POSITION, 
 	in float2 texcoord : TEXCOORD0, 
-	out float2 oTexcoord0: TEXCOORD0,
-	out float4 oTexcoord1: TEXCOORD1) : POSITION
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
 	oTexcoord0 = texcoord;
 	oTexcoord1 = float4(LightSpecular * GhostFlareParams.z, 0);
@@ -112,7 +112,7 @@ float4 LensflarePS(
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
-	
+
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.x;
 
@@ -132,11 +132,11 @@ float4 LensflarePS(
 
 #if GHOST_MAP_FROM
 float4 GhostImageVS(
-	in float4 position: POSITION, 
+	in float4 position : POSITION, 
 	in float2 texcoord : TEXCOORD0, 
-	out float2 oTexcoord0: TEXCOORD0,
-	out float4 oTexcoord1: TEXCOORD1,
-	out float4 oTexcoord2: TEXCOORD2,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2,
 	uniform int index) : POSITION
 {
 	oTexcoord0 = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
@@ -150,15 +150,15 @@ float4 GhostImageVS(
 }
 
 float4 GhostImagePS(
-	in float2 coord0: TEXCOORD0,
-	in float4 coord1: TEXCOORD1,
+	in float2 coord0 : TEXCOORD0,
+	in float4 coord1 : TEXCOORD1,
 	in float4 coord2 : TEXCOORD2) : COLOR
 {
 #if GHOST_MAP_TYPE
 	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
-	
+
 	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.y;
 	deltaScreenPos *= lerp(GhostAllColorShift.z, GhostAllColorShift.w, saturate(coord2.w / 16));
@@ -179,8 +179,8 @@ float4 GhostImagePS(
 #endif
 
 float4 ShowScreenVS(
-	in float4 position: POSITION,
-	in float4 texcoord: TEXCOORD,
+	in float4 position : POSITION,
+	in float4 texcoord : TEXCOORD,
 	out float4 oTexcoord : TEXCOORD0) : POSITION
 {
 	oTexcoord = texcoord;
