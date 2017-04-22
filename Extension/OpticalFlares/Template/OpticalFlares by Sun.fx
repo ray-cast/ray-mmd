@@ -10,7 +10,7 @@
 // 1 : Chromatic Aberration
 #define LENSFLARE_MAP_TYPE 1
 #define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
-#define LENSFLARE_MAP_FILE "textures by 2gou/lensflare.png"
+#define LENSFLARE_MAP_FILE "textures by 2gou/lensflare_01.png"
 
 // R = Fixed scale
 // G = Fixed scale by camera
