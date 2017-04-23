@@ -85,12 +85,12 @@ float2 GetGhostImagePos(float2 position, float scale, float scale2, float offset
 
 	float2 posScale = float2(1, ViewportAspect);
 	posScale *= (GhostAllScale.x + GhostAllScale.z * index) * scale;
-	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostAllScale.y * scale2);
+	posScale *= lerp(0.5, dot(deltaScreenPos, deltaScreenPos) + 0.5, GhostAllScale.y * scale2);
 
 	float2 pos = 0;
 	pos = position * posScale;
-	pos += screenPosition.xy + deltaScreenPos.xy * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
-	pos -= deltaScreenPos.xy * index * GhostAllOffset.z;
+	pos += screenPosition.xy + deltaScreenPos * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
+	pos -= deltaScreenPos * index * GhostAllOffset.z;
 
 	return pos;
 }
@@ -106,12 +106,12 @@ float2 GetGhostImageBillboard(float2 position, float scale, float scale2, float 
 
 	float2 posScale = float2(1, ViewportAspect);
 	posScale *= (GhostAllScale.x + GhostAllScale.z * index) * scale;
-	posScale *= lerp(0.5, dot(deltaScreenPos.xy, deltaScreenPos.xy) + 0.5, GhostAllScale.y * scale2);
+	posScale *= lerp(0.5, dot(deltaScreenPos, deltaScreenPos) + 0.5, GhostAllScale.y * scale2);
 
 	float2 pos = 0;
 	pos = CreateBillboard(position, screenPosition.xy) * posScale;
-	pos += screenPosition.xy + deltaScreenPos.xy * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
-	pos -= deltaScreenPos.xy * index * GhostAllOffset.z;
+	pos += screenPosition.xy + deltaScreenPos * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
+	pos -= deltaScreenPos * index * GhostAllOffset.z;
 
 	return pos;
 }
@@ -127,7 +127,7 @@ float4 LensflareVS(
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 
-	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
+	float2 deltaScreenPos = -normalize(screenPosition.xy).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.x;
 #if LENSFLARE_MAP_TYPE == 2 || LENSFLARE_MAP_TYPE == 3
 	deltaScreenPos = CreateBillboardInverse(deltaScreenPos, screenPosition.xy);
@@ -180,7 +180,7 @@ float4 GhostImageVS(
 	screenPosition.x = 1 - screenPosition.x;
 	screenPosition.xyz /= screenPosition.w;
 
-	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy * float2(ViewportAspect, 1);
+	float2 deltaScreenPos = -normalize(screenPosition.xy).xy * float2(ViewportAspect, 1);
 	deltaScreenPos *= GhostAllColorShift.y;
 	deltaScreenPos *= lerp(GhostAllColorShift.z, GhostAllColorShift.w, saturate(index / 16.0));
 	deltaScreenPos *= GhostShiftParams[index];
@@ -195,7 +195,7 @@ float4 GhostImageVS(
 
 	oTexcoord2 = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2 += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
-	oTexcoord2 *= index == LENSFLARE_MAP_INDEX ? LightSpecular : 1;
+	oTexcoord2 *= LightSpecular;
 #if OCCLUSION_MAP_FROM
 	oTexcoord2 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
 #endif
