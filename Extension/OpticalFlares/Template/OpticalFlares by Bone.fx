@@ -12,16 +12,16 @@
 // 3 : Chromatic Aberration & Auto Rotation
 #define LENSFLARE_MAP_TYPE 3
 #define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
-#define LENSFLARE_MAP_FILE "textures by 2gou/lensflare_01.png"
+#define LENSFLARE_MAP_FILE "textures/lensflare.png"
 
 // R = Fixed scale
 // G = Fixed scale by camera
 // B = Fixed Brightness
-float3 GhostFlareParams = float3(10, 0.0, 2.0);
+float3 GhostFlareParams = float3(5.0, 0.0, 2.0);
 
 #define GHOST_MAP_FROM 1	// see LENSFLARE_MAP_FROM
 #define GHOST_MAP_TYPE 3	// see LENSFLARE_MAP_TYPE
-#define GHOST_MAP_FILE "textures by 2gou/ghost_03.png"
+#define GHOST_MAP_FILE "textures/ghost.png"
 
 // R = Fixed Scale
 // G = Fixed Scale by camera
@@ -49,7 +49,7 @@ float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 // B = Fixed Offset
 // A = Fixed Brightness
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 1.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 0.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
@@ -60,7 +60,7 @@ float GhostShiftParams[16] = {
 	1.0, 1.0, 1.0, 1.0,
 	1.0, 1.0, 1.0, 1.0, 
 	1.0, 1.0, 1.0, 1.0,
-	1.0, 1.0, 0.4, 0.5
+	1.0, 1.0, 1.0, 1.0
 };
 
 // 0 : None
