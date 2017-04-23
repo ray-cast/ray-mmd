@@ -6,6 +6,7 @@ struct LightParam
 	float lightIntensity;
 	float3 eye;
 	float gloss;
+	float attenuationBulb;
 };
 
 float ComputeFogMip(float near, float far, float depth)
@@ -86,7 +87,7 @@ float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
 	for (int i = 0; i < stepNum; i++)
 	{
 		float3 L = stepStart - lightPos;
-		float atten = GetPhysicalLightAttenuation(L, param.lightRange, 1.0);
+		float atten = GetPhysicalLightAttenuation(L, param.lightRange, param.attenuationBulb);
 		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 
@@ -120,7 +121,7 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
 	for (int i = 0; i < stepNum; i++)
 	{
 		float3 L = stepStart - lightPos;
-		float atten = GetPhysicalLightAttenuation(L, param.lightRange, 1.0);
+		float atten = GetPhysicalLightAttenuation(L, param.lightRange, param.attenuationBulb);
 		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 		atten *= ShadowTest(param, shadowMap, shadowSize, stepStart);

@@ -18,6 +18,7 @@ float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity
 float mGlossP : CONTROLOBJECT<string name="(self)"; string item = "Gloss+";>;
 float mGlossM : CONTROLOBJECT<string name="(self)"; string item = "Gloss-";>;
 float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
 
 static float LightRange = (1 + mRangeP * LIGHTSOURCE_MAX_RANGE);
@@ -25,7 +26,6 @@ static float LightIntensity = lerp(lerp(LIGHTSOURCE_MIN_INTENSITY, LIGHTSOURCE_M
 static float3 LightPosition = mPosition;
 
 #if VOLUMETRIC_FOG_ENABLE
-
 #if VOLUMETRIC_FOG_QUALITY == 0
 #	define VOLUMETRIC_FOG_WIDTH 256
 #	define VOLUMETRIC_FOG_HEIGHT 512
@@ -74,16 +74,15 @@ void SphereFogVS(
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = LightPosition + Normal * LightRange;
-	oPosition = mul(Position, matViewProject);
-	oTexcoord0 = oPosition;
 	oTexcoord1 = Position;
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
 float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
 {
 	float2 coord = texcoord.xy / texcoord.w;
-	coord = PosToCoord(coord);
-	coord += ViewportOffset;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
@@ -103,6 +102,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.lightColor = float3(mFogR, mFogG, mFogB);
 	param.eye = CameraPosition;
 	param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
+	param.attenuationBulb = lerp(1, 5, mAttenuationBulbP);
 
 #if VOLUMETRIC_FOG_ENABLE
 	#if VOLUMETRIC_FOG_QUALITY == 0
@@ -119,20 +119,56 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 #endif
 }
 
-#define OBJECT_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass;>{\
-		pass DrawObject {\
-			ZEnable = false; ZWriteEnable = false;\
-			AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
-			SrcBlend = ONE; DestBlend = ONE;\
-			CullMode = CW;\
-			VertexShader = compile vs_3_0 SphereFogVS();\
-			PixelShader  = compile ps_3_0 SphereFogPS();\
-		}\
-	}
+float4 SphereFogShadowlessPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
+{
+	float2 coord = texcoord.xy / texcoord.w;
 
-OBJECT_TEC(MainTec0, "object")
-OBJECT_TEC(MainTecBS0, "object_ss")
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+
+	float3 P = mul(float4(position, 1), matView).xyz;
+	float3 V = normalize(-P);
+
+	LightParam param;
+	param.lightPosition = LightPosition;
+	param.lightRange = LightRange;
+	param.lightIntensity = LightIntensity;
+	param.lightColor = float3(mFogR, mFogG, mFogB);
+	param.eye = CameraPosition;
+	param.gloss = lerp(0.01, 0.999, 0.5 + (mGlossP - mGlossM) * 0.5);
+	param.attenuationBulb = lerp(1, 5, mAttenuationBulbP);
+
+	return SphereFog(param, V, min(P.z, material.linearDepth), 64);
+}
+
+technique MainTech0<string MMDPass = "object"
+;>{
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 SphereFogVS();
+		PixelShader  = compile ps_3_0 SphereFogShadowlessPS();
+	}
+}
+
+technique MainTechBS0<string MMDPass = "object_ss"
+;>{
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 SphereFogVS();
+		PixelShader  = compile ps_3_0 SphereFogPS();
+	}
+}
 
 technique EdgeTec<string MMDPass = "edge";> {}
 technique ShadowTech<string MMDPass = "shadow";>{}
