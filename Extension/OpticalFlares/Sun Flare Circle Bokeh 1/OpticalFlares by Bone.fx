@@ -31,7 +31,7 @@ float3 GhostAllScale = float3(0.125, 0.25, 0.025);
 // R = Fixed offset
 // G = Increase offset by ID
 // B = Decrease offset by ID
-float3 GhostAllOffset = float3(0.0, 0.25, 0.02);
+float3 GhostAllOffset = float3(0.0, 0.25, 0.04);
 
 // R = Fixed Brightness
 // G = Increase Brightness by ID
@@ -41,7 +41,7 @@ float2 GhostAllBrightness = float2(10.0, 0.0);
 // G = Fixed Ghost shift
 // B = Begin Increase shift by ID
 // A = End   Increase shift by ID
-float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
+float4 GhostAllColorShift = float4(0.01, 0.05, 0.2, 1.0);
 
 // Control of single ghost image params
 // R = Fixed scale
@@ -49,7 +49,7 @@ float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 // B = Fixed Offset
 // A = Fixed Brightness
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 1.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
@@ -57,7 +57,7 @@ float4 GhostParams[16] = {
 
 // Control of single chromatic aberration params
 float GhostShiftParams[16] = { 
-	1.0, 1.0, 1.0, 1.0,
+	9.0, 1.0, 3.0, 3.0,
 	1.0, 1.0, 1.0, 1.0, 
 	1.0, 1.0, 1.0, 1.0,
 	1.0, 1.0, 0.4, 0.5
