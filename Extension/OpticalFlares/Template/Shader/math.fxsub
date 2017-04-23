@@ -1,3 +1,5 @@
+#define PI 3.1415926535f
+
 float luminance(float3 rgb)
 {
 	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
@@ -5,7 +7,7 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-	return pow(rgb, 2.2);
+	return pow(max(0, rgb), 2.2);
 }
 
 float4 srgb2linear(float4 c)
@@ -15,7 +17,7 @@ float4 srgb2linear(float4 c)
 
 float3 linear2srgb(float3 srgb)
 {
-	return pow(srgb, 1.0 / 2.2);
+	return pow(max(0, srgb), 1.0 / 2.2);
 }
 
 float4 linear2srgb(float4 c)
@@ -51,8 +53,8 @@ float3x3 CreateRotationY(float theta)
 
 float3x3 CreateRotationZ(float theta)
 {
-	float c, s;
-	sincos(s, c, theta);
+	float c = cos(theta);
+	float s = sin(theta);
 	return float3x3(c, -s, 0, s, c, 0, 0, 0, 1);
 }
 
@@ -87,4 +89,38 @@ float3x3 CreateRotate(float3 euler)
 	rotate[2] = float3(c1, c2, c3);
 	
 	return rotate;
+}
+
+float2 CreateBillboard(float2 position, float2 transalte, float2 center = 0.0, float2 up = float2(0, 1))
+{
+	float2 view = normalize(center - transalte);
+	float angle = acos(dot(up, view));
+
+	if (transalte.x > 0)
+		angle = PI - angle;
+	else
+		angle += PI;
+
+	float c = cos(angle);
+	float s = sin(angle);
+	float2x2 m = float2x2(c, -s, s, c);
+
+	return mul(position, m);
+}
+
+float2 CreateBillboardInverse(float2 position, float2 transalte, float2 center = 0.0, float2 up = float2(0, 1))
+{
+	float2 view = normalize(center - transalte);
+	float angle = acos(dot(up, view));
+
+	if (transalte.x > 0)
+		angle = PI - angle;
+	else
+		angle += PI;
+
+	float c = cos(-angle);
+	float s = sin(-angle);
+	float2x2 m = float2x2(c, -s, s, c);
+
+	return mul(position, m);
 }

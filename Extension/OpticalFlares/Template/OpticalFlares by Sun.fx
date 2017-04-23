@@ -8,7 +8,9 @@
 #define LENSFLARE_MAP_FROM 1
 // 0 : Normal
 // 1 : Chromatic Aberration
-#define LENSFLARE_MAP_TYPE 1
+// 2 : Auto Rotation
+// 3 : Chromatic Aberration & Auto Rotation
+#define LENSFLARE_MAP_TYPE 3
 #define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
 #define LENSFLARE_MAP_FILE "textures by 2gou/lensflare_01.png"
 
@@ -18,8 +20,8 @@
 float3 GhostFlareParams = float3(10, 0.0, 2.0);
 
 #define GHOST_MAP_FROM 1	// see LENSFLARE_MAP_FROM
-#define GHOST_MAP_TYPE 1	// see LENSFLARE_MAP_TYPE
-#define GHOST_MAP_FILE "textures by 2gou/ghost.png"
+#define GHOST_MAP_TYPE 3	// see LENSFLARE_MAP_TYPE
+#define GHOST_MAP_FILE "textures by 2gou/ghost_03.png"
 
 // R = Fixed Scale
 // G = Fixed Scale by camera
