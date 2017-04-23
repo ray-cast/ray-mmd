@@ -63,7 +63,9 @@ float GhostShiftParams[16] = {
 
 // 0 : None
 // 1 : Calculate occlusion by create depth map tab
+// 2 : Calculate occlusion by fetch depth from ray // this will be much faster than option at 1
 #define OCCLUSION_MAP_FROM 1
+
 // R = FadeIn Speed
 // G = FadeOut Speed
 // B = Max occlusion distance
