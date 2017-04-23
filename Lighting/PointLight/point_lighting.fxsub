@@ -47,7 +47,7 @@ static const float LightAttenuationBulb = lightAttenuationBulb;
 static const float3 LightPosition = mPosition;
 static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
 
-static cosnt float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
+static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 #endif
 
 #if SHADOW_MAP_FROM > 0
