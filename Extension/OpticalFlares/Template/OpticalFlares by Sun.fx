@@ -8,7 +8,7 @@
 #define LENSFLARE_MAP_FROM 1
 // 0 : Normal
 // 1 : Chromatic Aberration
-// 2 : Auto Rotation
+// 2 : Auto Rotation // The Image (Y axis) will always be face the light position
 // 3 : Chromatic Aberration & Auto Rotation
 #define LENSFLARE_MAP_TYPE 3
 #define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
