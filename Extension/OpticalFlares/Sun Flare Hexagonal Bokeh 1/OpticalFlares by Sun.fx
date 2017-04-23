@@ -1,6 +1,6 @@
 // 0 : Fetch Position from Sun
 // 1 : Fetch Position from X/Y/Z or Bone, but you need to set your follow bone
-#define FOLLOW_POSITION 1
+#define FOLLOW_POSITION 0
 
 // 0 : None
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to LENSFLARE_MAP_FILE.
@@ -17,7 +17,7 @@
 // R = Fixed scale
 // G = Fixed scale by camera
 // B = Fixed Brightness
-float3 GhostFlareParams = float3(10, 0.0, 2.0);
+float3 GhostFlareParams = float3(8, 0.0, 2.0);
 
 #define GHOST_MAP_FROM 1	// see LENSFLARE_MAP_FROM
 #define GHOST_MAP_TYPE 3	// see LENSFLARE_MAP_TYPE
@@ -41,7 +41,7 @@ float2 GhostAllBrightness = float2(10.0, 0.0);
 // G = Fixed Ghost shift
 // B = Begin Increase shift by ID
 // A = End   Increase shift by ID
-float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
+float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 0.8);
 
 // Control of single ghost image params
 // R = Fixed scale
@@ -49,7 +49,7 @@ float4 GhostAllColorShift = float4(0.01, 0.05, 0.1, 1.0);
 // B = Fixed Offset
 // A = Fixed Brightness
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(3.0, 0.0, 1.0, 1.0), float4(0.8, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(1.0, 1.0, 1.0, 1.0), float4(4.0, 0.0, 1.0, 0.1), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
@@ -59,8 +59,8 @@ float4 GhostParams[16] = {
 float GhostShiftParams[16] = { 
 	1.0, 1.0, 1.0, 1.0,
 	1.0, 1.0, 1.0, 1.0, 
-	1.0, 1.0, 1.0, 1.0,
-	1.0, 1.0, 0.4, 0.5
+	1.0, 0.5, 1.0, 0.5,
+	0.5, 0.5, 0.3, 0.5
 };
 
 // 0 : None
