@@ -13,7 +13,7 @@
 
 texture ScnMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
-	string Format = "A2B10G10R10";
+	string Format = "A8B8G8R8";
 >;
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
@@ -195,7 +195,7 @@ float4 GhostImageVS(
 
 	oTexcoord2 = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2 += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
-	oTexcoord2 *= LightSpecular;
+	//oTexcoord2 *= LightSpecular;
 #if OCCLUSION_MAP_FROM
 	oTexcoord2 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
 #endif
@@ -232,7 +232,7 @@ float4 ShowScreenVS(
 	in float4 texcoord : TEXCOORD,
 	out float4 oTexcoord : TEXCOORD0) : POSITION
 {
-	oTexcoord = texcoord + ViewportOffset2.xyxy;
+	oTexcoord = texcoord.xyxy + ViewportOffset.xyxy;
 	return position;
 }
 
@@ -297,6 +297,7 @@ technique OpticalLight<
 	pass EyeAdaptation<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
+		CULLMODE = NONE;
 		VertexShader = compile vs_3_0 EyeAdaptationVS();
 		PixelShader  = compile ps_3_0 EyeAdaptationPS(LightPosition, CameraPosition, OcclusionParams);
 	}
