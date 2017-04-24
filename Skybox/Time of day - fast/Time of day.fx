@@ -95,13 +95,20 @@ float4 SunPS(
 void ScatteringVS(
 	in float4 Position   : POSITION,
 	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position);
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
 
-float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
+float4 ScatteringPS(
+	in float3 viewdir : TEXCOORD0,
+	in float3 mieLambda : TEXCOORD1,
+	in float3 rayleight : TEXCOORD2) : COLOR
 {
 	float3 V = normalize(viewdir);
 
@@ -115,8 +122,8 @@ float4 ScatteringPS(in float3 viewdir : TEXCOORD0) : COLOR
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaRayleigh = rayleight;
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 

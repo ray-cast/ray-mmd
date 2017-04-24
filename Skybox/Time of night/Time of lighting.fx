@@ -115,15 +115,22 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 
 void GenSpecularMapVS(
 	in float4 Position : POSITION,
-	out float4 oTexcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
-	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w);
-	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
+	oTexcoord0 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w);
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 }
 
-float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
+float4 GenSpecularMapPS(
+	in float4 coord : TEXCOORD0,
+	in float3 mieLambda : TEXCOORD1,
+	in float3 rayleight : TEXCOORD2) : COLOR0
 {
 	float scaling = 1000;
 
@@ -133,8 +140,8 @@ float4 GenSpecularMapPS(in float4 coord : TEXCOORD0) : COLOR0
 	setting.mieG = mMiePhase;
 	setting.mieHeight = mMieHeight * scaling;
 	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
+	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaRayleigh = rayleight;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.z);
 	float3 insctrColor = ComputeSkyScattering(setting, V, LightDirection).rgb;

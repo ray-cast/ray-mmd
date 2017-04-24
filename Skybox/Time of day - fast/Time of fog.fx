@@ -11,17 +11,23 @@ void ScatteringFogVS(
 	in float2 Texcoord : TEXCOORD0,
 	out float3 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1  : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	out float3 oTexcoord3 : TEXCOORD3,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position.xyz - CameraPosition);
 	oTexcoord1 = oPosition = mul(Position, matWorldViewProject);
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy / oTexcoord1.w) + ViewportOffset;
 	oTexcoord1.xy = oTexcoord1.xy * oTexcoord1.w;
+	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
 }
 
 float4 ScatteringFogPS(
 	in float3 viewdir  : TEXCOORD0,
-	in float4 texcoord : TEXCOORD1) : COLOR
+	in float4 texcoord : TEXCOORD1,
+	in float3 mieLambda : TEXCOORD2,
+	in float3 rayleight : TEXCOORD3) : COLOR
 {
 	float2 coord = texcoord.xy / texcoord.w;
 
@@ -49,8 +55,8 @@ float4 ScatteringFogPS(
 	setting.earthRadius = 6360 * scaling;
 	setting.earthAtmTopRadius = 6380 * scaling;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
-	setting.waveLambdaMie = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity * scaling, 3);
-	setting.waveLambdaRayleigh = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
 	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);

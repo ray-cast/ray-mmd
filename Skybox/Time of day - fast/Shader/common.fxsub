@@ -49,7 +49,7 @@ static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadian
 static float mFogRange       = lerp(lerp(1, 20, mFogRangeP), 0.1, mFogRangeM);
 static float mMiePhase       = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
-static float mMieTurbidity   = lerp(lerp(1.0, 2.5, mMieTurbidityP), 1e-5, mMieTurbidityM);
+static float mMieTurbidity   = lerp(lerp(102.0, 250, mMieTurbidityP), 1e-5, mMieTurbidityM);
 static float mRayleighHeight = lerp(lerp(8, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
 
 static float3 mMieColor = LightSpecular;
