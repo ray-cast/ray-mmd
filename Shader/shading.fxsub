@@ -10,10 +10,10 @@ float ComputeSunIntensity(float3 L)
 }
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
-	float4 energy = SurfaceEnergy(material, N, L, V);
-	float3 subsurface = SubsurfaceShading(material, N, L, V);
+	float4 energy = SurfaceEnergy(material, material.normal, L, V);
+	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
 	diffuse = energy.r;
 	specular = energy.gba;
 
@@ -25,7 +25,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 
 #if SHADOW_QUALITY
 	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	lightColor *= min(shadow, saturate(dot(N, L) * 2));
+	lightColor *= min(shadow, saturate(dot(material.normal, L) * 2));
 	lightColor += mColorShadowSunP * (1 - shadow);
 #endif
 
@@ -44,7 +44,7 @@ void ShadingMaterial(MaterialParam material, float3 N, float3 V, float3 L, float
 }
 #endif
 
-void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 screenPosition, float2 coord, float3 V, out float3 diffuse, out float3 specular)
+void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 screenPosition, float2 coord, float3 V, float3 L, out float3 diffuse, out float3 specular)
 {
 #if IBL_QUALITY
 	DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
@@ -65,6 +65,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 
 #if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
 	float shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+	shadowDepth = min(shadowDepth, saturate(dot(material.normal, L) * 2));
 	shadow = lerp(shadow, shadowDepth, envShadow);
 #endif
 
@@ -88,7 +89,6 @@ void ShadingOpacityPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
-	float3 N = material.normal;
 	float3 V = normalize(viewdir);
 	float3 L = mul(-LightDirection, (float3x3)matView);
 
@@ -97,7 +97,7 @@ void ShadingOpacityPS(
 
 #if MAIN_LIGHT_ENABLE
 	float3 sunDiffuse, sunSpecular;
-	ShadingMaterial(material, N, V, L, coord, sunDiffuse, sunSpecular);
+	ShadingMaterial(material, V, L, coord, sunDiffuse, sunSpecular);
 #if SSSS_QUALITY
 	diffuse += sunDiffuse;
 	specular += sunSpecular;
@@ -109,7 +109,7 @@ void ShadingOpacityPS(
 
 #if IBL_QUALITY
 	float3 iblDiffuse, iblSpecular;
-	ShadingImageBasedLighting(EnvLightMapSamp, material, screenPosition, coord, V, iblDiffuse, iblSpecular);
+	ShadingImageBasedLighting(EnvLightMapSamp, material, screenPosition, coord, V, L, iblDiffuse, iblSpecular);
 #if SSSS_QUALITY
 	diffuse += iblDiffuse;
 	specular += iblSpecular;
@@ -162,7 +162,6 @@ float4 ShadingTransparentPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 N = material.normal;
 	float3 V = normalize(viewdir);
 	float3 L = mul(-LightDirection, (float3x3)matView);
 
@@ -170,13 +169,13 @@ float4 ShadingTransparentPS(
 
 #if MAIN_LIGHT_ENABLE
 	float3 diffuse, specular;
-	ShadingMaterial(material, N, V, L, coord, diffuse, specular);
+	ShadingMaterial(material, V, L, coord, diffuse, specular);
 	lighting += diffuse * material.albedo + specular;
 #endif
 
 #if IBL_QUALITY
 	float3 iblDiffuse, iblSpecular;
-	ShadingImageBasedLighting(EnvLightAlphaMapSamp, material, screenPosition, coord, V, iblDiffuse, iblSpecular);
+	ShadingImageBasedLighting(EnvLightAlphaMapSamp, material, screenPosition, coord, V, L, iblDiffuse, iblSpecular);
 	lighting += iblDiffuse * material.albedo + iblSpecular;
 #endif
 
@@ -188,10 +187,10 @@ float4 ShadingTransparentPS(
 	{
 		float3 dielectricColor = max(0.02, material.albedo);
 		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
-		float3 fresnel = FresnelSchlickGlass(N, V, material.smoothness, material.specular);
+		float3 fresnel = FresnelSchlickGlass(material.normal, V, material.smoothness, material.specular);
 
 		lighting = lerp(prefilteredRefract * dielectricColor, lighting, fresnel * material.alpha);
-		lighting += material.customDataA * material.customDataB * trans * saturate(dot(N, -L));
+		lighting += material.customDataA * material.customDataB * trans * saturate(dot(material.normal, -L));
 	}
 	else
 	{
