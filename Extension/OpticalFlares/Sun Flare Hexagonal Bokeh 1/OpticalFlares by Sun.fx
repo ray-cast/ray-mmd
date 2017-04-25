@@ -41,7 +41,7 @@ float2 GhostAllBrightness = float2(10.0, 0.0);
 // G = Fixed Ghost shift
 // B = Begin Increase shift by ID
 // A = End   Increase shift by ID
-float4 GhostAllColorShift = float4(0.005, 0.05, 0.1, 0.8);
+float4 GhostAllColorShift = float4(0.005, 0.05, 0.1, 0.5);
 
 // Control of single ghost image params
 // R = Fixed scale

@@ -11,7 +11,7 @@
 // 2 : Auto Rotation // The Image (Y axis) will always be face the light position
 // 3 : Chromatic Aberration & Auto Rotation
 #define LENSFLARE_MAP_TYPE 3
-#define LENSFLARE_MAP_INDEX 1 // 0 ~ 15
+#define LENSFLARE_MAP_INDEX 0 // 0 ~ 15
 #define LENSFLARE_MAP_FILE "textures by 2gou/lensflare.png"
 
 // R = Fixed scale
@@ -49,7 +49,7 @@ float4 GhostAllColorShift = float4(0.005, 0.05, 0.1, 0.8);
 // B = Fixed Offset
 // A = Fixed Brightness
 float4 GhostParams[16] = { 
-	float4(1.0, 1.0, 1.0, 1.0), float4(0.0, 0.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
+	float4(0.0, 0.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0),
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 3.0), float4(1.0, 1.0, 1.0, 1.0), 
 	float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.1, 1.0),
 	float4(1.0, 1.0, 0.95, 0.2), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0), float4(1.0, 1.0, 1.0, 1.0)
