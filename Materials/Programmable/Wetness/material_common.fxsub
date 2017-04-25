@@ -618,11 +618,11 @@ float3 GetAlbedo(float2 coord)
 	#endif
 
 	#if ALBEDO_MAP_FROM == 3
-		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb * MaterialDiffuse.a : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 4
-		float3 albedoColor = use_spheremap ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+		float3 albedoColor = use_spheremap ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb * MaterialDiffuse.a : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 5
-		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb * MaterialDiffuse.a : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 7
 		float3 albedoColor = MaterialAmbient.rgb;
 	#elif ALBEDO_MAP_FROM == 8
