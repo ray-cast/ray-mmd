@@ -34,7 +34,7 @@
 // For example : 
 // If the xxx.png and material.fx is inside same folder
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "xxx.png"
-// If the xxx.png is inside parent folder of the material.fx
+// If the xxx.png is inside parent path of the material.fx
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../xxx.png"
 // If the xxx.png is inside your desktop
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
