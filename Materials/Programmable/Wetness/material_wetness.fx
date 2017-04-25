@@ -129,7 +129,7 @@ const float2 customBMapLoopNum = 1.0;
 // http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf
 #define WETNESS_ENABLE 1
 
-#define WETNESS_MAP_FROM 1 // 1 & 2 only
+#define WETNESS_MAP_FROM 1 // 1 & 2 only (see material_helper_2.0.fx)
 #define WETNESS_MAP_UV_FLIP 0
 #define WETNESS_MAP_APPLY_SCALE 0
 #define WETNESS_MAP_FILE "wetness.png"
@@ -138,7 +138,7 @@ const float wetness = 1.0;
 const float2 wetnessMapLoopNum = 1.0;
 const float2 wetnessMapOffsetNum = 1.0;
 
-#define WETNESS_POROSITY_MAP_FROM 0 // 1 & 2 only
+#define WETNESS_POROSITY_MAP_FROM 0 // 1 & 2 only (see material_helper_2.0.fx)
 #define WETNESS_POROSITY_MAP_UV_FLIP 0
 #define WETNESS_POROSITY_MAP_APPLY_SCALE 0
 #define WETNESS_POROSITY_MAP_FILE "wetness.png"
