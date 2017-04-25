@@ -31,12 +31,14 @@
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from controller (R+/G+/B+).
 
 // If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. 
-// Notice : parent folder ref is "../", and change all "\" to "/".
+// Tips : parent folder ref is "../", and change all "\" to "/".
 // For example : 
 // If the xxx.png and material.fx is inside same folder
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "xxx.png"
 // If the xxx.png is inside parent path of the material.fx
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../xxx.png"
+// If the xxx.png is inside other path from parent path of the material.fx
+// You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../other path/xxx.png"
 // If the xxx.png is inside your desktop
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
 #define ALBEDO_MAP_FILE "albedo.png"
