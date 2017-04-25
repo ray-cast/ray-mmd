@@ -1,4 +1,4 @@
-#define NUMS_SAMPLES_SUN 4
+#define NUMS_SAMPLES_SUN 8
 
 struct ScatteringParams
 {
@@ -76,13 +76,13 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 	{
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
-		float3 segment_s = exp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
-		float3 segment_t = exp2(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
+		float3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
+		float3 segment_t = exp(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
 		
 		transmittance = transmittance * segment_t;
 		
 		scattering = scattering * segment_t;
-		scattering += exp2(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
+		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
 
 		lastOpticalDepth = opticalDepth;
 	}

@@ -42,7 +42,7 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
 float ChapmanApproximation(float X, float h, float cosZenith)
 {
 	float c = sqrt(X + h);
-	float c_exp_h = c * exp2(-h);
+	float c_exp_h = c * exp(-h);
 
 	if (cosZenith >= 0)
 	{
@@ -53,7 +53,7 @@ float ChapmanApproximation(float X, float h, float cosZenith)
 		float x0 = sqrt(1 - cosZenith * cosZenith) * (X + h);
 		float c0 = sqrt(x0);
 
-		return 2 * c0 * exp2(X - x0) - c_exp_h / (1 - c * cosZenith);
+		return 2 * c0 * exp(X - x0) - c_exp_h / (1 - c * cosZenith);
 	}
 }
 

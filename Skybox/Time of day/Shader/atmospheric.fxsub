@@ -48,7 +48,7 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
 float ChapmanApproximation(float X, float h, float cosZenith)
 {
 	float c = sqrt(X + h);
-	float c_exp_h = c * exp2(-h);
+	float c_exp_h = c * exp(-h);
 
 	if (cosZenith >= 0)
 	{
@@ -59,7 +59,7 @@ float ChapmanApproximation(float X, float h, float cosZenith)
 		float x0 = sqrt(1 - cosZenith * cosZenith) * (X + h);
 		float c0 = sqrt(x0);
 
-		return 2 * c0 * exp2(X - x0) - c_exp_h / (1 - c * cosZenith);
+		return 2 * c0 * exp(X - x0) - c_exp_h / (1 - c * cosZenith);
 	}
 }
 
@@ -74,7 +74,7 @@ float3 Transmittance(ScatteringParams setting, float3 r, float3 V)
 	float h = (rl - setting.earthRadius) / setting.rayleighHeight;
 	float cosZenith = dot(r / rl, V);
 	float ch = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cosZenith);
-	return exp2(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
+	return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
 }
 
 float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 V, float3 L, float neg)
