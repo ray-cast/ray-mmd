@@ -87,10 +87,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessSSR.fxsub"
 #endif
 
-#if POST_COLORGRADING_MODE
-#	include "shader/PostProcessColorGrading.fxsub"
-#endif
-
 #if HDR_ENABLE && HDR_EYE_ADAPTATION
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
@@ -270,11 +266,6 @@ technique DeferredLighting<
 	"RenderColorTarget=GhostImageMap; Pass=GhostImage1st;"
 	"RenderColorTarget=GlareLightMap; Pass=GhostImage2nd;"
 #endif
-#endif
-
-#if POST_COLORGRADING_MODE
-	"RenderColorTarget=ColorGradingMap;"
-	"Pass=GenerateColorLUT;"
 #endif
 
 #if AA_QUALITY == 0
@@ -719,14 +710,6 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 GlareLightCompVS();
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
-	}
-#endif
-#if POST_COLORGRADING_MODE
-	pass GenerateColorLUT<string Script= "Draw=Buffer;"; > {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
-		VertexShader = compile vs_3_0 GenerateColorLookupVS();
-		PixelShader  = compile ps_3_0 GenerateColorLookupPS();
 	}
 #endif
 	pass HDRTonemapping<string Script= "Draw=Buffer;";>{

@@ -74,7 +74,6 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	color += bloom;
 #endif
 
-#if POST_COLORGRADING_MODE == 0
 	color *= coord.z;
 
 	color = ColorTemperature(color, mColorTemperature);
@@ -83,14 +82,6 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	color = ColorToneMapping(color);
 
 	color = linear2srgb(color);
-#else
-	color = ColorVignette(color, coord.xy);
-	color = ColorLookupTable2D(ColorGradingMapSamp, color * coord.z).rgb;
-
-#if POST_COLORGRADING_MODE == 2
-	color = CreateColorSpectrumDebug(color, ColorGradingMapSamp, coord.xy, ViewportAspect, mVisualizationLUT);
-#endif
-#endif
 
 #if AA_QUALITY > 0
 	return float4(color, luminance(color));
