@@ -844,11 +844,11 @@ float GetAlpha(float2 coord)
 	#endif
 
 	#if ALPHA_MAP_FROM == 3
-		float4 alphaValues = use_texture ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
+		float4 alphaValues = use_texture ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 4
-		float4 alphaValues = use_spheremap ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
+		float4 alphaValues = use_spheremap ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 5
-		float4 alphaValues = use_toon ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) : MaterialDiffuse.a;
+		float4 alphaValues = use_toon ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
 	#elif ALPHA_MAP_FROM == 7
 		float4 alphaValues = MaterialAmbient;
 	#elif ALPHA_MAP_FROM == 8
