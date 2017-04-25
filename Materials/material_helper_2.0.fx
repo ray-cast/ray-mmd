@@ -86,7 +86,7 @@ const float normalSubMapScale = 1.0;	// between 0 ~ inf
 const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Default data will fetched params from SpecularPower from the pmx.
-// And Convert SpecularPower to smoothness by SMOOTHNESS_MAP_TYPE at 3
+// And Convert SpecularPower to smoothness
 #define SMOOTHNESS_MAP_FROM 9			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for smoothness
