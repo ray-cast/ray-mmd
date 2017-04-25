@@ -568,7 +568,7 @@ float3 PerturbNormalHQ(sampler source, float2 coord, float center)
 
 	float slope1 = right - center;
 	float slope2 = center - bottom;
-	
+
 	return normalize(float3(slope1, slope2, 1.0));
 }
 #endif
@@ -978,7 +978,7 @@ float3 GetNormal(float3 N, float3 P, float2 coord)
 	#if NORMAL_SUB_MAP_FROM
 		float3 tangentNormal2 = GetSubNormal(N, P, coord);
 	#endif
-	
+
 	#if NORMAL_MAP_FROM && NORMAL_SUB_MAP_FROM
 		float3 tangentNormal = RNMBlendUnpacked(tangentNormal1, tangentNormal2);
 	#elif NORMAL_MAP_FROM
@@ -1138,7 +1138,7 @@ float3 GetSpecular(float2 coord)
 	#else
 		float4 specularColor = tex2D(SpecularMapSamp, coord * specularMapLoopNum);
 	#endif
-	
+
 	#if SPECULAR_MAP_TYPE == 2 || SPECULAR_MAP_TYPE == 3
 		#if SPECULAR_MAP_SWIZZLE == 1
 			specularColor = specularColor.g;
@@ -1156,7 +1156,7 @@ float3 GetSpecular(float2 coord)
 	#else
 		specularColor = 0.08 * specularColor;
 	#endif
-	
+
 	#if SPECULAR_MAP_APPLY_SCALE == 1
 		specularColor.rgb *= specular;
 	#elif SPECULAR_MAP_APPLY_SCALE == 2
@@ -1211,7 +1211,7 @@ float GetOcclusion(float2 coord)
 	#else
 		float occlusionValue = occlusionValues.r;
 	#endif
-	
+
 	#if OCCLUSION_MAP_TYPE == 1
 		occlusionValue = pow(occlusionValue, 2.2);
 	#endif
