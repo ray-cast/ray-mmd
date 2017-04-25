@@ -71,6 +71,6 @@ float GhostShiftParams[16] = {
 // R = FadeIn Speed
 // G = FadeOut Speed
 // B = Max occlusion distance
-static float3 OcclusionParams = float3(500, 1000, 1000);
+static float3 OcclusionParams = float3(10, 20, 1000);
 
 #include "Shader/OpticalFlares.fxsub"

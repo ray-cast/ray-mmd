@@ -20,7 +20,7 @@ sampler EyeLumAveMapSamp = sampler_state {
 
 float CalcAdaptedLum(float adaptedLum, float lum, float delta)
 {
-    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, 50 * delta)));
+    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - exp2(-1.45 * delta)));
 }
 
 float ComputeExposureISO(float avgLum, float middleGray = 12.5)

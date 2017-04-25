@@ -44,7 +44,7 @@ sampler EyeLumAveMapSamp = sampler_state {
 
 float CalcAdaptedLum(float adaptedLum, float lum, float speed, float delta)
 {
-    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - pow(0.98f, speed * delta)));
+    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - exp2(-speed * delta)));
 }
 
 float4 EyeAdaptationVS(
