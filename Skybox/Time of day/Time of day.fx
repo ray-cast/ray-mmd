@@ -68,14 +68,11 @@ void SunVS(
 	out float4 oPosition : POSITION,
 	uniform float3 translate, uniform float3 scale)
 {
-	float3 sunUp = float3(0, 1, 0);
 	float3 sunDirection = normalize(-LightDirection);
-
-	float sunRadius = mSunRadius + (1 - saturate(dot(sunDirection, sunUp))) * 0.25;
 
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(normalize(Position.xyz), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * sunRadius + sunDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + sunDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -129,7 +126,7 @@ float4 ScatteringPS(
 	setting.cloudBias = mCloudBias;
 	setting.cloudTop = 8 * scaling;
 	setting.cloudBottom = 5 * scaling;
-	setting.clouddir = float3(23175.7, 0, -3e+3 * mCloudSpeed);
+	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 

@@ -1,4 +1,4 @@
-#define NUMS_SAMPLES_SUN 8
+#define NUMS_SAMPLES_SUN 16
 
 struct ScatteringParams
 {
@@ -83,7 +83,7 @@ float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 
 	float h = rl - setting.earthRadius;
 	float3 r = samplePoint / rl;
 
-	float cos_chi_sun = dot(r, L);
+	float cos_chi_sun = dot(r, -L);
 	float cos_chi_ray = dot(r, V * neg);
 
 	float opticalDepthSun = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cos_chi_sun);
@@ -109,13 +109,13 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 	{
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
-		float3 segment_s = exp2(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
-		float3 segment_t = exp2(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
+		float3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
+		float3 segment_t = exp(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
 		
 		transmittance = transmittance * segment_t;
 		
 		scattering = scattering * segment_t;
-		scattering += exp2(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
+		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
 
 		lastOpticalDepth = opticalDepth;
 	}
@@ -143,7 +143,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	float3 start = eye + V * max(0, outerIntersections.x);
 	float3 end = eye + V * outerIntersections.y;
 
-	AerialPerspective(setting, start, end, V, -L, neg, transmittance, insctrMie, insctrRayleigh);
+	AerialPerspective(setting, start, end, V, L, neg, transmittance, insctrMie, insctrRayleigh);
 
 	bool intersectionTest = innerIntersections.x < 0.0 && innerIntersections.y < 0.0;
 	return intersectionTest;

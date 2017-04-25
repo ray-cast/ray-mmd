@@ -44,7 +44,7 @@ float mFogColorVM : CONTROLOBJECT<string name="(self)"; string item = "FogColorV
 
 static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 
-static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
+static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.0, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
 static float mFogRange       = lerp(lerp(1, 20, mFogRangeP), 0.1, mFogRangeM);
 static float mMiePhase       = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
