@@ -13,8 +13,8 @@ sampler DiffuseMapSamp = sampler_state
 void DrawObjectVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord  : TEXCOORD0,
-	out float4 oPosition  : POSITION)
+	out float4 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
 {
 	oTexcoord = Texcoord;
 	oPosition = mul(Position, matWorldViewProject);
