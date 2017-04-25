@@ -30,7 +30,8 @@
 #define ALBEDO_MAP_APPLY_DIFFUSE 1		// Texture colors to multiply with diffuse from the PMX.
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from controller (R+/G+/B+).
 
-// If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. parent folder ref is "../"
+// If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. 
+// Notice : parent folder ref is "../", and change all "\" to "/".
 // For example : 
 // If the xxx.png and material.fx is inside same folder
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "xxx.png"
