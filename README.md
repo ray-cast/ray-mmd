@@ -19,7 +19,6 @@ Download :
 - Latest changes - Major allocator changes:
 	- Added a Time of day & night
 	- Added a Sky Hemisphere
-	- Added a skylighting_hdr_fast.fx
 	- Added a Optical Flares PostProcess Effect
 	- Added a Eye Adaptation PostProcess Effect
 	- Added a Albedo sub map support
