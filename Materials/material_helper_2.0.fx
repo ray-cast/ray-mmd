@@ -203,7 +203,9 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 // 3 : Reserved
+
 // 4 : Glass              // customA = curvature   customB = transmittance color
+// You need to set alpha value of the pmx model to less then 0.999
 
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // see paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
