@@ -43,17 +43,17 @@
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
 #define ALBEDO_MAP_FILE "albedo.png"
 
-// When ALBEDO_MAP_FROM and ALBEDO_MAP_APPLY_SCALE at 0, you can set a color/rgb to albedo, and color range is between 0.0 and 1.0
+// If ALBEDO_MAP_FROM and ALBEDO_MAP_APPLY_SCALE is 1, you can set a color/rgb to albedo, and color range is between 0.0 and 1.0
 // like const float3 albedo = float3(r, g, b) 
 // For example : 
 // if red color is normalized color, it can be set to albedo like : const float3 albedo = float3(1.0, 0.0, 0.0);
 // if red color is unnormalized color, it can be set to albedo like : const float3 albedo = float3(255, 0.0, 0.0) / 255.0;
 // And then
 // If color is fetch from your display monitor, you need to convert sRGB color-space to linear color-space by color ^ gamma
-// About sRGB and Gamma you can see wiki for more information : https://en.wikipedia.org/wiki/Gamma_correction
 // Tips : The Gamma is near 2.2 and used most of time
-// normalized color : const float3 albedo = pow(float3(r, g, b), 2.2);
-// unnormalized color : const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);
+// Tips : About sRGB and Gamma, you can see docs for more information : http://http.developer.nvidia.com/GPUGems3/gpugems3_ch24.html
+// Convert srgb color-space from normalized value to linear color-space  like : const float3 albedo = pow(float3(r, g, b), 2.2);
+// Convert srgb color-space from unnormalized value to linear color-space  like : const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);
 const float3 albedo = 1.0;
 
 // You can tile your texture for the X and Y axis separately by change albedoMapLoopNum = float2(x, y)
