@@ -4,7 +4,7 @@ const float3 colorContrastAll   = float3(1.0, 1.0, 1.0); // 0.0 ~ inf
 const float3 colorSaturationAll = float3(1.0, 1.0, 1.0); // 0.0 ~ inf
 const float3 colorGammaAll      = float3(1.0, 1.0, 1.0); // 0.0 ~ inf
 const float3 colorGainAll       = float3(1.0, 1.0, 1.1); // 0.0 ~ inf
-const float3 colorOffsetAll     = float3(0.1, 0.1, 0.1); // 0.0 ~ inf
+const float3 colorOffsetAll     = float3(0.1, 0.1, 0.15); // 0.0 ~ inf
 
 const float3 colorContrastLow   = float3(1.0, 1.0, 1.0); // 0.0 ~ inf
 const float3 colorSaturationLow = float3(1.0, 1.0, 1.0); // 0.0 ~ inf
