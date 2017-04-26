@@ -124,8 +124,7 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 
 float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
 {
-	float m = roughness * roughness;
-	float m2 = m * m;
+	float m2 = roughness * roughness;
 	float A = 4;
 	float spec = (nh - nh * m2) * nh + m2;
 	spec = (1 + 4 * m2 * m2 / (spec * spec)) / (PI * (1 + A * m2)) * NormalizationFactor;
