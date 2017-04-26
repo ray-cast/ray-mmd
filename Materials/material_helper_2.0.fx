@@ -104,7 +104,7 @@ const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 // Other parameter types for smoothness
 // 0 : Smoothness (from Frostbite / CE5 textures)
 // 1 : Calculate smoothness from roughtness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
-// 2 : Calculate smoothness from roughtness by 1.0 - Roughness
+// 2 : Calculate smoothness from roughtness by 1.0 - Roughness		 (from UE4/GGX/SubstancePainter2 with roughness linear roughness)
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
