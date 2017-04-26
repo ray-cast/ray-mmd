@@ -2,18 +2,18 @@
 // You can see the UE4 docs for more information
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
-// This also called "Base Color", default data will be fetched params from texture from the pmx.
 // You can use a fixed color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
+// Tips : albedo is also called "Base Color", default data will be fetched params from texture from the pmx.
 // 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
 // 3 : Params fetch from Texture from the pmx.
 // 4 : Params fetch from Sphere map from the pmx.
 // 5 : Params fetch from Toon map from the pmx.
-// 6 : Params fetch from avi/screen from the DummyScreen.x.
+// 6 : Params fetch from avi/screen from the DummyScreen.x inside extension folder.
 // 7 : Params fetch from Ambient Color from the pmx.
 // 8 : Params fetch from Specular Color from the pmx.
-// 9 : Params fetch from Specular Power from the pmx. // fetch Smoothness from the pmx.
+// 9 : Params fetch from Specular Power from the pmx. // this option can only be used for smoothness
 #define ALBEDO_MAP_FROM 3
 
 // You can flip your texture for the X and Y axis mirror by change ALBEDO_MAP_UV_FLIP
@@ -39,11 +39,22 @@
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../xxx.png"
 // If the xxx.png is inside other path from parent path of the material.fx
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../other path/xxx.png"
-// If the xxx.png is inside your desktop
+// If the xxx.png is inside your desktop or other disk
 // You can set the xxx.png to ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;	// Base color between float3(0, 0, 0) ~ float3(1, 1, 1) or albedo = float3(125, 125, 125) / 255;
+// When ALBEDO_MAP_FROM and ALBEDO_MAP_APPLY_SCALE at 0, you can set a color/rgb to albedo, and color range is between 0.0 and 1.0
+// like const float3 albedo = float3(r, g, b) 
+// For example : 
+// if red color is normalized color, it can be set to albedo like : const float3 albedo = float3(1.0, 0.0, 0.0);
+// if red color is unnormalized color, it can be set to albedo like : const float3 albedo = float3(255, 0.0, 0.0) / 255.0;
+// And then
+// If color is fetch from your display monitor, you need to convert sRGB color-space to linear color-space by color ^ gamma
+// About sRGB and Gamma you can see wiki for more information : https://en.wikipedia.org/wiki/Gamma_correction
+// Tips : The Gamma is near 2.2 and used most of time
+// normalized color : const float3 albedo = pow(float3(r, g, b), 2.2);
+// unnormalized color : const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);
+const float3 albedo = 1.0;
 
 // You can tile your texture for the X and Y axis separately by change albedoMapLoopNum = float2(x, y)
 const float2 albedoMapLoopNum = 1.0; // between float2(0, 0) ~ float2(inf, inf) 
