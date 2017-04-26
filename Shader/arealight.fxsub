@@ -59,19 +59,7 @@ float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh,
 	return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
 }
 
-float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
-{
-	float RdotN = dot(Ln, R) + 1e-6;
-	float intersectLen = dot(Ln, L) / RdotN;
-	float3 I = R * intersectLen - L;
-
-	float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
-	float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-
-	return L + Lt * lightClamp2D.x + Lb * lightClamp2D.y;
-}
-
-float3 RectangleLightWithUV(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
 {
 	float RdotN = dot(Ln, R) + 1e-6;
 	float intersectLen = dot(Ln, L) / RdotN;
@@ -93,11 +81,11 @@ float RectangleAttenuation(float3 L, float3 lightDirection, float angle, float r
 float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
 {
 	float3 R = reflect(V, N);
-	float3 Lw = RectangleLightWithUV(R, L, Lt, Lb, Ln, Lwh, coord);
+	float3 Lw = RectangleLight(R, L, Lt, Lb, Ln, Lwh, coord);
 	float3 L2 = normalize(Lw);
 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-	float normFactor = SphereNormalization(Lw, Lwh.y, roughness);
+	float normFactor = SphereNormalization(Lw, length(Lwh), roughness);
 	
 	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
 	return energy;
