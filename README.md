@@ -17,21 +17,7 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-	- Added a Time of day & night
-	- Added a Sky Hemisphere
-	- Added a Optical Flares PostProcess Effect
-	- Added a Eye Adaptation PostProcess Effect
-	- Added a Albedo sub map support
-	- Added a Bump map support
-	- Added a Specular map support
-	- Added a Wetness map support
-	- Added a 2.0 version of Material description (old materials still available in this version)
-	- Improved FilmGrain (Added X & Y Film Line)
-	- Improved bloom
-	- Improved SSAO & SSDO
-	- Improved Multiple Light Source
-	- Improved cmft (fps optimize, GPU memory, 8k limit), it will output a skybox.dds instead of skybox.hdr
-	- Fixed some bugs
+	- Improved Bloom
 
 Requirement :
 ------------
