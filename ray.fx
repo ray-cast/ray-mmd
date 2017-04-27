@@ -52,7 +52,7 @@ static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
-static float mBloomRadius = lerp(lerp(3, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
+static float mBloomRadius = lerp(lerp(2.5, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
@@ -574,8 +574,8 @@ technique DeferredLighting<
 	pass BloomDownsampleX5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset3);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp3rd);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset4);
+		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp4th);
 	}
 	pass BloomBlurX5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

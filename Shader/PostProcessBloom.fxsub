@@ -249,7 +249,7 @@ float4 GlareLightCompVS(
 	float g4 = GaussianDistribution(4, mBloomRadius);
 	float g5 = GaussianDistribution(5, mBloomRadius);
 	float weight = g1 + g2 + g3 + g4 + g5;
-	
+
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.z = g1 / weight;
 	oTexcoord0.w = g2 / weight;
