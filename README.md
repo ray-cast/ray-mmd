@@ -14,9 +14,6 @@ Download :
 ------------
 * [Ray-MMD 1.3.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.0.zip) (updated: 27. Apr 2017)
 * [Ray-MMD 1.3.0 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.0.tar.gz) (updated: 27. Apr 2017)
-- About alpha version :
-	- Adding new features to the most recent version
-	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Added a Time of day & night
 	- Added a Sky Hemisphere
