@@ -25,8 +25,8 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 
 #if SHADOW_QUALITY
 	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
-	lightColor *= min(shadow, saturate(dot(material.normal, L) * 2));
-	lightColor += mColorShadowSunP * (1 - shadow);
+	shadow = min(shadow, saturate(dot(material.normal, L) * 2));
+	lightColor *= shadow;
 #endif
 
 #if SSDO_QUALITY
@@ -41,6 +41,10 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 
 	diffuse *= lightColor;
 	specular *= lightColor;
+
+#if SHADOW_QUALITY
+	diffuse += mColorShadowSunP * (1 - shadow) * step(0, sum(material.albedo + material.specular) - 1e-5);
+#endif
 }
 #endif
 
