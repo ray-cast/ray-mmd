@@ -24,7 +24,8 @@ float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = 
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
 float mBloomThresholdP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold";>;
-float mBloomRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius";>;
+float mBloomRadiusP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius+";>;
+float mBloomRadiusM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius-";>;
 float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity+";>;
 float mBloomIntensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity-";>;
 float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
@@ -51,6 +52,7 @@ static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
+static float mBloomRadius = lerp(lerp(3, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
