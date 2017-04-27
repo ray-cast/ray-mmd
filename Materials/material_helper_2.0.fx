@@ -28,7 +28,7 @@
 #define ALBEDO_MAP_APPLY_SCALE 0
 
 #define ALBEDO_MAP_APPLY_DIFFUSE 1		// Texture colors to multiply with diffuse from the PMX.
-#define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from controller (R+/G+/B+).
+#define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from morph controller (R+/G+/B+).
 
 // If ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. 
 // Tips : parent folder ref is "../", and change all "\" to "/".
@@ -197,6 +197,10 @@ const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define EMISSIVE_MAP_APPLY_SCALE 0
 #define EMISSIVE_MAP_APPLY_MORPH_COLOR 0
 #define EMISSIVE_MAP_APPLY_MORPH_INTENSITY 0
+
+// You can set the blink using the following code.
+// 1 : colors to multiply with frequency from emissiveBlink. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);
+// 2 : colors to multiply with frequency from morph controller, see Blink morph inside PointLight.pmx
 #define EMISSIVE_MAP_APPLY_BLINK 0
 #define EMISSIVE_MAP_FILE "emissive.png"
 
