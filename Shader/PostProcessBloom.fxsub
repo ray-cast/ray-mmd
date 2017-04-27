@@ -44,13 +44,6 @@ sampler DownsampleSamp3rd = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-texture GlareLightMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-sampler GlareLightMapSamp = sampler_state {
-	texture = <GlareLightMap>;
-	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-
 texture BloomMap1st : RENDERCOLORTARGET<float2 ViewportRatio={0.50, 0.50}; string Format="A16B16G16R16F";>;
 texture BloomMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 texture BloomMap3rd : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
@@ -262,14 +255,12 @@ float4 GlareLightCompVS(
 
 float4 GlareLightCompPS(in float4 coord1 : TEXCOORD0, in float3 coord2 : TEXCOORD1) : COLOR
 {
-	float3 bloom1 = tex2Dlod(BloomSamp1st, float4(coord1.xy + 0.5 / (ViewportSize * 0.5), 0, 0)).rgb;
 	float3 bloom2 = tex2Dlod(BloomSamp2nd, float4(coord1.xy + 0.5 / (ViewportSize * 0.25), 0, 0)).rgb;
 	float3 bloom3 = tex2Dlod(BloomSamp3rd, float4(coord1.xy + 0.5 / (ViewportSize * 0.125), 0, 0)).rgb;
 	float3 bloom4 = tex2Dlod(BloomSamp4th, float4(coord1.xy + 0.5 / (ViewportSize * 0.0625), 0, 0)).rgb;
 	float3 bloom5 = tex2Dlod(BloomSamp5th, float4(coord1.xy + 0.5 / (ViewportSize * 0.03125), 0, 0)).rgb;
 
 	float3 bloom = 0.0f;
-	bloom += bloom1 * coord1.z;
 	bloom += bloom2 * coord1.w;
 	bloom += bloom3 * coord2.x;
 	bloom += bloom4 * coord2.y;
@@ -283,5 +274,5 @@ float4 GlareLightCompPS(in float4 coord1 : TEXCOORD0, in float3 coord2 : TEXCOOR
 	bloom += star.rgb;
 #endif
 
-	return float4(bloom, 0.0);
+	return float4(bloom, coord1.z);
 }

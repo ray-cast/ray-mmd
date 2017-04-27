@@ -266,10 +266,10 @@ technique DeferredLighting<
 	"RenderColorTarget=StreakMap4thTemp; Pass=Star4thStreak2nd;"
 	"RenderColorTarget=StreakMap4th;	 Pass=Star4thStreak3rd;"
 #endif
-	"RenderColorTarget=GlareLightMap; Pass=GlareLightComp;"
+	"RenderColorTarget=BloomMap1st;		Pass=GlareLightComp;"
 #if HDR_FLARE_MODE > 0
-	"RenderColorTarget=GhostImageMap; Pass=GhostImage1st;"
-	"RenderColorTarget=GlareLightMap; Pass=GhostImage2nd;"
+	"RenderColorTarget=BloomMap1stTemp; Pass=GhostImage1st;"
+	"RenderColorTarget=BloomMap1st;		Pass=GhostImage2nd;"
 #endif
 #endif
 
@@ -725,12 +725,13 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = ONE;
 		VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar2nd);
-		PixelShader  = compile ps_3_0 GhostImagePS(GhostImageMapSamp, GhostImageMapSamp, BloomSamp2nd, ghost_modulation2nd, 0);
+		PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1stTemp, BloomSamp1stTemp, BloomSamp2nd, ghost_modulation2nd, 0);
 	}
 #endif
 	pass GlareLightComp<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
+		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = SRCALPHA;
 		VertexShader = compile vs_3_0 GlareLightCompVS();
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}

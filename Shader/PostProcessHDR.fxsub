@@ -70,7 +70,7 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	float3 color = ColorDispersion(source, coord.xy, mDispersionRadius, 1.0 + mDispersionRadius);
 
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
-	float3 bloom = tex2Dlod(GlareLightMapSamp, float4(coord.xy, 0, 0)).rgb;
+	float3 bloom = tex2Dlod(BloomSamp1st, float4(coord.xy, 0, 0)).rgb;
 	color += bloom;
 #endif
 
