@@ -22,7 +22,7 @@ static float2 BloomOffsetY1 = float2(0.0, ViewportOffset2.y * 2)  * BloomScale1;
 static float2 BloomOffsetY2 = float2(0.0, ViewportOffset2.y * 4)  * BloomScale2;
 static float2 BloomOffsetY3 = float2(0.0, ViewportOffset2.y * 8)  * BloomScale3;
 static float2 BloomOffsetY4 = float2(0.0, ViewportOffset2.y * 16) * BloomScale4;
-static float2 BloomOffsetY5 = float2(0.0, ViewportOffset2.y * 16) * BloomScale5;
+static float2 BloomOffsetY5 = float2(0.0, ViewportOffset2.y * 32) * BloomScale5;
 
 texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
 texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
@@ -212,7 +212,7 @@ float4 GlareDetectionPS(
 	return float4(bloom, 0);
 }
 
-float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset, uniform int n) : COLOR
+float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
 	static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
 	static const float weightSum = 262106.0;
