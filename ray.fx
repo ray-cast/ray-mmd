@@ -781,7 +781,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS();
-		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(0, 0, 0, 0));
+		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(0.0);
 	}
 	pass SMAANeighborhoodBlending<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

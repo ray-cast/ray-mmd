@@ -6,11 +6,11 @@ static float2 BloomOffset3 = ViewportOffset2 * 8;
 static float2 BloomOffset4 = ViewportOffset2 * 16;
 static float2 BloomOffset5 = ViewportOffset2 * 32;
 
-static float BloomScale1 = ((ViewportSize.x * 0.5) / BloomScale);
-static float BloomScale2 = ((ViewportSize.x * 0.25) / (BloomScale * 0.5));
-static float BloomScale3 = ((ViewportSize.x * 0.125) / (BloomScale * 0.25));
-static float BloomScale4 = ((ViewportSize.x * 0.0625) / (BloomScale * 0.125));
-static float BloomScale5 = ((ViewportSize.x * 0.03125) / (BloomScale * 0.0625));
+static float BloomScale1 = (ViewportSize.x * 0.5) / BloomScale;
+static float BloomScale2 = (ViewportSize.x * 0.25) / (BloomScale * 0.5);
+static float BloomScale3 = (ViewportSize.x * 0.125) / (BloomScale * 0.25);
+static float BloomScale4 = (ViewportSize.x * 0.0625) / (BloomScale * 0.125);
+static float BloomScale5 = (ViewportSize.x * 0.03125) / (BloomScale * 0.0625);
 
 static float2 BloomOffsetX1 = float2(ViewportOffset2.x * 2, 0.0)  * BloomScale1;
 static float2 BloomOffsetX2 = float2(ViewportOffset2.x * 4, 0.0)  * BloomScale2;
@@ -62,18 +62,13 @@ texture BloomMap3rdTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125};
 texture BloomMap4thTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
 texture BloomMap5thTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
 
-sampler BloomSamp1stTemp = sampler_state {
-	texture = <BloomMap1stTemp>;
-	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
-};
 sampler BloomSamp1st = sampler_state {
 	texture = <BloomMap1st>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler BloomSamp2ndTemp = sampler_state {
-	texture = <BloomMap2ndTemp>;
+sampler BloomSamp1stTemp = sampler_state {
+	texture = <BloomMap1stTemp>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
@@ -82,8 +77,8 @@ sampler BloomSamp2nd = sampler_state {
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler BloomSamp3rdTemp = sampler_state {
-	texture = <BloomMap3rdTemp>;
+sampler BloomSamp2ndTemp = sampler_state {
+	texture = <BloomMap2ndTemp>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
@@ -92,8 +87,8 @@ sampler BloomSamp3rd = sampler_state {
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler BloomSamp4thTemp = sampler_state {
-	texture = <BloomMap4thTemp>;
+sampler BloomSamp3rdTemp = sampler_state {
+	texture = <BloomMap3rdTemp>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
@@ -102,13 +97,18 @@ sampler BloomSamp4th = sampler_state {
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler BloomSamp5thTemp = sampler_state {
-	texture = <BloomMap5thTemp>;
+sampler BloomSamp4thTemp = sampler_state {
+	texture = <BloomMap4thTemp>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler BloomSamp5th = sampler_state {
 	texture = <BloomMap5th>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler BloomSamp5thTemp = sampler_state {
+	texture = <BloomMap5thTemp>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
