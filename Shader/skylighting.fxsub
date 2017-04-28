@@ -41,6 +41,8 @@ static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
+static float3 LightDirection : DIRECTION< string Object = "Light";>;
+
 texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
@@ -94,12 +96,17 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 V = mul(matTransform, worldView);
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
+	float3 L = mul(-LightDirection, (float3x3)matView);
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
-	float2 coord1 = ComputeSphereCoord(N);
-	float2 coord2 = ComputeSphereCoord(R);
+	float nl = saturate(dot(worldNormal, -LightDirection) * 0.5 + 0.5);
+	float toon = floor(nl * material.customDataA * 5) / (material.customDataA * 5);
+	toon = (material.lightModel == SHADINGMODELID_TOON) ? toon : 0;
+
+	float2 coord1 = ComputeSphereCoord(normalize(lerp(N, V, toon)));
+	float2 coord2 = ComputeSphereCoord(normalize(lerp(R, N, toon)));
 
 	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)));
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)));
