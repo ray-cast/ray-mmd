@@ -26,8 +26,30 @@ float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string
 float mBloomThresholdP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold";>;
 float mBloomRadiusP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius+";>;
 float mBloomRadiusM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius-";>;
-float mBloomIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity+";>;
-float mBloomIntensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomIntensity-";>;
+float mBloomColorAllHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColorAllH+";>;
+float mBloomColorAllSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColorAllS+";>;
+float mBloomColorAllVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColorAllV+";>;
+float mBloomColorAllVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColorAllV-";>;
+float mBloomColor1stHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor1stH+";>;
+float mBloomColor1stSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor1stS+";>;
+float mBloomColor1stVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor1stV+";>;
+float mBloomColor1stVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor1stV-";>;
+float mBloomColor2ndHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor2ndH+";>;
+float mBloomColor2ndSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor2ndS+";>;
+float mBloomColor2ndVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor2ndV+";>;
+float mBloomColor2ndVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor2ndV-";>;
+float mBloomColor3rdHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor3rdH+";>;
+float mBloomColor3rdSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor3rdS+";>;
+float mBloomColor3rdVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor3rdV+";>;
+float mBloomColor3rdVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor3rdV-";>;
+float mBloomColor4thHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor4thH+";>;
+float mBloomColor4thSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor4thS+";>;
+float mBloomColor4thVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor4thV+";>;
+float mBloomColor4thVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor4thV-";>;
+float mBloomColor5thHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor5thH+";>;
+float mBloomColor5thSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor5thS+";>;
+float mBloomColor5thVP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor5thV+";>;
+float mBloomColor5thVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColor5thV-";>;
 float mBloomStarFade : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomStarFade";>;
 float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast+";>;
 float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
@@ -54,7 +76,6 @@ static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, m
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
 static float mBloomRadius = lerp(lerp(3.0, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
-static float mBloomIntensity = lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomIntensityP), 0, mBloomIntensityM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
 static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
@@ -729,9 +750,8 @@ technique DeferredLighting<
 	}
 #endif
 	pass GlareLightComp<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = true; AlphaTestEnable = false;
+		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
 		VertexShader = compile vs_3_0 GlareLightCompVS();
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}

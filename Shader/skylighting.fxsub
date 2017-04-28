@@ -107,7 +107,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceDiffuse);
 	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mBalanceSpecular);
 
-	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff / PI;
 	specular = prefilteredSpeculr * fresnel;
 
 	[branch]
