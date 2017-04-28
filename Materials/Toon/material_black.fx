@@ -1,11 +1,11 @@
-#define ALBEDO_MAP_FROM 3
+#define ALBEDO_MAP_FROM 0
 #define ALBEDO_MAP_UV_FLIP 0
 #define ALBEDO_MAP_APPLY_SCALE 0
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = 0.02;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -67,7 +67,7 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;
+const float3 specular = 0.25;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
