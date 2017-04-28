@@ -6,15 +6,15 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/ibl.fxsub"
 
-float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
-float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
-float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
-float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
-float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
-float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
-float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight-";>;
-float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
-float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
+float mEnvSSSLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight+";>;
+float mEnvSSSLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight-";>;
+float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
+float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
 
 float mDiffuseColRP : CONTROLOBJECT<string name="(self)"; string item = "DiffuseR+";>;
 float mDiffuseColGP : CONTROLOBJECT<string name="(self)"; string item = "DiffuseG+";>;
@@ -107,7 +107,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceDiffuse);
 	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mBalanceSpecular);
 
-	diffuse = prefilteredDiffuse * mEnvIntensityDiff / PI;
+	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel;
 
 	[branch]

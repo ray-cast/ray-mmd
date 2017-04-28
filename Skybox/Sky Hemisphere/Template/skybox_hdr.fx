@@ -35,9 +35,9 @@ static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
 #endif
 
-float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
-float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
-float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
+float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 

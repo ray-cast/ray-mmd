@@ -38,15 +38,15 @@ static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
 #endif
 
-float mEnvRotateX : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateX";>;
-float mEnvRotateY : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateY";>;
-float mEnvRotateZ : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvRotateZ";>;
-float mEnvSSSLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight+";>;
-float mEnvSSSLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSSSLight-";>;
-float mEnvDiffLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight+";>;
-float mEnvDiffLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvDiffLight-";>;
-float mEnvSpecLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight+";>;
-float mEnvSpecLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "EnvSpecLight-";>;
+float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
+float mEnvSSSLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight+";>;
+float mEnvSSSLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight-";>;
+float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
+float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
 
 static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
 static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
