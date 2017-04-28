@@ -217,7 +217,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
-// 3 : Reserved
+// 3 : Toon               // customA = segment,    customB = shadow color
 
 // You need to set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
