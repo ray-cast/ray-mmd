@@ -43,6 +43,9 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	specular *= lightColor;
 
 #if SHADOW_QUALITY
+	if (material.lightModel == SHADINGMODELID_TOON)
+		mColorShadowSunP += material.customDataB;
+
 	diffuse += mColorShadowSunP * (1 - shadow) * step(0, sum(material.albedo + material.specular) - 1e-5);
 #endif
 }
