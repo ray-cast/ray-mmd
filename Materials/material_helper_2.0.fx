@@ -218,14 +218,14 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
 
-// If you always use toon to your skin or actor, SSSS can be disabled
+// If you always use toon to your skin and actor, SSSS can be disabled
 // 3 : Toon               // customA = segment,    customB = shadow color
 
 // You need to set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
 
-// 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 // see paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
+// 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
