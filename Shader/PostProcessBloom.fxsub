@@ -157,7 +157,7 @@ void GlareDetectionVS(
 	oTexcoord1 = Texcoord.xyxy + ViewportOffset.xyxy;
 	oTexcoord2 = oTexcoord1.xyxy + offset0;
 	oTexcoord3 = oTexcoord1.xyxy + offset1;
-	
+
 	oTexcoord1.zw = mExposure;
 #if HDR_EYE_ADAPTATION == 1
 	float aveLum = tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
