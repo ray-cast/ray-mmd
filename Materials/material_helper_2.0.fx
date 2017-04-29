@@ -3,7 +3,7 @@
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
 // You can use a fixed color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
-// Tips : albedo is also called "Base Color", default data will be fetched params from texture from the pmx.
+// Tips : albedo is also called "Base Color", default data will fetched params from texture from the pmx.
 // 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to ALBEDO_MAP_FILE.
@@ -78,7 +78,9 @@ const float2 albedoSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 // it has no effect on opaque objects.
 #define ALPHA_MAP_FROM 3	 		// see ALBEDO_MAP_FROM for more information.
 #define ALPHA_MAP_UV_FLIP 0	 		// see ALBEDO_MAP_UV_FLIP for more information.
-#define ALPHA_MAP_SWIZZLE 3 		// The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
+
+// The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
+#define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float alpha = 1.0;
@@ -154,8 +156,8 @@ const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 // For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
 // Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Specular to reflection coefficient is F(x) = 0.08 * x, if x is equal 0.5 the result is 0.04.
-// So default value is 0.5 for 0.04.
+// Specular to reflection coefficient is F(x) = 0.08 * x, if the x is equal to 0.5 the result will be 0.04.
+// So default value is 0.5 for 0.04 coeff.
 const float3 specular = 0.5; // between 0 ~ 1
 const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 
