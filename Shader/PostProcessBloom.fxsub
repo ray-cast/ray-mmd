@@ -1,28 +1,22 @@
-const float BloomScale = 512;
-
 static float2 BloomOffset1 = ViewportOffset2 * 2;
 static float2 BloomOffset2 = ViewportOffset2 * 4;
 static float2 BloomOffset3 = ViewportOffset2 * 8;
 static float2 BloomOffset4 = ViewportOffset2 * 16;
 static float2 BloomOffset5 = ViewportOffset2 * 32;
 
-static float BloomScale1 = (ViewportSize.x * 0.5) / BloomScale;
-static float BloomScale2 = (ViewportSize.x * 0.25) / (BloomScale * 0.5);
-static float BloomScale3 = (ViewportSize.x * 0.125) / (BloomScale * 0.25);
-static float BloomScale4 = (ViewportSize.x * 0.0625) / (BloomScale * 0.125);
-static float BloomScale5 = (ViewportSize.x * 0.03125) / (BloomScale * 0.0625);
+static const float2 BloomScale = 512 * float2(ViewportAspect, 1);
 
-static float2 BloomOffsetX1 = float2(ViewportOffset2.x * 2, 0.0)  * BloomScale1;
-static float2 BloomOffsetX2 = float2(ViewportOffset2.x * 4, 0.0)  * BloomScale2;
-static float2 BloomOffsetX3 = float2(ViewportOffset2.x * 8, 0.0)  * BloomScale3;
-static float2 BloomOffsetX4 = float2(ViewportOffset2.x * 16, 0.0) * BloomScale4;
-static float2 BloomOffsetX5 = float2(ViewportOffset2.x * 32, 0.0) * BloomScale5;
+static const float2 BloomOffsetX1 = float2( 2 / BloomScale.x, 0.0);
+static const float2 BloomOffsetX2 = float2( 4 / BloomScale.x, 0.0);
+static const float2 BloomOffsetX3 = float2( 8 / BloomScale.x, 0.0);
+static const float2 BloomOffsetX4 = float2(16 / BloomScale.x, 0.0);
+static const float2 BloomOffsetX5 = float2(32 / BloomScale.x, 0.0);
 
-static float2 BloomOffsetY1 = float2(0.0, ViewportOffset2.y * 2)  * BloomScale1;
-static float2 BloomOffsetY2 = float2(0.0, ViewportOffset2.y * 4)  * BloomScale2;
-static float2 BloomOffsetY3 = float2(0.0, ViewportOffset2.y * 8)  * BloomScale3;
-static float2 BloomOffsetY4 = float2(0.0, ViewportOffset2.y * 16) * BloomScale4;
-static float2 BloomOffsetY5 = float2(0.0, ViewportOffset2.y * 32) * BloomScale5;
+static const float2 BloomOffsetY1 = float2(0.0,  2 / BloomScale.y);
+static const float2 BloomOffsetY2 = float2(0.0,  4 / BloomScale.y);
+static const float2 BloomOffsetY3 = float2(0.0,  8 / BloomScale.y);
+static const float2 BloomOffsetY4 = float2(0.0, 16 / BloomScale.y);
+static const float2 BloomOffsetY5 = float2(0.0, 32 / BloomScale.y);
 
 static float3 mBloomColorAll = hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 static float3 mBloomColor1st = hsv2rgb(float3(mBloomColor1stHP, mBloomColor1stSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColor1stVP), 0, mBloomColor1stVM)));
