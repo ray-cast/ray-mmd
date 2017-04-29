@@ -20,13 +20,6 @@ sampler MoonMapSamp = sampler_state
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
-texture JupiterMap<string ResourceName = "Shader/Textures/jupiter.jpg";>;
-sampler JupiterMapSamp = sampler_state
-{
-	texture = <JupiterMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
 texture MilkWayMap<string ResourceName = "Shader/Textures/milky way.jpg";>;
 sampler MilkWayMapSamp = sampler_state
 {
@@ -175,13 +168,6 @@ float4 ScatteringPS(
 			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
 			VertexShader = compile vs_3_0 StarsVS(); \
 			PixelShader  = compile ps_3_0 StarsPS(); \
-		} \
-		pass DrawJupiter { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
-			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling); \
-			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp); \
 		} \
 		pass DrawMoon { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\
