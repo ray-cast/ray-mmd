@@ -7,7 +7,7 @@
 static const float3 moonScaling = 3800;
 static const float3 moonTranslate = 80000;
 
-static const float3 jupiterScaling = 4000;
+static const float3 jupiterScaling = 2000;
 static const float3 jupiterTranslate = float3(10000, 5000, 10000);
 
 static float3x3 matTransformMoon = CreateRotate(float3(0.0, 0.0, time / 50));
@@ -99,7 +99,7 @@ float4 SpherePS(
 	in float3 normal : TEXCOORD1,
 	uniform sampler source) : COLOR
 {
-	float4 diffuse = tex2D(source, coord + float2(time / 200, 0));
+	float4 diffuse = pow(tex2D(source, coord + float2(time / 200, 0)), 2.2);
 	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
 	return diffuse;
 }
