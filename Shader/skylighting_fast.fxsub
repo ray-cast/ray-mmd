@@ -22,8 +22,6 @@ static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
 static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
 
-static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
-
 texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
@@ -66,9 +64,9 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
 
-	float3 V = mul(matTransform, worldView);
-	float3 N = mul(matTransform, worldNormal);
-	float3 R = mul(matTransform, worldReflect);
+	float3 V = worldView;
+	float3 N = worldNormal;
+	float3 R = worldReflect;
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
@@ -122,7 +120,6 @@ void EnvLightingPS(
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1)
 {
-#if IBL_ENABLE
 	float2 coord = texcoord.xy / texcoord.w;
 
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
@@ -154,10 +151,6 @@ void EnvLightingPS(
 
 	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
-#else
-	oColor0 = EncodeYcbcr(screenPosition, 0, 0);
-	oColor1 = EncodeYcbcr(screenPosition, 0, 0);
-#endif
 }
 
 const float4 BackColor = float4(0,0,0,0);
