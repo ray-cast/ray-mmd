@@ -35,7 +35,7 @@ float WetLerp(float minimum, float maximum, float wetness)
 
 MaterialParam WetnessEffect(MaterialParam material, float3 N, float2 coord, float3 P, float wetness, float porosity)
 {
-	float3 deepAlbedo = material.albedo * float3(0.55,0.55,0.6)*0.5;
+	float3 deepAlbedo = material.albedo * 0.25;
 	material.albedo = lerp(material.albedo, deepAlbedo, WetLerp(0.0, 0.35, wetness) * porosity);
 	material.smoothness = lerp(material.smoothness, 1.0, WetLerp(0.2, 1.0, wetness));
 	material.specular = lerp(material.specular, 0.02, WetLerp(0.25, 0.5, wetness));
