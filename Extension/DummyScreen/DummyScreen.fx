@@ -1,8 +1,11 @@
-#include "../../shader/common.fxsub"
+float2 ViewportSize : VIEWPORTPIXELSIZE;
 
-shared texture2D DummyScreenTex : RenderColorTarget
-<
-	float2 ViewPortRatio = {1.0, 1.0};
+static float2 ViewportOffset  = 0.5 / ViewportSize;
+static float2 ViewportOffset2 = 1.0 / ViewportSize;
+static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
+
+shared texture2D DummyScreenTex : RenderColorTarget<
+	float2 ViewportRatio = {1.0, 1.0};
 	int Miplevels = 0;
 	string Format= "A2B10G10R10";
 >;
