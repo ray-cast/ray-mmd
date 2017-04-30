@@ -223,7 +223,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // If you always use toon to your skin and actor, SSSS can be disabled
 // 3 : Toon               // customA = segment,    customB = shadow color
 
-// You need to set alpha value of the pmx model to less then 0.999
+// In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
 
 // see paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
