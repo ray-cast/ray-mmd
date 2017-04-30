@@ -241,12 +241,11 @@ float4 GlareLightCompVS(
 	out float3 oTexcoord4 : TEXCOORD4,
 	out float3 oTexcoord5 : TEXCOORD5) : POSITION
 {
-	float g = 1.0f / (sqrt(PI_2) * mBloomRadius);
-	float g1 = exp(-(0 * 0) / (2.0 * mBloomRadius * mBloomRadius)) * g;
-	float g2 = exp(-(1 * 1) / (2.0 * mBloomRadius * mBloomRadius)) * g;
-	float g3 = exp(-(2 * 2) / (2.0 * mBloomRadius * mBloomRadius)) * g;
-	float g4 = exp(-(3 * 3) / (2.0 * mBloomRadius * mBloomRadius)) * g;
-	float g5 = exp(-(4 * 4) / (2.0 * mBloomRadius * mBloomRadius)) * g;
+	float g1 = exp(-(0 * 0) / (2.0 * mBloomRadius * mBloomRadius));
+	float g2 = exp(-(1 * 1) / (2.0 * mBloomRadius * mBloomRadius));
+	float g3 = exp(-(2 * 2) / (2.0 * mBloomRadius * mBloomRadius));
+	float g4 = exp(-(3 * 3) / (2.0 * mBloomRadius * mBloomRadius));
+	float g5 = exp(-(4 * 4) / (2.0 * mBloomRadius * mBloomRadius));
 	float weight = g1 + g2 + g3 + g4 + g5;
 
 	oTexcoord0 = Texcoord;
@@ -260,7 +259,7 @@ float4 GlareLightCompVS(
 }
 
 float4 GlareLightCompPS(
-	in float2 coord1 : TEXCOORD0, 
+	in float2 coord1 : TEXCOORD0,
 	in float3 coord2 : TEXCOORD1,
 	in float3 coord3 : TEXCOORD2,
 	in float3 coord4 : TEXCOORD3,

@@ -85,11 +85,10 @@ void StarStreakVS(
 	uniform float2 stepSize,
 	uniform float stride)
 {
-	float2 offset = ViewportSize * 0.25;
-	oTexcoord0 = Texcoord + (0.5 / offset);
-	oTexcoord1 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride;
-	oTexcoord2 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 2;
-	oTexcoord3 = oTexcoord0 + stepSize / (offset / (offset / StarScale)) * stride * 3;
+	oTexcoord0 = Texcoord + 0.5 / (ViewportSize * 0.25);
+	oTexcoord1 = oTexcoord0 + stepSize / StarScale * stride;
+	oTexcoord2 = oTexcoord0 + stepSize / StarScale * stride * 2;
+	oTexcoord3 = oTexcoord0 + stepSize / StarScale * stride * 3;
 	oPosition = Position;
 }
 
