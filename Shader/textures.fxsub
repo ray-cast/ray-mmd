@@ -199,7 +199,7 @@ texture2D ShadowmapMapTemp : RENDERCOLORTARGET<
 >;
 sampler PSSMsamp = sampler_state {
 	texture = <PSSM>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowmapSamp = sampler_state {
