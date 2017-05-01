@@ -94,8 +94,8 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 
 #if SHADOW_QUALITY && MAIN_LIGHT_ENABLE
-#	include "shader/csm.fxsub"
-#	include "shader/shadowmap.fxsub"
+#	include "shader/ShadowMapCascaded.fxsub"
+#	include "shader/ShadowMap.fxsub"
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
