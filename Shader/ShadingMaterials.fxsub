@@ -1,15 +1,4 @@
 #if MAIN_LIGHT_ENABLE
-#if MAIN_LIGHT_ENABLE == 2
-float ComputeSunIntensity(float3 L)
-{
-	float EE = 8;
-	float steepness = 1.5;
-	float cutoffAngle = 1.6110731556870734; // PI / 1.95;
-	float zenithAngleCos = saturate(dot(-L, float3(0, 1, 0)));
-	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness)));
-}
-#endif
-
 void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
 	float4 energy = SurfaceEnergy(material, material.normal, L, V);
