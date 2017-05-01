@@ -8,20 +8,17 @@
 #	define SSR_SAMPLER_COUNT 32
 #endif
 
-static float SSRScale1 = ((ViewportSize.x * 1.0)   / (mSSRBlurScale * 1.0));
-static float SSRScale2 = ((ViewportSize.x * 0.5)   / (mSSRBlurScale * 0.5));
-static float SSRScale3 = ((ViewportSize.x * 0.25)  / (mSSRBlurScale * 0.25));
-static float SSRScale4 = ((ViewportSize.x * 0.125) / (mSSRBlurScale * 0.125));
+static const float2 SSRScale = 512 * float2(ViewportAspect, 1);
 
-static float2 SSROffsetX1 = float2(ViewportOffset2.x * 1, 0.0) * SSRScale1;
-static float2 SSROffsetX2 = float2(ViewportOffset2.x * 2, 0.0) * SSRScale2;
-static float2 SSROffsetX3 = float2(ViewportOffset2.x * 4, 0.0) * SSRScale3;
-static float2 SSROffsetX4 = float2(ViewportOffset2.x * 8, 0.0) * SSRScale4;
+static const float2 SSROffsetX1 = float2(1 / SSRScale.x, 0.0);
+static const float2 SSROffsetX2 = float2(2 / SSRScale.x, 0.0);
+static const float2 SSROffsetX3 = float2(4 / SSRScale.x, 0.0);
+static const float2 SSROffsetX4 = float2(8 / SSRScale.x, 0.0);
 
-static float2 SSROffsetY1 = float2(0.0, ViewportOffset2.y * 1) * SSRScale1;
-static float2 SSROffsetY2 = float2(0.0, ViewportOffset2.y * 2) * SSRScale2;
-static float2 SSROffsetY3 = float2(0.0, ViewportOffset2.y * 4) * SSRScale3;
-static float2 SSROffsetY4 = float2(0.0, ViewportOffset2.y * 8) * SSRScale4;
+static const float2 SSROffsetY1 = float2(0.0, 1 / SSRScale.y);
+static const float2 SSROffsetY2 = float2(0.0, 2 / SSRScale.y);
+static const float2 SSROffsetY3 = float2(0.0, 4 / SSRScale.y);
+static const float2 SSROffsetY4 = float2(0.0, 8 / SSRScale.y);
 
 texture SSRLightX1Map : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
 texture SSRLightX2Map : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;

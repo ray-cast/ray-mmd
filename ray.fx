@@ -438,13 +438,13 @@ technique DeferredLighting<
 	pass SSRGaussionBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset);
 		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX1Samp, SSROffsetX1);
 	}
 	pass SSRGaussionBlurY1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset);
 		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX1SampTemp, SSROffsetY1);
 	}
 	pass SSRGaussionBlurX2<string Script= "Draw=Buffer;";>{
