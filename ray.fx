@@ -750,8 +750,9 @@ technique DeferredLighting<
 	}
 #endif
 	pass GlareLightComp<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
+		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = SRCALPHA;
 		VertexShader = compile vs_3_0 GlareLightCompVS();
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}
