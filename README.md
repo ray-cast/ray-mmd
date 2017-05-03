@@ -17,6 +17,7 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
+	- Added a LightBloom Extension
 	- Improved Bloom
 
 Requirement :
