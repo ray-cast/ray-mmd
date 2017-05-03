@@ -12,24 +12,12 @@ Screenshots :
 
 Download :
 ------------
-* [Ray-MMD 1.3.0 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.0.zip) (updated: 27. Apr 2017)
-* [Ray-MMD 1.3.0 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.0.tar.gz) (updated: 27. Apr 2017)
+* [Ray-MMD 1.3.1 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.1.zip) (updated: 27. Apr 2017)
+* [Ray-MMD 1.3.1 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1.tar.gz) (updated: 27. Apr 2017)
 - Latest changes - Major allocator changes:
-	- Added a Time of day & night
-	- Added a Sky Hemisphere
-	- Added a Optical Flares PostProcess Effect
-	- Added a Eye Adaptation PostProcess Effect
-	- Added a Albedo sub map support
-	- Added a Bump map support
-	- Added a Specular map support
-	- Added a Wetness map support
-	- Added a 2.0 version of Material description (old materials still available in this version)
-	- Improved FilmGrain (Added X & Y Film Line)
-	- Improved bloom
-	- Improved SSAO & SSDO
-	- Improved Multiple Light Source
-	- Improved cmft (fps optimize, GPU memory, 8k limit), it will output a skybox.dds instead of skybox.hdr
-	- Fixed some bugs
+	- Optimized for cloth lighting
+	- Fixed bug : when set NORMAL_MAP_FROM to 9
+	- Fixed bug : when add Sub Normal Map to editor.fx
 
 Requirement :
 ------------
