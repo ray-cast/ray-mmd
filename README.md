@@ -15,6 +15,7 @@ Download :
 * [Ray-MMD 1.3.1 - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.1.zip) (updated: 27. Apr 2017)
 * [Ray-MMD 1.3.1 - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1.tar.gz) (updated: 27. Apr 2017)
 - Latest changes - Major allocator changes:
+	- Added a LightBloom Extension
 	- Optimized for cloth lighting
 	- Fixed bug : when set NORMAL_MAP_FROM to 9
 	- Fixed bug : when add Sub Normal Map to editor.fx
