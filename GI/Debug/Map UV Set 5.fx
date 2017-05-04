@@ -67,7 +67,7 @@ float2 CoordToPos(float2 coord)
 void DrawObjectVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord0 : TEXCOORD0,
-	in float4 Texcoord1 : TEXCOORD1,
+	in float4 Texcoord1 : TEXCOORD4,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
