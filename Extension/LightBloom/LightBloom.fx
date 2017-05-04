@@ -219,7 +219,7 @@ float4 TonemapHable(float4 x)
 	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
 }
 
-float3 inverse_filmic_curve(float3 x) 
+float3 TonemapHableInverseCurve(float3 x) 
 {
 	float A = 0.22;
 	float B = 0.30;
@@ -237,7 +237,7 @@ float3 inverse_filmic_curve(float3 x)
 float3 TonemapHableInverse(float3 color, float range = 8.0)
 {
 	color *= TonemapHable(range).r;
-	return inverse_filmic_curve(color);
+	return TonemapHableInverseCurve(color);
 }
 
 float4 ScreenSpaceQuadOffsetVS(
@@ -422,7 +422,7 @@ technique FimicGrain <
 	"RenderColorTarget0=;"
 	"ClearSetColor=ClearColor;"
 	"ClearSetDepth=ClearDepth;"
-	
+
 	"RenderColorTarget0=ScnMap;"
 	"Clear=Color;"
 	"Clear=Depth;"
@@ -470,7 +470,7 @@ technique FimicGrain <
 	pass HDRDownsample2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset1);
+		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2 * 2);
 		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp2nd);
 	}
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{
@@ -565,7 +565,7 @@ technique FimicGrain <
 		PixelShader  = compile ps_3_0 GlareLightCompPS();
 	}
 	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
-		 AlphaBlendEnable = false; AlphaTestEnable = false;
+		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 HDRTonemappingVS();
 		PixelShader  = compile ps_3_0 HDRTonemappingPS(ScnSamp);
