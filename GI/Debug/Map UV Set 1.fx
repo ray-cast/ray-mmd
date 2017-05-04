@@ -75,7 +75,7 @@ void DrawObjectVS(
 	oTexcoord0 = Texcoord0;
 	oTexcoord1 = Texcoord1;
 	oPosition = mul(Position, matViewProject);
-	oPosition.xy = CoordToPos(oTexcoord0.xy);
+	oPosition.xy = CoordToPos(oTexcoord0.xy) / float2(ViewportAspect, 1);
 	oPosition.zw = float2(0,1);
 }
 
