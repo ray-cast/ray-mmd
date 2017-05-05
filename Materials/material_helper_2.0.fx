@@ -164,8 +164,10 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for occlusion
-// Fetch ambient occlusion from linear color-space
-// Fetch ambient occlusion from sRGB   color-space
+// 0 : Fetch ambient occlusion from linear color-space
+// 1 : Fetch ambient occlusion from sRGB   color-space
+// 2 : Fetch ambient occlusion from linear color-space from second UV set
+// 3 : Fetch ambient occlusion from sRGB   color-space from second UV set
 #define OCCLUSION_MAP_TYPE 0
 #define OCCLUSION_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define OCCLUSION_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.

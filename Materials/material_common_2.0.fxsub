@@ -1435,39 +1435,44 @@ void MaterialVS(
 
 GbufferParam MaterialPS(
 	in float3 normal   : TEXCOORD0,
-	in float2 coord    : TEXCOORD1,
+	in float2 coord0   : TEXCOORD1,
+	in float2 coord1   : TEXCOORD2,
 	in float4 worldPos : TEXCOORD2)
 {
 	normal = normalize(normal);
 
 #if PARALLAX_MAP_FROM
 	#if PARALLAX_MAP_UV_FLIP
-		coord.y = 1 - coord.y;
+		coord0.y = 1 - coord0.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord * parallaxMapLoopNum);
-	coord = ParallaxOcclusionMap(ParallaxMapSamp, coord * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord0 * parallaxMapLoopNum);
+	coord0 = ParallaxOcclusionMap(ParallaxMapSamp, coord0 * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 	#if PARALLAX_MAP_UV_FLIP
-		coord.y = 1 - coord.y;
+		coord0.y = 1 - coord0.y;
 	#endif
 #endif
 
-	float alpha = GetAlpha(coord);
+	float alpha = GetAlpha(coord0);
 	clip(alpha - ALPHA_THRESHOLD);
 #if ALPHA_MAP_FROM == 2
 	clip(-1);
 #endif
 
 	MaterialParam material;
-	material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
-	material.normal = GetNormal(normal, worldPos.xyz, coord);
-	material.smoothness = GetSmoothness(coord);
-	material.metalness = GetMetalness(coord);
-	material.specular = GetSpecular(coord);
-	material.customDataA = GetCustomDataA(coord);
-	material.customDataB = GetCustomDataB(coord);
-	material.emissive = GetEmissiveColor(coord);
+	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
+	material.normal = GetNormal(normal, worldPos.xyz, coord0);
+	material.smoothness = GetSmoothness(coord0);
+	material.metalness = GetMetalness(coord0);
+	material.specular = GetSpecular(coord0);
+	material.customDataA = GetCustomDataA(coord0);
+	material.customDataB = GetCustomDataB(coord0);
+	material.emissive = GetEmissiveColor(coord0);
 	material.emissiveIntensity = GetEmissiveIntensity();
-	material.visibility = GetOcclusion(coord);
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
+	material.visibility = GetOcclusion(coord1);
+#else
+	material.visibility = GetOcclusion(coord0);
+#endif
 	material.lightModel = GetLightMode(material);
 	material.alpha = 1;
 
@@ -1476,40 +1481,45 @@ GbufferParam MaterialPS(
 
 GbufferParam Material2PS(
 	in float3 normal   : TEXCOORD0,
-	in float2 coord    : TEXCOORD1,
+	in float2 coord0   : TEXCOORD1,
+	in float2 coord1   : TEXCOORD2,
 	in float4 worldPos : TEXCOORD2)
 {
 	normal = normalize(normal);
 
 #if PARALLAX_MAP_FROM
 	#if PARALLAX_MAP_UV_FLIP
-		coord.y = 1 - coord.y;
+		coord0.y = 1 - coord0.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord0);
 #if PARALLAX_MAP_TYPE
-	coord = ParallaxOcclusionMap(ParallaxMapSamp, coord * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
+	coord0 = ParallaxOcclusionMap(ParallaxMapSamp, coord0 * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 #else
-	coord *= parallaxMapLoopNum;
+	coord0 *= parallaxMapLoopNum;
 #endif
 	#if PARALLAX_MAP_UV_FLIP
-		coord.y = 1 - coord.y;
+		coord0.y = 1 - coord0.y;
 	#endif
 #endif
 
-	float alpha = GetAlpha(coord);
+	float alpha = GetAlpha(coord0);
 	clip(alpha - 0.01);
 
 	MaterialParam material;
-	material.albedo = GetSubAlbedo(GetAlbedo(coord), coord);
-	material.normal = GetNormal(normal, worldPos.xyz, coord);
-	material.smoothness = GetSmoothness(coord);
-	material.metalness = GetMetalness(coord);
-	material.specular = GetSpecular(coord);
-	material.customDataA = GetCustomDataA(coord);
-	material.customDataB = GetCustomDataB(coord);
-	material.emissive = GetEmissiveColor(coord);
+	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
+	material.normal = GetNormal(normal, worldPos.xyz, coord0);
+	material.smoothness = GetSmoothness(coord0);
+	material.metalness = GetMetalness(coord0);
+	material.specular = GetSpecular(coord0);
+	material.customDataA = GetCustomDataA(coord0);
+	material.customDataB = GetCustomDataB(coord0);
+	material.emissive = GetEmissiveColor(coord0);
 	material.emissiveIntensity = GetEmissiveIntensity();
-	material.visibility = GetOcclusion(coord);
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
+	material.visibility = GetOcclusion(coord1);
+#else
+	material.visibility = GetOcclusion(coord0);
+#endif
 	material.lightModel = GetLightMode(material);
 #if ALPHA_MAP_FROM == 2
 	material.alpha = alpha;
