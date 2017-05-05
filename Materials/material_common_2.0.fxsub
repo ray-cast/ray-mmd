@@ -15,7 +15,7 @@ bool use_subtexture;
 bool use_spheremap;
 bool use_toon;
 
-#if EMISSIVE_MAP_APPLY_MORPH_COLOR || ALBEDO_APPLY_MORPH_COLOR
+#if EMISSIVE_MAP_APPLY_MORPH_COLOR || ALBEDO_MAP_APPLY_MORPH_COLOR
 float MorphRed   : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
 float MorphGreen : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
 float MorphBlue  : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
@@ -771,7 +771,14 @@ float3 GetAlbedo(float2 coord)
 
 	return albedoColor;
 #else
-	return albedo.rgb;
+	float3 albedoColor = albedo;
+	#if ALBEDO_MAP_APPLY_DIFFUSE
+		albedoColor *= pow(MaterialDiffuse.rgb, 2.2);
+	#endif
+	#if ALBEDO_MAP_APPLY_MORPH_COLOR
+		albedoColor *= MorphColor;
+	#endif
+	return albedoColor;
 #endif
 }
 
