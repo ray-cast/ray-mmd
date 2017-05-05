@@ -1210,7 +1210,7 @@ float GetOcclusion(float2 coord)
 		float occlusionValue = occlusionValues.r;
 	#endif
 
-	#if OCCLUSION_MAP_TYPE == 1
+	#if OCCLUSION_MAP_TYPE == 1 || OCCLUSION_MAP_TYPE == 3
 		occlusionValue = pow(occlusionValue, 2.2);
 	#endif
 
