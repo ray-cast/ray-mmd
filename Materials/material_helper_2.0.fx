@@ -51,7 +51,7 @@
 // And then
 // If color is fetch from your display monitor, you need to convert sRGB color-space to linear color-space by color ^ gamma
 // Tips : The Gamma is near 2.2 and used most of time
-// Tips : About sRGB and Gamma, you can see docs for more information : http://http.developer.nvidia.com/GPUGems3/gpugems3_ch24.html
+// Tips : About sRGB and Gamma, you can see docs for more information : https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch24.html
 // Convert srgb color-space from normalized value to linear color-space  like : const float3 albedo = pow(float3(r, g, b), 2.2);
 // Convert srgb color-space from unnormalized value to linear color-space  like : const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);
 const float3 albedo = 1.0;
