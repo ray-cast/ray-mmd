@@ -117,7 +117,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.customDataB * showCustomDataAlphaB;
 	result += materialAlpha.visibility * showVisibilityAlpha;
 	
-	result = pow(result, 1.0 / (2.0 + 1.0 / 3.0));
+	result = pow(result, 1.0 / 2.2);
 
 	result += materialAlpha.alpha * showAlpha;
 	result += pow(saturate(material.linearDepth / 200), 0.5) * showDepth;
