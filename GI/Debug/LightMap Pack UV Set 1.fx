@@ -1,12 +1,3 @@
-float time : TIME;
-float elapsed : ELAPSEDTIME;
-
-float2 MousePosition : MOUSEPOSITION;
-
-float4x4 matWorld              : WORLD;
-float4x4 matWorldInverse       : WORLDINVERSE;
-float4x4 matWorldView          : WORLDVIEW;
-float4x4 matWorldViewProject   : WORLDVIEWPROJECTION;
 float4x4 matView               : VIEW;
 float4x4 matViewInverse        : VIEWINVERSE;
 float4x4 matProject            : PROJECTION;
@@ -14,13 +5,8 @@ float4x4 matProjectInverse     : PROJECTIONINVERSE;
 float4x4 matViewProject        : VIEWPROJECTION;
 float4x4 matViewProjectInverse : VIEWPROJECTIONINVERSE;
 
-float3 CameraPosition  : POSITION<string Object = "Camera";>;
-float3 CameraDirection : DIRECTION<string Object = "Camera";>;
-
 float4 MaterialDiffuse  : DIFFUSE<string Object = "Geometry";>;
-float3 MaterialAmbient  : AMBIENT<string Object = "Geometry";>;
 float3 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
-float3 MaterialToon     : TOONCOLOR;
 float  MaterialPower    : SPECULARPOWER<string Object = "Geometry";>;
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
@@ -33,8 +19,6 @@ uniform bool use_texture;
 uniform bool use_subtexture;
 uniform bool use_spheremap;
 uniform bool use_toon;
-
-uniform bool opadd;
 
 texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
@@ -74,9 +58,7 @@ void DrawObjectVS(
 {
 	oTexcoord0 = Texcoord0;
 	oTexcoord1 = Texcoord1;
-	oPosition = mul(Position, matViewProject);
-	oPosition.xy = CoordToPos(oTexcoord0.xy) / float2(ViewportAspect, 1);
-	oPosition.zw = float2(0,1);
+	oPosition = float4(CoordToPos(oTexcoord0.xy) / float2(ViewportAspect, 1), 0, 1);
 }
 
 float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) : COLOR
