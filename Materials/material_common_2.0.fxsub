@@ -1428,14 +1428,23 @@ float GetLightMode(MaterialParam material)
 void MaterialVS(
 	in float4 Position : POSITION, 
 	in float3 Normal : NORMAL, 
-	in float2 Texcoord: TEXCOORD0,
+	in float2 Texcoord1 : TEXCOORD0,
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
+	in float2 Texcoord2 : TEXCOORD1,
+#endif
 	out float3 oNormal   : TEXCOORD0,
-	out float2 oTexcoord : TEXCOORD1,
-	out float4 oWorldPos : TEXCOORD2,
-	out float4 oPosition : POSITION)
+	out float2 oTexcoord1 : TEXCOORD1,
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
+	out float2 oTexcoord2 : TEXCOORD2,
+#endif
+	out float4 oWorldPos  : TEXCOORD3,
+	out float4 oPosition  : POSITION)
 {
 	oNormal = Normal;
-	oTexcoord = Texcoord;
+	oTexcoord1 = Texcoord1;
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
+	oTexcoord2 = Texcoord2;
+#endif
 	oPosition = mul(Position, matWorldViewProject);
 	oWorldPos = float4(mul(Position, matWorld).xyz, oPosition.w);
 }
@@ -1443,8 +1452,10 @@ void MaterialVS(
 GbufferParam MaterialPS(
 	in float3 normal   : TEXCOORD0,
 	in float2 coord0   : TEXCOORD1,
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	in float2 coord1   : TEXCOORD2,
-	in float4 worldPos : TEXCOORD2)
+#endif
+	in float4 worldPos : TEXCOORD3)
 {
 	normal = normalize(normal);
 
@@ -1489,8 +1500,10 @@ GbufferParam MaterialPS(
 GbufferParam Material2PS(
 	in float3 normal   : TEXCOORD0,
 	in float2 coord0   : TEXCOORD1,
+#if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	in float2 coord1   : TEXCOORD2,
-	in float4 worldPos : TEXCOORD2)
+#endif
+	in float4 worldPos : TEXCOORD3)
 {
 	normal = normalize(normal);
 
