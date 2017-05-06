@@ -117,14 +117,14 @@ const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 // Other parameter types for smoothness
 // 0 : Smoothness (from Frostbite / CE5 textures)
 // 1 : Calculate smoothness from roughness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
-// 2 : Calculate smoothness from roughness by 1.0 - Roughness		 (from UE4/GGX/SubstancePainter2 with roughness linear roughness)
+// 2 : Calculate smoothness from roughness by 1.0 - Roughness		(from UE4/GGX/SubstancePainter2 with roughness linear roughness)
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define SMOOTHNESS_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
 #define SMOOTHNESS_MAP_APPLY_SCALE 0	// see ALBEDO_MAP_APPLY_SCALE for more information.
 #define SMOOTHNESS_MAP_FILE "smoothness.png" // see ALBEDO_MAP_FILE for more information.
 
-const float smoothness = 0.0;	// between 0 ~ 1
+const float smoothness = 0.0;			// between 0 ~ 1
 const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define METALNESS_MAP_FROM 0				// see ALBEDO_MAP_FROM for more information.
@@ -133,32 +133,32 @@ const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define METALNESS_MAP_APPLY_SCALE 0			// see ALBEDO_MAP_APPLY_SCALE for more information.
 #define METALNESS_MAP_FILE "metalness.png"	// see ALBEDO_MAP_FILE for more information.
 
-const float metalness = 0.0;	// between 0 ~ 1
+const float metalness = 0.0;			// between 0 ~ 1
 const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Minimum coefficient of specular reflection, it has no effect on metals and CUSTOM_ENABLE > 0.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
-// 0 : Use reflection coefficient from specular color by F(x) = 0.08*(x  ) (from UE4 textures)
-// 1 : Use reflection coefficient from specular color by F(x) = 0.16*(x^2) (from Frostbite textures)
-// 2 : Use reflection coefficient from specular grays by F(x) = 0.08*(x  ) (from UE4 textures)
-// 3 : Use reflection coefficient from specular grays by F(x) = 0.16*(x^2) (from Frostbite textures)
-// 4 : Use reflection coefficient (0.04) but not a specular value (0.5), Available when SPECULAR_MAP_FROM is 0
+// 0 : Calculate reflection coefficient from specular color by F(x) = 0.08*(x  ) (from UE4 textures)
+// 1 : Calculate reflection coefficient from specular color by F(x) = 0.16*(x^2) (from Frostbite textures)
+// 2 : Calculate reflection coefficient from specular grays by F(x) = 0.08*(x  ) (from UE4 textures)
+// 3 : Calculate reflection coefficient from specular grays by F(x) = 0.16*(x^2) (from Frostbite textures)
+// 4 : Calculate reflection coefficient (0.04) but not a specular value (0.5), Available when SPECULAR_MAP_FROM is 0
 #define SPECULAR_MAP_TYPE 0
-#define SPECULAR_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
-#define SPECULAR_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
-#define SPECULAR_MAP_APPLY_SCALE 0
-#define SPECULAR_MAP_FILE "specular.png"
+#define SPECULAR_MAP_UV_FLIP 0			 // see ALBEDO_MAP_UV_FLIP for more information.
+#define SPECULAR_MAP_SWIZZLE 0			 // see ALPHA_MAP_SWIZZLE for more information.
+#define SPECULAR_MAP_APPLY_SCALE 0  	 // see ALBEDO_MAP_APPLY_SCALE for more information.
+#define SPECULAR_MAP_FILE "specular.png" // see ALBEDO_MAP_FILE for more information.
 
 // Default value is 0.5
 // Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
 // For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
 // Consider light that is incident upon a transparent medium with a refractive index of 1.5
 // The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Specular to reflection coefficient is F(x) = 0.08 * x, if the x is equal to 0.5 the result will be 0.04.
+// Specular to reflection coefficient is equal to F(x) = 0.08*x, if the x is equal to 0.5 the result will be 0.04.
 // So default value is 0.5 for 0.04 coeff.
-const float3 specular = 0.5; // between 0 ~ 1
+const float3 specular = 0.5; 			// between 0 ~ 1
 const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
@@ -174,7 +174,7 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define OCCLUSION_MAP_APPLY_SCALE 0 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define OCCLUSION_MAP_FILE "occlusion.png" // see ALBEDO_MAP_FILE for more information.
 
-const float occlusion = 1.0;	// between 0 ~ 1
+const float occlusion = 1.0;			// between 0 ~ 1
 const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define PARALLAX_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
@@ -196,21 +196,21 @@ const float parallaxMapScale = 1.0;
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define EMISSIVE_ENABLE 0
-#define EMISSIVE_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
-#define EMISSIVE_MAP_UV_FLIP 0
-#define EMISSIVE_MAP_APPLY_SCALE 0
-#define EMISSIVE_MAP_APPLY_MORPH_COLOR 0
-#define EMISSIVE_MAP_APPLY_MORPH_INTENSITY 0
+#define EMISSIVE_MAP_FROM 0						// see ALBEDO_MAP_FROM for more information.
+#define EMISSIVE_MAP_UV_FLIP 0					// see ALBEDO_MAP_UV_FLIP for more information.
+#define EMISSIVE_MAP_APPLY_SCALE 0				// see ALBEDO_MAP_APPLY_SCALE for more information.
+#define EMISSIVE_MAP_APPLY_MORPH_COLOR 0		// see ALBEDO_MAP_APPLY_MORPH_COLOR
+#define EMISSIVE_MAP_APPLY_MORPH_INTENSITY 0	// Texture colors to multiply with intensity from morph controller (Intensity+/-).
 
 // You can set the blink using the following code.
 // 1 : colors to multiply with frequency from emissiveBlink. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);
 // 2 : colors to multiply with frequency from morph controller, see Blink morph inside PointLight.pmx
 #define EMISSIVE_MAP_APPLY_BLINK 0
-#define EMISSIVE_MAP_FILE "emissive.png"
+#define EMISSIVE_MAP_FILE "emissive.png"		// see ALBEDO_MAP_FILE for more information.
 
-const float3 emissive = 1.0;	// emissive color
-const float3 emissiveBlink = 1.0; // between 0 ~ 10
-const float  emissiveIntensity = 1.0; // between 0 ~ 100 and above
+const float3 emissive = 1.0;			// between 0 ~ 1
+const float3 emissiveBlink = 1.0; 		// between 0 ~ 10
+const float  emissiveIntensity = 1.0; 	// between 0 ~ 100 and above
 const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Shading Material ID

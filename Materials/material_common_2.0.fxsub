@@ -1218,7 +1218,7 @@ float GetOcclusion(float2 coord)
 	#endif
 
 	#if OCCLUSION_MAP_TYPE == 1 || OCCLUSION_MAP_TYPE == 3
-		occlusionValue = pow(occlusionValue, 2.2);
+		occlusionValue = srgb2linear(occlusionValue);
 	#endif
 
 	#if OCCLUSION_MAP_APPLY_SCALE == 1
