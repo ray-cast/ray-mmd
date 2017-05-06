@@ -68,6 +68,15 @@ float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, floa
 	return material.customDataB * brdf;
 }
 
+float3 SubsurfaceShadingSubsurface(MaterialParam material, float3 N, float3 L, float3 V)
+{
+	float3 H = normalize(V + L);
+	float inscatter = pow(saturate(dot(L, -V)), 12) * lerp(3, 0.1, material.customDataA);
+	float NormalContribution = saturate(dot(N, H) * material.customDataA + 1 - material.customDataA);
+	float BackScatter = material.visibility * NormalContribution / (PI * 2);
+	return material.customDataB * lerp(BackScatter, 1, inscatter) * saturate(dot(N, L));
+}
+
 float3 SubsurfaceShadingScattering(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	float w = 0.5;
