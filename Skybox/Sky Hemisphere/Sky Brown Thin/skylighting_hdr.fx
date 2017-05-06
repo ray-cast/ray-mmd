@@ -30,9 +30,15 @@ static const float3 mMediumColor = hsv2rgb(float3(mMediumColorHP, mMediumColorSP
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 #else
-static const float3 mTopColor = hsv2rgb(TopColor);
-static const float3 mBottomColor = hsv2rgb(BottomColor);
-static const float3 mMediumColor = hsv2rgb(MediumColor);
+#if USE_RGB_COLORSPACE
+	static const float3 mTopColor = pow(TopColor, 2.2);
+	static const float3 mBottomColor = pow(BottomColor, 2.2);
+	static const float3 mMediumColor = pow(MediumColor, 2.2);
+#else
+	static const float3 mTopColor = hsv2rgb(TopColor);
+	static const float3 mBottomColor = hsv2rgb(BottomColor);
+	static const float3 mMediumColor = hsv2rgb(MediumColor);
+#endif
 
 static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
