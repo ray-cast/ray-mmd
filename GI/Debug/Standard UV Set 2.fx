@@ -40,7 +40,7 @@ texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
-	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = POINT;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
@@ -48,7 +48,7 @@ texture ToonMap : MATERIALTOONTEXTURE;
 sampler ToonMapSamp = sampler_state
 {
 	texture = <ToonMap>;
-	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = POINT;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
