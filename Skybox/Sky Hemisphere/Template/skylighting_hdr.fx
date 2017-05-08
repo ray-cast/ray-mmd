@@ -65,7 +65,7 @@ float3 SampleSky(float3 N, float smoothness)
 	float3 color = 0;
 	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, pow2(smoothness))));
 	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, pow2(smoothness))));
-	return color / PI;
+	return color;
 }
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
