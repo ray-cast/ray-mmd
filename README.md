@@ -18,6 +18,7 @@ Download :
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Improved Bloom
+	- Added a LightMass
 
 Requirement :
 ------------
