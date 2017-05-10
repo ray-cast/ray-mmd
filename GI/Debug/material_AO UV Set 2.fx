@@ -70,7 +70,7 @@ const float metalnessMapLoopNum = 1.0;
 const float3 specular = 0.5;
 const float2 specularMapLoopNum = 1.0;
 
-#define OCCLUSION_MAP_FROM 3
+#define OCCLUSION_MAP_FROM 4
 #define OCCLUSION_MAP_TYPE 2
 #define OCCLUSION_MAP_UV_FLIP 0
 #define OCCLUSION_MAP_SWIZZLE 0

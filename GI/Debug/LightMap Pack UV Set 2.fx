@@ -70,7 +70,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 #endif
 	clip(alpha - DiscardAlphaThreshold);
 #endif
-	return tex2D(ToonMapSamp, texcoord1.xy);
+	return float4(0,0,0,0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\

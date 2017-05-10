@@ -119,6 +119,10 @@ sampler ScnSamp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
+	float2 ViewportRatio = {1.0,1.0};
+	string Format = "D24S8";
+>;
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 static float2 ViewportOffset  = (float2(0.5,0.5) / ViewportSize);
@@ -167,7 +171,8 @@ const float ClearDepth  = 1.0;
 
 technique FXAA <
 	string Script = 
-	"RenderColorTarget0=ScnMap;"
+	"RenderColorTarget=ScnMap;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"ClearSetColor=ClearColor;"
 	"ClearSetDepth=ClearDepth;"
 	"Clear=Color;"
@@ -181,7 +186,7 @@ technique FXAA <
 > {
 	pass FXAA < string Script= "Draw=Buffer;"; > {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = False; ZWriteEnable = False;
+		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 FXAA3VS();
 		PixelShader  = compile ps_3_0 FXAA3PS();
 	}

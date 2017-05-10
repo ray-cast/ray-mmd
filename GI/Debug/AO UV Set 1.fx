@@ -40,7 +40,7 @@ texture DiffuseMap : MATERIALTEXTURE;
 sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = POINT;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
@@ -86,7 +86,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 #endif
 	clip(alpha - DiscardAlphaThreshold);
 #endif
-	return pow(tex2D(DiffuseMapSamp, texcoord.xy), 1.0 / 2.2);
+	return pow(tex2D(ToonMapSamp, texcoord.xy), 1.0 / 2.2);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
