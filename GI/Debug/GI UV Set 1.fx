@@ -19,6 +19,7 @@ float3 CameraDirection : DIRECTION<string Object = "Camera";>;
 
 float4 MaterialDiffuse  : DIFFUSE<string Object = "Geometry";>;
 float4 MaterialAmbient  : AMBIENT<string Object = "Geometry";>;
+float4 MaterialEmissive  : EMISSIVE<string Object = "Geometry";>;
 float3 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
 float3 MaterialToon     : TOONCOLOR;
 float  MaterialPower    : SPECULARPOWER<string Object = "Geometry";>;
@@ -86,7 +87,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 #endif
 	clip(alpha - DiscardAlphaThreshold);
 #endif
-	return pow(tex2D(ToonMapSamp, texcoord.xy) * pow(MaterialAmbient,2.2), 1.0 / 2.2);
+	return pow(tex2D(ToonMapSamp, texcoord1.xy) * pow(max(MaterialDiffuse,1e-5),2.2) + pow(max(MaterialEmissive,1e-5), 2.2), 1.0 / 2.2);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
