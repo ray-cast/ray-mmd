@@ -482,7 +482,7 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-	return pow(abs(rgb), 2.2);
+	return pow(max(abs(rgb), 1e-5), 2.2);
 }
 
 float4 srgb2linear(float4 c)
@@ -773,7 +773,7 @@ float3 GetAlbedo(float2 coord)
 #else
 	float3 albedoColor = albedo;
 	#if ALBEDO_MAP_APPLY_DIFFUSE
-		albedoColor *= pow(MaterialDiffuse.rgb, 2.2);
+		albedoColor *= srgb2linear(MaterialDiffuse.rgb);
 	#endif
 	#if ALBEDO_MAP_APPLY_MORPH_COLOR
 		albedoColor *= MorphColor;
