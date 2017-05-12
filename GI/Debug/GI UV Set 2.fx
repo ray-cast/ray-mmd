@@ -65,6 +65,22 @@ float2 CoordToPos(float2 coord)
 	return coord * 2 - 1;
 }
 
+float3 DecodeRGBT(float4 rgbt, float range = 1024)
+{
+	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+	return rgbt.rgb * rgbt.a;
+}
+
+float3 TonemapACES(float3 x)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+	return (x * (A * x + B)) / (x * (C * x + D) + E);
+}
+
 void DrawObjectVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord0 : TEXCOORD0,
@@ -87,7 +103,12 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 #endif
 	clip(alpha - DiscardAlphaThreshold);
 #endif
-	return pow(tex2D(ToonMapSamp, texcoord1.xy) * pow(max(MaterialDiffuse,1e-5),2.2) + pow(max(MaterialEmissive,1e-5), 2.2), 1.0 / 2.2);
+	
+	float3 lightng = DecodeRGBT(tex2D(ToonMapSamp, texcoord1.xy));
+	float3 diffuse = pow(max(MaterialDiffuse.rgb,1e-5), 2.2);
+	float3 shading = TonemapACES(diffuse * lightng + pow(max(MaterialEmissive.rgb, 1e-5), 2.2));
+
+	return float4(pow(shading, 1.0 / 2.2), 1.0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
