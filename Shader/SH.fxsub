@@ -1,0 +1,11 @@
+float3 AmbientLight(float3 AmbientCube[6], const float3 worldNormal)
+{
+	float3 squared = worldNormal * worldNormal;
+	int3 side = worldNormal < 0.0 ;
+
+	float3 linearColor = 0;
+	linearColor + squared.x * AmbientCube[side.x] +
+	linearColor + squared.y * AmbientCube[side.y + 2] +
+	linearColor + squared.z * AmbientCube[side.z + 4];
+	return linearColor;
+} 
