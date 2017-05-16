@@ -187,7 +187,7 @@ const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define PARALLAX_MAP_SWIZZLE 0			// see ALPHA_MAP_SWIZZLE for more information.
 #define PARALLAX_MAP_FILE "height.png"	// see ALBEDO_MAP_FILE for more information.
 
-const float parallaxMapScale = 1.0;
+const float parallaxMapScale = 1.0;		// between 0 ~ inf
 
 // Why increase number of parallaxMapLoopNum will increase the loops/tile/number of albedo, normals, etc
 // Bacause parallax coordinates can be calculated from height map 
@@ -242,7 +242,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.0;
+const float customA = 0.0;	// All between 0 ~ 1
 const float customAMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #define CUSTOM_B_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.
@@ -251,7 +251,7 @@ const float customAMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define CUSTOM_B_MAP_APPLY_SCALE 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = 0.0;
+const float3 customB = 0.0;	// All between 0 ~ 1
 const float2 customBMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 #include "material_common_2.0.fxsub"
