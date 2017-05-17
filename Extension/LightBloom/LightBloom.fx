@@ -302,16 +302,15 @@ float4 GlareDetectionPS(
 
 float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-	const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
-	const float weightSum = 262106.0;
+	const float weights[9] = { 0.048297,0.08393,0.124548,0.157829,0.170793,0.157829,0.124548,0.08393,0.048297 };
 
 	float4 color = 0;
-	float2 coords = coord - offset * 7.0;
+	float2 coords = coord - offset * 4.0;
 
 	[unroll]
-	for (int i = 0; i < 15; ++i)
+	for (int i = 0; i < 9; ++i)
 	{
-		color += tex2Dlod(source, float4(coords, 0, 0)) * (weights[i] / weightSum);
+		color += tex2Dlod(source, float4(coords, 0, 0)) * weights[i];
 		coords += offset;
 	}
 
