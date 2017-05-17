@@ -80,6 +80,7 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			ZEnable = true; ZWriteEnable = true;\
 			FillMode = WIREFRAME;\
+			CullMode = NONE;\
 			VertexShader = compile vs_3_0 DrawObjectVS();\
 			PixelShader = compile ps_3_0 DrawObjectPS();\
 		}\
