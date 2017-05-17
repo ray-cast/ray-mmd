@@ -45,13 +45,39 @@ sampler DiffuseMapSamp = sampler_state
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-texture ToonMap : MATERIALTOONTEXTURE;
+texture SphereMap : MATERIALSPHEREMAP;
 sampler ToonMapSamp = sampler_state
 {
-	texture = <ToonMap>;
+	texture = <SphereMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
+
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+
+float3 rgb2ycbcr(float3 col)
+{
+	float3 encode;
+	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	return encode;
+}
+
+float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
+{
+	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+
+	color1 = rgb2ycbcr(color1);
+	color2 = rgb2ycbcr(color2);
+
+	float4 result = 0.0f;
+	result.r = color1.r;
+	result.g = (pattern) ? color1.g: color1.b;
+	result.b = color2.r;
+	result.a = (pattern) ? color2.g: color2.b;
+	return result;  
+}
 
 float2 PosToCoord(float2 position)
 {
@@ -94,7 +120,12 @@ void DrawObjectVS(
 	oPosition = mul(Position, matViewProject);
 }
 
-float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) : COLOR
+void DrawObjectPS(
+	float4 texcoord : TEXCOORD0, 
+	float4 texcoord1 : TEXCOORD1,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1,
+	float4 screenPosition : SV_Position)
 {
 #if DISCARD_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
@@ -104,11 +135,10 @@ float4 DrawObjectPS(float4 texcoord : TEXCOORD0, float4 texcoord1 : TEXCOORD1) :
 	clip(alpha - DiscardAlphaThreshold);
 #endif
 	
-	float3 lightng = DecodeRGBT(tex2D(ToonMapSamp, texcoord.xy));
-	float3 diffuse = pow(max(MaterialDiffuse.rgb,1e-5), 2.2);
-	float3 shading = TonemapACES(diffuse * lightng + pow(max(MaterialEmissive.rgb, 1e-5), 2.2));
-
-	return float4(pow(shading, 1.0 / 2.2), 1.0);
+	float3 lightng = DecodeRGBT(tex2D(DiffuseMapSamp, texcoord.xy));
+	
+	oColor0 = EncodeYcbcr(screenPosition, lightng * 2, 0);
+	oColor1 = EncodeYcbcr(screenPosition, lightng * 2, 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
