@@ -304,15 +304,18 @@ float4 BloomBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform 
 {
 	const float weights[9] = { 0.048297,0.08393,0.124548,0.157829,0.170793,0.157829,0.124548,0.08393,0.048297 };
 
-	float4 color = 0;
 	float2 coords = coord - offset * 4.0;
 
-	[unroll]
-	for (int i = 0; i < 9; ++i)
-	{
-		color += tex2Dlod(source, float4(coords, 0, 0)) * weights[i];
-		coords += offset;
-	}
+	float4 color = 0;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[0]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[1]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[2]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[3]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[4]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[5]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[6]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[7]; coords += offset;
+	color += tex2Dlod(source, float4(coords, 0, 0)) * weights[8];
 
 	return color;
 }
