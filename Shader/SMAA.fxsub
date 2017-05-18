@@ -29,25 +29,23 @@
 	#define SMAA_MAX_SEARCH_STEPS 16
 	#define SMAA_MAX_SEARCH_STEPS_DIAG 0
 	#define SMAA_CORNER_ROUNDING 0
-	#define SMAA_AREATEX_MAX_DISTANCE 16
-	#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
-	#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
-	#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
-	#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
-	#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
 	#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
 #else
 	#define SMAA_MAX_SEARCH_STEPS 16
 	#define SMAA_MAX_SEARCH_STEPS_DIAG 8
 	#define SMAA_CORNER_ROUNDING 25
-	#define SMAA_AREATEX_MAX_DISTANCE 16
-	#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
-	#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
-	#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
-	#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
-	#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
 	#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
 #endif
+
+#define SMAA_AREATEX_MAX_DISTANCE 16
+#define SMAA_AREATEX_MAX_DISTANCE_DIAG 20
+#define SMAA_AREATEX_PIXEL_SIZE (1.0 / float2(160.0, 560.0))
+#define SMAA_AREATEX_SUBTEX_SIZE (1.0 / 7.0)
+#define SMAA_SEARCHTEX_SIZE float2(66.0, 33.0)
+#define SMAA_SEARCHTEX_PACKED_SIZE float2(64.0, 16.0)
+#define SMAA_PREDICATION_SCALE 2.0
+#define SMAA_PREDICATION_THRESHOLD 0.01
+#define SMAA_PREDICATION_STRENGTH 0.4
 
 texture SMAAEdgeMap : RENDERCOLORTARGET <
 	float2 ViewPortRatio = {1.0, 1.0};
@@ -87,9 +85,17 @@ sampler SMAASearchMapSamp = sampler_state
 float3 SMAAGatherNeighbours(float2 coord, float4 offset[3], sampler source) 
 {
 	float P     = tex2Dlod(source, float4(coord, 0, 0)).r;
-	float Pleft = tex2Dlod(source, float4(offset[1].xy, 0, 0)).r;
-	float Ptop  = tex2Dlod(source, float4(offset[1].zw, 0, 0)).r;
+	float Pleft = tex2Dlod(source, float4(offset[0].xy, 0, 0)).r;
+	float Ptop  = tex2Dlod(source, float4(offset[0].zw, 0, 0)).r;
 	return float3(P, Pleft, Ptop);
+}
+
+float2 SMAACalculatePredicatedThreshold(float2 coord, float4 offset[3], sampler source) 
+{
+    float3 neighbours = SMAAGatherNeighbours(coord, offset, source);
+    float2 delta = abs(neighbours.xx - neighbours.yz);
+    float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
+    return SMAA_PREDICATION_SCALE * (1.0 - SMAA_PREDICATION_STRENGTH * edges) * mSMAAThreshold;
 }
 
 float SMAASearchLength(sampler searchTex, float2 e, float offset) 
@@ -113,7 +119,7 @@ float SMAASearchXLeft(sampler edgesTex, sampler searchTex, float2 texcoord, floa
 	{
 		e = tex2Dlod(edgesTex, float4(texcoord, 0, 0)).rg;
 		texcoord -= ViewportOffset2 * float2(2.0, 0.0);
-		if (!(texcoord.x > end &&  e.g > 0.8281 && e.r == 0.0)) break;
+		if (!(texcoord.x > end && e.g > 0.8281 && e.r == 0.0)) break;
 	}
 
 	float offset = madd(-(255.0 / 127.0), SMAASearchLength(searchTex, e, 0.0), 3.25);
