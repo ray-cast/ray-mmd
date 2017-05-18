@@ -112,16 +112,16 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.2;
+const float customA = 0.5;
 const float customAMapLoopNum = 1.0;
 
-#define CUSTOM_B_MAP_FROM 0
+#define CUSTOM_B_MAP_FROM 3
 #define CUSTOM_B_MAP_UV_FLIP 0
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_APPLY_SCALE 0
-#define CUSTOM_B_MAP_FILE "custom.png"
+#define CUSTOM_B_MAP_FILE "customB.png"
 
-const float3 customB = float3(129,64,48) / 255;
+const float3 customB = 1.0;
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"
