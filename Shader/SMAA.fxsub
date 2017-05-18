@@ -26,11 +26,13 @@
  * SOFTWARE.
  */
 #if AA_QUALITY == 2 || AA_QUALITY == 4
+	#define SMAA_THRESHOLD 0.1
 	#define SMAA_MAX_SEARCH_STEPS 16
 	#define SMAA_MAX_SEARCH_STEPS_DIAG 0
 	#define SMAA_CORNER_ROUNDING 0
 	#define SMAA_CORNER_ROUNDING_NORM (float(SMAA_CORNER_ROUNDING) / 100.0)
 #else
+	#define SMAA_THRESHOLD 0.1
 	#define SMAA_MAX_SEARCH_STEPS 16
 	#define SMAA_MAX_SEARCH_STEPS_DIAG 8
 	#define SMAA_CORNER_ROUNDING 25
@@ -95,7 +97,7 @@ float2 SMAACalculatePredicatedThreshold(float2 coord, float4 offset[3], sampler 
     float3 neighbours = SMAAGatherNeighbours(coord, offset, source);
     float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
-    return SMAA_PREDICATION_SCALE * (1.0 - SMAA_PREDICATION_STRENGTH * edges) * mSMAAThreshold;
+    return SMAA_PREDICATION_SCALE * (1.0 - SMAA_PREDICATION_STRENGTH * edges) * SMAA_THRESHOLD;
 }
 
 float SMAASearchLength(sampler searchTex, float2 e, float offset) 
@@ -371,7 +373,7 @@ float4 SMAALumaEdgeDetectionPS(
 	uniform sampler source) : COLOR
 {
 	float4 offset[3] = { coord1, coord2, coord3 };
-	float2 threshold = float2(mSMAAThreshold, mSMAAThreshold);
+	float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 
 	float Lcenter   = tex2Dlod(source, float4(coord0.xy, 0, 0)).a;
 	float Lleft     = tex2Dlod(source, float4(offset[0].xy, 0, 0)).a;
