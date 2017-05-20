@@ -16,8 +16,8 @@ void DepthObjectVS(
 	out float3 oTexcoord : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oPosition = mul(Position, matWorldViewProject);
 	oTexcoord = float3(Texcoord.xy, oPosition.w);
+	oPosition = mul(Position, matWorldViewProject);
 }
 
 float4 DepthObjectPS(float3 coord : TEXCOORD0) : COLOR
@@ -29,10 +29,6 @@ float4 DepthObjectPS(float3 coord : TEXCOORD0) : COLOR
 	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
 #endif
 	clip(alpha - 0.01);
-#endif
-
-#if SSAO_DISABLE
-	coord.z = -coord.z;
 #endif
 
 	return coord.z;

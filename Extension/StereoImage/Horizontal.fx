@@ -1,5 +1,8 @@
-#include "../../shader/math.fxsub"
-#include "../../shader/common.fxsub"
+float2 ViewportSize : VIEWPORTPIXELSIZE;
+
+static float2 ViewportOffset  = 0.5 / ViewportSize;
+static float2 ViewportOffset2 = 1.0 / ViewportSize;
+static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
 
 #define POST_STEREOSCOPIC_MODE 4
 #include "stereoscopic.fxsub"
@@ -19,7 +22,7 @@ sampler ScnSamp = sampler_state {
 texture DepthMap : OFFSCREENRENDERTARGET<
 	string Description = "Depth Map";
 	float2 ViewPortRatio = {1.0, 1.0};
-	string Format = "R32F";
+	string Format = "R16F";
 	float4 ClearColor = { 1, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
@@ -33,17 +36,17 @@ texture DepthMap : OFFSCREENRENDERTARGET<
 >;
 sampler DepthMapSamp = sampler_state {
 	texture = <DepthMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 void ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD0,
+	in float2 Texcoord : TEXCOORD0,
 	out float2 oTexcoord  : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
-	oTexcoord = Texcoord.xy + ViewportOffset.xy;
+	oTexcoord = Texcoord + ViewportOffset.xy;
 	oPosition = Position;
 }
 
@@ -58,14 +61,12 @@ const float ClearDepth  = 1.0;
 
 technique MainTech <
 	string Script = 
-	"RenderColorTarget=;"
+	"RenderColorTarget=ScnMap;"
+	"RenderDepthStencilTarget=;"
 	"ClearSetColor=ClearColor;"
 	"ClearSetDepth=ClearDepth;"
-
-	"RenderColorTarget=ScnMap;"
 	"Clear=Color;"
 	"Clear=Depth;"
-	"RenderDepthStencilTarget=;"
 	"ScriptExternal=Color;"
 
 	"RenderColorTarget=;"
