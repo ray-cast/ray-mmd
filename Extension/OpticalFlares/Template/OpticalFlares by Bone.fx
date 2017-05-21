@@ -26,7 +26,7 @@ float3 GhostFlareParams = float3(5.0, 0.0, 2.0);
 // R = Fixed Scale
 // G = Fixed Scale by camera
 // B = Increase Scale by ID
-float3 GhostAllScale = float3(0.125, 0.25, 0.025);
+float3 GhostAllScale = float3(0.125, 0.1, 0.025);
 
 // R = Fixed offset
 // G = Increase offset by ID
