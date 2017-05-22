@@ -1,0 +1,328 @@
+#include "shader/math.fxsub"
+#include "shader/common.fxsub"
+
+#if OCCLUSION_MAP_FROM
+#	include "shader/EyeAdaptation.fxsub"
+#endif
+
+#if FOLLOW_POSITION == 0
+	static const float3 LightPosition = -LightDirection * 80000;
+#elif FOLLOW_POSITION == 1
+	static const float3 LightPosition = AcsPosition;
+#endif
+
+texture ScnMap : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0,1.0};
+	string Format = "A8B8G8R8";
+>;
+sampler ScnSamp = sampler_state {
+	texture = <ScnMap>;
+	MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
+
+#if LENSFLARE_MAP_FROM
+	#if LENSFLARE_MAP_FROM == 1
+		texture LensFlareMap<string ResourceName = LENSFLARE_MAP_FILE; int Miplevels = 1;>;
+	#else
+		texture LensFlareMap : ANIMATEDTEXTURE<string ResourceName = LENSFLARE_MAP_FILE; int Miplevels = 1;>;
+	#endif
+	sampler LensFlareMapSamp = sampler_state
+	{
+		Texture = LensFlareMap;
+		MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
+		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	};
+#endif
+
+#if GHOST_MAP_FROM
+	#if GHOST_MAP_FROM == 1
+		texture GhostMap<string ResourceName = GHOST_MAP_FILE; int Miplevels = 1;>;
+	#else
+		texture GhostMap : ANIMATEDTEXTURE<string ResourceName = GHOST_MAP_FILE; int Miplevels = 1;>;
+	#endif
+	sampler GhostMapSamp = sampler_state
+	{
+		Texture = GhostMap;
+		MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
+		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	};
+#endif
+
+float3 SampleSpectrum(float x)
+{
+	float t = 3.0 * x - 1.5;
+	return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset, int samples, float4 limits = float4(0,0,1,1))
+{
+	float3 color = 0.0;
+	float3 weight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i < samples; i++, coord += delta)
+	{
+		coord = clamp(coord, limits.xy, limits.zw);
+		
+		float3 w = SampleSpectrum(float(i) / samples);
+		weight += w;
+		color += w * srgb2linear(tex2Dlod(source, float4(coord, 0, 0)).rgb);
+	}
+
+	return color / weight;
+}
+
+float2 GetGhostImagePos(float2 position, float scale, float scale2, float offset, float index)
+{
+	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.xyz /= screenPosition.w;
+
+	if (screenPosition.w < 1e-5) return 0;
+
+	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
+
+	float2 posScale = float2(1, ViewportAspect);
+	posScale *= (GhostAllScale.x + GhostAllScale.z * index) * scale;
+	posScale *= lerp(0.5, dot(deltaScreenPos, deltaScreenPos) + 0.5, GhostAllScale.y * scale2);
+
+	float2 pos = 0;
+	pos = position * posScale;
+	pos += screenPosition.xy + deltaScreenPos * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
+	pos -= deltaScreenPos * index * GhostAllOffset.z;
+
+	return pos;
+}
+
+float2 GetGhostImageBillboard(float2 position, float scale, float scale2, float offset, float index)
+{
+	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.xyz /= screenPosition.w;
+
+	if (screenPosition.w < 1e-5) return 0;
+
+	float2 deltaScreenPos = -normalize(screenPosition.xyz).xy;
+
+	float2 posScale = float2(1, ViewportAspect);
+	posScale *= (GhostAllScale.x + GhostAllScale.z * index) * scale;
+	posScale *= lerp(0.5, dot(deltaScreenPos, deltaScreenPos) + 0.5, GhostAllScale.y * scale2);
+
+	float2 pos = 0;
+	pos = CreateBillboard(position, screenPosition.xy) * posScale;
+	pos += screenPosition.xy + deltaScreenPos * (GhostAllOffset.x + (index - LENSFLARE_MAP_INDEX) * GhostAllOffset.y) * offset;
+	pos -= deltaScreenPos * index * GhostAllOffset.z;
+
+	return pos;
+}
+
+#if LENSFLARE_MAP_FROM
+float4 LensflareVS(
+	in float4 position : POSITION, 
+	in float2 texcoord : TEXCOORD0, 
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1) : POSITION
+{
+	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.x = 1 - screenPosition.x;
+	screenPosition.xyz /= screenPosition.w;
+
+	float2 deltaScreenPos = -normalize(screenPosition.xy).xy * float2(ViewportAspect, 1);
+	deltaScreenPos *= GhostAllColorShift.x;
+#if LENSFLARE_MAP_TYPE == 2 || LENSFLARE_MAP_TYPE == 3
+	deltaScreenPos = CreateBillboardInverse(deltaScreenPos, screenPosition.xy);
+#endif
+
+	oTexcoord0.xy = texcoord;
+	oTexcoord0.zw = deltaScreenPos;
+
+	oTexcoord1 = GhostFlareParams.z * AcsScale / 10.0;
+#if OCCLUSION_MAP_FROM
+	oTexcoord1 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5, 0.5, 0, 0)).r;
+#endif
+
+#if LENSFLARE_MAP_TYPE == 2 || LENSFLARE_MAP_TYPE == 3
+	return float4(GetGhostImageBillboard(position.xy, GhostFlareParams.x, GhostFlareParams.y, 0, 1), 0, 1);
+#else
+	return float4(GetGhostImagePos(position.xy, GhostFlareParams.x, GhostFlareParams.y, 0, 1), 0, 1);
+#endif
+}
+
+float4 LensflarePS(
+	in float4 coord0 : TEXCOORD0,
+	in float3 coord1 : TEXCOORD1) : COLOR
+{
+#if LENSFLARE_MAP_TYPE == 1 || LENSFLARE_MAP_TYPE == 3
+	float3 color = ChromaticAberration(LensFlareMapSamp, coord0.xy, coord0.zw, 8).rgb * coord1;
+#else
+	float3 color = srgb2linear(tex2Dlod(LensFlareMapSamp, float4(coord0.xy, 0, 0)).rgb) * coord1;
+#endif
+
+#if FOLLOW_POSITION == 0
+	color *= saturate(normalize(LightPosition).y);
+#endif
+	color = linear2srgb(color);
+
+	return float4(color, luminance(color) * 0.5);
+}
+#endif
+
+#if GHOST_MAP_FROM
+float4 GhostImageVS(
+	in float4 position : POSITION, 
+	in float2 texcoord : TEXCOORD0, 
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	uniform int index) : POSITION
+{
+	float4 screenPosition = mul(float4(LightPosition, 1), matViewProject);
+	screenPosition.x = 1 - screenPosition.x;
+	screenPosition.xyz /= screenPosition.w;
+
+	float2 deltaScreenPos = -normalize(screenPosition.xy).xy * float2(ViewportAspect, 1);
+	deltaScreenPos *= GhostAllColorShift.y;
+	deltaScreenPos *= lerp(GhostAllColorShift.z, GhostAllColorShift.w, saturate(index / 16.0));
+	deltaScreenPos *= GhostShiftParams[index];
+#if GHOST_MAP_TYPE == 2 || GHOST_MAP_TYPE == 3
+	deltaScreenPos = CreateBillboardInverse(deltaScreenPos, screenPosition.xy);
+#endif
+
+	oTexcoord0.xy = float2(index % 4, index / 4) * 0.25 + texcoord * 0.25;
+	oTexcoord0.zw = deltaScreenPos;
+	
+	oTexcoord1 = float4(float2(index % 4, index / 4) * 0.25, float2(index % 4, index / 4) * 0.25 + 0.25);
+
+	oTexcoord2 = GhostParams[index].w * GhostAllBrightness.x;
+	oTexcoord2 += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
+	oTexcoord2 *= AcsScale / 10.0;
+
+#if OCCLUSION_MAP_FROM
+	oTexcoord2 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
+#endif
+
+#if GHOST_MAP_TYPE == 2 || GHOST_MAP_TYPE == 3
+	return float4(GetGhostImageBillboard(position.xy, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
+#else
+	return float4(GetGhostImagePos(position.xy, GhostParams[index].x, GhostParams[index].y, GhostParams[index].z, index), 0, 1);
+#endif
+}
+
+float4 GhostImagePS(
+	in float4 coord0 : TEXCOORD0,
+	in float4 coord1 : TEXCOORD1,
+	in float3 coord2 : TEXCOORD2) : COLOR
+{
+#if GHOST_MAP_TYPE == 1 || GHOST_MAP_TYPE == 3
+	float3 color = ChromaticAberration(GhostMapSamp, coord0.xy, coord0.zw, 24, coord1) * coord2;
+#else
+	float3 color = srgb2linear(tex2Dlod(GhostMapSamp, float4(coord0.xy, 0, 0)).rgb) * coord2;
+#endif
+
+#if FOLLOW_POSITION == 0
+	color *= saturate(normalize(LightPosition).y);
+#endif
+	color = linear2srgb(color);
+
+	return float4(color, luminance(color) * 0.5);
+}
+#endif
+
+float4 ShowScreenVS(
+	in float4 position : POSITION,
+	in float4 texcoord : TEXCOORD,
+	out float4 oTexcoord : TEXCOORD0) : POSITION
+{
+	oTexcoord = texcoord.xyxy + ViewportOffset.xyxy;
+	return position;
+}
+
+float4 ShowScreenPS(in float2 coord: TEXCOORD0) : COLOR
+{
+	return tex2Dlod(ScnSamp, float4(coord, 0, 0));
+}
+
+int GhostCount = 16;
+int GhostIndex = 0;
+
+float4 ClearColor = 0.0;
+float ClearDepth  = 1.0;
+
+float Script : STANDARDSGLOBAL <
+	string ScriptOutput = "color";
+	string ScriptClass = "scene";
+	string ScriptOrder = "postprocess";
+> = 0.8;
+
+technique OpticalLight<
+	string Script = 
+		"RenderColorTarget=ScnMap;"
+		"RenderDepthStencilTarget=;"
+		"ClearSetColor=ClearColor;"
+		"ClearSetDepth=ClearDepth;"
+		"Clear=Color;"
+		"Clear=Depth;"
+		"ScriptExternal=Color;"
+
+#if OCCLUSION_MAP_FROM
+		"RenderColorTarget=EyeLumAveMap;"
+		"Pass=EyeAdaptation;"
+#endif
+
+		"RenderColorTarget=ScnMap;"
+		
+#if LENSFLARE_MAP_FROM
+		"Pass=GenLensflare;"
+#endif
+
+#if GHOST_MAP_FROM
+		"LoopByCount=GhostCount;"
+		"LoopGetIndex=GhostIndex;"
+		"Pass=GenGhostImage;"
+		"LoopEnd=;"
+#endif
+
+		"RenderColorTarget=;"
+		"Clear=Color;"
+		"Clear=Depth;"
+		"Pass=ShowScreen;"
+;>{
+	pass ShowScreen<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		CULLMODE = NONE;
+		VertexShader = compile vs_3_0 ShowScreenVS();
+		PixelShader  = compile ps_3_0 ShowScreenPS();
+	}
+#if OCCLUSION_MAP_FROM
+	pass EyeAdaptation<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		CULLMODE = NONE;
+		VertexShader = compile vs_3_0 EyeAdaptationVS();
+		PixelShader  = compile ps_3_0 EyeAdaptationPS(LightPosition, CameraPosition, OcclusionParams);
+	}
+#endif
+#if LENSFLARE_MAP_FROM
+	pass GenLensflare<string Script= "Draw=Buffer;";>
+	{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = INVSRCALPHA;
+		CULLMODE = NONE;
+		VertexShader = compile vs_3_0 LensflareVS();
+		PixelShader  = compile ps_3_0 LensflarePS();
+	}
+#endif
+#if GHOST_MAP_FROM
+	pass GenGhostImage<string Script= "Draw=Buffer;";>
+	{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = INVSRCALPHA;
+		CULLMODE = NONE;
+		VertexShader = compile vs_3_0 GhostImageVS(GhostIndex);
+		PixelShader  = compile ps_3_0 GhostImagePS();
+	}
+#endif
+}

@@ -1,0 +1,51 @@
+#include "common.fxsub"
+
+#if RECIEVER_ALPHA_MAP_ENABLE
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state {
+	texture = <DiffuseMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = POINT;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+#endif
+
+void DepthObjectVS(
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD0,
+	out float3 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
+{
+	oPosition = mul(Position, matWorldViewProject);
+	oTexcoord = float3(Texcoord.xy, oPosition.w);
+}
+
+float4 DepthObjectPS(float3 coord : TEXCOORD0) : COLOR
+{
+#if RECIEVER_ALPHA_ENABLE
+	clip(!opadd - 0.001f);
+	float alpha = MaterialDiffuse.a;
+#if RECIEVER_ALPHA_MAP_ENABLE
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord.xy).a;
+#endif
+	clip(alpha - 0.01);
+#endif
+
+	return coord.z;
+}
+
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	>{\
+		pass DrawObject {\
+			AlphaTestEnable = false; AlphaBlendEnable = false;\
+			VertexShader = compile vs_3_0 DepthObjectVS();\
+			PixelShader  = compile ps_3_0 DepthObjectPS();\
+		}\
+	}
+
+OBJECT_TEC(DepthTec, "object")
+OBJECT_TEC(DepthTecBS, "object_ss")
+
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
