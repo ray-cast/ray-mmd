@@ -30,7 +30,7 @@ sampler ScnSamp = sampler_state {
 	sampler LensFlareMapSamp = sampler_state
 	{
 		Texture = LensFlareMap;
-		MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
+		MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
 		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
 #endif
@@ -136,7 +136,7 @@ float4 LensflareVS(
 	oTexcoord0.xy = texcoord;
 	oTexcoord0.zw = deltaScreenPos;
 
-	oTexcoord1 = LightSpecular * GhostFlareParams.z;
+	oTexcoord1 = GhostFlareParams.z * AcsScale / 10.0;
 #if OCCLUSION_MAP_FROM
 	oTexcoord1 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5, 0.5, 0, 0)).r;
 #endif
@@ -195,7 +195,8 @@ float4 GhostImageVS(
 
 	oTexcoord2 = GhostParams[index].w * GhostAllBrightness.x;
 	oTexcoord2 += (index - LENSFLARE_MAP_INDEX) * GhostAllBrightness.y;
-	//oTexcoord2 *= LightSpecular;
+	oTexcoord2 *= AcsScale / 10.0;
+
 #if OCCLUSION_MAP_FROM
 	oTexcoord2 *= tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
 #endif

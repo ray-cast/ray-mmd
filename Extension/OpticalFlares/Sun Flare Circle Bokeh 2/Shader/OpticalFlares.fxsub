@@ -30,7 +30,7 @@ sampler ScnSamp = sampler_state {
 	sampler LensFlareMapSamp = sampler_state
 	{
 		Texture = LensFlareMap;
-		MAGFILTER = POINT; MINFILTER = POINT; MIPFILTER = NONE;
+		MAGFILTER = LINEAR; MINFILTER = LINEAR; MIPFILTER = NONE;
 		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
 #endif
