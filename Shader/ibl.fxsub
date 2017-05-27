@@ -15,7 +15,7 @@ float3 FresnelSchlickGlass(float3 N, float3 V, float smoothness, float3 specular
 
 float FresnelSchlickClearCoat(float3 N, float3 V, float smoothness, float specular)
 {
-    return specular + (max(smoothness, specular) - specular) * pow5(1 - saturate(dot(N, V)));
+	return specular + (max(smoothness, specular) - specular) * pow5(1 - saturate(dot(N, V)));
 }
 
 float3 EnvironmentSpecularUnreal4(float3 N, float3 V, float smoothness, float3 specular)
