@@ -40,11 +40,11 @@ float3 DecodeHDR(float4 rgbx)
 {
 #if IBL_HDR_ENABLE
 	#if IBL_RGBT_RANGE
-		return DecodeRGBT(rgbx, IBL_RGBT_RANGE) / PI;
+		return DecodeRGBT(rgbx, IBL_RGBT_RANGE);
 	#elif IBL_RGBM_RANGE
-		return DecodeRGBM(rgbx, IBL_RGBM_RANGE) / PI;
+		return DecodeRGBM(rgbx, IBL_RGBM_RANGE);
 	#else
-		return DecodeRGBM(rgbx, 6) / PI;
+		return DecodeRGBM(rgbx, 6);
 	#endif
 #else
 	return rgbx.rgb;
