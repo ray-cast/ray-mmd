@@ -111,7 +111,7 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 	color.rgb = ApplyColorBalance(color.rgb);
 
 #if SKYBOX_HDR_ENABLE
-	return float4(linear2srgb(color.rgb / PI), 1);
+	return float4(linear2srgb(color.rgb), 1);
 #else
 	return float4(color.rgb, 1);
 #endif

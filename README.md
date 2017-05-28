@@ -17,8 +17,10 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
+	- Notice : Overwrite the old "common" to fix a bug
 	- Improved Bloom
 	- Added a LightMass
+	- Fixed bug : The green is greater than red and blue, when very bright exposure or specular reflection.
 
 Requirement :
 ------------
