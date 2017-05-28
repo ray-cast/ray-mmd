@@ -13,6 +13,34 @@
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 
+float  pow2(float x)  { return x * x; }
+float2 pow2(float2 x) { return x * x; }
+float3 pow2(float3 x) { return x * x; }
+float4 pow2(float4 x) { return x * x; }
+
+float  pow5(float x)  { float  xx = x * x; return xx * xx * x; }
+float2 pow5(float2 x) { float2 xx = x * x; return xx * xx * x; }
+float3 pow5(float3 x) { float3 xx = x * x; return xx * xx * x; }
+float4 pow5(float4 x) { float4 xx = x * x; return xx * xx * x; }
+
+float sum(float2 v) { return dot(v, 1.0); }
+float sum(float3 v) { return dot(v, 1.0); }
+float sum(float4 v) { return dot(v, 1.0); }
+
+float  madd(float v , float t1 , float t2 ) { return v * t1 + t2; }
+float2 madd(float2 v, float2 t1, float2 t2) { return v * t1 + t2; }
+float3 madd(float3 v, float3 t1, float3 t2) { return v * t1 + t2; }
+float4 madd(float4 v, float4 t1, float4 t2) { return v * t1 + t2; }
+
+float length2(float2 v) { return dot(v, v); }
+float length2(float3 v) { return dot(v, v); }
+float length2(float4 v) { return dot(v, v); }
+
+float luminance(float3 rgb)
+{
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
 float3 srgb2linear(float3 rgb)
 {
 	return pow(rgb, 2.2);
@@ -42,6 +70,7 @@ float3 hsv2rgb(float3 hsv)
 
 float3 rgb2ycbcr(float3 col)
 {
+	col = sqrt(col);
 	float3 encode;
 	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
 	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
@@ -55,73 +84,7 @@ float3 ycbcr2rgb(float3 YCbCr)
 	float R = YCbCr.x + 1.402 * YCbCr.z;
 	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
 	float B = YCbCr.x + 1.772 * YCbCr.y;
-	return max(0, float3(R, G, B));
-}
-
-float luminance(float3 rgb)
-{
-	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
-}
-
-float pow2(float x)
-{
-	return x * x;
-}
-
-float2 pow2(float2 x)
-{
-	return x * x;
-}
-
-float pow5(float x)
-{
-	float xx = x * x;
-	return xx * xx * x;
-}
-
-float sum(float2 v)
-{
-	return dot(v, 1.0);
-}
-
-float sum(float3 v)
-{
-	return dot(v, 1.0);
-}
-
-float sum(float4 v)
-{
-	return dot(v, 1.0);
-}
-
-float madd(float v, float t1, float t2)
-{
-	return v * t1 + t2;
-}
-
-float2 madd(float2 v, float2 t1, float2 t2)
-{
-	return v * t1 + t2;
-}
-
-float3 madd(float3 v, float3 t1, float3 t2)
-{
-	return v * t1 + t2;
-}
-
-float4 madd(float4 v, float4 t1, float4 t2)
-{
-	return v * t1 + t2;
-}
-
-float length2(float3 v)
-{
-	return dot(v, v);
-}
-
-float length2(float4 v)
-{
-	return dot(v, v);
+	return pow2(float3(R, G, B));
 }
 
 float3 DecodeRGBM(float4 rgbm, float range)
