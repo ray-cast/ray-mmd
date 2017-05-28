@@ -59,8 +59,8 @@ float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
 {
 	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
 
-	color1 = rgb2ycbcr(color1);
-	color2 = rgb2ycbcr(color2);
+	color1 = EecodeYcbcr(color1);
+	color2 = EecodeYcbcr(color2);
 
 	float4 result = 0.0f;
 	result.r = color1.r;
@@ -98,6 +98,6 @@ void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 off
 	color1 = (pattern) ? float3(packed.rg, env2.g) : float3(packed.r, env2.g, packed.g);
 	color2 = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
 
-	color1 = ycbcr2rgb(color1);
-	color2 = ycbcr2rgb(color2);
+	color1 = DecodeYcbcr(color1);
+	color2 = DecodeYcbcr(color2);
 }

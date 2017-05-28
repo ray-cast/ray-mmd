@@ -43,7 +43,8 @@ float luminance(float3 rgb)
 
 float3 srgb2linear(float3 rgb)
 {
-	return pow(rgb, 2.2);
+	const float ALPHA = 0.055f;
+	return rgb < 0.04045f ? rgb / 12.92f : pow((max(rgb,1e-5) + ALPHA) / (1 + ALPHA), 2.4f);
 }
 
 float4 srgb2linear(float4 c)
@@ -66,25 +67,6 @@ float3 hsv2rgb(float3 hsv)
 {
 	float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
 	return hsv.z * (1.0 - hsv.y * rgb);
-}
-
-float3 rgb2ycbcr(float3 col)
-{
-	col = sqrt(col);
-	float3 encode;
-	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
-	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
-	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
-	return encode;
-}
-
-float3 ycbcr2rgb(float3 YCbCr)
-{
-	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
-	float R = YCbCr.x + 1.402 * YCbCr.z;
-	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
-	float B = YCbCr.x + 1.772 * YCbCr.y;
-	return pow2(float3(R, G, B));
 }
 
 float3 DecodeRGBM(float4 rgbm, float range)
@@ -167,21 +149,6 @@ float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength =
 float GetJitterOffset(float2 uv)
 {
 	return dot(frac(uv * 0.25), float2(0.25, 0.25));
-}
-
-float3 IncrementalGaussianCofficent(float sigma)
-{
-	float3 incrementalGaussian;
-	incrementalGaussian.x = 1.0f / (sqrt(PI_2) * sigma);
-	incrementalGaussian.y = exp(-0.5f / (sigma * sigma));
-	incrementalGaussian.z = incrementalGaussian.y * incrementalGaussian.y;
-	return incrementalGaussian;
-}
-
-float3 IncrementalGaussian(float3 cofficent)
-{
-	cofficent.xy *= cofficent.yz;
-	return cofficent;
 }
 
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)

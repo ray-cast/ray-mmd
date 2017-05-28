@@ -56,6 +56,25 @@ float3 DecodeNormal(float3 enc)
 	return normalize(normal);
 }
 
+float3 EecodeYcbcr(float3 col)
+{
+	col = sqrt(col);
+	float3 encode;
+	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	return encode;
+}
+
+float3 DecodeYcbcr(float3 YCbCr)
+{
+	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+	float R = YCbCr.x + 1.402 * YCbCr.z;
+	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
+	float B = YCbCr.x + 1.772 * YCbCr.y;
+	return pow2(float3(R, G, B));
+}
+
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
 	material.albedo = buffer1.xyz;
@@ -79,12 +98,12 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	if (material.lightModel != SHADINGMODELID_DEFAULT)
 	{
 		material.specular = buffer3.xxx;
-		material.customDataB = ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+		material.customDataB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
 		material.emissiveIntensity = floor(buffer4.y) / 100.0;
 	}
 	else
 	{
-		material.specular = ycbcr2rgb(buffer3.xyz);
+		material.specular = DecodeYcbcr(buffer3.xyz);
 	}
 }
 
@@ -108,7 +127,7 @@ float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
 	int lightModel = DecodeLightModel(buffer4);
 	float intensity = DecodeEmissiveIntensity(buffer4);
-	float3 emissive = max(0, ycbcr2rgb(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)));
+	float3 emissive = max(0, DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)));
 	return emissive * intensity * any(lightModel == SHADINGMODELID_EMISSIVE);
 }
 
