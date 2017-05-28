@@ -480,6 +480,11 @@ float luminance(float3 rgb)
 	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
 }
 
+float srgb2linear(float rgb)
+{
+	return pow(max(abs(rgb), 1e-5), 2.2);
+}
+
 float3 srgb2linear(float3 rgb)
 {
 	return pow(max(abs(rgb), 1e-5), 2.2);
@@ -1193,11 +1198,11 @@ float GetOcclusion(float2 coord)
 	#endif
 
 	#if OCCLUSION_MAP_FROM == 3
-		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+		float4 occlusionValues = use_texture ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 1;
 	#elif OCCLUSION_MAP_FROM == 4
-		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+		float4 occlusionValues = use_spheremap ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 1;
 	#elif OCCLUSION_MAP_FROM == 5
-		float4 occlusionValues = use_toon ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 0;
+		float4 occlusionValues = use_toon ? tex2D(OcclusionMapSamp, coord * occlusionMapLoopNum) : 1;
 	#elif OCCLUSION_MAP_FROM == 7
 		float4 occlusionValues = MaterialAmbient;
 	#elif OCCLUSION_MAP_FROM == 8
