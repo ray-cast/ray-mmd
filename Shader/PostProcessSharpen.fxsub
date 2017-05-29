@@ -1,0 +1,16 @@
+float4 PostProcessSharpenPS(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform float2 offset) : COLOR
+{
+	float4 color = tex2Dlod(source, float4(coord, 0, 0));
+	float4 shapen = color * 9;
+	shapen -= tex2Dlod(source, float4(coord + float2(offset.x, 0), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord - float2(offset.x, 0), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord + float2(0, offset.y), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord - float2(0, offset.y), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord + float2(offset.x, offset.y), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord - float2(offset.x, offset.y), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord + float2(-offset.x, offset.y), 0, 0));
+	shapen -= tex2Dlod(source, float4(coord - float2(offset.x, -offset.y), 0, 0));
+	shapen = max(0, shapen);
+
+	return float4(ColorDithering(lerp(color.rgb, shapen, 0.06), coord), 1);
+}

@@ -136,6 +136,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/SMAA.fxsub"
 #endif
 
+#if POSTPROCESS_SHARPEN == 1
+#	include "shader/PostProcessSharpen.fxsub"
+#endif
+
 float4 ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
@@ -303,16 +307,22 @@ technique DeferredLighting<
 	"Pass=HDRTonemapping;"
 #endif
 
-#if AA_QUALITY == 1
+#if AA_QUALITY == 1 && POSTPROCESS_SHARPEN
+	"RenderColorTarget=ShadingMap;"
+	"Pass=FXAA;"
+#else
 	"RenderColorTarget=;"
-	"RenderDepthStencilTarget=;"
 	"Pass=FXAA;"
 #endif
 
 #if AA_QUALITY == 2 || AA_QUALITY == 3
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
+#if POSTPROCESS_SHARPEN 
+	"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlending;"
+#else
 	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
+#endif
 #endif
 
 #if AA_QUALITY == 4 || AA_QUALITY == 5
@@ -322,7 +332,17 @@ technique DeferredLighting<
 
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection2x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
+#if POSTPROCESS_SHARPEN
+	"RenderColorTarget=ShadingMap; Pass=SMAANeighborhoodBlendingFinal;"
+#else
 	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
+#endif
+#endif
+
+#if POSTPROCESS_SHARPEN
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=PostProcessSharpen;"
 #endif
 ;>
 {
@@ -827,6 +847,14 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp);
+	}
+#endif
+#if POSTPROCESS_SHARPEN == 1
+	pass PostProcessSharpen<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 PostProcessSharpenPS(ShadingMapPointSamp, ViewportOffset2);
 	}
 #endif
 }
