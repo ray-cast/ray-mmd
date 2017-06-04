@@ -20,7 +20,7 @@ Download :
 	- Notice : Overwrite the old "common" to fix a bug
 	- Improved Bloom
 	- Added a LightMass
-	- Fixed bug : The green is greater than red and blue, when very bright exposure or specular reflection.
+	- Fixed bug : The green is greater than red and blue, when very bright exposure and specular reflection.
 
 Requirement :
 ------------
