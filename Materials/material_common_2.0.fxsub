@@ -702,7 +702,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 #if CUSTOM_ENABLE || EMISSIVE_ENABLE
 	if (material.lightModel == SHADINGMODELID_EMISSIVE)
 	{
-		material.emissive = rgb2ycbcr(min(0.999, material.emissive));
+		material.emissive = rgb2ycbcr(min(0.998, material.emissive));
 		gbuffer.buffer3.yz = material.emissive.gb;
 		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
 	}
@@ -711,7 +711,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 #if CUSTOM_ENABLE != SHADINGMODELID_GLASS
 		material.customDataB *= (1 - material.metalness);
 #endif
-		material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
+		material.customDataB = rgb2ycbcr(min(0.998, material.customDataB));
 		gbuffer.buffer3.yz = material.customDataB.gb;
 		gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
 	}
@@ -826,13 +826,13 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 	#endif
 
 	#if ALBEDO_SUB_ENABLE == 1
-		albedo *= albedoSubColor;
+		albedo *= albedoSubColor.rgb;
 	#elif ALBEDO_SUB_ENABLE == 2
-		albedo = pow(albedo, albedoSubColor);
+		albedo = pow(albedo, albedoSubColor.rgb);
 	#elif ALBEDO_SUB_ENABLE == 3
-		albedo += albedoSubColor;
+		albedo += albedoSubColor.rgb;
 	#elif ALBEDO_SUB_ENABLE == 4
-		albedo = ColorSynthesis(albedo, albedoSubColor);
+		albedo = ColorSynthesis(albedo, albedoSubColor.rgb);
 	#elif ALBEDO_SUB_ENABLE == 5
 		albedo = lerp(albedo, albedoSubColor.rgb, albedoSubColor.a);
 	#endif
