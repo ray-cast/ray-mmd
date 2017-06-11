@@ -213,10 +213,12 @@ float4 ScreenSpaceDirOccMediumPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		sampleDirection[0] *= rsqrt(sampleLength2[0]);
-		sampleDirection[1] *= rsqrt(sampleLength2[1]);
-		sampleDirection[2] *= rsqrt(sampleLength2[2]);
-		sampleDirection[3] *= rsqrt(sampleLength2[3]);
+		float4 sampleLengthInv = rsqrt(sampleLength2);
+
+		sampleDirection[0] *= sampleLengthInv;
+		sampleDirection[1] *= sampleLengthInv;
+		sampleDirection[2] *= sampleLengthInv;
+		sampleDirection[3] *= sampleLengthInv;
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
@@ -305,7 +307,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	for (int r = 1; r < SSDO_BLUR_RADIUS; ++r)
 	{
 		float2 depth = float2(linearizeDepth2(offset1), linearizeDepth2(offset2));
-		float2 weight = exp2(-r * r * falloff - pow2((depth - center_d) * sharpness));
+		float2 weight = exp2(-r * r * falloff - pow2((depth - float2(center_d, center_d)) * sharpness));
 
 		weight.x *= saturate(dot(GetNormal(offset1), normal));
 		weight.y *= saturate(dot(GetNormal(offset2), normal));

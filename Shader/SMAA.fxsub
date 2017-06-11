@@ -497,7 +497,8 @@ float4 SMAANeighborhoodBlendingVS(
 float4 SMAANeighborhoodBlendingPS(
 	in float2 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1,
-	uniform sampler source) : COLOR
+	uniform sampler source,
+	uniform bool final) : COLOR
 {
 	float4 a;
 	a.x = tex2Dlod(SMAABlendMapSamp, float4(coord1.xy, 0, 0)).a;
@@ -508,7 +509,7 @@ float4 SMAANeighborhoodBlendingPS(
 	if (sum(a) < EPSILON) 
 	{
 		float4 color = tex2Dlod(source, float4(coord0, 0, 0));
-		return float4(ColorDithering(color.rgb, coord0), luminance(color.rgb));
+		return float4(color.rgb, final ? 1 : luminance(color.rgb));
 	}
 	else 
 	{
@@ -524,6 +525,6 @@ float4 SMAANeighborhoodBlendingPS(
 		color += blendingWeight.x * tex2Dlod(source, float4(coord0 + ViewportOffset2 * blendingOffset.xy, 0, 0));
 		color += blendingWeight.y * tex2Dlod(source, float4(coord0 - ViewportOffset2 * blendingOffset.zw, 0, 0));
 
-		return float4(ColorDithering(color.rgb, coord0), luminance(color.rgb));
+		return float4(color.rgb, final ? 1 : luminance(color.rgb));
 	}
 }

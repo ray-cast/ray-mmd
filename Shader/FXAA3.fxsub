@@ -128,5 +128,5 @@ float4 FXAA3(in float2 coord : TEXCOORD0, uniform sampler2D source, uniform floa
 				0.0f,
 				FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)
 			);
-	return float4(ColorDithering(color.rgb, coord), 1);
+	return float4(color.rgb, 1);
 }
