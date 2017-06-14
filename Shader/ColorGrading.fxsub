@@ -11,7 +11,7 @@ float3 ColorBanding(float2 uv)
 
 float3 ColorDithering(float3 color, float2 uv)
 {
-	color += ColorBanding(uv * (time + PI));
+	color += ColorBanding(uv);
 	return color;
 }
 

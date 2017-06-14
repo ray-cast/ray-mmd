@@ -265,6 +265,7 @@ float4 GlareLightCompPS(
 	bloom += bloom3 * coord2.x;
 	bloom += bloom4 * coord2.y;
 	bloom += bloom5 * coord2.z;
+	bloom = ColorDithering(bloom, coord1.xy);
 
 #if HDR_STAR_MODE > 0
 	float4 star = max(tex2Dlod(StreakSamp1st, float4(coord1.xy, 0, 0)), tex2Dlod(StreakSamp2nd, float4(coord1.xy, 0, 0)));
