@@ -178,7 +178,7 @@ void EnvLightingVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord1= CameraPosition - Position.xyz;
+	oTexcoord1 = CameraPosition - Position.xyz;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
