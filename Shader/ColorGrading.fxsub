@@ -156,6 +156,17 @@ float4 TonemapHable(float4 x)
 	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
 }
 
+float3 TonemapNaughtyDog(float3 x)
+{		
+	float A = -2586.3655;
+	float B =  0.6900;
+	float C = -767.6706;
+	float D = -8.5706;
+	float E =  2.8784;
+	float F =  107.4683;
+	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+}
+
 float3 TonemapReinhardLumaBased(float3 color, float whitePt)
 {
 	float luma = luminance(color);
@@ -182,6 +193,9 @@ float3 ColorToneMapping(float3 color)
 	return saturate(curr);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
 	float3 curr = TonemapACES(color);
+	return saturate(curr);
+#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 6
+	float3 curr = TonemapNaughtyDog(color);
 	return saturate(curr);
 #else
 	return saturate(color);
