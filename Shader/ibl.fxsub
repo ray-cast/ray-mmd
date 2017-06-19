@@ -59,8 +59,8 @@ float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
 {
 	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
 
-	color1 = EecodeYcbcr(color1);
-	color2 = EecodeYcbcr(color2);
+	color1 = EncodeYcbcr(color1);
+	color2 = EncodeYcbcr(color2);
 
 	float4 result = 0.0f;
 	result.r = color1.r;

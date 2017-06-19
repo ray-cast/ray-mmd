@@ -56,7 +56,7 @@ float3 DecodeNormal(float3 enc)
 	return normalize(normal);
 }
 
-float3 EecodeYcbcr(float3 col)
+float3 EncodeYcbcr(float3 col)
 {
 	col = sqrt(col);
 	float3 encode;

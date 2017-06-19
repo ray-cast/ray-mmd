@@ -4,9 +4,9 @@
 #include "shader/atmospheric.fxsub"
 #include "shader/skylighting.fxsub"
 
-#include "../../shader/ibl.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/ibl.fxsub"
 
 float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
 float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
