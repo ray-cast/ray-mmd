@@ -120,7 +120,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"skybox*.* = ./materials/material_skybox.fx;"
+		"sky*box*.* = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
 		"DirectionalLight*.* =./materials/Emissive/material_lighting.fx;"
 		"SpotLight*.* =./materials/Emissive/material_lighting.fx;"

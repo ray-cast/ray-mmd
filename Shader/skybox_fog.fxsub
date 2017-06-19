@@ -53,7 +53,7 @@ void SkyboxVS(
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = normalize(Position);
+	oTexcoord1 = normalize(Position.xyz);
 }
 
 float4 SkyboxPS(in float4 texcoord : TEXCOORD0,	in float3 normal : TEXCOORD1) : COLOR0
@@ -80,6 +80,10 @@ float4 SkyboxPS(in float4 texcoord : TEXCOORD0,	in float3 normal : TEXCOORD1) : 
 
 	color *= FogColor;
 	color *= pow((1 - exp(-material.linearDepth / FogDensity)), FogRange);
+
+#if SKYBOX_FOG_DISCARD_SKY
+	color *= step(0, sum(material.albedo + material.specular) - 1e-5);
+#endif
 
 	return float4(color, 0.0);
 }
