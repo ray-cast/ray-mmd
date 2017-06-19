@@ -15,5 +15,7 @@ Extension/BokehBlur
 Extension/OpticalLight
 Extension/SSAO
 Extension/SoundSpectrum
+Extension/OpticalFlares/Sun Flare Ghost Bokeh
+Extension/OpticalFlares/Sun Flare Hexagonal Bokeh 2
 Tools/AudiosFFT/_CommonRedist
 Skybox/Gradient Sky
