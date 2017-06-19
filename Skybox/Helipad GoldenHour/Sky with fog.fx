@@ -1,6 +1,7 @@
 #define SKYBOX_FOG_ENABLE 1
 #define SKYBOX_FOG_DISCARD_SKY 0
-#define SKYBOX_FOG_MIPMAP_LEVEL 7
+#define SKYBOX_FOG_MIPMAP_BASE 2
+#define SKYBOX_FOG_MIPMAP_LEVEL 3
 #define SKYBOX_FOG_MAP_FILE "texture/skyspec_hdr.dds"
 
 // R : default value

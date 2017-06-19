@@ -20,7 +20,8 @@ Download :
 	- Notice : Overwrite the old "common" to fix a bug
 	- Improved Bloom
 	- Added a LightMass
-	- Fixed bug : The green is greater than red and blue, when very bright exposure and specular reflection.
+	- Support for MipFog of skybox \[[NaughtyDog PDF](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
+	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :
 ------------
@@ -108,4 +109,5 @@ Digging Deeper
 * An Approximation to the Chapman Grazing-Incidence Function for Atmospheric Scattering \[[link](http://www.gameenginegems.net/gemsdb/article.php?id=1133)\]
 * Bump map to normal \[[link](https://docs.unrealengine.com/latest/attachments/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/mm_sfgrad_bump.pdf)\]
 * Special-Case Materials Wetness \[[link](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
+* Mip Fog \[[link](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
 * Gaussian-kernel-calculator \[[link](http://dev.theomader.com/gaussian-kernel-calculator/)\]
