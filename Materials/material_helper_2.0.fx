@@ -144,7 +144,7 @@ const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 1 : Calculate reflection coefficient from specular color by F(x) = 0.16*(x^2) (from Frostbite textures)
 // 2 : Calculate reflection coefficient from specular grays by F(x) = 0.08*(x  ) (from UE4 textures)
 // 3 : Calculate reflection coefficient from specular grays by F(x) = 0.16*(x^2) (from Frostbite textures)
-// 4 : Using reflection coefficient (0.04) but not a specular value (0.5), Available when SPECULAR_MAP_FROM at 0
+// 4 : Using reflection coefficient (0.04) instead of specular value (0.5), Available when SPECULAR_MAP_FROM at 0
 #define SPECULAR_MAP_TYPE 0
 #define SPECULAR_MAP_UV_FLIP 0			 // see ALBEDO_MAP_UV_FLIP for more information.
 #define SPECULAR_MAP_SWIZZLE 0			 // see ALPHA_MAP_SWIZZLE for more information.
