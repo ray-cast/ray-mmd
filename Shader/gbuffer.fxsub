@@ -75,6 +75,24 @@ float3 DecodeYcbcr(float3 YCbCr)
 	return pow2(float3(R, G, B));
 }
 
+float3 EncodeYcbcrFast(float3 col)
+{
+	float3 encode;
+	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
+	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	return encode;
+}
+
+float3 DecodeYcbcrFast(float3 YCbCr)
+{
+	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+	float R = YCbCr.x + 1.402 * YCbCr.z;
+	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
+	float B = YCbCr.x + 1.772 * YCbCr.y;
+	return float3(R, G, B);
+}
+
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
 	material.albedo = buffer1.xyz;
