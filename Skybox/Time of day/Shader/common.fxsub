@@ -37,8 +37,8 @@ float mCloudP : CONTROLOBJECT<string name="(self)"; string item = "Cloud+";>;
 float mCloudM : CONTROLOBJECT<string name="(self)"; string item = "Cloud-";>;
 float mCloudSpeedP : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed+";>;
 float mCloudSpeedM : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed-";>;
-float mCloudBiasP : CONTROLOBJECT<string name="(self)"; string item = "CloudBias+";>;
-float mCloudBiasM : CONTROLOBJECT<string name="(self)"; string item = "CloudBias-";>;
+float mCloudTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "CloudTurbidity+";>;
+float mCloudTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "CloudTurbidity-";>;
 
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
@@ -59,11 +59,12 @@ static float mMiePhase       = lerp(lerp(0.76, 1.0, mMiePhaseP), 0.65, mMiePhase
 static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
 static float mMieTurbidity   = lerp(lerp(102, 250, mMieTurbidityP), 1e-5, mMieTurbidityM);
 static float mRayleighHeight = lerp(lerp(8, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
-static float mCloudDensity   = lerp(lerp(0.5, 1.0, mCloudP), 0.0, mCloudM);
-static float mCloudBias      = lerp(lerp(0.1, 1.0, mCloudBiasP), 0, mCloudBiasM) * time;
+static float mCloudDensity   = lerp(lerp(400, 1600, mCloudP), 0.0, mCloudM);
 static float mCloudSpeed     = lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM) * time;
+static float mCloudTurbidity   = lerp(lerp(200, 2000, mCloudTurbidityP), 1e-5, mCloudTurbidityM);
 
 static float3 mMieColor = LightSpecular;
+static float3 mCloudColor = LightSpecular;
 static float3 mFogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(lerp(1, 2, mFogColorVP), 0, mFogColorVM)));
 
 static float2 ViewportOffset  = float2(0.5,0.5) / ViewportSize;

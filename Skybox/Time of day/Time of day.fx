@@ -95,11 +95,13 @@ void ScatteringVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float3 oTexcoord2 : TEXCOORD2,
+	out float3 oTexcoord3 : TEXCOORD3,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position);
 	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord3 = ComputeWaveLengthMie(mWaveLength, mCloudColor, mCloudTurbidity, 4);
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
 
@@ -122,11 +124,6 @@ float4 ScatteringPS(
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
-	setting.cloud = mCloudDensity;
-	setting.cloudBias = mCloudBias;
-	setting.cloudTop = 8 * scaling;
-	setting.cloudBottom = 5 * scaling;
-	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 
@@ -136,7 +133,8 @@ float4 ScatteringPS(
 float4 ScatteringWithCloudsPS(
 	in float3 viewdir : TEXCOORD0,
 	in float3 mieLambda : TEXCOORD1,
-	in float3 rayleight : TEXCOORD2) : COLOR
+	in float3 rayleight : TEXCOORD2,
+	in float3 cloud : TEXCOORD3) : COLOR
 {
 	float3 V = normalize(viewdir);
 
@@ -153,10 +151,10 @@ float4 ScatteringWithCloudsPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.cloud = mCloudDensity;
-	setting.cloudBias = mCloudBias;
-	setting.cloudTop = 8 * scaling;
+	setting.cloudTop = 5.2 * scaling;
 	setting.cloudBottom = 5 * scaling;
 	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
+	setting.cloudLambda = cloud;
 
 	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
 

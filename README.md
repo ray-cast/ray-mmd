@@ -21,6 +21,7 @@ Download :
 	- Improved Bloom
 	- Added a LightMass
 	- Support for MipFog of skybox \[[NaughtyDog PDF](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
+	- Improved Time of day
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :

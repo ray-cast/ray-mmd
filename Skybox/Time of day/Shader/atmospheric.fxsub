@@ -22,6 +22,7 @@ struct ScatteringParams
 	float cloudTop;
 	float cloudBottom;
 	float3 clouddir;
+	float3 cloudLambda;
 };
 
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)

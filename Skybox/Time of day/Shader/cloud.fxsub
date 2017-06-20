@@ -1,55 +1,28 @@
-#define NUMS_SAMPLES_CLOUD 8
+#define NUMS_SAMPLES_CLOUD 16
 #define NUMS_SAMPLES_CLOUD2 8
 
-texture NoiseMap<string ResourceName = "shader/textures/noise.png";>; 
+texture NoiseMap<string ResourceName = "shader/textures/cloud.dds";>; 
 sampler NoiseMapSamp = sampler_state {
 	texture = <NoiseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float noise(float3 x)
-{
-	float3 p = floor(x);
-	float3 f = frac(x);
-	f = f * f * (3.0 - 2.0 * f);
-
-	float2 uv = (p.xy + float2(37.0, 17.0) * p.z) + f.xy;
-	float2 rg = tex2Dlod(NoiseMapSamp, float4((uv + 0.5) / 256.0, 0, 0)).yx;
-	return lerp(rg.x, rg.y, f.z);
-}
-
-float fbm(float3 p, float bias)
-{
-	float f;
-	f = 0.5000    * noise(p); p = p * 3.02; p.y -= bias * 0.2;
-	f += 0.2500   * noise(p); p = p * 3.03; p.y += bias * 0.06;
-	f += 0.1250   * noise(p); p = p * 3.01;
-	f += 0.0625   * noise(p); p = p * 3.03;
-	f += 0.03125  * noise(p); p = p * 3.02;
-	f += 0.015625 * noise(p);
-	return saturate(f);
-}
-
 float3 ComputeDensity(ScatteringParams setting, float depth)
 {
-	return exp(-setting.waveLambdaMie * depth) * (1 - exp(-setting.waveLambdaMie * 2 * depth));
+	return exp(-setting.cloudLambda * depth) * (1.0f - exp(-setting.cloudLambda * depth));
 }
 
 float ComputeClound(ScatteringParams setting, float3 P)
 {
+	float3 P1 = P + setting.clouddir;
+	float3 P2 = P + setting.clouddir * 0.5;
+
 	float cloud = 0.0;
-	float height = P.y;
-
-	if (setting.cloudBottom < height && setting.cloudTop > height) 
-	{
-		float3 P2 = P + setting.clouddir;
-		cloud = fbm(P2 * 2e-4, setting.cloudBias);
-
-		cloud = smoothstep(0.4104, 0.604, cloud) * 70.0f;
-		cloud *= sin(PI * (height - setting.cloudBottom) / setting.cloudBottom);
-		cloud *= setting.cloud;
-	}
+	cloud += tex2Dlod(NoiseMapSamp, float4(P1.xz * 0.00009, 0, 0)).a;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00006, 0, 0)).a;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00003, 0, 0)).a;
+	cloud *= setting.cloud;
 
 	return cloud;
 }
@@ -70,9 +43,9 @@ float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 
 	return thickness * length(sampleStep);
 }
 
-void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, out float opticalDepth, out float3 insctrMie)
+void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, inout float opticalDepth, inout float3 insctrMie)
 {
-	float3 sampleStep = (end - start) / float(NUMS_SAMPLES_CLOUD);
+	float3 sampleStep = (end - (start)) / float(NUMS_SAMPLES_CLOUD);
 	float3 samplePos = start + sampleStep * 0.5;
 
 	float sampleLength = length(sampleStep);
@@ -81,18 +54,21 @@ void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 
 
 	for (int i = 0; i < NUMS_SAMPLES_CLOUD; ++i, samplePos += sampleStep)
 	{
-		float stepOpticalDensity = ComputeClound(setting, samplePos);
-		stepOpticalDensity *= sampleLength;
-
-		if (any(stepOpticalDensity))
+		if (setting.cloudBottom < samplePos.y && setting.cloudTop > samplePos.y)
 		{
-			float2 sampleCloudsIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthRadius + setting.cloudTop);
-			float3 sampleClouds = samplePos + L * sampleCloudsIntersections.y;
-			
-			float stepOpticalLight = ComputeCloudInsctrIntegral(setting, samplePos, sampleClouds);
-			
-			opticalDepth += stepOpticalDensity;
-			opticalDepthMie += stepOpticalDensity * ComputeDensity(setting, stepOpticalLight) * ComputeDensity(setting, opticalDepth);
+			float stepOpticalDensity = ComputeClound(setting, samplePos);
+			stepOpticalDensity *= sampleLength;
+
+			if (any(stepOpticalDensity))
+			{
+				float2 sampleCloudsIntersections = ComputeRaySphereIntersection(samplePos, L, setting.earthCenter, setting.earthRadius + setting.cloudTop);
+				float3 sampleClouds = samplePos + L * sampleCloudsIntersections.y;
+
+				float stepOpticalLight = ComputeCloudInsctrIntegral(setting, samplePos, sampleClouds);
+
+				opticalDepth += stepOpticalDensity;
+				opticalDepthMie += stepOpticalDensity * ComputeDensity(setting, stepOpticalDensity) * ComputeDensity(setting, stepOpticalLight);
+			}
 		}
 	}
 
@@ -109,10 +85,8 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 	float2 cloudsOuterIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudTop);
 	float2 cloudsInnerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudBottom);
 
-	if (cloudsInnerIntersections.x > 0)
-	{
-		cloudsOuterIntersections.y = cloudsInnerIntersections.x;
-	}
+	if (cloudsInnerIntersections.y > 0)
+		cloudsOuterIntersections.x = cloudsInnerIntersections.y;
 
 	float3 cloudsStart = eye + V * max(0, cloudsOuterIntersections.x);
 	float3 cloudsEnd = eye + V * cloudsOuterIntersections.y;
@@ -130,10 +104,10 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
 
 	float3 sky = insctrTotalMie + insctrTotalRayleigh;
-	float3 cloud = cloudsMie * (insctrTotalRayleigh + insctrTotalMie);
+	float3 cloud = cloudsMie * phaseMie * pow2(-L.y);
 
-	float3 scattering = lerp(cloud, sky, exp(-0.0000001 * cloudsOpticalLength));
-	scattering = lerp(sky, scattering, V.y * V.y);
+	float3 scattering = lerp(cloud, sky, exp(-0.00002 * cloudsOpticalLength * insctrMie * setting.waveLambdaMie));
+	scattering = lerp(sky, scattering, V.y);
 
 	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
 }
