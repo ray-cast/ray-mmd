@@ -19,10 +19,10 @@ Download :
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Improved Bloom
-	- Improved Time of day
+	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
 	- Improved AtmosphericFog
 	- Support for Godray of AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
-	- Support for MipFog of skybox [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
+	- Support for MipFog of Skybox [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :
