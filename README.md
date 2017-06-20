@@ -21,8 +21,8 @@ Download :
 	- Improved Bloom
 	- Improved Time of day
 	- Improved AtmosphericFog
-	- Support for Godray of AtmosphericFog \[(preview)(https://github.com/ray-cast/images/raw/master/godray.jpg)\].
-	- Support for MipFog of skybox \[[NaughtyDog PDF](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
+	- Support for Godray of AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
+	- Support for MipFog of skybox [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :
