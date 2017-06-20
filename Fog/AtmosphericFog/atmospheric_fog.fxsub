@@ -28,7 +28,7 @@ float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intens
 
 float3 LightDirection : DIRECTION< string Object = "Light";>;
 
-static float mFogMiePhase = lerp(lerp(FogMiePhaseParams.x, FogMiePhaseParams.z, mFogMiePhaseP), FogMiePhaseParams.x, mFogMiePhaseM);
+static float mFogMiePhase = lerp(lerp(FogMiePhaseParams.x, FogMiePhaseParams.z, mFogMiePhaseP), FogMiePhaseParams.y, mFogMiePhaseM);
 static float mFogMieTurbidity = lerp(lerp(FogMieTurbidityParams.x, FogMieTurbidityParams.z, mFogMieTurbidityP), FogMieTurbidityParams.y, mFogMieTurbidityM);
 static float mFogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mFogRangeP), FogRangeParams.y, mFogRangeM);
 static float mFogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mFogDensityP), FogDensityParams.y, mFogDensityM);
@@ -150,8 +150,8 @@ void LightShaftVS(
 
 float4 LightShaftPS(in float2 coord : TEXCOORD0) : COLOR0
 {
-    float4 illuminationPosition = mul(float4(LightDirection * 80000, 1), matViewProject);
-    clip(-illuminationPosition.w);
+    float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
+    clip(illuminationPosition.w);
 
     illuminationPosition /= illuminationPosition.w;
     illuminationPosition.xy = PosToCoord(illuminationPosition);
