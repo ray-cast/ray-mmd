@@ -17,9 +17,8 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-	- Notice : Overwrite the old "common" to fix a bug
+	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Improved Bloom
-	- Added a LightMass
 	- Support for MipFog of skybox \[[NaughtyDog PDF](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
 	- Improved Time of day
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
