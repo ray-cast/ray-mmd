@@ -2,34 +2,104 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
-float mFogR :  CONTROLOBJECT<string name="(self)"; string item = "R+";>;
-float mFogG :  CONTROLOBJECT<string name="(self)"; string item = "G+";>;
-float mFogB :  CONTROLOBJECT<string name="(self)"; string item = "B+";>;
+float mFogMieHP :  CONTROLOBJECT<string name="(self)"; string item = "MieH+";>;
+float mFogMieSP :  CONTROLOBJECT<string name="(self)"; string item = "MieS+";>;
+float mFogMieVP :  CONTROLOBJECT<string name="(self)"; string item = "MieV+";>;
+float mFogMieVM :  CONTROLOBJECT<string name="(self)"; string item = "MieV-";>;
+float mFogMiePhaseP :  CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
+float mFogMiePhaseM :  CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
+float mFogMieTurbidityP :  CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
+float mFogMieTurbidityM :  CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
+float mFogRayleightHP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighH+";>;
+float mFogRayleightSP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighS+";>;
+float mFogRayleightVP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
+float mFogRayleightVM :  CONTROLOBJECT<string name="(self)"; string item = "RayleighV-";>;
+
 float mFogRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mFogRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
 float mFogDensityP : CONTROLOBJECT<string name="(self)"; string item = "Density+";>;
+float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "Density-";>;
 float mFogIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
+float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 
-static float FogRange = lerp(lerp(1.0, 1.0 / FOG_MAX_RANGE, mFogRangeP), FOG_MIN_RANGE, mFogRangeM);
-static float FogDensity = lerp(FOG_MIN_DENSITY, 1, mFogDensityP);
-static float FogIntensity = lerp(FOG_MIN_INTENSITY, FOG_MAX_INTENSITY, mFogIntensityP);
+float3 LightDirection : DIRECTION< string Object = "Light";>;
 
-static float3 FogColor = float3(mFogR, mFogG, mFogB);
+static float mFogMiePhase = lerp(lerp(FogMiePhaseParams.x, FogMiePhaseParams.z, mFogMiePhaseP), FogMiePhaseParams.x, mFogMiePhaseM);
+static float mFogMieTurbidity = lerp(lerp(FogMieTurbidityParams.x, FogMieTurbidityParams.z, mFogMieTurbidityP), FogMieTurbidityParams.y, mFogMieTurbidityM);
+static float mFogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mFogRangeP), FogRangeParams.y, mFogRangeM);
+static float mFogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mFogDensityP), FogDensityParams.y, mFogDensityM);
+static float mFogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mFogIntensityP), FogIntensityParams.y, mFogIntensityM);
 
-void GlobalFogVS(
+static float3 FogMieColor = hsv2rgb(float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10, mFogMieVP), 0, mFogMieVM)));
+static float3 FogRayleightColor = hsv2rgb(float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM)));
+
+struct ScatteringParams
+{
+	float sunSize;
+	float sunRadiance;
+
+	float mieG;
+	float mieHeight;
+
+	float rayleighHeight;
+
+	float3 waveLambda;
+	float3 waveLambdaMie;
+	float3 waveLambdaRayleigh;
+	
+	float fogRange;
+	float fogDensity;
+};
+
+float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 L)
+{
+	float3 sunUp = float3(0, 1, 0);
+	float3 sunDirection = normalize(L);
+
+	float zenithAngle = saturate(dot(V, sunUp));
+
+	float3 inscatteringMie = setting.waveLambdaMie;
+	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
+
+	float cosTheta = dot(V, sunDirection);
+
+	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, setting.mieG);
+	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
+	float3 betaScattering = (betaMie + betaRayleigh);
+
+	float3 inscattering = betaScattering / (inscatteringMie + inscatteringRayleigh);
+
+	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance * setting.fogDensity);
+	extinction = pow(extinction, setting.fogRange);
+
+	return max(0, inscattering * (1.0 - extinction));
+}
+
+void AtmosphericFogVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float4 oTexcoord0 : TEXCOORD0,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	out float3 oTexcoord3 : TEXCOORD3,
 	out float4 oPosition : POSITION)
 {
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
-	oTexcoord0 = Texcoord.xyxy + ViewportOffset.xyxy;
+	oTexcoord0 = Texcoord + ViewportOffset;
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
+	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, FogMieColor, mFogMieTurbidity, 4);
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * FogRayleightColor;
 }
 
-float4 GlobalFogPS(float2 coord : TEXCOORD0) : COLOR
+float4 AtmosphericFogPS(
+	in float2 coord : TEXCOORD0, 
+	in float3 viewdir : TEXCOORD1,
+	in float3 mieLambda : TEXCOORD2,
+	in float3 rayleight : TEXCOORD3) : COLOR
 {
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
 	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
@@ -39,14 +109,23 @@ float4 GlobalFogPS(float2 coord : TEXCOORD0) : COLOR
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float fogAmount = 1 - exp(-material.linearDepth / FogDensity);
-	fogAmount = pow(fogAmount, FogRange);
+	float3 V = normalize(viewdir);
+	float3 L = mul(LightDirection, (float3x3)matView);
+
+	ScatteringParams params;
+	params.waveLambdaMie = mieLambda;
+	params.waveLambdaRayleigh = rayleight;
+	params.fogRange = mFogRange;
+	params.fogDensity = mFogDensity;
+	params.mieG = mFogMiePhase;
+
+	float3 fogAmount = ComputeSkyFog(params, material.linearDepth, V, L) * mFogIntensity;
 
 #if FOG_DISCARD_SKY
-	fogAmount *=  step(0, sum(material.albedo + material.specular) - 1e-5);
+	fogAmount *= step(0, sum(material.albedo + material.specular) - 1e-5);
 #endif
 
-	return float4(FogColor * fogAmount * FogIntensity, 0);
+	return float4(fogAmount, 0);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
@@ -56,8 +135,8 @@ float4 GlobalFogPS(float2 coord : TEXCOORD0) : COLOR
 			AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
 			CullMode = CCW;\
-			VertexShader = compile vs_3_0 GlobalFogVS();\
-			PixelShader  = compile ps_3_0 GlobalFogPS();\
+			VertexShader = compile vs_3_0 AtmosphericFogVS();\
+			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
 		}\
 	}
 
