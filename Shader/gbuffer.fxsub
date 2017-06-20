@@ -76,7 +76,7 @@ float3 DecodeYcbcrFast(float3 YCbCr)
 
 float3 EncodeYcbcr(float3 col)
 {
-	return sqrt(EncodeYcbcrFast(col));
+	return EncodeYcbcrFast(sqrt(col));
 }
 
 float3 DecodeYcbcr(float3 YCbCr)

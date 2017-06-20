@@ -5,7 +5,7 @@ texture EyeLumMap : RENDERCOLORTARGET<
 >;
 texture EyeLumAveMap : RENDERCOLORTARGET<
 	int2 Dimensions = {1, 1};
-	string Format = "R16F";
+	string Format = "R32F";
 >;
 sampler EyeLumMapSamp = sampler_state {
 	texture = <EyeLumMap>;
@@ -41,10 +41,10 @@ void EyeDownsampleVS(
 	out float4 oPosition : POSITION,
 	uniform float2 step)
 {
-	oTexcoord1 = Texcoord + step * 0.5;
-	oTexcoord2 = oTexcoord1 + float2(step.x, 0);
-	oTexcoord3 = oTexcoord1 + float2(step.x, step.y);
-	oTexcoord4 = oTexcoord1 + float2(0, step.y);
+	oTexcoord1 = Texcoord + step * 0.5f;
+	oTexcoord2 = oTexcoord1 + float2(1.0f / 256.0f, 0);
+	oTexcoord3 = oTexcoord1 + float2(1.0f / 256.0f, 1.0f / 256.0f);
+	oTexcoord4 = oTexcoord1 + float2(0, 1.0f / 256.0f);
 	oPosition = Position;
 }
 
