@@ -151,7 +151,10 @@ void LightShaftVS(
 float4 LightShaftPS(in float2 coord : TEXCOORD0) : COLOR0
 {
     float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
-    clip(illuminationPosition.w);
+    if (illuminationPosition.w < 0)
+    {
+    	return tex2Dlod(DownsampleSamp, float4(coord, 0, 0));
+    }
 
     illuminationPosition /= illuminationPosition.w;
     illuminationPosition.xy = PosToCoord(illuminationPosition);
