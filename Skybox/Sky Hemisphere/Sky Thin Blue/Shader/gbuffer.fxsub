@@ -114,7 +114,7 @@ float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 
 float4 GetProjConstant()
 {
-	return float4(2, -2, -1, 1) / float2(matProject._11, matProject._22).xyxy;
+	return float4(2, -2, -1, 1) * float2(matProjectInverse._11, matProjectInverse._22).xyxy / matProjectInverse._43;
 }
 
 float3 GetViewPosition(float4 projConstant, float2 coord, float depth)
