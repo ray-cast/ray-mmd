@@ -42,7 +42,7 @@ static float3 FogRayleightColor = hsv2rgb(float3(mFogRayleightHP, mFogRayleightS
 	sampler DownsampleSamp = sampler_state {
 		texture = <DownsampleMap>;
 		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-		AddressU = CLAMP; AddressV = CLAMP;
+		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 	};
 #endif
 

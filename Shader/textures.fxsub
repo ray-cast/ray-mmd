@@ -26,7 +26,7 @@ sampler ScnSamp = sampler_state {
 #if FOG_ENABLE
 texture FogMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
-	float2 ViewportRatio = {1.0, 1.0};
+	float2 ViewportRatio = {0.5, 0.5};
 	string Format = "A16B16G16R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -38,7 +38,7 @@ texture FogMap: OFFSCREENRENDERTARGET<
 >;
 sampler FogMapSamp = sampler_state {
 	texture = <FogMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
