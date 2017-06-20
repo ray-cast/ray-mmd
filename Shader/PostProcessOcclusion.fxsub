@@ -215,10 +215,10 @@ float4 ScreenSpaceDirOccMediumPS(
 
 		float4 sampleLengthInv = rsqrt(sampleLength2);
 
-		sampleDirection[0] *= sampleLengthInv;
-		sampleDirection[1] *= sampleLengthInv;
-		sampleDirection[2] *= sampleLengthInv;
-		sampleDirection[3] *= sampleLengthInv;
+		sampleDirection[0] *= sampleLengthInv[0];
+		sampleDirection[1] *= sampleLengthInv[1];
+		sampleDirection[2] *= sampleLengthInv[2];
+		sampleDirection[3] *= sampleLengthInv[3];
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
