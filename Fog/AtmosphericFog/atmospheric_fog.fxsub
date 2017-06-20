@@ -38,9 +38,15 @@ static float3 FogMieColor = hsv2rgb(float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10
 static float3 FogRayleightColor = hsv2rgb(float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM)));
 
 #if FOG_WITH_GODRAY
-	texture DownsampleMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-	sampler DownsampleSamp = sampler_state {
-		texture = <DownsampleMap>;
+	texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+	sampler FogMapSamp = sampler_state {
+		texture = <FogMap>;
+		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	};
+	texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+	sampler FogBlurMapSamp = sampler_state {
+		texture = <FogBlurMap>;
 		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 	};
@@ -118,6 +124,10 @@ float4 AtmosphericFogPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
+#if FOG_DISCARD_SKY
+	clip(sum(material.albedo + material.specular) - 1e-5);
+#endif
+
 	float3 V = normalize(viewdir);
 	float3 L = mul(LightDirection, (float3x3)matView);
 
@@ -130,15 +140,54 @@ float4 AtmosphericFogPS(
 
 	float3 fogAmount = ComputeSkyFog(params, material.linearDepth, V, L) * mFogIntensity;
 
-#if FOG_DISCARD_SKY
-	fogAmount *= step(0, sum(material.albedo + material.specular) - 1e-5);
-#endif
-
 	return float4(fogAmount, 0);
 }
 
 #if FOG_WITH_GODRAY
-void LightShaftVS(
+void GenLightShaftVS(
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD0,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition : POSITION)
+{
+    float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
+
+	oPosition = float4(CoordToPos(Texcoord) * step(0, illuminationPosition.w), 0, 1);
+	oTexcoord0 = Texcoord + ViewportOffset;
+	oTexcoord1 = illuminationPosition;
+    oTexcoord1 /= oTexcoord1.w;
+    oTexcoord1.xy = PosToCoord(oTexcoord1.xy);
+
+    if (oTexcoord1.x < -0.5 || oTexcoord1.y < -0.5)
+    {
+    	oPosition = 0;
+    }
+    if (oTexcoord1.x > 1.5 || oTexcoord1.y > 1.5)
+    {
+    	oPosition = 0;
+    }
+}
+
+float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
+{
+    float2 sampleCoord = coord;
+    float4 sampleColor = 0.0;
+    float2 sampleDecay = float2(1.0, 0.96);
+    float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
+
+    for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
+    {
+        sampleColor += float4(tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb, tex2Dlod(Gbuffer8Map, float4(sampleCoord, 0, 0)).r) * sampleDecay.x;
+        sampleCoord -= sampleDelta;
+        sampleDecay.x *= sampleDecay.y;
+    }
+
+    sampleColor /= FOG_WITH_GODRAY_SAMPLES;
+    return float4(sampleColor.rgb, exp(-sampleColor.a / 5000));
+}
+
+void GenLightShaftCombientVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float2 oTexcoord : TEXCOORD0,
@@ -148,40 +197,27 @@ void LightShaftVS(
 	oTexcoord = Texcoord + ViewportOffset;
 }
 
-float4 LightShaftPS(in float2 coord : TEXCOORD0) : COLOR0
+float4 GenLightShaftCombientPS(in float2 coord : TEXCOORD0) : COLOR0
 {
-    float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
-    if (illuminationPosition.w < 0)
-    {
-    	return tex2Dlod(DownsampleSamp, float4(coord, 0, 0));
-    }
-
-    illuminationPosition /= illuminationPosition.w;
-    illuminationPosition.xy = PosToCoord(illuminationPosition);
-
-    float2 sampleCoord = coord;
-    float4 sampleColor = float4(0, 0, 0, 0);
-    float2 sampleDecay = float2(1.0, 0.96);
-    float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
-
-    for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
-    {
-        sampleColor += float4(tex2Dlod(DownsampleSamp, float4(sampleCoord, 0, 0)).rgb, 0) * sampleDecay.x;
-        sampleCoord -= sampleDelta;
-        sampleDecay.x *= sampleDecay.y;
-    }
-
-    sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-    return float4(sampleColor.rgb, 0);
+	float3 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0)).rgb;
+	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord, 0, 0));
+    return float4(lerp(fog, fogBlur.rgb, fogBlur.a), 0);
 }
+
+const float4 BackColor = 0.0;
 
 #define OBJECT_TEC(name, mmdpass) \
 	technique name<string MMDPass = mmdpass;\
 	string Script =\
-		"RenderColorTarget=DownsampleMap;"\
+		"ClearSetColor=BackColor;"\
+		"RenderColorTarget=FogMap;"\
+		"Clear=Color;"\
 		"Pass=DrawFog;"\
+		"RenderColorTarget=FogBlurMap;"\
+		"Clear=Color;"\
+		"Pass=DrawLightShaft;"\
 		"RenderColorTarget=;"\
-		"Pass=DrawGodray;"\
+		"Pass=DrawGodRay;"\
 	;>{\
 		pass DrawFog {\
 			ZEnable = false; ZWriteEnable = false;\
@@ -189,12 +225,18 @@ float4 LightShaftPS(in float2 coord : TEXCOORD0) : COLOR0
 			VertexShader = compile vs_3_0 AtmosphericFogVS();\
 			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
 		}\
-		pass DrawGodray {\
+		pass DrawLightShaft {\
+			ZEnable = false; ZWriteEnable = false;\
+			AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
+			VertexShader = compile vs_3_0 GenLightShaftVS();\
+			PixelShader  = compile ps_3_0 GenLightShaftPS();\
+		}\
+		pass DrawGodRay {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			VertexShader = compile vs_3_0 LightShaftVS();\
-			PixelShader  = compile ps_3_0 LightShaftPS();\
+			VertexShader = compile vs_3_0 GenLightShaftCombientVS();\
+			PixelShader  = compile ps_3_0 GenLightShaftCombientPS();\
 		}\
 	}
 #else
