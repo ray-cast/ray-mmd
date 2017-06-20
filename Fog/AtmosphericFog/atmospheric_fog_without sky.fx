@@ -1,6 +1,9 @@
 // ignore sky fog
 #define FOG_DISCARD_SKY 1
 
+#define FOG_WITH_GODRAY 0
+#define FOG_WITH_GODRAY_SAMPLES 64
+
 // R : default value
 // G : min value
 // B : max value

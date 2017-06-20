@@ -37,6 +37,15 @@ static float mFogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.
 static float3 FogMieColor = hsv2rgb(float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10, mFogMieVP), 0, mFogMieVM)));
 static float3 FogRayleightColor = hsv2rgb(float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM)));
 
+#if FOG_WITH_GODRAY
+	texture DownsampleMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+	sampler DownsampleSamp = sampler_state {
+		texture = <DownsampleMap>;
+		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+		AddressU = CLAMP; AddressV = CLAMP;
+	};
+#endif
+
 struct ScatteringParams
 {
 	float sunSize;
@@ -128,17 +137,79 @@ float4 AtmosphericFogPS(
 	return float4(fogAmount, 0);
 }
 
+#if FOG_WITH_GODRAY
+void LightShaftVS(
+	in float4 Position : POSITION,
+	in float2 Texcoord : TEXCOORD0,
+	out float2 oTexcoord : TEXCOORD0,
+	out float4 oPosition : POSITION)
+{
+	oPosition = float4(CoordToPos(Texcoord), 0, 1);
+	oTexcoord = Texcoord + ViewportOffset;
+}
+
+float4 LightShaftPS(in float2 coord : TEXCOORD0) : COLOR0
+{
+    float4 illuminationPosition = mul(float4(LightDirection * 80000, 1), matViewProject);
+    clip(-illuminationPosition.w);
+
+    illuminationPosition /= illuminationPosition.w;
+    illuminationPosition.xy = PosToCoord(illuminationPosition);
+
+    float2 sampleCoord = coord;
+    float4 sampleColor = float4(0, 0, 0, 0);
+    float2 sampleDecay = float2(1.0, 0.96);
+    float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
+
+    for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
+    {
+        sampleColor += float4(tex2Dlod(DownsampleSamp, float4(sampleCoord, 0, 0)).rgb, 0) * sampleDecay.x;
+        sampleCoord -= sampleDelta;
+        sampleDecay.x *= sampleDecay.y;
+    }
+
+    sampleColor /= FOG_WITH_GODRAY_SAMPLES;
+    return float4(sampleColor.rgb, 0);
+}
+
 #define OBJECT_TEC(name, mmdpass) \
-	technique name<string MMDPass = mmdpass;>{\
-		pass DrawObject {\
+	technique name<string MMDPass = mmdpass;\
+	string Script =\
+		"RenderColorTarget=DownsampleMap;"\
+		"Pass=DrawFog;"\
+		"RenderColorTarget=;"\
+		"Pass=DrawGodray;"\
+	;>{\
+		pass DrawFog {\
 			ZEnable = false; ZWriteEnable = false;\
-			AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;\
+			AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
+			VertexShader = compile vs_3_0 AtmosphericFogVS();\
+			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
+		}\
+		pass DrawGodray {\
+			ZEnable = false; ZWriteEnable = false;\
+			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			CullMode = CCW;\
+			VertexShader = compile vs_3_0 LightShaftVS();\
+			PixelShader  = compile ps_3_0 LightShaftPS();\
+		}\
+	}
+#else
+#define OBJECT_TEC(name, mmdpass) \
+	technique name<string MMDPass = mmdpass;\
+	string Script =\
+		"RenderColorTarget=;"\
+		"Pass=DrawFog;"\
+	;>{\
+		pass DrawFog {\
+			ZEnable = false; ZWriteEnable = false;\
+			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
+			SrcBlend = ONE; DestBlend = ONE;\
 			VertexShader = compile vs_3_0 AtmosphericFogVS();\
 			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
 		}\
 	}
+#endif
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
