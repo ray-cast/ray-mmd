@@ -7,18 +7,18 @@
 #include "../../shader/PhaseFunctions.fxsub"
 #include "../../shader/AerialPerspective.fxsub"
 
-float mFogMieHP :  CONTROLOBJECT<string name="(self)"; string item = "MieH+";>;
-float mFogMieSP :  CONTROLOBJECT<string name="(self)"; string item = "MieS+";>;
-float mFogMieVP :  CONTROLOBJECT<string name="(self)"; string item = "MieV+";>;
-float mFogMieVM :  CONTROLOBJECT<string name="(self)"; string item = "MieV-";>;
-float mFogMiePhaseP :  CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
-float mFogMiePhaseM :  CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
-float mFogMieTurbidityP :  CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
-float mFogMieTurbidityM :  CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
-float mFogRayleightHP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighH+";>;
-float mFogRayleightSP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighS+";>;
-float mFogRayleightVP :  CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
-float mFogRayleightVM :  CONTROLOBJECT<string name="(self)"; string item = "RayleighV-";>;
+float mFogMieHP : CONTROLOBJECT<string name="(self)"; string item = "MieH+";>;
+float mFogMieSP : CONTROLOBJECT<string name="(self)"; string item = "MieS+";>;
+float mFogMieVP : CONTROLOBJECT<string name="(self)"; string item = "MieV+";>;
+float mFogMieVM : CONTROLOBJECT<string name="(self)"; string item = "MieV-";>;
+float mFogMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
+float mFogMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
+float mFogMieTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
+float mFogMieTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
+float mFogRayleightHP : CONTROLOBJECT<string name="(self)"; string item = "RayleighH+";>;
+float mFogRayleightSP : CONTROLOBJECT<string name="(self)"; string item = "RayleighS+";>;
+float mFogRayleightVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighV+";>;
+float mFogRayleightVM : CONTROLOBJECT<string name="(self)"; string item = "RayleighV-";>;
 
 float mFogRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mFogRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
@@ -103,40 +103,40 @@ void GenLightShaftVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-    float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
+	float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
 
 	oPosition = float4(CoordToPos(Texcoord) * step(0, illuminationPosition.w), 0, 1);
 	oTexcoord0 = Texcoord + ViewportOffset;
 	oTexcoord1 = illuminationPosition;
-    oTexcoord1 /= oTexcoord1.w;
-    oTexcoord1.xy = PosToCoord(oTexcoord1.xy);
+	oTexcoord1 /= oTexcoord1.w;
+	oTexcoord1.xy = PosToCoord(oTexcoord1.xy);
 
-    if (oTexcoord1.x < -0.5 || oTexcoord1.y < -0.5)
-    {
-    	oPosition = 0;
-    }
-    if (oTexcoord1.x > 1.5 || oTexcoord1.y > 1.5)
-    {
-    	oPosition = 0;
-    }
+	if (oTexcoord1.x < -0.5 || oTexcoord1.y < -0.5)
+	{
+		oPosition = 0;
+	}
+	if (oTexcoord1.x > 1.5 || oTexcoord1.y > 1.5)
+	{
+		oPosition = 0;
+	}
 }
 
 float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
 {
-    float2 sampleCoord = coord;
-    float4 sampleColor = 0.0;
-    float2 sampleDecay = float2(1.0, 0.96);
-    float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
+	float2 sampleCoord = coord;
+	float4 sampleColor = 0.0;
+	float2 sampleDecay = float2(1.0, 0.96);
+	float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
 
-    for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
-    {
-        sampleColor += float4(tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb, tex2Dlod(Gbuffer8Map, float4(sampleCoord, 0, 0)).r) * sampleDecay.x;
-        sampleCoord -= sampleDelta;
-        sampleDecay.x *= sampleDecay.y;
-    }
+	for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
+	{
+		sampleColor += float4(tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb, tex2Dlod(Gbuffer8Map, float4(sampleCoord, 0, 0)).r) * sampleDecay.x;
+		sampleCoord -= sampleDelta;
+		sampleDecay.x *= sampleDecay.y;
+	}
 
-    sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-    return float4(sampleColor.rgb, exp(-sampleColor.a / 5000));
+	sampleColor /= FOG_WITH_GODRAY_SAMPLES;
+	return float4(sampleColor.rgb, exp(-sampleColor.a / 5000));
 }
 
 void GenLightShaftCombientVS(
@@ -153,7 +153,7 @@ float4 GenLightShaftCombientPS(in float2 coord : TEXCOORD0) : COLOR0
 {
 	float3 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0)).rgb;
 	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord, 0, 0));
-    return float4(lerp(fog, fogBlur.rgb, fogBlur.a), 0);
+	return float4(lerp(fog, fogBlur.rgb, fogBlur.a), 0);
 }
 
 const float4 BackColor = 0.0;
@@ -175,20 +175,20 @@ const float4 BackColor = 0.0;
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
 			VertexShader = compile vs_3_0 AtmosphericFogVS();\
-			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
+			PixelShader = compile ps_3_0 AtmosphericFogPS();\
 		}\
 		pass DrawLightShaft {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
 			VertexShader = compile vs_3_0 GenLightShaftVS();\
-			PixelShader  = compile ps_3_0 GenLightShaftPS();\
+			PixelShader = compile ps_3_0 GenLightShaftPS();\
 		}\
 		pass DrawGodRay {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
 			VertexShader = compile vs_3_0 GenLightShaftCombientVS();\
-			PixelShader  = compile ps_3_0 GenLightShaftCombientPS();\
+			PixelShader = compile ps_3_0 GenLightShaftCombientPS();\
 		}\
 	}
 #else
@@ -203,7 +203,7 @@ const float4 BackColor = 0.0;
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
 			VertexShader = compile vs_3_0 AtmosphericFogVS();\
-			PixelShader  = compile ps_3_0 AtmosphericFogPS();\
+			PixelShader = compile ps_3_0 AtmosphericFogPS();\
 		}\
 	}
 #endif
