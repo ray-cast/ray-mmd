@@ -198,8 +198,8 @@ const float parallaxMapScale = 1.0;		// between 0 ~ inf
 // In other words like fetched data (albedo, normals, etc) from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Tips : Add a light source in MMD (PointLight or others)
-// Key it as part of emissive of the model (set it to follow the bone of model)
+// Tips : You can add a light source in MMD (PointLight or others)
+// And key it as part of emissive of the model (In other words : set it to follow bone of the model)
 // And same color set it to your light source and emissive color
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_MAP_FROM 0						// see ALBEDO_MAP_FROM for more information.
