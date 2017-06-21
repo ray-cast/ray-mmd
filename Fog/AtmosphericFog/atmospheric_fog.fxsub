@@ -34,8 +34,8 @@ static float mFogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mFogRange
 static float mFogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mFogDensityP), FogDensityParams.y, mFogDensityM);
 static float mFogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mFogIntensityP), FogIntensityParams.y, mFogIntensityM);
 
-static float3 FogMieColor = hsv2rgb(float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10, mFogMieVP), 0, mFogMieVM)));
-static float3 FogRayleightColor = hsv2rgb(float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM)));
+static float3 FogMieColor = float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10, mFogMieVP), 0, mFogMieVM));
+static float3 FogRayleightColor = float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM));
 
 #if FOG_WITH_GODRAY
 	texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
@@ -106,8 +106,8 @@ void AtmosphericFogVS(
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
 	oTexcoord0 = Texcoord + ViewportOffset;
 	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
-	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, FogMieColor, mFogMieTurbidity, 4);
-	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * FogRayleightColor;
+	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, hsv2rgb(FogMieColor), mFogMieTurbidity, 4);
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * hsv2rgb(FogRayleightColor);
 }
 
 float4 AtmosphericFogPS(

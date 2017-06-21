@@ -1,4 +1,4 @@
-float3 ComputeWaveLengthMie(float density)
+float3 ComputeWaveLengthMie(float3 density)
 {
 	return 2e-5f * density;
 }
