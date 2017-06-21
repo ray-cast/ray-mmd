@@ -23,17 +23,17 @@ float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "Mediu
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
 float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
 
-static const float3 mTopColor = pow(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))), 2.2);
-static const float3 mBottomColor = pow(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))), 2.2);
-static const float3 mMediumColor = pow(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))), 2.2);
+static const float3 mTopColor = hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM)));
+static const float3 mBottomColor = hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM)));
+static const float3 mMediumColor = hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM)));
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 #else
 #if USE_RGB_COLORSPACE
-	static const float3 mTopColor = pow(TopColor, 2.2);
-	static const float3 mBottomColor = pow(BottomColor, 2.2);
-	static const float3 mMediumColor = pow(MediumColor, 2.2);
+	static const float3 mTopColor = TopColor;
+	static const float3 mBottomColor = BottomColor;
+	static const float3 mMediumColor = MediumColor;
 #else
 	static const float3 mTopColor = hsv2rgb(TopColor);
 	static const float3 mBottomColor = hsv2rgb(BottomColor);
@@ -63,8 +63,8 @@ static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEn
 float3 SampleSky(float3 N, float smoothness)
 {
 	float3 color = 0;
-	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, pow2(smoothness))));
-	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, pow2(smoothness))));
+	color = lerp(pow(max(mMediumColor, 1e-5), 2.2), pow(max(mTopColor, 1e-5), 2.2), pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, pow2(smoothness))));
+	color = lerp(color, pow(max(mBottomColor, 1e-5), 2.2), pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, pow2(smoothness))));
 	return color / PI;
 }
 
