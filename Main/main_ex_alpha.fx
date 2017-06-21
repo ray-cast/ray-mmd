@@ -1,7 +1,18 @@
-#define DISCARD_ALPHA_ENABLE 1
-#define DISCARD_ALPHA_MAP_ENABLE 1
+#define ALPHA_MAP_FROM 3
+#define ALPHA_MAP_UV_FLIP 0
+#define ALPHA_MAP_SWIZZLE 3
+#define ALPHA_MAP_FILE "alpha.png"
 
-// 大于以上阈值则认为是不透明物体
-const float DiscardAlphaThreshold = 1.1;
+const float alpha = 1.0;
+const float alphaThreshold = 1.1;
+const float alphaMapLoopNum = 1.0;
+
+// it has no effect on transparent objects
+#define MATCAP_MAP_FROM 0
+#define MATCAP_MAP_UV_FLIP 2 // for DX9
+#define MATCAP_MAP_FILE "matcap.png"
+
+const float matCapScale = 1.0;
+const float matCapMapLoopNum = 1.0;
 
 #include "main.fxsub"

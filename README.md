@@ -18,6 +18,7 @@ Download :
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
+	- Added MatCap map support, (see main.fx)
 	- Improved Bloom
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
 	- Improved AtmosphericFog

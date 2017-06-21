@@ -2,34 +2,178 @@
 #include "../shader/math.fxsub"
 #include "../shader/common.fxsub"
 
-texture DiffuseMap : MATERIALTEXTURE;
-sampler DiffuseMapSamp = sampler_state
+#define TEXTURE_FILTER LINEAR
+#define TEXTURE_MIP_FILTER LINEAR
+#define TEXTURE_ANISOTROPY_LEVEL 0
+
+#if ALPHA_MAP_FROM == 3 || MATCAP_MAP_FROM == 3
+	texture DiffuseMap: MATERIALTEXTURE;
+#endif
+
+#if  ALPHA_MAP_FROM == 4 || MATCAP_MAP_FROM == 4
+	texture SphereMap : MATERIALSPHEREMAP;
+#endif
+
+#if ALPHA_MAP_FROM == 5 || MATCAP_MAP_FROM == 5
+	texture ToonMap : MATERIALTOONTEXTURE;
+#endif
+
+#if ALPHA_MAP_FROM == 6 || MATCAP_MAP_FROM == 6
+	shared texture2D DummyScreenTex : RENDERCOLORTARGET;
+#endif
+
+#if ALPHA_MAP_FROM >= 1 && ALPHA_MAP_FROM <= 6
+	#if ALPHA_MAP_FROM == 1
+		texture AlphaMap<string ResourceName = ALPHA_MAP_FILE;>;
+	#elif ALPHA_MAP_FROM == 2
+		texture AlphaMap : ANIMATEDTEXTURE<string ResourceName = ALPHA_MAP_FILE;>;
+	#endif
+	sampler AlphaMapSamp = sampler_state
+	{
+#if ALPHA_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif ALPHA_MAP_FROM == 4
+		texture = SphereMap;
+#elif ALPHA_MAP_FROM == 5
+		texture = ToonMap;
+#elif ALPHA_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = AlphaMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if MATCAP_MAP_FROM >= 1 && MATCAP_MAP_FROM <= 6
+	#if MATCAP_MAP_FROM == 1
+		texture MatCapMap<string ResourceName = MATCAP_MAP_FILE;>;
+	#elif MATCAP_MAP_FROM == 2
+		texture MatCapMap : ANIMATEDTEXTURE<string ResourceName = MATCAP_MAP_FILE;>;
+	#endif
+	sampler MatCapMapSamp = sampler_state
+	{
+#if MATCAP_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif MATCAP_MAP_FROM == 4
+		texture = SphereMap;
+#elif MATCAP_MAP_FROM == 5
+		texture = ToonMap;
+#elif MATCAP_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = MatCapMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+float GetAlpha(float2 coord)
 {
-	texture = <DiffuseMap>;
-	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
+#if ALPHA_MAP_FROM
+	#if ALPHA_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif ALPHA_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif ALPHA_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if ALPHA_MAP_FROM == 3
+		float4 alphaValues = use_texture ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
+	#elif ALPHA_MAP_FROM == 4
+		float4 alphaValues = use_spheremap ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
+	#elif ALPHA_MAP_FROM == 5
+		float4 alphaValues = use_toon ? tex2D(AlphaMapSamp, coord * alphaMapLoopNum) * MaterialDiffuse.a : MaterialDiffuse.a;
+	#elif ALPHA_MAP_FROM == 7
+		float4 alphaValues = MaterialAmbient;
+	#elif ALPHA_MAP_FROM == 8
+		float4 alphaValues = MaterialSpecular;
+	#elif ALPHA_MAP_FROM == 9
+		#error Unsupported options 9.
+	#else
+		float4 alphaValues = tex2D(AlphaMapSamp, coord * alphaMapLoopNum);
+	#endif
+		
+	#if ALPHA_MAP_SWIZZLE == 0
+		float alphaValue = alphaValues.r;
+	#elif ALPHA_MAP_SWIZZLE == 1
+		float alphaValue = alphaValues.g;
+	#elif ALPHA_MAP_SWIZZLE == 2
+		float alphaValue = alphaValues.b;
+	#else
+		float alphaValue = alphaValues.a;
+	#endif
+
+	return alphaValue;
+#else
+	return alpha * MaterialDiffuse.a;
+#endif
+}
+
+float3 GetSpecular(float3 normal, float2 coord)
+{
+#if MATCAP_MAP_FROM
+	normal = normalize(normal);
+
+   	coord = mul(normal, (float3x3)matWorldView).xy;
+	coord = coord * 0.5 + 0.5;
+
+	#if MATCAP_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif MATCAP_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif MATCAP_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if MATCAP_MAP_FROM == 3
+		float3 specularColor = use_texture ? tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb : 0;
+	#elif MATCAP_MAP_FROM == 4
+		float3 specularColor = use_spheremap ? tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb : 0;
+	#elif MATCAP_MAP_FROM == 5
+		float3 specularColor = use_toon ? tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb : 0;
+	#elif MATCAP_MAP_FROM == 7
+		float3 specularColor = MaterialAmbient.rgb;
+	#elif MATCAP_MAP_FROM == 8
+		float3 specularColor = MaterialSpecular.rgb;
+	#elif MATCAP_MAP_FROM == 9
+		#error Unsupported options 9.
+	#else
+		float3 specularColor = pow(tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb, 2.2);
+	#endif
+
+	specularColor = srgb2linear(specularColor);
+
+	return specularColor * matCapScale;
+#else
+	return 0.0f;
+#endif
+}
 
 void DrawObjectVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord : TEXCOORD0,
+	in float3 Normal : NORMAL,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1   : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord = Texcoord;
+	oTexcoord0 = Texcoord;
+	oTexcoord1 = Normal;
 	oPosition = mul(Position, matWorldViewProject);
 }
 
-float4 DrawObjectPS(float4 texcoord : TEXCOORD0) : COLOR
+float4 DrawObjectPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1) : COLOR
 {
-#if DISCARD_ALPHA_ENABLE
-	float alpha = MaterialDiffuse.a;
-#if DISCARD_ALPHA_MAP_ENABLE
-	if (use_texture) alpha *= tex2D(DiffuseMapSamp, texcoord.xy).a;
-#endif
-	clip(alpha - DiscardAlphaThreshold);
-#endif
-	return 0;
+	float alpha = GetAlpha(coord);
+	clip(alpha - alphaThreshold);
+
+	return float4(GetSpecular(normal, coord), 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
