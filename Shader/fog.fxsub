@@ -19,17 +19,6 @@ float ComputeScatteringExtinction(float depth)
 	return (1 - exp(-depth * 0.025));
 }
 
-float ComputePhaseFunctions(float theta, float g)
-{
-	float gg = g * g;
-	float g2 = 2 * g;
-
-	float theta2 = theta * theta;
-	float phase = ((1 - gg) /  pow(abs(1.0 + gg - g2 * theta2), 1.5));
-
-	return phase;
-}
-
 float ShadowTest(LightParam param, sampler shadowMap, float shadowSize, float3 viewPosition)
 {
 	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
@@ -83,7 +72,7 @@ float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
 	{
 		float3 L = stepStart - lightPos;
 		float atten = GetPhysicalLightAttenuation(L, param.lightRange, param.attenuationBulb);
-		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
+		atten *= ComputePhaseMie(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 
 		stepDepth += stepSize;
@@ -91,7 +80,7 @@ float4 SphereFog(LightParam param, float3 viewdir, float depth, int stepNum)
 		scatteringMie += atten;
 	}
 
-	float3 scattering = scatteringMie / (4.0 * PI);
+	float3 scattering = scatteringMie;
 	scattering *= param.lightColor * param.lightIntensity;
 
 	return float4(scattering, 0);
@@ -117,7 +106,7 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
 	{
 		float3 L = stepStart - lightPos;
 		float atten = GetPhysicalLightAttenuation(L, param.lightRange, param.attenuationBulb);
-		atten *= ComputePhaseFunctions(dot(-viewdir, normalize(L)), param.gloss);
+		atten *= ComputePhaseMie(dot(-viewdir, normalize(L)), param.gloss);
 		atten *= ComputeScatteringExtinction(stepDepth);
 		atten *= ShadowTest(param, shadowMap, shadowSize, stepStart);
 
@@ -126,7 +115,7 @@ float4 SphereFog(LightParam param, sampler shadowMap, float shadowSize, float3 v
 		scatteringMie += atten;
 	}
 
-	float3 scattering = scatteringMie / (4.0 * PI);
+	float3 scattering = scatteringMie;
 	scattering *= param.lightColor * param.lightIntensity;
 
 	return float4(scattering, 0);

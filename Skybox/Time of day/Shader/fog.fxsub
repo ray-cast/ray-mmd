@@ -15,7 +15,7 @@ struct ScatteringParams
 	float3 waveLambda;
 	float3 waveLambdaMie;
 	float3 waveLambdaRayleigh;
-	
+
 	float earthRadius;
 	float earthAtmTopRadius;
 	float3 earthCenter;
@@ -78,9 +78,9 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 		float3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
 		float3 segment_t = exp(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
-		
+
 		transmittance = transmittance * segment_t;
-		
+
 		scattering = scattering * segment_t;
 		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
 

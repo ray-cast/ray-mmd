@@ -2,9 +2,10 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
-#include "../../shader/PhaseFunctions.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
+#include "../../shader/AerialPerspective.fxsub"
 
 float mFogMieHP :  CONTROLOBJECT<string name="(self)"; string item = "MieH+";>;
 float mFogMieSP :  CONTROLOBJECT<string name="(self)"; string item = "MieS+";>;
@@ -52,48 +53,6 @@ static float3 FogRayleightColor = float3(mFogRayleightHP, mFogRayleightSP, lerp(
 	};
 #endif
 
-struct ScatteringParams
-{
-	float sunSize;
-	float sunRadiance;
-
-	float mieG;
-	float mieHeight;
-
-	float rayleighHeight;
-
-	float3 waveLambda;
-	float3 waveLambdaMie;
-	float3 waveLambdaRayleigh;
-	
-	float fogRange;
-	float fogDensity;
-};
-
-float3 ComputeSkyFog(ScatteringParams setting, float distance, float3 V, float3 L)
-{
-	float3 sunUp = float3(0, 1, 0);
-	float3 sunDirection = normalize(L);
-
-	float zenithAngle = saturate(dot(V, sunUp));
-
-	float3 inscatteringMie = setting.waveLambdaMie;
-	float3 inscatteringRayleigh = setting.waveLambdaRayleigh;
-
-	float cosTheta = dot(V, sunDirection);
-
-	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, setting.mieG);
-	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
-	float3 betaScattering = (betaMie + betaRayleigh);
-
-	float3 inscattering = betaScattering / (inscatteringMie + inscatteringRayleigh);
-
-	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance * setting.fogDensity);
-	extinction = pow(extinction, setting.fogRange);
-
-	return max(0, inscattering * (1.0 - extinction));
-}
-
 void AtmosphericFogVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
@@ -131,14 +90,7 @@ float4 AtmosphericFogPS(
 	float3 V = normalize(viewdir);
 	float3 L = mul(LightDirection, (float3x3)matView);
 
-	ScatteringParams params;
-	params.waveLambdaMie = mieLambda;
-	params.waveLambdaRayleigh = rayleight;
-	params.fogRange = mFogRange;
-	params.fogDensity = mFogDensity;
-	params.mieG = mFogMiePhase;
-
-	float3 fogAmount = ComputeSkyFog(params, material.linearDepth, V, L) * mFogIntensity;
+	float3 fogAmount = ComputeSkyFogApproximation(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
 
 	return float4(fogAmount, 0);
 }

@@ -7,6 +7,7 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/lighting.fxsub"
 #include "../../shader/arealight.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
 #include "../../shader/fog.fxsub"
 
 float mFogR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
