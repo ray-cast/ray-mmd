@@ -87,8 +87,8 @@ const float alpha = 1.0;			// between 0 ~ 1
 const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Tips : the NormalMap and SSAO & SSDO and Lighting only support non-empty the normals else will result a white edge issue
-// When you see some effect that looks like some white edges, you can put the model in the PMXEditor 
-// and check the model that all normals are not zero-length (XYZ is same equal to zero) to be used
+// When you see some effect that looks like some white edges on your actor model, you can put the scene in the PMXEditor 
+// and check the scene that all normals are not zero-length (XYZ is same equal to zero) to be used
 #define NORMAL_MAP_FROM 0  // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
