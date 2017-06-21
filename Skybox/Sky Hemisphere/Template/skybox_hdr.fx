@@ -20,17 +20,17 @@ float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "Mediu
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
 float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
 
-static const float3 mTopColor = hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM)));
-static const float3 mBottomColor = hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM)));
-static const float3 mMediumColor = hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM)));
+static const float3 mTopColor    = pow(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))) + 1e-5, 2.2);
+static const float3 mBottomColor = pow(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))) + 1e-5, 2.2);
+static const float3 mMediumColor = pow(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))) + 1e-5, 2.2);
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 #else
 #if USE_RGB_COLORSPACE
-	static const float3 mTopColor = pow(TopColor, 2.2);
-	static const float3 mBottomColor = pow(BottomColor, 2.2);
-	static const float3 mMediumColor = pow(MediumColor, 2.2);
+	static const float3 mTopColor = pow(max(TopColor, 1e-5), 2.2);
+	static const float3 mBottomColor = pow(max(BottomColor, 1e-5), 2.2);
+	static const float3 mMediumColor = pow(max(MediumColor, 1e-5), 2.2);
 #else
 	static const float3 mTopColor = hsv2rgb(TopColor);
 	static const float3 mBottomColor = hsv2rgb(BottomColor);

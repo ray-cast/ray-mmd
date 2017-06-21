@@ -144,10 +144,8 @@ float3 GetSpecular(float3 normal, float2 coord)
 	#elif MATCAP_MAP_FROM == 9
 		#error Unsupported options 9.
 	#else
-		float3 specularColor = pow(tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb, 2.2);
+		float3 specularColor = tex2D(MatCapMapSamp, coord * matCapMapLoopNum).rgb;
 	#endif
-
-	specularColor = srgb2linear(specularColor);
 
 	return specularColor * matCapScale;
 #else
