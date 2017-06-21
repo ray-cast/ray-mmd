@@ -17,6 +17,9 @@ float4x4 matViewProjectInverse : VIEWPROJECTIONINVERSE;
 float3 CameraPosition  : POSITION<string Object = "Camera";>;
 float3 CameraDirection : DIRECTION<string Object = "Camera";>;
 
+float3 SunColor : SPECULAR< string Object = "Light";>;
+float3 SunDirection : DIRECTION< string Object = "Light";>;
+
 float4 MaterialDiffuse  : DIFFUSE<string Object = "Geometry";>;
 float3 MaterialAmbient  : AMBIENT<string Object = "Geometry";>;
 float3 MaterialSpecular : SPECULAR<string Object = "Geometry";>;

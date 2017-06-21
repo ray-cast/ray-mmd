@@ -183,11 +183,11 @@ float3 ColorToneMapping(float3 color)
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
 	float4 curr = TonemapHable(float4(color, 4.0));
 	curr = curr / curr.w;
-	return saturate(curr);
+	return saturate(curr.rgb);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
 	float4 curr = TonemapHable(float4(color * 2, 8.0));
 	curr = curr / curr.w;
-	return saturate(curr);
+	return saturate(curr.rgb);
 #elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
 	float3 curr = TonemapHejl2015(color, 4.0);
 	return saturate(curr);

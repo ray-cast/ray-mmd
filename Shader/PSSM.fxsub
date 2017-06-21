@@ -3,10 +3,8 @@
 #include "../shader/common.fxsub"
 #include "../shader/ShadowMapCascaded.fxsub"
 
-float3 LightDirection : DIRECTION<string Object = "Light";>;
-
 static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, mLightZMax);
-static float4x4 matLightView = mul(matWorld, CreateLightViewMatrix(LightDirection, -LightDirection, mLightDistance));
+static float4x4 matLightView = mul(matWorld, CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance));
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView);

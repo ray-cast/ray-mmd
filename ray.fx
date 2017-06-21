@@ -66,9 +66,6 @@ float mColBalanceBM : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
 
-float3 LightSpecular : SPECULAR< string Object = "Light";>;
-float3 LightDirection : DIRECTION< string Object = "Light";>;
-
 static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
