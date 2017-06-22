@@ -551,8 +551,8 @@ technique DeferredLighting<
 	pass BloomDownsampleX2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset1);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp1st);
+		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset1);
+		PixelShader  = compile ps_3_0 HDRDownsample4XPS(BloomSamp1st);
 	}
 	pass BloomBlurX2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -569,8 +569,8 @@ technique DeferredLighting<
 	pass BloomDownsampleX3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset2);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp2nd);
+		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset2);
+		PixelShader  = compile ps_3_0 HDRDownsample4XPS(BloomSamp2nd);
 	}
 	pass BloomBlurX3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -587,8 +587,8 @@ technique DeferredLighting<
 	pass BloomDownsampleX4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset3);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp3rd);
+		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset3);
+		PixelShader  = compile ps_3_0 HDRDownsample4XPS(BloomSamp3rd);
 	}
 	pass BloomBlurX4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -605,8 +605,8 @@ technique DeferredLighting<
 	pass BloomDownsampleX5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset4);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp4th);
+		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset4);
+		PixelShader  = compile ps_3_0 HDRDownsample4XPS(BloomSamp4th);
 	}
 	pass BloomBlurX5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
