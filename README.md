@@ -19,10 +19,10 @@ Download :
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Added MatCap map support, (see main.fx)
-	- Improved Bloom
-	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
+	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
+	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Improved AtmosphericFog
-	- Support for Godray of AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/godray.jpg).
+	- Support for Godray of AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Support for MipFog of Skybox [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
