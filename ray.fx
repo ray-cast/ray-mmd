@@ -246,9 +246,8 @@ technique DeferredLighting<
 
 #if HDR_ENABLE && HDR_BLOOM_MODE > 0
 	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
-	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample1st;"
 #if HDR_STAR_MODE || HDR_FLARE_MODE
-	"RenderColorTarget=DownsampleMap3rd; Pass=HDRDownsample2nd;"
+	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample2nd;"
 #endif
 	"RenderColorTarget=BloomMap1stTemp;  Pass=BloomBlurX1;"
 	"RenderColorTarget=BloomMap1st;		 Pass=BloomBlurY1;"
@@ -529,25 +528,19 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 GlareDetectionVS();
 		PixelShader  = compile ps_3_0 GlareDetectionPS(ShadingMapPointSamp);
 	}
-	pass HDRDownsample1st<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp1st);
-	}
 #if HDR_STAR_MODE || HDR_FLARE_MODE
 	pass HDRDownsample2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2 * 2);
-		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp2nd);
+		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp1st);
 	}
 #endif
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset1);
-		PixelShader  = compile ps_3_0 BloomBlurPS(DownsampleSamp2nd, BloomOffsetX1);
+		PixelShader  = compile ps_3_0 BloomBlurPS(DownsampleSamp1st, BloomOffsetX1);
 	}
 	pass BloomBlurY1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

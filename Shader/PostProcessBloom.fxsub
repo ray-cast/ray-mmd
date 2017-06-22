@@ -20,25 +20,21 @@ static const float2 BloomOffsetY5 = float2(0.0, 32 / BloomScale.y);
 
 static float3 mBloomColorAll = hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 
-texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
-texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture DownsampleMap3rd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-
+texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler DownsampleSamp1st = sampler_state {
 	texture = <DownsampleMap1st>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+
+#if HDR_STAR_MODE || HDR_FLARE_MODE
+texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 sampler DownsampleSamp2nd = sampler_state {
 	texture = <DownsampleMap2nd>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler DownsampleSamp3rd = sampler_state {
-	texture = <DownsampleMap3rd>;
-	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
+#endif
 
 texture BloomMap1st : RENDERCOLORTARGET<float2 ViewportRatio={0.50, 0.50}; string Format="A16B16G16R16F";>;
 texture BloomMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
