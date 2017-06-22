@@ -27,8 +27,6 @@ float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "Density-
 float mFogIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
 
-float3 LightDirection : DIRECTION< string Object = "Light";>;
-
 static float mFogMiePhase = lerp(lerp(FogMiePhaseParams.x, FogMiePhaseParams.z, mFogMiePhaseP), FogMiePhaseParams.y, mFogMiePhaseM);
 static float mFogMieTurbidity = lerp(lerp(FogMieTurbidityParams.x, FogMieTurbidityParams.z, mFogMieTurbidityP), FogMieTurbidityParams.y, mFogMieTurbidityM);
 static float mFogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mFogRangeP), FogRangeParams.y, mFogRangeM);
@@ -45,7 +43,7 @@ static float3 FogRayleightColor = float3(mFogRayleightHP, mFogRayleightSP, lerp(
 		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 	};
-	texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+	texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 	sampler FogBlurMapSamp = sampler_state {
 		texture = <FogBlurMap>;
 		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
@@ -63,7 +61,7 @@ void AtmosphericFogVS(
 	out float4 oPosition : POSITION)
 {
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
-	oTexcoord0 = Texcoord + ViewportOffset;
+	oTexcoord0 = Texcoord + ViewportOffset2;
 	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
 	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, hsv2rgb(FogMieColor), mFogMieTurbidity, 4);
 	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * hsv2rgb(FogRayleightColor);
@@ -88,7 +86,7 @@ float4 AtmosphericFogPS(
 #endif
 
 	float3 V = normalize(viewdir);
-	float3 L = mul(LightDirection, (float3x3)matView);
+	float3 L = mul(SunDirection, (float3x3)matView);
 
 	float3 fogAmount = ComputeSkyFogApproximation(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
 
@@ -103,13 +101,13 @@ void GenLightShaftVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
+	float4 illuminationPosition = mul(float4(-SunDirection * 80000, 1), matViewProject);
 
 	oPosition = float4(CoordToPos(Texcoord) * step(0, illuminationPosition.w), 0, 1);
-	oTexcoord0 = Texcoord + ViewportOffset;
+	oTexcoord0 = Texcoord + ViewportOffset2 * 2;
 	oTexcoord1 = illuminationPosition;
 	oTexcoord1 /= oTexcoord1.w;
-	oTexcoord1.xy = PosToCoord(oTexcoord1.xy);
+	oTexcoord1.xy = PosToCoord(oTexcoord1.xy) + ViewportOffset2 * 2;
 
 	if (oTexcoord1.x < -0.5 || oTexcoord1.y < -0.5)
 	{
@@ -126,7 +124,7 @@ float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition 
 	float2 sampleCoord = coord;
 	float4 sampleColor = 0.0;
 	float2 sampleDecay = float2(1.0, 0.96);
-	float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * 0.9;
+	float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * FogSampleLength;
 
 	for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
 	{
@@ -136,24 +134,26 @@ float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition 
 	}
 
 	sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-	return float4(sampleColor.rgb, exp(-sampleColor.a / 5000));
+	return sampleColor;
 }
 
-void GenLightShaftCombientVS(
+void VDM_FilterVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float2 oTexcoord : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
 	oPosition = float4(CoordToPos(Texcoord), 0, 1);
-	oTexcoord = Texcoord + ViewportOffset;
+	oTexcoord = Texcoord + ViewportOffset2;
 }
 
-float4 GenLightShaftCombientPS(in float2 coord : TEXCOORD0) : COLOR0
+float4 VDM_FilterPS(in float2 coord : TEXCOORD0) : COLOR0
 {
 	float3 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0)).rgb;
-	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord, 0, 0));
-	return float4(lerp(fog, fogBlur.rgb, fogBlur.a), 0);
+	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset2, 0, 0));
+	float depth = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
+	float mix = fogBlur.a > 1.0 ? min(depth, fogBlur.a) : depth;
+	return float4(lerp(fog, fogBlur.rgb, exp(-mix / 2000)), 0);
 }
 
 const float4 BackColor = 0.0;
@@ -187,8 +187,8 @@ const float4 BackColor = 0.0;
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			VertexShader = compile vs_3_0 GenLightShaftCombientVS();\
-			PixelShader = compile ps_3_0 GenLightShaftCombientPS();\
+			VertexShader = compile vs_3_0 VDM_FilterVS();\
+			PixelShader = compile ps_3_0 VDM_FilterPS();\
 		}\
 	}
 #else
