@@ -43,7 +43,7 @@
 // You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
 #define ALBEDO_MAP_FILE "albedo.png"
 
-// If the ALBEDO_MAP_FROM and ALBEDO_MAP_APPLY_SCALE is 1, you can set a color/rgb to albedo, and color range is between 0.0 and 1.0
+// When the ALBEDO_MAP_FROM at 0 or ALBEDO_MAP_APPLY_SCALE at 1, you need to set a color/rgb to albedo, and color range is between 0.0 and 1.0
 // like const float3 albedo = float3(r, g, b) 
 // For example : 
 // if the red is normalized value, it can be set to albedo like : const float3 albedo = float3(1.0, 0.0, 0.0);
