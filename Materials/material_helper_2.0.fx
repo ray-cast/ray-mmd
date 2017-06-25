@@ -2,9 +2,12 @@
 // You can see the UE4 docs for more information
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
-// You can use a fixed color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
-// Tips : albedo is also called "Base Color", default data will fetched params from texture from the pmx.
-// 0 : Params fetch from fixed value from "const float3 albedo = 1.0".
+// You can use a color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
+// Tips 1 : The albedo is also called "Base Color", default data will fetched params from texture from the pmx.
+// Tips 2 : Do not enter a path with HDR file, that will be ignore the HDR and linear color-space
+// Tips 3 : These files (bmp, png, jpg, tga, dds, gif, apng) must be working in a sRGB color-space
+// Tips 4 : You can ignore the Tips 3 because most of the images are working in this color-gamut
+// 0 : Params fetch from a color from the "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
 // 3 : Params fetch from Texture from the pmx.
@@ -30,7 +33,7 @@
 #define ALBEDO_MAP_APPLY_DIFFUSE 1		// Texture colors to multiply with diffuse from the PMX.
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0	// Texture colors to multiply with color from the morph controller (R+/G+/B+).
 
-// If the ALBEDO_MAP_FROM is 1 or 2, you need to enter the path to the texture resource. 
+// If the ALBEDO_MAP_FROM is 1 or 2, you will need to enter the path to the texture resource. 
 // Tips : parent folder ref is "../" (in other words, using "../" instead of parent folder), and change all "\" to "/".
 // For example : 
 // If the xxx.png and material.fx is inside same folder
@@ -43,23 +46,24 @@
 // You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"
 #define ALBEDO_MAP_FILE "albedo.png"
 
-// When the ALBEDO_MAP_FROM at 0 or ALBEDO_MAP_APPLY_SCALE at 1, you need to set a color/rgb to albedo, and color range is between 0.0 and 1.0
+// When the ALBEDO_MAP_FROM at 0 or ALBEDO_MAP_APPLY_SCALE at 1, you will need to set a color/rgb to albedo, and color range is between 0.0 and 1.0
 // like const float3 albedo = float3(r, g, b) 
 // For example : 
 // if the red is normalized value, it can be set to albedo like : const float3 albedo = float3(1.0, 0.0, 0.0);
 // if the red is unnormalized value, it can be set to albedo like : const float3 albedo = float3(255, 0.0, 0.0) / 255.0;
-// And then
-// If color is fetch from your monitor, you need to convert sRGB color-space to linear color-space by color ^ gamma
-// Tips : The Gamma is near 2.2 and used most of time, but some old mac's used gamma of 1.8
-// Tips : About sRGB and Gamma, you can see docs for more information : https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch24.html
+// If the color is fetched from your monitor with sRGB color-space, you will need to convert the color to linear color-space by color ^ gamma
 // Convert srgb color-space from normalized value to linear color-space like : const float3 albedo = pow(float3(r, g, b), 2.2);
 // Convert srgb color-space from unnormalized value to linear color-space like : const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);
+// Tips:
+// The Gamma is near 2.2 used most of time, but some old mac's used gamma of 1.8, About sRGB and Gamma, you can see docs for more information
+// https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch24.html
+// https://en.wikipedia.org/wiki/SRGB
 const float3 albedo = 1.0;
 
 // You can tile your texture for the X and Y axis separately by change albedoMapLoopNum = float2(x, y)
 const float2 albedoMapLoopNum = 1.0; // between float2(0, 0) ~ float2(inf, inf) 
 
-// You can apply second values for color of texture (albedo) change by change ALBEDO_SUB_ENABLE
+// You can apply second value for color of texture (albedo) change by change ALBEDO_SUB_ENABLE
 // 0 : None
 // 1 : albedo * albedoSub
 // 2 : albedo ^ albedoSub
@@ -79,16 +83,16 @@ const float2 albedoSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define ALPHA_MAP_FROM 3	 		// see ALBEDO_MAP_FROM for more information.
 #define ALPHA_MAP_UV_FLIP 0	 		// see ALBEDO_MAP_UV_FLIP for more information.
 
-// The ordering of the data fetched from a texture from code. (R = 0, G = 1, B = 2, A = 3)
+// The ordering of the data fetched from a texture from the code. (R = 0, G = 1, B = 2, A = 3)
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"	// see ALBEDO_MAP_FILE for more information.
 
 const float alpha = 1.0;			// between 0 ~ 1
 const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Tips : the NormalMap and SSAO & SSDO and Lighting only support non-empty the normals else will result a white edge issue
+// Tips : (NormalMap, SSAO, SSDO, etc) only support non-empty the normals else will result a white edge issue
 // When you see some effect that looks like some white edges on your actor model, you can put the scene in the PMXEditor 
-// and check the scene that all normals are not zero-length (XYZ is same equal to zero) to be used
+// and check the scene that all normals are not zero-length (XYZ is same equal to zero) to be used for model.
 #define NORMAL_MAP_FROM 0  // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
@@ -96,8 +100,8 @@ const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : Calculate world-space normal from RGB tangent-space map.
 // 1 : Calculate world-space normal from RG  compressed tangent-space map.
-// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ. It has no effect on small objects.
-// 3 : Calculate world-space normal from Grayscale bump map by PerturbNormalHQ.
+// 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ (Low  Quality). It has no effect on small objects.
+// 3 : Calculate world-space normal from Grayscale bump map by PerturbNormalHQ (High Quality).
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
@@ -113,7 +117,7 @@ const float normalMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float normalSubMapScale = 1.0;	// between 0 ~ inf
 const float normalSubMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Default data will fetched params from the SpecularPower and convert the SpecularPower to smoothness
+// Default data will fetched params from the SpecularPower and convert the SpecularPower to smoothness.
 #define SMOOTHNESS_MAP_FROM 9			// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for smoothness
@@ -138,7 +142,12 @@ const float smoothnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 const float metalness = 0.0;			// between 0 ~ 1
 const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 
-// Minimum coefficient of specular reflection, it has no effect on metals and CUSTOM_ENABLE > 0.
+// Tips : It has no effect on metalness > 0 and CUSTOM_ENABLE > 0.
+// The specular maps are not HDR/environment maps, only modifies the color of basic reflection of the model
+// Used to change the colors of the environment reflect.
+// When the diffuse brighter than specular reflect,
+// It will be only a very small contribution to change the colors of environment reflect.
+// So you can set the zero to the "const float3 specular = 0.0;", if you dot‘t want that model to reflect the specular color of environment.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
@@ -157,12 +166,16 @@ const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 // Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
 // For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
 // Consider light that is incident upon a transparent medium with a refractive index of 1.5
-// The result is (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
+// That result will be equal to (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
 // Specular to reflection coefficient is equal to F(x) = 0.08*x, if the x is equal to 0.5 the result will be 0.04.
 // So default value is 0.5 for 0.04 coeff.
 const float3 specular = 0.5; 			// between 0 ~ 1
 const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 
+// The ambient occlusion (AO) is an effect that approximates the attenuation of environment light due to occlusion.
+// Bacause sky lighting from many directions, cannot simply to calculating shadows in the real-time.
+// A simply way able to replaced by using occlusion map and SSAO.
+// So you can set the zero to the "const float occlusion = 0.0;", if you dot‘t want that model to calculating the diffuse & specular color of environment.
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for occlusion
@@ -174,7 +187,6 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 #define OCCLUSION_MAP_UV_FLIP 0		// see ALBEDO_MAP_UV_FLIP for more information.
 #define OCCLUSION_MAP_SWIZZLE 0		// see ALPHA_MAP_SWIZZLE for more information.
 #define OCCLUSION_MAP_APPLY_SCALE 0 // see ALBEDO_MAP_APPLY_SCALE for more information.
-#define OCCLUSION_MAP_FILE "occlusion.png" // see ALBEDO_MAP_FILE for more information.
 
 const float occlusion = 1.0;			// between 0 ~ 1
 const float occlusionMapLoopNum = 1.0;	// see albedoMapLoopNum
