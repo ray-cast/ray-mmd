@@ -92,7 +92,7 @@ const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Tips : (NormalMap, SSAO, SSDO, etc) only support non-empty the normals else will result a white edge issue
 // When you see some effect that looks like some white edges on your actor model, you can put the scene in the PMXEditor 
-// and check the scene that all normals are not zero-length (XYZ is same equal to zero) to be used for model.
+// and check the scene that all normals are not zero-length (XYZ are same equal to zero) to be used for model.
 #define NORMAL_MAP_FROM 0  // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for tangent normal
@@ -211,7 +211,7 @@ const float parallaxMapScale = 1.0;		// between 0 ~ inf
 const float parallaxMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // Tips : You can add a light source in MMD (PointLight or others)
-// And key it as part of emissive of the model (In other words : set it to follow bone of the model)
+// And key it as part of emissive of the model (In other words : set it to follow the bone of model)
 // And same color set it to your light source and emissive color
 #define EMISSIVE_ENABLE 0
 #define EMISSIVE_MAP_FROM 0						// see ALBEDO_MAP_FROM for more information.
