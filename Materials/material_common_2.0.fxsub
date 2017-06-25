@@ -815,7 +815,7 @@ float3 GetSubAlbedo(float3 albedo, float2 coord)
 		#else
 			float4 albedoSubColor = tex2D(AlbedoSubMapSamp, coord * albedoSubMapLoopNum);
 		#endif
-		
+
 		#if ALBEDO_SUB_MAP_APPLY_SCALE == 1
 			albedoSubColor.rgb *= albedoSub;
 		#elif ALBEDO_SUB_MAP_APPLY_SCALE == 2
@@ -869,7 +869,7 @@ float GetAlpha(float2 coord)
 	#else
 		float4 alphaValues = tex2D(AlphaMapSamp, coord * alphaMapLoopNum);
 	#endif
-		
+
 	#if ALPHA_MAP_SWIZZLE == 0
 		float alphaValue = alphaValues.r;
 	#elif ALPHA_MAP_SWIZZLE == 1
@@ -1397,7 +1397,7 @@ float3 GetCustomDataB(float2 coord)
 		#else
 			customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
 		#endif
-		
+
 		customData = srgb2linear(customData);
 
 		#if CUSTOM_B_MAP_COLOR_FLIP
@@ -1571,7 +1571,7 @@ GbufferParam Material2PS(
 		"RenderColorTarget2=Gbuffer7RT;"\
 		"RenderColorTarget3=Gbuffer8RT;"\
 		"Pass=DrawAlphaObject;"\
-	;> {\
+	;>{\
 		pass DrawObject {\
 			AlphaTestEnable = false; AlphaBlendEnable = false;\
 			VertexShader = compile vs_3_0 MaterialVS();\
@@ -1587,6 +1587,6 @@ GbufferParam Material2PS(
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
 
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTech<string MMDPass = "shadow";> {}
-technique ZplotTec<string MMDPass = "zplot";> {}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
