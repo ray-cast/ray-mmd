@@ -133,10 +133,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/SMAA.fxsub"
 #endif
 
-#if POSTPROCESS_SHARPEN == 1
-#	include "shader/PostProcessSharpen.fxsub"
-#endif
-
 float4 ScreenSpaceQuadVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
@@ -333,12 +329,6 @@ technique DeferredLighting<
 #else
 	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
 #endif
-#endif
-
-#if POSTPROCESS_SHARPEN
-	"RenderColorTarget=;"
-	"RenderDepthStencilTarget=;"
-	"Pass=PostProcessSharpen;"
 #endif
 ;>
 {
@@ -837,14 +827,6 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, true);
-	}
-#endif
-#if POSTPROCESS_SHARPEN == 1
-	pass PostProcessSharpen<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 PostProcessSharpenPS(ShadingMapPointSamp, ViewportOffset2);
 	}
 #endif
 }
