@@ -7,8 +7,8 @@
 static const float FogSampleLength = 0.5f;
 
 // R : default value
-// G : min value
-// B : max value
+// G : min value for Slider Bar
+// B : max value for Slider Bar
 static const float3 FogRangeParams = float3(1.0, 1e-2, 20.0f);
 static const float3 FogIntensityParams = float3(1.0, 0.1, 10.0f);
 static const float3 FogDensityParams = float3(1000, 1, 50000);
