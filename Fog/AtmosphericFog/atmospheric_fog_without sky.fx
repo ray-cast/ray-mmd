@@ -4,7 +4,7 @@
 #define FOG_WITH_GODRAY 0
 #define FOG_WITH_GODRAY_SAMPLES 64
 
-static const float FogSampleLength = 0.8f;
+static const float FogSampleLength = 0.5f;
 
 // R : default value
 // G : min value

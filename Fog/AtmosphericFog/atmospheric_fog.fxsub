@@ -109,11 +109,11 @@ void GenLightShaftVS(
 	oTexcoord1 /= oTexcoord1.w;
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy) + ViewportOffset2 * 2;
 
-	if (oTexcoord1.x < -0.5 || oTexcoord1.y < -0.5)
+	if (oTexcoord1.x < -0.25 || oTexcoord1.y < -0.25)
 	{
 		oPosition = 0;
 	}
-	if (oTexcoord1.x > 1.5 || oTexcoord1.y > 1.5)
+	if (oTexcoord1.x > 1.25 || oTexcoord1.y > 1.25)
 	{
 		oPosition = 0;
 	}
