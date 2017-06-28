@@ -24,7 +24,7 @@ Download :
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Improved AtmosphericFog
     - Removed SphereFog
-	- Support Volumetric Fog calculated from point and sphere light
+	- Support Volumetric Fog calculated from (point,sphere,spot) light
 	- Support for Godray of AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Support for MipFog of Skybox [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
