@@ -31,7 +31,6 @@ texture FogMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"SphereFog*.*= ./Fog/SphereFog/sphere_fog.fx;"
 		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
 		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
 		"* = hide;";
