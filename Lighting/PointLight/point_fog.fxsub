@@ -6,7 +6,6 @@
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/PhaseFunctions.fxsub"
-#include "../../../shader/fog.fxsub"
 
 float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
 float mG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
@@ -35,7 +34,6 @@ static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, Fo
 static const float3 FogPosition = mPosition;
 static const float3 FogColor = float3(mR, mG, mB) * FogIntensity * FogBlink;
 
-
 #if VOLUMETRIC_FOG_ENABLE
 #if VOLUMETRIC_FOG_QUALITY == 0
 #	define VOLUMETRIC_FOG_WIDTH 256
@@ -54,11 +52,11 @@ static const float3 FogColor = float3(mR, mG, mB) * FogIntensity * FogBlink;
 #	define VOLUMETRIC_FOG_HEIGHT 512
 #endif
 
-texture VolumetricFog: OFFSCREENRENDERTARGET <
-	string Description = "Volumetric fog Rendering for SphereFog";
+texture VolumetricMap: OFFSCREENRENDERTARGET <
+	string Description = "Volumetric fog Rendering for PointLight";
 	int Width = VOLUMETRIC_FOG_WIDTH;
 	int Height = VOLUMETRIC_FOG_HEIGHT;
-	string Format = "R32F";
+	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
 	string DefaultEffect = 
@@ -69,12 +67,98 @@ texture VolumetricFog: OFFSCREENRENDERTARGET <
 		"*.pmd = ../point_fog_shadow.fx;"
 		"* = hide";
 >;
-sampler VolumetricFogSamp = sampler_state {
-	texture = <VolumetricFog>;
+sampler VolumetricMapSamp = sampler_state {
+	texture = <VolumetricMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
+
+struct FogParams
+{
+	float3 Eye;
+
+	float3 FogColor;
+	float3 FogPosition;
+
+	float FogRange;
+	float FogDensity;
+	float FogIntensity;
+	float FogMiePhase;
+	float FogAttenuationBulb;
+
+#if VOLUMETRIC_FOG_ENABLE
+	sampler shadowMap;
+	float shadowSize;
+#endif
+};
+
+float ComputeScatteringExtinction(FogParams param, float depth)
+{
+	return (1 - exp(-depth * param.FogDensity));
+}
+
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+{
+	const float invRadius = 1 / radius;
+	float d = length(L);
+	float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
+	d = max(d - attenuationBulbSize, 0);
+	float denom = 1 + d / attenuationBulbSize;
+	float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
+	return saturate(attenuation);
+}
+
+float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3 viewPosition)
+{
+	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
+	float3 L = worldPosition.xyz - param.FogPosition;
+
+	float linearDepth = length(L);
+
+	float depthScale = 85;
+	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
+
+	float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
+	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
+}
+
+float4 VolumetricFog(FogParams param, float3 viewdir, float depth, int stepNum)
+{
+	float3 viewPosition = viewdir * depth / viewdir.z;
+
+	float stepLength = distance(viewPosition, viewdir);
+	float stepSize = stepLength / stepNum;
+
+	float3 stepDir = (viewPosition - viewdir) / stepLength;
+	float3 step = stepDir * stepSize;
+	float3 stepStart = viewdir + step;
+
+	float3 FogPos = mul(float4(param.FogPosition, 1), matView).xyz;
+
+	float scatteringMie = 0;
+	float stepDepth = stepSize;
+
+	for (int i = 0; i < stepNum; i++)
+	{
+		float3 L = stepStart - FogPos;
+		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+		atten *= ComputePhaseMie(dot(-viewdir, normalize(L)), param.FogMiePhase);
+		atten *= ComputeScatteringExtinction(param, stepDepth);
+#if VOLUMETRIC_FOG_ENABLE
+		atten *= HitShadowTest(param, param.shadowMap, param.shadowSize, stepStart);
+#endif
+
+		stepDepth += stepSize;
+		stepStart += step;
+		scatteringMie += atten;
+	}
+
+	float3 scattering = scatteringMie;
+	scattering *= param.FogColor * param.FogIntensity;
+
+	return float4(scattering, 0);
+}
 
 void SphereFogVS(
 	in float4 Position : POSITION,
@@ -85,10 +169,10 @@ void SphereFogVS(
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = FogPosition + Normal * FogRange;
-	oTexcoord1 = Position;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+	oTexcoord1 = Position;
 }
 
 float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
@@ -106,7 +190,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	float3 P = mul(float4(position, 1), matView).xyz;
 	float3 V = normalize(-P);
 
-	LightParam param;
+	FogParams param;
 	param.FogPosition = FogPosition;
 	param.FogRange = FogRange;
 	param.FogIntensity = FogIntensity;
@@ -114,53 +198,13 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.FogMiePhase = FogMiePhase;
 	param.FogAttenuationBulb = FogAttenuationBulb;
 	param.FogDensity = FogDensity;
-	param.eye = CameraPosition;
-
+	param.Eye = CameraPosition;
 #if VOLUMETRIC_FOG_ENABLE
-	return SphereFog(param, VolumetricFogSamp, VOLUMETRIC_FOG_HEIGHT, V, min(P.z, material.linearDepth), VOLUMETRIC_FOG_SAMPLES_LENGTH);
-#else
-	return SphereFog(param, V, min(P.z, material.linearDepth), VOLUMETRIC_FOG_SAMPLES_LENGTH);
+	param.shadowMap = VolumetricMapSamp;
+	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
 #endif
-}
 
-float4 SphereFogShadowlessPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
-{
-	float2 coord = texcoord.xy / texcoord.w;
-
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-
-	float3 P = mul(float4(position, 1), matView).xyz;
-	float3 V = normalize(-P);
-
-	LightParam param;
-	param.FogPosition = FogPosition;
-	param.FogRange = FogRange;
-	param.FogIntensity = FogIntensity;
-	param.FogColor = FogColor;
-	param.FogMiePhase = FogMiePhase;
-	param.FogAttenuationBulb = FogAttenuationBulb;
-	param.FogDensity = FogDensity;
-	param.eye = CameraPosition;
-
-	return SphereFog(param, V, min(P.z, material.linearDepth), VOLUMETRIC_FOG_SAMPLES_LENGTH);
-}
-
-technique MainTech0<string MMDPass = "object"
-;>{
-	pass DrawObject {
-		ZEnable = false; ZWriteEnable = false;
-		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
-		SrcBlend = ONE; DestBlend = ONE;
-		CullMode = CW;
-		VertexShader = compile vs_3_0 SphereFogVS();
-		PixelShader  = compile ps_3_0 SphereFogShadowlessPS();
-	}
+	return VolumetricFog(param, V, min(P.z, material.linearDepth), VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"

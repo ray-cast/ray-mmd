@@ -1,7 +1,7 @@
 #define VOLUMETRIC_FOG_ENABLE 1
 #define VOLUMETRIC_FOG_MAP_QUALITY 0
 #define VOLUMETRIC_FOG_SAMPLES_LENGTH 64
-#define VOLUMETRIC_FOG_ANISOTROPY 0
+#define VOLUMETRIC_FOG_ANISOTROPY 1
 
 static const float3 FogRangeParams = float3(1.0, 0.0, 200.0);
 static const float3 FogAttenuationBulbParams = float3(1.0, 0.0, 5.0);
