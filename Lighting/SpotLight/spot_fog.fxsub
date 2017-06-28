@@ -139,10 +139,12 @@ float4 SphereFog(FogParam param, sampler shadowMap, float shadowSize, float3 vie
 		float3 L = viewFogPosition - stepStart;
 		float3 Lnormalized = normalize(L);
 		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-		atten *= ComputePhaseMie(dot(-viewdir, Lnormalized), param.FogMiePhase);
 		atten *= ComputeScatteringExtinction(param, stepDepth);
 		atten *= GetSpotLightAttenuation(Lnormalized, viewFogDirection, FogAngle, 2.0);
 		atten *= ShadowTest(param, shadowMap, stepStart);
+#if VOLUMETRIC_FOG_ANISOTROPY
+		atten *= ComputePhaseMie(dot(-viewdir, Lnormalized), param.FogMiePhase);
+#endif
 
 		stepDepth += stepSize;
 		stepStart += step;
@@ -175,9 +177,11 @@ float4 SphereFog(FogParam param, float3 viewdir, float depth, int stepNum)
 		float3 L = viewFogPosition - stepStart;
 		float3 Lnormalized = normalize(L);
 		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-		atten *= ComputePhaseMie(dot(-viewdir, Lnormalized), param.FogMiePhase);
 		atten *= ComputeScatteringExtinction(param, stepDepth);
 		atten *= GetSpotLightAttenuation(Lnormalized, viewFogDirection, FogAngle, 2.0);
+#if VOLUMETRIC_FOG_ANISOTROPY
+		atten *= ComputePhaseMie(dot(-viewdir, Lnormalized), param.FogMiePhase);
+#endif
 
 		stepDepth += stepSize;
 		stepStart += step;
