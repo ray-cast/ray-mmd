@@ -3,4 +3,4 @@
 
 const float CasterAlphaThreshold = 0.5;
 
-#include "point_fog_shadow.fxsub"
+#include "sphere_fog_shadow.fxsub"

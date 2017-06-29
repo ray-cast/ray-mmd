@@ -93,9 +93,9 @@ struct FogParams
 #endif
 };
 
-float ComputeScatteringExtinction(FogParams param, float depth)
+float ComputeOpticalDepth(FogParams param, float depth)
 {
-	return (1 - exp(-depth * param.FogDensity));
+	return exp(-depth * param.FogDensity);
 }
 
 float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
@@ -123,39 +123,37 @@ float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3
 	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
 }
 
-float4 VolumetricFog(FogParams param, float3 viewdir, float depth, int stepNum)
+float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int stepNum)
 {
-	float3 viewPosition = viewdir * depth / viewdir.z;
-
-	float stepLength = distance(viewPosition, viewdir);
-	float stepSize = stepLength / stepNum;
-
-	float3 stepDir = (viewPosition - viewdir) / stepLength;
-	float3 step = stepDir * stepSize;
-	float3 stepStart = viewdir + step;
-
 	float3 FogPos = mul(float4(param.FogPosition, 1), matView).xyz;
 
-	float scatteringMie = 0;
-	float stepDepth = stepSize;
+	float3 sampleStep = (end - start) / stepNum;
+	float3 sampleStart = start + sampleStep;
 
-	for (int i = 0; i < stepNum; i++)
+	float sampleLength = length(sampleStep);
+
+	float scatteringMie = 0;
+	float scatteringDepth = sampleLength;
+
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep)
 	{
-		float3 L = stepStart - FogPos;
-		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-		atten *= ComputePhaseMie(dot(-viewdir, normalize(L)), param.FogMiePhase);
-		atten *= ComputeScatteringExtinction(param, stepDepth);
+		float density = sampleLength;
 #if VOLUMETRIC_FOG_ENABLE
-		atten *= HitShadowTest(param, param.shadowMap, param.shadowSize, stepStart);
+		density *= HitShadowTest(param, param.shadowMap, param.shadowSize, sampleStart);
 #endif
 
-		stepDepth += stepSize;
-		stepStart += step;
+		float3 L = sampleStart - FogPos;
+		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+		atten *= ComputePhaseMie(dot(-V, normalize(L)), param.FogMiePhase);
+		atten *= ComputeOpticalDepth(param, density) * density;
+
 		scatteringMie += atten;
+		scatteringDepth += density;
 	}
 
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
+	scattering *= 1 - ComputeOpticalDepth(param, scatteringDepth);
 
 	return float4(scattering, 0);
 }
@@ -172,7 +170,7 @@ void SphereFogVS(
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = Position;
+	oTexcoord1 = mul(Position, matView);
 }
 
 float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
@@ -187,8 +185,10 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 P = mul(float4(position, 1), matView).xyz;
+	float3 P = position;
 	float3 V = normalize(-P);
+
+	float3 end = V * min(P.z, material.linearDepth) / V.z;
 
 	FogParams param;
 	param.FogPosition = FogPosition;
@@ -204,7 +204,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
 #endif
 
-	return VolumetricFog(param, V, min(P.z, material.linearDepth), VOLUMETRIC_FOG_SAMPLES_LENGTH);
+	return VolumetricFog(param, V, V, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"
