@@ -130,33 +130,32 @@ float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, flo
 float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int stepNum)
 {
 	float3 sampleStep = (end - start) / stepNum;
-	float3 sampleStart = start;
+	float3 sampleStart = start + sampleStep;
 
 	float sampleLength = length(sampleStep);
 
 	float scatteringMie = 0;
-	float sactteringDepth = 0;
+	float sactteringDepth = sampleLength;
 
-	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep)
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, sactteringDepth += sampleLength)
 	{
-		float3 L = viewFogPosition - sampleStart;
-		float3 Lnormalized = normalize(L);
-
 		float density = sampleLength;
 #if VOLUMETRIC_FOG_ENABLE
 		density *= HitShadowTest(param, param.shadowMap, param.shadowOffset, param.matLightViewFromCameraView, param.matLightProjectFromCameraView, sampleStart);
 #endif
-		if (density)
+		if (density > 0)
 		{
+			float3 L = viewFogPosition - sampleStart;
+			float3 Lnormalized = normalize(L);
+
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
 			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
-			atten *= ComputeOpticalDepth(param, density) * density;
+			atten *= ComputeOpticalDepth(param, sactteringDepth) * density;
 #if VOLUMETRIC_FOG_ANISOTROPY
-			atten *= ComputePhaseMie(dot(-V, Lnormalized), param.FogMiePhase);
+			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
 #endif
 
 			scatteringMie += atten;
-			sactteringDepth += density;
 		}
 	}
 

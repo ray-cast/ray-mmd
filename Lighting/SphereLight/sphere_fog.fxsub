@@ -135,20 +135,23 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 	float scatteringMie = 0;
 	float scatteringDepth = sampleLength;
 
-	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep)
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth += sampleLength)
 	{
 		float density = sampleLength;
 #if VOLUMETRIC_FOG_ENABLE
 		density *= HitShadowTest(param, param.shadowMap, param.shadowSize, sampleStart);
 #endif
+		if (density)
+		{
+			float3 L = sampleStart - FogPos;
+			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+			atten *= ComputeOpticalDepth(param, scatteringDepth) * density;
+#if VOLUMETRIC_FOG_ANISOTROPY
+			atten *= ComputePhaseMieHG(dot(-V, normalize(L)), param.FogMiePhase);
+#endif
 
-		float3 L = sampleStart - FogPos;
-		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-		atten *= ComputePhaseMie(dot(-V, normalize(L)), param.FogMiePhase);
-		atten *= ComputeOpticalDepth(param, density) * density;
-
-		scatteringMie += atten;
-		scatteringDepth += density;
+			scatteringMie += atten;
+		}
 	}
 
 	float3 scattering = scatteringMie;
