@@ -26,7 +26,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
-static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mRangeP), FogRangeParams.y, mRangeM);
+static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 2.0, mRangeP), FogRangeParams.y, mRangeM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
 static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, FogAttenuationBulbParams.z, mAttenuationBulbP), FogAttenuationBulbParams.y, mAttenuationBulbM);
@@ -53,7 +53,7 @@ static const float3 FogColor = float3(mR, mG, mB) * FogIntensity * FogBlink;
 #endif
 
 texture VolumetricMap: OFFSCREENRENDERTARGET <
-	string Description = "Volumetric fog Rendering for PointLight";
+	string Description = "Volumetric fog Rendering for SphereLight";
 	int Width = VOLUMETRIC_FOG_WIDTH;
 	int Height = VOLUMETRIC_FOG_HEIGHT;
 	string Format = "R16F";
@@ -93,6 +93,27 @@ struct FogParams
 #endif
 };
 
+float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+{
+	float3 origin = position - center;
+	float B = dot(origin, dir);
+	float C = dot(origin, origin) - radius * radius;
+	float D = B * B - C;
+
+	float2 minimaxIntersections;
+	if (D < 0.0)
+	{
+		minimaxIntersections = float2(-1.0, -1.0);
+	}
+	else
+	{
+		D = sqrt(D);
+		minimaxIntersections = float2(-B - D, -B + D);
+	}
+
+	return minimaxIntersections;
+}
+
 float ComputeOpticalDepth(FogParams param, float depth)
 {
 	return exp(-depth * param.FogDensity);
@@ -109,9 +130,8 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3 viewPosition)
+float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3 worldPosition)
 {
-	float4 worldPosition = mul(float4(viewPosition, 1), matViewInverse);
 	float3 L = worldPosition.xyz - param.FogPosition;
 
 	float linearDepth = length(L);
@@ -125,8 +145,6 @@ float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3
 
 float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int stepNum)
 {
-	float3 FogPos = mul(float4(param.FogPosition, 1), matView).xyz;
-
 	float3 sampleStep = (end - start) / stepNum;
 	float3 sampleStart = start + sampleStep;
 
@@ -143,7 +161,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 #endif
 		if (density)
 		{
-			float3 L = sampleStart - FogPos;
+			float3 L = sampleStart - param.FogPosition;
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
 			atten *= ComputeOpticalDepth(param, scatteringDepth) * density;
 #if VOLUMETRIC_FOG_ANISOTROPY
@@ -165,33 +183,18 @@ void SphereFogVS(
 	in float3 Normal : NORMAL,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = FogPosition + Normal * FogRange;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = mul(Position, matView);
+	oTexcoord1 = normalize(Position.xyz - CameraPosition);
 }
 
-float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
+float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
 {
-	float2 coord = texcoord.xy / texcoord.w;
-
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-
-	float3 P = position;
-	float3 V = normalize(-P);
-
-	float3 end = V * min(P.z, material.linearDepth) / V.z;
-
 	FogParams param;
 	param.FogPosition = FogPosition;
 	param.FogRange = FogRange;
@@ -206,7 +209,16 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : C
 	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
 #endif
 
-	return VolumetricFog(param, V, V, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
+	float3 V = normalize(viewdir);
+	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
+	clip(intersections.y);
+
+	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
+
+	float3 start = CameraPosition + V * intersections.x;
+	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
+
+	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"
