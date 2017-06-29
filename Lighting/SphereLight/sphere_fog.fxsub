@@ -156,7 +156,6 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
-	scattering *= 1 - ComputeOpticalDepth(param, scatteringDepth);
 
 	return float4(scattering, 0);
 }
