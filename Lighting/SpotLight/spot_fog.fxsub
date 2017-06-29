@@ -16,6 +16,7 @@ float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
+float mAngleP : CONTROLOBJECT<string name = "(self)"; string item = "Angle+";>;
 float mAngleM : CONTROLOBJECT<string name = "(self)"; string item = "Angle-";>;
 float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
@@ -29,7 +30,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
-static const float FogAngle = radians(lerp(FogAngleParams.x, FogAngleParams.y, mAngleM));
+static const float FogAngle = radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mRangeP), FogRangeParams.y, mRangeM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
@@ -116,14 +117,9 @@ float ComputeOpticalDepth(FogParams param, float depth)
 	return exp(-depth * param.FogDensity);
 }
 
-float ComputeScatteringExtinction(FogParams param, float depth)
+float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, float4x4 matLightViewFromCameraView, float4x4 matLightProjectFromCameraView, float3 viewPosition)
 {
-	return (1 - exp(-depth * param.FogDensity));
-}
-
-float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, float3 viewPosition)
-{
-	float4 proj = mul(float4(viewPosition, 1), param.matLightProjectFromCameraView);
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += shadowOffset;
 
@@ -131,41 +127,42 @@ float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, flo
 	return tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r < linearDepth ? 0 : 1;
 }
 
-float4 VolumetricFog(FogParams param, float3 viewdir, float depth, int stepNum)
+float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int stepNum)
 {
-	float3 viewPosition = viewdir * depth / viewdir.z;
+	float3 sampleStep = (end - start) / stepNum;
+	float3 sampleStart = start;
 
-	float stepLength = distance(viewPosition, viewdir);
-	float stepSize = stepLength / stepNum;
-
-	float3 stepDir = (viewPosition - viewdir) / stepLength;
-	float3 step = stepDir * stepSize;
-	float3 stepStart = viewdir + step;
+	float sampleLength = length(sampleStep);
 
 	float scatteringMie = 0;
-	float stepDepth = stepSize;
+	float sactteringDepth = 0;
 
-	for (int i = 0; i < stepNum; i++)
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep)
 	{
-		float3 L = viewFogPosition - stepStart;
+		float3 L = viewFogPosition - sampleStart;
 		float3 Lnormalized = normalize(L);
-		float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-		atten *= ComputeScatteringExtinction(param, stepDepth);
-		atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
-#if VOLUMETRIC_FOG_ANISOTROPY
-		atten *= ComputePhaseMie(dot(-viewdir, Lnormalized), param.FogMiePhase);
-#endif
+
+		float density = sampleLength;
 #if VOLUMETRIC_FOG_ENABLE
-		atten *= HitShadowTest(param, param.shadowMap, param.shadowOffset, stepStart);
+		density *= HitShadowTest(param, param.shadowMap, param.shadowOffset, param.matLightViewFromCameraView, param.matLightProjectFromCameraView, sampleStart);
+#endif
+		if (density)
+		{
+			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
+			atten *= ComputeOpticalDepth(param, density) * density;
+#if VOLUMETRIC_FOG_ANISOTROPY
+			atten *= ComputePhaseMie(dot(-V, Lnormalized), param.FogMiePhase);
 #endif
 
-		stepDepth += stepSize;
-		stepStart += step;
-		scatteringMie += atten;
+			scatteringMie += atten;
+			sactteringDepth += density;
+		}
 	}
 
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
+	scattering *= 1.0 - ComputeOpticalDepth(param, sactteringDepth);
 
 	return float4(scattering, 0);
 }
@@ -184,13 +181,13 @@ void VolumetricFogVS(
 	Position.xyz = dist < 0.1 ? Position.xyz : lerp(mDirection, scale, FogAngle);
 	Position.xyz = FogPosition + (Position.xyz - FogPosition) * FogRange / 2;
 
-	oTexcoord1 = -mul(Position, matView);
+	oTexcoord1 = mul(Position, matView);
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
-float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 position : TEXCOORD1) : COLOR
 {
 	float2 coord = texcoord.xy / texcoord.w;
 
@@ -202,7 +199,10 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 V = normalize(viewdir);
+	float3 V = normalize(-position);
+
+	float3 start = V;
+	float3 end = V * material.linearDepth / V.z;
 
 	FogParams param;
 	param.FogPosition = FogPosition;
@@ -224,7 +224,7 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 	param.matLightProjectFromCameraView = matLightProjectFromCameraView;
 #endif
 
-	return VolumetricFog(param, V, material.linearDepth, VOLUMETRIC_FOG_SAMPLES_LENGTH);
+	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"

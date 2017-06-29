@@ -5,12 +5,13 @@
 #include "../../shader/shadowcommon.fxsub"
 
 float mRangeP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Range+";>;
+float mAngleP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle+";>;
 float mAngleM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle-";>;
 float mIntensityM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Intensity-";>;
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float LightAngle = radians(lerp(60.0f, 30.0f, mAngleM));
+static float LightAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30, mAngleM));
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
 
