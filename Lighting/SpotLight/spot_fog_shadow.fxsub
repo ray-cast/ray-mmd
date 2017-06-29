@@ -11,13 +11,14 @@ float mIntensityM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = 
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float LightAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30, mAngleM));
+static const float FogAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30, mAngleM));
+
 static const float3 FogPosition = mPosition;
 static const float3 FogDirection = normalize(mDirection - mPosition);
 
-static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
-static float4x4 matLightView = CreateLightViewMatrix(FogDirection, FogPosition);
-static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static const float4x4 matLightProject = CreatePerspectiveProject(FogAngle, 1, mLightPlaneNear, mLightPlaneFar);
+static const float4x4 matLightView = CreateLightViewMatrix(FogDirection, FogPosition);
+static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap : MATERIALTEXTURE;
