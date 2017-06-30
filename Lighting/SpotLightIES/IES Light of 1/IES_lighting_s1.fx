@@ -3,9 +3,9 @@
 #define LIGHT_PARAMS_FILE "IES.HDR"
 
 static const float lightRange = 200.0;
-static const float lightSpotAngle = 60.0;
 static const float lightSpotFalloff = 2.0;
 static const float lightAttenuationBulb = 1.0;
+static const float3 lightAngleParams = float3(45.0f, 30.0, 60.0f);
 
 static const float3 lightBlink = 0.0;
 static const float3 lightColor = float3(1.0, 1.0, 1.0) * 1000.0;

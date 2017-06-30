@@ -86,14 +86,30 @@ float3 AppleVignette(float3 color, float2 coord, float inner, float outer)
 	return color * smoothstep(outer, inner, L);
 }
 
-float3 AppleDispersion(sampler2D source, float2 coord, float inner, float outer)
+float3 SampleSpectrum(float x)
 {
-	float L = length(coord * 2 - 1);
-	L = 1 - smoothstep(outer, inner, L);
-	float3 color = tex2Dlod(source, float4(coord, 0, 0)).rgb;
-	color.g = tex2Dlod(source, float4(coord - ViewportOffset2 * L * (mDispersion * 8), 0, 0)).g;
-	color.b = tex2Dlod(source, float4(coord + ViewportOffset2 * L * (mDispersion * 8), 0, 0)).b;
-	return color;
+	float t = 3.0 * x - 1.5;
+	return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset)
+{
+	const int samples = 8;
+
+	float3 totalColor = 0.0;
+	float3 totalWeight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i <= samples; i++, coord += delta)
+	{
+		float3 w = SampleSpectrum(float(i) / samples);
+
+		totalWeight += w;
+		totalColor += w * tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	}
+
+	return totalColor / totalWeight;
 }
 
 void FimicGrainVS(
@@ -108,7 +124,12 @@ void FimicGrainVS(
 
 float4 FimicGrainPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {   
-	float3 color = AppleDispersion(ScnSamp, coord, mDispersionRadius, 1 + mDispersionRadius);
+	const float scale = ((ViewportSize.x * 0.5) / 512);
+	float L = 1 - smoothstep(1.0 + mDispersionRadius, mDispersionRadius, length(coord * 2 - 1));
+	float2 dist = ViewportOffset2 * L * (mDispersion * 16) * scale;
+	float2 offset = (coord * 2 - 1.0) * dist;
+
+	float3 color = ChromaticAberration(ScnSamp, coord, offset);
 	color = AppleFilmGrain(color, coord, 1);
 	color = AppleFilmLine(color, coord, screenPosition.xy);
 	color = AppleVignette(color, coord, 1.5 - mVignette, 2.5 - mVignette);

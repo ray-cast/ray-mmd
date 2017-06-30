@@ -57,7 +57,7 @@ static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 #endif
 
 texture VolumetricMap: OFFSCREENRENDERTARGET <
-	string Description = "Volumetric fog Rendering for SpotLight";
+	string Description = "Volumetric fog Rendering for SpotLightIES";
 	int Width = VOLUMETRIC_FOG_SIZE;
 	int Height = VOLUMETRIC_FOG_SIZE;
 	string Format = "R16F";
@@ -196,7 +196,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
 			atten *= ComputeOpticalDepth(param, scatteringDepth) * density;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
-			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
+			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase) * (4 * PI);
 #endif
 			scatteringMie += atten;
 		}
@@ -205,7 +205,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
 #if VOLUMETRIC_FOG_ANISOTROPY == 1
-	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
+	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase) * (4 * PI);
 #endif
 
 	return float4(scattering, 0);
@@ -223,7 +223,7 @@ void SphereFogVS(
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = normalize(Position.xyz - CameraPosition);
+	oTexcoord1 = Position.xyz - CameraPosition;
 }
 
 float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
@@ -254,7 +254,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 
 	float3 start = CameraPosition + V * max(0, intersections.x);
-	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
+	float3 end = CameraPosition + V * min(length(viewdir), min(linearDepth, intersections.y / 3));
 
 	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
