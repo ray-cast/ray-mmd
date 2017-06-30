@@ -27,7 +27,7 @@ float mMieDensityM : CONTROLOBJECT<string name="(self)"; string item = "MieDensi
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item="Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item="Direction";>;
 
-static const float FogAngle = radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM));
+static const float FogAngle = cos(radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM)));
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 2.0, mRangeP), FogRangeParams.y, mRangeM);
@@ -116,25 +116,32 @@ struct FogParams
 #endif
 };
 
-float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle)
 {
 	float3 origin = position - center;
-	float B = dot(origin, dir);
-	float C = dot(origin, origin) - radius * radius;
-	float D = B * B - C;
 
-	float2 minimaxIntersections;
-	if (D < 0.0)
+	float A = dot(origin, viewdir);
+	float B = dot(origin, axis);
+
+	float cosTheta = dot(viewdir, axis);
+
+	float a = cosTheta * cosTheta - angle * angle;
+	float b = cosTheta * B - A * angle * angle;
+	float c = B * B - dot(origin, origin) * angle * angle;
+
+	float det = b * b - a * c;
+	if (det < 0.0)
 	{
-		minimaxIntersections = float2(-1.0, -1.0);
+		return -1;
 	}
 	else
 	{
-		D = sqrt(D);
-		minimaxIntersections = float2(-B - D, -B + D);
-	}
+		det = sqrt(det);
+		float t1 = (-b + det);
+		float t2 = (-b - det);
 
-	return minimaxIntersections;
+		return float2(t1, t2) / a;
+	}
 }
 
 float ComputeOpticalDepth(FogParams param, float depth)
@@ -153,9 +160,9 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float GetSpotLightAttenuation(float3 L, float3 Ld, float angle, float radius)
+float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius)
 {
-	float falloff = cos(angle) / (saturate(dot(L, Ld)) + 1e-6);	
+	float falloff = cosAngle / (saturate(dot(L, Ld)) + 1e-6);
 	float attenuation = 1.0 - pow(saturate(falloff), radius);
 	return attenuation;
 }
@@ -219,7 +226,7 @@ void SphereFogVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	Position.xyz = FogPosition + Normal * FogRange;
+	Position.xyz = FogPosition + Normal * FogRange * 100;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
@@ -248,13 +255,13 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 #endif
 
 	float3 V = normalize(viewdir);
-	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
-	clip(intersections.y);
+	float2 intersections = ComputeRayConeIntersection(CameraPosition, V, param.FogPosition, param.FogDirection, param.FogAngle);
+	clip(dot(max(0, intersections), 1) - 1e-5);
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 
-	float3 start = CameraPosition + V * max(0, intersections.x);
-	float3 end = CameraPosition + V * min(length(viewdir), min(linearDepth, intersections.y / 2));
+	float3 start = CameraPosition + V;
+	float3 end = CameraPosition + V * (intersections.y > 0 ? min(linearDepth, intersections.y) : linearDepth);
 
 	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }

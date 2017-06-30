@@ -6,8 +6,6 @@
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/PhaseFunctions.fxsub"
-#include "../../../shader/lighting.fxsub"
-#include "../../../shader/arealight.fxsub"
 
 float mR : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
 float mG : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
@@ -30,7 +28,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
-static const float FogAngle = radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM));
+static const float FogAngle = cos(radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM)));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mRangeP), FogRangeParams.y, mRangeM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
@@ -105,25 +103,50 @@ struct FogParams
 #endif
 };
 
-float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+{
+	const float invRadius = 1 / radius;
+	float d = length(L);
+	float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
+	d = max(d - attenuationBulbSize, 0);
+	float denom = 1 + d / attenuationBulbSize;
+	float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
+	return saturate(attenuation);
+}
+
+float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius)
+{
+	float falloff = cosAngle / (saturate(dot(L, Ld)) + 1e-6);
+	float attenuation = 1.0 - pow(saturate(falloff), radius);
+	return attenuation;
+}
+
+float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle)
 {
 	float3 origin = position - center;
-	float B = dot(origin, dir);
-	float C = dot(origin, origin) - radius * radius;
-	float D = B * B - C;
 
-	float2 minimaxIntersections;
-	if (D < 0.0)
+	float A = dot(origin, viewdir);
+	float B = dot(origin, axis);
+
+	float cosTheta = dot(viewdir, axis);
+
+	float a = cosTheta * cosTheta - angle * angle;
+	float b = cosTheta * B - A * angle * angle;
+	float c = B * B - dot(origin, origin) * angle * angle;
+
+	float det = b * b - a * c;
+	if (det < 0.0)
 	{
-		minimaxIntersections = float2(-1.0, -1.0);
+		return -1;
 	}
 	else
 	{
-		D = sqrt(D);
-		minimaxIntersections = float2(-B - D, -B + D);
-	}
+		det = sqrt(det);
+		float t1 = (-b + det);
+		float t2 = (-b - det);
 
-	return minimaxIntersections;
+		return float2(t1, t2) / a;
+	}
 }
 
 float ComputeOpticalDepth(FogParams param, float depth)
@@ -165,6 +188,9 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
 			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
 			atten *= ComputeOpticalDepth(param, sactteringDepth) * density;
+#if VOLUMETRIC_FOG_ANISOTROPY == 2
+			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
+#endif
 
 			scatteringMie += atten;
 		}
@@ -173,7 +199,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
 
-#if VOLUMETRIC_FOG_ANISOTROPY
+#if VOLUMETRIC_FOG_ANISOTROPY == 1
 	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
 #endif
 
@@ -223,13 +249,13 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 #endif
 
 	float3 V = normalize(viewdir);
-	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
-	clip(intersections.y);
+	float2 intersections = ComputeRayConeIntersection(CameraPosition, V, param.FogPosition, param.FogDirection, param.FogAngle);
+	clip(dot(max(0, intersections), 1) - 1e-5);
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 
-	float3 start = CameraPosition + V * max(0, intersections.x);
-	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
+	float3 start = CameraPosition + V;
+	float3 end = CameraPosition + V * (intersections.y > 0 ? min(linearDepth, intersections.y) : linearDepth);
 
 	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
