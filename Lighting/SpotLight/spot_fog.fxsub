@@ -121,7 +121,7 @@ float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius)
 	return attenuation;
 }
 
-float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle)
+float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle, float height)
 {
 	float3 origin = position - center;
 
@@ -249,13 +249,18 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 #endif
 
 	float3 V = normalize(viewdir);
-	float2 intersections = ComputeRayConeIntersection(CameraPosition, V, param.FogPosition, param.FogDirection, param.FogAngle);
+	float2 intersections = ComputeRayConeIntersection(CameraPosition, V, param.FogPosition, param.FogDirection, param.FogAngle, param.FogRange);
 	clip(dot(max(0, intersections), 1) - 1e-5);
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 
+	if (intersections.y > 0)
+	{
+		linearDepth = min(linearDepth, intersections.y);
+	}
+
 	float3 start = CameraPosition + V;
-	float3 end = CameraPosition + V * (intersections.y > 0 ? min(linearDepth, intersections.y) : linearDepth);
+	float3 end = CameraPosition + V * linearDepth;
 
 	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
 }
