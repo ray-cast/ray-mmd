@@ -665,7 +665,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp3rd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star1stStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
