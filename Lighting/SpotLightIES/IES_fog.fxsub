@@ -14,6 +14,8 @@ float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
+float mAngleP : CONTROLOBJECT<string name = "(self)"; string item = "Angle+";>;
+float mAngleM : CONTROLOBJECT<string name = "(self)"; string item = "Angle-";>;
 float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
@@ -25,6 +27,7 @@ float mMieDensityM : CONTROLOBJECT<string name="(self)"; string item = "MieDensi
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item="Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(self)"; string item="Direction";>;
 
+static const float FogAngle = radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM));
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 2.0, mRangeP), FogRangeParams.y, mRangeM);
@@ -36,28 +39,27 @@ static const float3 FogPosition = mPosition;
 static const float3 FogDirection = normalize(mDirection - mPosition);
 static const float3 FogColor = float3(mR, mG, mB) * FogIntensity * FogBlink;
 
+static const float4x4 matLightProject = CreatePerspectiveProject(FogAngle, 1, mLightPlaneNear, mLightPlaneFar);
+static const float4x4 matLightView = CreateLightViewMatrix(FogDirection, FogPosition);
+static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
+
 #if VOLUMETRIC_FOG_ENABLE
 #if VOLUMETRIC_FOG_QUALITY == 0
-#	define VOLUMETRIC_FOG_WIDTH 256
-#	define VOLUMETRIC_FOG_HEIGHT 512
+#	define VOLUMETRIC_FOG_SIZE 256
 #elif VOLUMETRIC_FOG_QUALITY == 1
-#	define VOLUMETRIC_FOG_WIDTH 512
-#	define VOLUMETRIC_FOG_HEIGHT 1024
+#	define VOLUMETRIC_FOG_SIZE 512
 #elif VOLUMETRIC_FOG_QUALITY >= 2
-#	define VOLUMETRIC_FOG_WIDTH 1024
-#	define VOLUMETRIC_FOG_HEIGHT 2048
+#	define VOLUMETRIC_FOG_SIZE 1024
 #elif VOLUMETRIC_FOG_QUALITY >= 3
-#	define VOLUMETRIC_FOG_WIDTH 2048
-#	define VOLUMETRIC_FOG_HEIGHT 4096
+#	define VOLUMETRIC_FOG_SIZE 2048
 #else
-#	define VOLUMETRIC_FOG_WIDTH 256
-#	define VOLUMETRIC_FOG_HEIGHT 512
+#	define VOLUMETRIC_FOG_SIZE 256
 #endif
 
 texture VolumetricMap: OFFSCREENRENDERTARGET <
-	string Description = "Volumetric fog Rendering for PointLightIES";
-	int Width = VOLUMETRIC_FOG_WIDTH;
-	int Height = VOLUMETRIC_FOG_HEIGHT;
+	string Description = "Volumetric fog Rendering for SpotLight";
+	int Width = VOLUMETRIC_FOG_SIZE;
+	int Height = VOLUMETRIC_FOG_SIZE;
 	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
@@ -74,6 +76,9 @@ sampler VolumetricMapSamp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+
+static float2 ShadowmapOffset  = 0.5 / VOLUMETRIC_FOG_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / VOLUMETRIC_FOG_SIZE;
 #endif
 
 texture IESTexture<string ResourceName = LIGHT_PARAMS_FILE; int Miplevels = 1;>; 
@@ -95,6 +100,7 @@ struct FogParams
 	float3 FogDirection;
 	float3 FogColor;
 
+	float FogAngle;
 	float FogRange;
 	float FogDensity;
 	float FogIntensity;
@@ -103,7 +109,10 @@ struct FogParams
 
 #if VOLUMETRIC_FOG_ENABLE
 	sampler shadowMap;
-	float shadowSize;
+	float2 shadowOffset;
+
+	float4x4 matLightView;
+	float4x4 matLightProject;
 #endif
 };
 
@@ -144,17 +153,21 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3 worldPosition)
+float GetSpotLightAttenuation(float3 L, float3 Ld, float angle, float radius)
 {
-	float3 L = worldPosition.xyz - param.FogPosition;
+	float falloff = cos(angle) / (saturate(dot(L, Ld)) + 1e-6);	
+	float attenuation = 1.0 - pow(saturate(falloff), radius);
+	return attenuation;
+}
 
-	float linearDepth = length(L);
+float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, float4x4 matLightView, float4x4 matLightProject, float3 worldPosition)
+{
+	float4 proj = mul(float4(worldPosition, 1), matLightProject);
+	proj.xy = PosToCoord(proj.xy / proj.w);
+	proj.xy += shadowOffset;
 
-	float depthScale = 85;
-	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
-
-	float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
-	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
+	float linearDepth = length(mul(float4(worldPosition, 1), matLightView));
+	return tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r < linearDepth ? 0 : 1;
 }
 
 float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int stepNum)
@@ -174,12 +187,13 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 		float3 Lnormalized = normalize(L);
 
 #if VOLUMETRIC_FOG_ENABLE
-		density *= HitShadowTest(param, param.shadowMap, param.shadowSize, sampleStart);
+		density *= HitShadowTest(param, param.shadowMap, param.shadowOffset, param.matLightView, param.matLightProject, sampleStart);
 		density *= ComputeIESLightProfile1D(Lnormalized, param.FogDirection);
 #endif
 		if (density)
 		{
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
 			atten *= ComputeOpticalDepth(param, scatteringDepth) * density;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
 			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
@@ -217,6 +231,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 	FogParams param;
 	param.FogPosition = FogPosition;
 	param.FogDirection = FogDirection;
+	param.FogAngle = FogAngle;
 	param.FogRange = FogRange;
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
@@ -226,7 +241,10 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 
 #if VOLUMETRIC_FOG_ENABLE
 	param.shadowMap = VolumetricMapSamp;
-	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
+	param.shadowOffset = ShadowmapOffset;
+
+	param.matLightView = matLightView;
+	param.matLightProject = matLightViewProject;
 #endif
 
 	float3 V = normalize(viewdir);
