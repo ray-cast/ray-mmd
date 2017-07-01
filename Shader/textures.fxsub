@@ -50,9 +50,9 @@ texture LightMap: OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"DirectionalLight.pmx =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
 		"PointLight.pmx =./Lighting/PointLight/Default/point_lighting.fx;"
-		"PointLightIES.pmx =./Lighting/PointLightIES/IES Light of 1/IES_lighting.fx;"
+		"PointLightIES.pmx =./Lighting/PointLightIES/Default/IES_lighting.fx;"
 		"SpotLight.pmx =./Lighting/SpotLight/Default/spot_lighting.fx;"
-		"SpotLightIES.pmx =./Lighting/SpotLightIES/IES Light of 1/IES_lighting.fx;"
+		"SpotLightIES.pmx =./Lighting/SpotLightIES/Default/IES_lighting.fx;"
 		"SphereLight.pmx =./Lighting/SphereLight/Default/sphere_lighting.fx;"
 		"TubeLight.pmx =./Lighting/TubeLight/Default/tube_lighting.fx;"
 		"LED.pmx =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
