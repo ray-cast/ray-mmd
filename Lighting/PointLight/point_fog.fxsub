@@ -26,8 +26,8 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
-static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 2.0, mRangeP), FogRangeParams.y, mRangeM);
-static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
+static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 1.5, mRangeP), FogRangeParams.y, mRangeM);
+static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.y, mMieDensityP), FogDensityParams.z, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
 static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, FogAttenuationBulbParams.z, mAttenuationBulbP), FogAttenuationBulbParams.y, mAttenuationBulbM);
 
@@ -76,8 +76,6 @@ sampler VolumetricMapSamp = sampler_state {
 
 struct FogParams
 {
-	float3 Eye;
-
 	float3 FogColor;
 	float3 FogPosition;
 
@@ -159,7 +157,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 #if VOLUMETRIC_FOG_ENABLE
 		density *= HitShadowTest(param, param.shadowMap, param.shadowSize, sampleStart);
 #endif
-		if (density)
+		if (density > 0)
 		{
 			float3 L = sampleStart - param.FogPosition;
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
@@ -203,7 +201,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 	param.FogMiePhase = FogMiePhase;
 	param.FogAttenuationBulb = FogAttenuationBulb;
 	param.FogDensity = FogDensity;
-	param.Eye = CameraPosition;
+
 #if VOLUMETRIC_FOG_ENABLE
 	param.shadowMap = VolumetricMapSamp;
 	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
@@ -224,7 +222,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 technique MainTechBS0<string MMDPass = "object_ss"
 ;>{
 	pass DrawObject {
-		ZEnable = false; ZWriteEnable = false;
+		ZEnable = FALSE; ZWriteEnable = FALSE;
 		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = CW;
