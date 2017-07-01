@@ -27,7 +27,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 2.0, mRangeP), FogRangeParams.y, mRangeM);
-static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
+static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.y, mMieDensityP), FogDensityParams.z, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
 static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, FogAttenuationBulbParams.z, mAttenuationBulbP), FogAttenuationBulbParams.y, mAttenuationBulbM);
 
