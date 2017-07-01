@@ -163,6 +163,11 @@ float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center
 			minimaxIntersections.y = ComputeRayPlaneIntersection(position, viewdir, -axis, height);
 		}
 
+		if (minimaxIntersections.x > minimaxIntersections.y)
+		{
+			minimaxIntersections.x = 0;
+		}
+
 		return minimaxIntersections;
 	}
 }
@@ -275,7 +280,7 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 
-	float3 start = CameraPosition + V;
+	float3 start = CameraPosition + V * max(0, intersections.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
 
 	return VolumetricFog(param, V, start, end, VOLUMETRIC_FOG_SAMPLES_LENGTH);
