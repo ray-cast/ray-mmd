@@ -116,7 +116,7 @@ struct FogParams
 #endif
 };
 
-float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float3 dist)
+float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float dist)
 {
 	float a = dot(n, viewdir);
 	if (a > 0.0) return -1;
@@ -201,11 +201,12 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 	float3 sampleStart = start + sampleStep;
 
 	float sampleLength = length(sampleStep);
+	float sampleOpticalDepth = ComputeOpticalDepth(param, sampleLength);
 
 	float scatteringMie = 0;
-	float scatteringDepth = sampleLength;
+	float scatteringDepth = 1;
 
-	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth += sampleLength)
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth *= sampleOpticalDepth)
 	{
 		float density = sampleLength;
 		float3 L = sampleStart - param.FogPosition;
@@ -219,9 +220,10 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 		{
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
 			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle);
-			atten *= ComputeOpticalDepth(param, scatteringDepth) * density;
+			atten *= density;
+			atten *= scatteringDepth;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
-			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase) * (4 * PI);
+			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
 #endif
 			scatteringMie += atten;
 		}
@@ -230,7 +232,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 	float3 scattering = scatteringMie;
 	scattering *= param.FogColor * param.FogIntensity;
 #if VOLUMETRIC_FOG_ANISOTROPY == 1
-	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase) * (4 * PI);
+	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
 #endif
 
 	return float4(scattering, 0);
