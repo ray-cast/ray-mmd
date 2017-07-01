@@ -116,6 +116,15 @@ struct FogParams
 #endif
 };
 
+float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float3 dist)
+{
+	float a = dot(n, viewdir);
+	if (a > 0.0) return -1;
+
+	float t = -(dot(position, n) + dist) / a;
+	return t;
+}
+
 float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle, float height)
 {
 	float3 origin = position - center;
@@ -141,11 +150,15 @@ float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center
 		float t2 = (-b - det);
 		float2 minimaxIntersections = float2(t1, t2) / a;
 
-   		float3 cp = position + viewdir * minimaxIntersections.y - center;
-    	float h = dot(cp, axis);
-    	if (h <= 0.0 || h > height) minimaxIntersections.y = distance(center + axis * height, position);
+		float3 cp = position + viewdir * minimaxIntersections.y - center;
+		float h = dot(cp, axis);
 
-    	return minimaxIntersections;
+		if (h <= 0.0 || h > height)
+		{
+			minimaxIntersections.y = ComputeRayPlaneIntersection(position, viewdir, -axis, height);
+		}
+
+		return minimaxIntersections;
 	}
 }
 
@@ -231,7 +244,7 @@ void SphereFogVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	Position.xyz = FogPosition + Normal * FogRange * 100;
+	Position.xyz = FogPosition + Normal * FogRange;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
@@ -261,7 +274,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 
 	float3 V = normalize(viewdir);
 	float2 intersections = ComputeRayConeIntersection(CameraPosition, V, param.FogPosition, param.FogDirection, param.FogAngle, param.FogRange);
-	clip(dot(max(0, intersections), 1) - 1e-5);
+	clip(intersections.y);
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
 

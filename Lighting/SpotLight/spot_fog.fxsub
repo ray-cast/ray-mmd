@@ -121,6 +121,15 @@ float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius 
 	return attenuation;
 }
 
+float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float3 dist)
+{
+	float a = dot(n, viewdir);
+	if (a > 0.0) return -1;
+
+	float t = -(dot(position, n) + dist) / a;
+	return t;
+}
+
 float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center, float3 axis, float angle, float height)
 {
 	float3 origin = position - center;
@@ -146,11 +155,15 @@ float2 ComputeRayConeIntersection(float3 position, float3 viewdir, float3 center
 		float t2 = (-b - det);
 		float2 minimaxIntersections = float2(t1, t2) / a;
 
-   		float3 cp = position + viewdir * minimaxIntersections.y - center;
-    	float h = dot(cp, axis);
-    	if (h <= 0.0 || h > height) minimaxIntersections.y = distance(center + axis * height, position);
+		float3 cp = position + viewdir * minimaxIntersections.y - center;
+		float h = dot(cp, axis);
 
-    	return minimaxIntersections;
+		if (h <= 0.0 || h > height)
+		{
+			minimaxIntersections.y = ComputeRayPlaneIntersection(position, viewdir, -axis, height);
+		}
+
+		return minimaxIntersections;
 	}
 }
 
