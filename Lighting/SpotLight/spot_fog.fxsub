@@ -14,8 +14,8 @@ float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
-float mAngleP : CONTROLOBJECT<string name = "(self)"; string item = "Angle+";>;
-float mAngleM : CONTROLOBJECT<string name = "(self)"; string item = "Angle-";>;
+float mAngleP : CONTROLOBJECT<string name="(self)"; string item = "Angle+";>;
+float mAngleM : CONTROLOBJECT<string name="(self)"; string item = "Angle-";>;
 float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
@@ -28,7 +28,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
 static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
-static const float FogAngle = cos(radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM)));
+static const float FogAngle = radians(lerp(lerp(FogAngleParams.x, FogAngleParams.z, mAngleP), FogAngleParams.y, mAngleM));
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z, mRangeP), FogRangeParams.y, mRangeM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
@@ -73,7 +73,7 @@ texture VolumetricMap: OFFSCREENRENDERTARGET <
 >;
 sampler VolumetricMapSamp = sampler_state {
 	texture = <VolumetricMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
@@ -114,7 +114,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius)
+float GetSpotLightAttenuation(float3 L, float3 Ld, float cosAngle, float radius = 2)
 {
 	float falloff = cosAngle / (saturate(dot(L, Ld)) + 1e-6);
 	float attenuation = 1.0 - pow(saturate(falloff), radius);
@@ -191,7 +191,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, int st
 			float3 Lnormalized = normalize(L);
 
 			float atten = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
-			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle, 2.0);
+			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle);
 			atten *= ComputeOpticalDepth(param, sactteringDepth) * density;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
 			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
@@ -237,7 +237,7 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) 
 	FogParams param;
 	param.FogPosition = FogPosition;
 	param.FogDirection = FogDirection;
-	param.FogAngle = FogAngle;
+	param.FogAngle = cos(FogAngle);
 	param.FogRange = FogRange;
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
