@@ -174,7 +174,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 L2 = normalize(Lw);
 
 	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
-	atten *= RectangleAttenuation(Lw, viewLightDirection, PI / 2, LightRange);
+	atten *= RectangleAttenuation(Lw, viewLightDirection);
 	atten *= LightColor;
 
 	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord2);
