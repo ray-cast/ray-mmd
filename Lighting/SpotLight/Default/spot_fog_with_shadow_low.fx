@@ -3,7 +3,6 @@
 #define VOLUMETRIC_FOG_SAMPLES_LENGTH 64
 #define VOLUMETRIC_FOG_ANISOTROPY 1
 
-static const float3 FogAngleParams = float3(45.0f, 30.0, 60.0f);
 static const float3 FogRangeParams = float3(100.0, 0.0, 200.0);
 static const float3 FogAttenuationBulbParams = float3(1.0, 0.0, 5.0);
 static const float3 FogIntensityParams = float3(1.0, 0.0, 20.0);
