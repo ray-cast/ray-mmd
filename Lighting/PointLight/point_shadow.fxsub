@@ -24,8 +24,7 @@ void ShadowMapGenVS(
 	uniform float face)
 {
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = mul(Position, matWorld);
-	oTexcoord1 = mul(oTexcoord1, CreateDualViewMatrix(LightPosition, face));
+	oTexcoord1 = mul(Position, CreateDualViewMatrix(LightPosition, face));
 	oTexcoord2 = oPosition = mul(oTexcoord1, CreateDualProjMatrix(oTexcoord1, mPointLightNear, mPointLightFar, face));
 }
 
@@ -47,6 +46,7 @@ float4 ShadowMapGenPS(
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
+
 	return ComputeMoments(proj.z / proj.w).xyxy;
 }
 
