@@ -7,7 +7,7 @@ static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
-float ShadowPCF(float2 coord, float receiverDepth, int samples) 
+float ShadowPCF(float2 coord, float receiverDepth, int samples = 2)
 {
 	float shadow = 0.0;
 
@@ -75,7 +75,7 @@ float4 ShadowMapGenPS(
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 
-	float shadow = ShadowPCF(texCoord0.xy, receiverDepth, 2);
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth);
 
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = shadow;
