@@ -3,11 +3,27 @@
 #include "../shader/common.fxsub"
 #include "../shader/ShadowMapCascaded.fxsub"
 
+#if SHADOW_MAP_QUALITY == 1
+#	define SHADOW_MAP_SIZE 1024
+#elif SHADOW_MAP_QUALITY == 2
+#	define SHADOW_MAP_SIZE 2048
+#elif SHADOW_MAP_QUALITY == 3
+#	define SHADOW_MAP_SIZE 4096
+#elif SHADOW_MAP_QUALITY == 4
+#	define SHADOW_MAP_SIZE 8192
+#elif SHADOW_MAP_QUALITY == 5
+#	define SHADOW_MAP_SIZE 16384
+#else
+#	define SHADOW_MAP_SIZE 1024
+#endif
+
+#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
+
 static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, mLightZMax);
-static float4x4 matLightView = mul(matWorld, CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance));
+static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView);
+static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;

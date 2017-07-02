@@ -98,13 +98,6 @@ float2 CalcFishShadowCoord(float2 P, float bias)
 	return P / distortFactor;
 }
 
-float GaussianDistribution(float x, float y, float r)
-{
-	float g = 1.0f / sqrt(2.0f * PI * r * r);
-	g *= exp(-(x * x + y * y) / (2 * r * r));
-	return g;
-}
-
 float linstep(float a, float b, float v)
 {
 	return saturate((v - a) / (b - a));

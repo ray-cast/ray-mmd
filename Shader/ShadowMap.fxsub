@@ -5,7 +5,7 @@ static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView);
+static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
 float ShadowPCF(float2 coord, float receiverDepth, int samples) 
 {
@@ -17,7 +17,7 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples)
 		[unroll]
 		for (int y = -samples; y <= samples; y++)
 		{
-			float2 pos = coord + float2(x, y) * SHADOW_MAP_OFFSET;
+			float2 pos = coord + float2(x, y) * (1.0 / SHADOW_MAP_SIZE);
 			shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(PSSMsamp, float4(pos, 0, 0)).r)));
 		}
 	}
@@ -54,10 +54,10 @@ float4 ShadowMapGenPS(
 	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
 	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
 
-	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0);
-	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1);
-	float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2);
-	float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3);
+	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0, SHADOW_MAP_SIZE);
+	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1, SHADOW_MAP_SIZE);
+	float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2, SHADOW_MAP_SIZE);
+	float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3, SHADOW_MAP_SIZE);
 
 	float4 texCoord0 = lightPPos3;
 	float4 texCoord1 = 0;

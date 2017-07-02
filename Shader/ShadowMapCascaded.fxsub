@@ -1,19 +1,4 @@
-#ifndef SHADOW_MAP_SIZE
-#	if SHADOW_QUALITY == 1
-#		define SHADOW_MAP_SIZE 1024
-#	elif SHADOW_QUALITY == 2
-#		define SHADOW_MAP_SIZE 2048
-#	elif SHADOW_QUALITY == 3
-#		define SHADOW_MAP_SIZE 4096
-#	elif SHADOW_QUALITY == 4
-#		define SHADOW_MAP_SIZE 8192
-#	elif SHADOW_QUALITY == 5
-#		define SHADOW_MAP_SIZE 16384
-#	endif
-#endif
-
 #define WARP_RANGE 8
-#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
 
 float4x4 CreateOrthoProject(float width, float height, float near, float far)
 {
@@ -69,7 +54,7 @@ float4 CreateFrustumFromProjection()
 	return float4(r.x / r.z, l.x / l.z, t.y / t.z, b.y / b.z);
 }
 
-float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frustumInfo, float near, float far)
+float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frustumInfo, int shadowMapSize, float near, float far)
 {
 	float4 zfar = float4(far.xxx, 1);
 	float4 znear = float4(near.xxx, 1);
@@ -104,7 +89,7 @@ float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frus
 
 	float4 orthographicBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
 
-	const float normalizeByBufferSize = 2.0 / SHADOW_MAP_SIZE;
+	const float normalizeByBufferSize = 2.0 / shadowMapSize;
 	const float scaleDuetoBlureAMT = (WARP_RANGE * 2.0 + 1) * normalizeByBufferSize * 0.5;
 
 	orthographicBB += (orthographicBB.xyzw - orthographicBB.zwxy) * scaleDuetoBlureAMT;
@@ -116,7 +101,7 @@ float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frus
 	return float4(2.0, 2.0, endPos.xy) * invBB.xyxy;
 }
 
-float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView)
+float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView, float shadowMapSize)
 {
 	static const float z0 = mPSSMCascadeZMin;
 	static const float z1 = CalcSplitPosition(1.0);
@@ -127,23 +112,23 @@ float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView)
 	static const float4 frustumInfo = CreateFrustumFromProjection();
 
 	return float4x4(
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z0, z1),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z1, z2),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z2, z3),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, z3, z4));
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, z0, z1),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, z1, z2),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, z2, z3),
+		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, z3, z4));
 }
 
-float CalcEdgeFalloff(float2 coord)
+float CalcEdgeFalloff(float2 coord, int shadowMapSize, float shadowMapOffset)
 {
-	static const float m = SHADOW_MAP_SIZE * 0.5 / WARP_RANGE;
-	static const float a = SHADOW_MAP_OFFSET * 1.0 / WARP_RANGE;
+	const float m = shadowMapSize * 0.5 / WARP_RANGE;
+	const float a = shadowMapOffset * 1.0 / WARP_RANGE;
 	float2 falloff = abs(coord) * (-m * 4.0) + (m - a);
 	return saturate(min(falloff.x, falloff.y));
 }
 
-float4 CalcCascadePPos(float2 uv, float2 offset, float index)
+float4 CalcCascadePPos(float2 uv, float2 offset, float index, int shadowMapSize)
 {
-	return float4(uv + 0.25 + offset * 0.5 + (0.5 / SHADOW_MAP_SIZE), index, CalcEdgeFalloff(uv));
+	return float4(uv + 0.25 + offset * 0.5 + (0.5 / shadowMapSize), index, CalcEdgeFalloff(uv, shadowMapSize, 1.0 / shadowMapSize));
 }
 
 float ShadowSlopeScaledBias(float depth)
@@ -152,4 +137,35 @@ float ShadowSlopeScaledBias(float depth)
 	float dy = abs(ddy(depth));
 	float depthSlope = min(dx, dy);
 	return depthSlope;
+}
+
+float linstep(float a, float b, float v)
+{
+	return saturate((v - a) / (b - a));
+}
+
+float ReduceLightBleeding(float p_max, float amount)
+{
+	return linstep(amount, 1.0, p_max);
+}
+
+float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
+{
+	float p = (t < moments.x);
+	float variance = max(moments.y - (moments.x * moments.x), minVariance);
+	float d = t - moments.x;
+	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);
+	return max(p, p_max);
+}
+
+float2 ComputeMoments(float depth)
+{
+	float dx = ddx(depth);
+	float dy = ddy(depth);
+
+	float2 moments;
+	moments.x = depth;
+	moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
+
+	return moments;
 }
