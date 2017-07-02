@@ -299,10 +299,7 @@ technique DeferredLighting<
 	"Pass=HDRTonemapping;"
 #endif
 
-#if AA_QUALITY == 1 && POSTPROCESS_SHARPEN
-	"RenderColorTarget=ShadingMap;"
-	"Pass=FXAA;"
-#else
+#if AA_QUALITY == 1
 	"RenderColorTarget=;"
 	"Pass=FXAA;"
 #endif
