@@ -9,7 +9,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	return saturate(attenuation);
 }
 
-float GetSpotLightAttenuation(float3 L, float3 Ld, float angle, float radius)
+float GetSpotLightAttenuation(float3 L, float3 Ld, float angle, float radius = 2)
 {
 	float falloff = cos(angle) / (saturate(dot(L, Ld)) + 1e-6);	
 	float attenuation = 1.0 - pow(saturate(falloff), radius);

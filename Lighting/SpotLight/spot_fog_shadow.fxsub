@@ -4,10 +4,9 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 
-float mRangeP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Range+";>;
 float mAngleP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle+";>;
 float mAngleM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle-";>;
-float mIntensityM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Intensity-";>;
+
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
