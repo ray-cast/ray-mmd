@@ -105,7 +105,7 @@ technique DepthTech<string MMDPass = "object_ss";
 	}
 }
 
-technique DepthTec0<string MMDPass = "object";>{}
+technique DepthTec<string MMDPass = "object";>{}
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTec<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
