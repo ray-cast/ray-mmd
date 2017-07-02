@@ -101,7 +101,7 @@ float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, 
 	float2 minimaxIntersections;
 	if (D < 0.0)
 	{
-		minimaxIntersections = float2(-1.0, -1.0);
+		minimaxIntersections = -1;
 	}
 	else
 	{
