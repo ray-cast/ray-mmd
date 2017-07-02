@@ -1,4 +1,3 @@
-#define LIGHT_PARAMS_FROM 0
 #define LIGHT_PARAMS_TYPE 0
 
 static const float3 lightBlink = 0.0;
