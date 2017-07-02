@@ -86,7 +86,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/textures.fxsub"
 #include "shader/gbuffer.fxsub"
 #include "shader/ibl.fxsub"
-#include "shader/lighting.fxsub"
+#include "shader/BRDF.fxsub"
 #include "shader/ColorGrading.fxsub"
 #include "shader/ShadingMaterials.fxsub"
 

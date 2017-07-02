@@ -4,7 +4,7 @@
 #include "../../../shader/common.fxsub"
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
-#include "../../../shader/lighting.fxsub"
+#include "../../../shader/BRDF.fxsub"
 
 #if SHADOW_MAP_FROM >= 1
 #	include "../../../shader/ShadowMapCascaded.fxsub"
