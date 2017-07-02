@@ -24,8 +24,7 @@ void ShadowMapGenVS(
     uniform float face)
 {
     oTexcoord0 = Texcoord;
-    oTexcoord1 = mul(Position, matWorld);
-    oTexcoord1 = mul(oTexcoord1, CreateDualViewMatrix(LightPosition, face));
+    oTexcoord1 = mul(Position, CreateDualViewMatrix(LightPosition, face));
     oTexcoord2 = oPosition = mul(oTexcoord1, CreateDualProjMatrix(oTexcoord1, mPointLightNear, mPointLightFar, face));
 }
 
@@ -51,7 +50,7 @@ float4 ShadowMapGenPS(
 }
 
 technique DepthTecSS<string MMDPass = "object_ss";
-> {
+>{
     pass DrawObjectF {
         AlphaBlendEnable = false; AlphaTestEnable = false;
         VertexShader = compile vs_3_0 ShadowMapGenVS(1);
@@ -64,7 +63,7 @@ technique DepthTecSS<string MMDPass = "object_ss";
     }
 }
 
-technique DepthTec0<string MMDPass = "object";>{}
-technique EdgeTec<string MMDPass = "edge";> {}
-technique ShadowTec<string MMDPass = "shadow";> {}
+technique DepthTec<string MMDPass = "object";>{}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}

@@ -289,7 +289,6 @@ technique MainTecBS0<string MMDPass = "object_ss";
 	}
 }
 
-technique DepthTech<string MMDPass = "object";>{}
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTech<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
