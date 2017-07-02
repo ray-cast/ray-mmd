@@ -1,10 +1,5 @@
 #define LIGHT_PARAMS_TYPE 0
 
-static const float lightRange = 200.0;
-
-static const float3 lightBlink = 0.0;
-static const float3 lightColor = float3(1.0, 1.0, 1.0);
-
 static const float3 lightRangeParams = float3(100.0, 0.0, 200.0);
 static const float3 lightIntensityParams = float3(100, 0.0, 2000.0);
 static const float3 lightAttenuationBulbParams = float3(1.0, 0.0, 5.0);

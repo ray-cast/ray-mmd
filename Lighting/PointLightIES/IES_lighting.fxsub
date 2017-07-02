@@ -14,25 +14,25 @@
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
-float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
-float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
-
-#if LIGHT_PARAMS_FROM == 0
 float mR : CONTROLOBJECT<string name = "(self)"; string item = "R+";>;
 float mG : CONTROLOBJECT<string name = "(self)"; string item = "G+";>;
 float mB : CONTROLOBJECT<string name = "(self)"; string item = "B+";>;
 float mBlink : CONTROLOBJECT<string name = "(self)"; string item = "Blink";>;
 float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+";>;
+float mRangeM : CONTROLOBJECT<string name = "(self)"; string item = "Range-";>;
 float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
 float mIntensityP : CONTROLOBJECT<string name = "(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name = "(self)"; string item = "Intensity-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
+float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
+float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
+float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
 
-static const float LightHardness = lerp(0.2, 0.995, mHardnessP);
-static const float LightRange = lerp(lightRangeLimits.x, lightRangeLimits.y, mRangeP);
+static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHardnessP);
+static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
-static const float LightAttenuationBulb = lerp(1, mLightAttenuationBulbMax, mAttenuationBulbP);
-static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mIntensityP), 0, mIntensityM);
+static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
+static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mIntensityP), lightIntensityParams.y, mIntensityM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 
 static const float3 LightPosition = mPosition;
@@ -41,19 +41,6 @@ static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightInte
 
 static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
-#else
-static const float LightRange = lightRange;
-static const float LightHardness = shadowHardness;
-static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
-static const float LightAttenuationBulb = lightAttenuationBulb;
-
-static const float3 LightPosition = mPosition;
-static const float3 LightDirection = normalize(mDirection - mPosition);
-static const float3 LightColor = lightColor * LightIntensity2 * saturate(1 - SmoothTriangleWave(time * lightBlink));
-
-static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
-static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
-#endif
 
 #if SHADOW_MAP_FROM > 0
 #if SHADOW_MAP_QUALITY == 0
