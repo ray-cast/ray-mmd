@@ -37,18 +37,18 @@ static float3 FogMieColor = float3(mFogMieHP, mFogMieSP, lerp(lerp(1, 10, mFogMi
 static float3 FogRayleightColor = float3(mFogRayleightHP, mFogRayleightSP, lerp(lerp(1, 10, mFogRayleightVP), 0, mFogRayleightVM));
 
 #if FOG_WITH_GODRAY
-	texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-	sampler FogMapSamp = sampler_state {
-		texture = <FogMap>;
-		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
-	};
-	texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-	sampler FogBlurMapSamp = sampler_state {
-		texture = <FogBlurMap>;
-		MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-		AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
-	};
+texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+sampler FogMapSamp = sampler_state {
+	texture = <FogMap>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+sampler FogBlurMapSamp = sampler_state {
+	texture = <FogBlurMap>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
 #endif
 
 void AtmosphericFogVS(
@@ -81,14 +81,17 @@ float4 AtmosphericFogPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-#if FOG_DISCARD_SKY
-	clip(sum(material.albedo + material.specular) - 1e-5);
-#endif
-
 	float3 V = normalize(viewdir);
 	float3 L = mul(SunDirection, (float3x3)matView);
 
+#if FOG_WITH_GODRAY
+	float3 fogAmount = ComputeSkyFogMie(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
+#else
+	#if FOG_DISCARD_SKY
+		clip(sum(material.albedo + material.specular) - 1e-5);
+	#endif
 	float3 fogAmount = ComputeSkyFogApproximation(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
+#endif
 
 	return float4(fogAmount, 0);
 }
@@ -110,50 +113,54 @@ void GenLightShaftVS(
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy) + ViewportOffset2 * 2;
 
 	if (oTexcoord1.x < -0.25 || oTexcoord1.y < -0.25)
-	{
 		oPosition = 0;
-	}
 	if (oTexcoord1.x > 1.25 || oTexcoord1.y > 1.25)
-	{
 		oPosition = 0;
-	}
 }
 
 float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
 {
 	float2 sampleCoord = coord;
-	float4 sampleColor = 0.0;
+	float3 sampleColor = 0.0;
 	float2 sampleDecay = float2(1.0, 0.96);
 	float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * FogSampleLength;
 
 	for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
 	{
-		sampleColor += float4(tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb, tex2Dlod(Gbuffer8Map, float4(sampleCoord, 0, 0)).r) * sampleDecay.x;
+		sampleColor += tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb * sampleDecay.x;
 		sampleCoord -= sampleDelta;
 		sampleDecay.x *= sampleDecay.y;
 	}
 
 	sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-	return sampleColor;
+	return float4(sampleColor, 0);
 }
 
-void VDM_FilterVS(
-	in float4 Position : POSITION,
-	in float2 Texcoord : TEXCOORD0,
-	out float2 oTexcoord : TEXCOORD0,
-	out float4 oPosition : POSITION)
+float4 AtmosphericScatteringPS(
+	in float2 coord : TEXCOORD0, 
+	in float3 viewdir : TEXCOORD1,
+	in float3 mieLambda : TEXCOORD2,
+	in float3 rayleight : TEXCOORD3) : COLOR
 {
-	oPosition = float4(CoordToPos(Texcoord), 0, 1);
-	oTexcoord = Texcoord + ViewportOffset2;
-}
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-float4 VDM_FilterPS(in float2 coord : TEXCOORD0) : COLOR0
-{
-	float3 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0)).rgb;
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
+
+	float3 V = normalize(viewdir);
+	float3 L = mul(SunDirection, (float3x3)matView);
+	float3 fogAmount = ComputeSkyFogRayleigh(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
+
+#if FOG_DISCARD_SKY
+	if (sum(material.albedo + material.specular) <= 1e-5)
+		fogAmount = 0;
+#endif
+
 	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset2, 0, 0));
-	float depth = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
-	float mix = fogBlur.a > 1.0 ? min(depth, fogBlur.a) : depth;
-	return float4(lerp(fog, fogBlur.rgb, exp(-mix / 2000)), 0);
+	return float4(fogAmount + fogBlur, 0);
 }
 
 const float4 BackColor = 0.0;
@@ -187,8 +194,8 @@ const float4 BackColor = 0.0;
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			VertexShader = compile vs_3_0 VDM_FilterVS();\
-			PixelShader = compile ps_3_0 VDM_FilterPS();\
+			VertexShader = compile vs_3_0 AtmosphericFogVS();\
+			PixelShader = compile ps_3_0 AtmosphericScatteringPS();\
 		}\
 	}
 #else

@@ -1,3 +1,49 @@
+float3 ComputeSkyFogMie(float3 V, float3 L, float3 waveLambdaMie, float3 waveLambdaRayleigh, float mieG, float fogRange, float fogDensity, float distance)
+{
+	float3 sunUp = float3(0, 1, 0);
+	float3 sunDirection = normalize(L);
+
+	float zenithAngle = saturate(dot(V, sunUp));
+
+	float3 inscatteringMie = waveLambdaMie;
+	float3 inscatteringRayleigh = waveLambdaRayleigh;
+
+	float cosTheta = dot(V, sunDirection);
+
+	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, mieG);
+	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
+
+	float3 inscattering = betaMie / (inscatteringMie + inscatteringRayleigh);
+
+	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance * fogDensity);
+	extinction = pow(extinction, fogRange);
+
+	return max(0, inscattering * (1.0 - extinction));
+}
+
+float3 ComputeSkyFogRayleigh(float3 V, float3 L, float3 waveLambdaMie, float3 waveLambdaRayleigh, float mieG, float fogRange, float fogDensity, float distance)
+{
+	float3 sunUp = float3(0, 1, 0);
+	float3 sunDirection = normalize(L);
+
+	float zenithAngle = saturate(dot(V, sunUp));
+
+	float3 inscatteringMie = waveLambdaMie;
+	float3 inscatteringRayleigh = waveLambdaRayleigh;
+
+	float cosTheta = dot(V, sunDirection);
+
+	float3 betaMie = inscatteringMie * ComputePhaseMie(cosTheta, mieG);
+	float3 betaRayleigh = inscatteringRayleigh * ComputePhaseRayleigh(cosTheta);
+
+	float3 inscattering = betaRayleigh / (inscatteringMie + inscatteringRayleigh);
+
+	float3 extinction = exp(-(inscatteringMie + inscatteringRayleigh) * distance * fogDensity);
+	extinction = pow(extinction, fogRange);
+
+	return max(0, inscattering * (1.0 - extinction));
+}
+
 float3 ComputeSkyFogApproximation(float3 V, float3 L, float3 waveLambdaMie, float3 waveLambdaRayleigh, float mieG, float fogRange, float fogDensity, float distance)
 {
 	float3 sunUp = float3(0, 1, 0);
