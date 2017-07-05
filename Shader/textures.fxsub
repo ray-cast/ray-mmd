@@ -90,7 +90,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, 0.5, 0, 0.5 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"skybox*.*=./Skybox/skylighting_none.fx;"
+		"sky*box*.* =./Skybox/skylighting_none.fx;"
 		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
@@ -144,7 +144,7 @@ texture DepthMap : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"skybox*.* =shadow/Depth_noalpha.fx;"
+		"sky*box*.* =shadow/Depth_noalpha.fx;"
 		"DirectionalLight*.* =shadow/Depth_noalpha.fx;"
 		"PointLight*.*=shadow/Depth_noalpha.fx;"
 		"SpotLight*.*=shadow/Depth_noalpha.fx;"
@@ -175,7 +175,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"skybox*.* =shadow/PSSM_noalpha.fx;"
+		"sky*box*.* =shadow/PSSM_noalpha.fx;"
 		"DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
 		"PointLight*.*=shadow/PSSM_noalpha.fx;"
 		"SpotLight*.*=shadow/PSSM_noalpha.fx;"
