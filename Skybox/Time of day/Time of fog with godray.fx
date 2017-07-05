@@ -9,7 +9,7 @@
 #define FOG_DISCARD_SKY 1
 #define FOG_WITH_GODRAY_SAMPLES 64
 
-static float FogSampleLength = 0.9;
+static float FogSampleLength = 0.8;
 
 texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler FogMapSamp = sampler_state {
