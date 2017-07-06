@@ -177,24 +177,24 @@ float3 TonemapReinhardLumaBased(float3 color, float whitePt)
 
 float3 ColorToneMapping(float3 color)
 {
-#if HDR_ENABLE && HDR_TONEMAP_OPERATOR == 1
+#if HDR_TONEMAP_OPERATOR == 1
 	float3 curr = TonemapReinhardLumaBased(color, 4.0);
 	return saturate(curr);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 2
+#elif HDR_TONEMAP_OPERATOR == 2
 	float4 curr = TonemapHable(float4(color, 4.0));
 	curr = curr / curr.w;
 	return saturate(curr.rgb);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 3
+#elif HDR_TONEMAP_OPERATOR == 3
 	float4 curr = TonemapHable(float4(color * 2, 8.0));
 	curr = curr / curr.w;
 	return saturate(curr.rgb);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 4
+#elif HDR_TONEMAP_OPERATOR == 4
 	float3 curr = TonemapHejl2015(color, 4.0);
 	return saturate(curr);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 5
+#elif HDR_TONEMAP_OPERATOR == 5
 	float3 curr = TonemapACES(color);
 	return saturate(curr);
-#elif HDR_ENABLE && HDR_TONEMAP_OPERATOR == 6
+#elif HDR_TONEMAP_OPERATOR == 6
 	float3 curr = TonemapNaughtyDog(color);
 	return saturate(curr);
 #else
