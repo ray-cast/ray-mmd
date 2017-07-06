@@ -71,7 +71,7 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 
 	color *= coord.z;
 
-#if HDR_ENABLE && HDR_BLOOM_MODE > 0
+#if HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(BloomSamp1st, float4(coord.xy, 0, 0)).rgb;
 	color += bloom;
 #endif

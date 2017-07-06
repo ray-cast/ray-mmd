@@ -14,6 +14,8 @@ float mSunShadowBP : CONTROLOBJECT<string name="ray_controller.pmx"; string item
 float mSunShadowVM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunShadowV-";>;
 float mSSAOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO+";>;
 float mSSAOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAO-";>;
+float mSSAORadiusP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAORadius+";>;
+float mSSAORadiusM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSAORadius-";>;
 float mSSDOP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO+";>;
 float mSSDOM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSDO-";>;
 float mSSSSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSSS+";>;
@@ -67,11 +69,12 @@ float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
 
 static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
+static float mSSAORadius = lerp(lerp(1.0, 5.0, mSSAORadiusP), 0, mSSAORadiusM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
-static float mBloomRadius = lerp(lerp(2.0, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
+static float mBloomRadius = lerp(lerp(2.2, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
 static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
@@ -95,6 +98,12 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/ShadowMap.fxsub"
 #endif
 
+#if FOG_ATMOSPHERIC_QUALITY
+#	include "shader/PhaseFunctions.fxsub"
+#	include "shader/AerialPerspective.fxsub"
+#	include "shader/PostProcessFog.fxsub"
+#endif
+
 #if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
 #	include "shader/PostProcessOcclusion.fxsub"
 #endif
@@ -107,25 +116,23 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessSSR.fxsub"
 #endif
 
-#if HDR_ENABLE && HDR_EYE_ADAPTATION
+#if HDR_EYE_ADAPTATION
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
-#if HDR_ENABLE && HDR_STAR_MODE
+#if HDR_STAR_MODE
 #	include "shader/PostProcessLensflare.fxsub"
 #endif
 
-#if HDR_ENABLE && HDR_FLARE_MODE
+#if HDR_FLARE_MODE
 #	include "shader/PostProcessGhost.fxsub"
 #endif
 
-#if HDR_ENABLE && HDR_BLOOM_MODE
+#if HDR_BLOOM_MODE
 #	include "shader/PostProcessBloom.fxsub"
 #endif
 
-#if HDR_ENABLE
-#	include "shader/PostProcessHDR.fxsub"
-#endif
+#include "shader/PostProcessHDR.fxsub"
 
 #if AA_QUALITY == 1
 #	include "shader/FXAA3.fxsub"
@@ -214,7 +221,10 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #endif
 
-	"RenderColorTarget=ShadingMap; Pass=ShadingTransparent;"
+	"RenderColorTarget=ShadingMap; 	Pass=ShadingTransparent;"
+#if FOG_ATMOSPHERIC_QUALITY > 0
+	"RenderColorTarget=ShadingMap; 	Pass=AtmosphericFog;"
+#endif
 
 #if SSR_QUALITY > 0
 	"RenderColorTarget=SSRLightX1Map;"
@@ -235,12 +245,12 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
-#if HDR_ENABLE && HDR_EYE_ADAPTATION
+#if HDR_EYE_ADAPTATION
 	"RenderColorTarget=EyeLumMap; 	 Pass=EyeLum;"
 	"RenderColorTarget=EyeLumAveMap; Pass=EyeAdapation;"
 #endif
 
-#if HDR_ENABLE && HDR_BLOOM_MODE > 0
+#if HDR_BLOOM_MODE > 0
 	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
 #if HDR_STAR_MODE || HDR_FLARE_MODE
 	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample2nd;"
@@ -423,6 +433,14 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
 	}
 #endif
+#if FOG_ATMOSPHERIC_QUALITY > 0
+	pass AtmosphericFog<string Script= "Draw=Buffer;";>{
+		ZEnable = false; ZWriteEnable = false;\
+		AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
+		VertexShader = compile vs_3_0 AtmosphericFogVS();\
+		PixelShader = compile ps_3_0 AtmosphericFogPS(ShadingMapSamp);\
+	}
+#endif
 #if SSR_QUALITY > 0
 	pass SSRConeTracing<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -486,7 +504,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
 #endif
-#if HDR_ENABLE && HDR_EYE_ADAPTATION > 0
+#if HDR_EYE_ADAPTATION > 0
 	pass EyeLum<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -500,7 +518,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 EyeAdapationPS();
 	}
 #endif
-#if HDR_ENABLE && HDR_BLOOM_MODE > 0
+#if HDR_BLOOM_MODE > 0
 	pass GlareDetection<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
