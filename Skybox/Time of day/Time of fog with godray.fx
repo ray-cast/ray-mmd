@@ -9,7 +9,7 @@
 #define FOG_DISCARD_SKY 1
 #define FOG_WITH_GODRAY_SAMPLES 64
 
-static float FogSampleLength = 0.8;
+static float FogSampleLength = 0.85;
 
 texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler FogMapSamp = sampler_state {
@@ -17,7 +17,7 @@ sampler FogMapSamp = sampler_state {
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture FogBlurMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler FogBlurMapSamp = sampler_state {
 	texture = <FogBlurMap>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
@@ -195,7 +195,7 @@ float4 AtmosphericScatteringPS(
 		fogAmount = 0;
 #endif
 
-	float3 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset2, 0, 0)).rgb;
+	float3 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0)).rgb;
 	return float4(fogAmount + fogBlur, 0);
 }
 
