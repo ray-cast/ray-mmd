@@ -242,7 +242,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in f
 	float3 start = CameraPosition + V * max(0, intersections.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
 
-	return VolumetricFog(param, V, start, end, PseudoRandom(screenPosition.xy * time));
+	return VolumetricFog(param, V, start, end, PseudoRandom(screenPosition.xy * (time + PI)));
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"
