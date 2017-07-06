@@ -163,6 +163,12 @@ float GetJitterOffset(float2 uv)
 	return dot(frac(uv * 0.25), float2(0.25, 0.25));
 }
 
+float PseudoRandom(float2 xy)
+{
+    float2 pos = frac(xy / 128.0f) * 128.0f + float2(-64.340622f, -72.465622f);
+    return frac(dot(pos.xyx * pos.xyy, float3(20.390625f, 60.703125f, 2.4281209f)));
+}
+
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)
 {
 	const float blurSigma = sigma * 0.5f;
