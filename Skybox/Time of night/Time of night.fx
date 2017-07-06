@@ -7,9 +7,6 @@
 static const float3 moonScaling = 3800;
 static const float3 moonTranslate = 80000;
 
-static const float3 jupiterScaling = 2000;
-static const float3 jupiterTranslate = float3(10000, 5000, 10000);
-
 static float3x3 matTransformMoon = CreateRotate(float3(0.0, 0.0, time / 50));
 static float3x3 matTransformMilkWay = CreateRotate(float3(3.14 / 2,0.0, 0.0));
 
@@ -17,13 +14,6 @@ texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
 sampler MoonMapSamp = sampler_state
 {
 	texture = <MoonMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
-texture JupiterMap<string ResourceName = "Shader/Textures/jupiter.jpg";>;
-sampler JupiterMapSamp = sampler_state
-{
-	texture = <JupiterMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
@@ -175,13 +165,6 @@ float4 ScatteringPS(
 			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE; \
 			VertexShader = compile vs_3_0 StarsVS(); \
 			PixelShader  = compile ps_3_0 StarsPS(); \
-		} \
-		pass DrawJupiter { \
-			AlphaBlendEnable = true; AlphaTestEnable = false;\
-			ZEnable = false; ZWriteEnable = false;\
-			SrcBlend = ONE; DestBlend = INVSRCALPHA;\
-			VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling); \
-			PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp); \
 		} \
 		pass DrawMoon { \
 			AlphaBlendEnable = true; AlphaTestEnable = false;\

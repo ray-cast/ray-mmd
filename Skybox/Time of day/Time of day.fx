@@ -10,20 +10,10 @@ static const float3 sunTranslate = 80000;
 static const float3 moonScaling = 2000;
 static const float3 moonTranslate = -float3(10000, -5000,10000);
 
-static const float3 jupiterScaling = 4000;
-static const float3 jupiterTranslate = float3(10000, 5000, 10000);
-
 texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
 sampler MoonMapSamp = sampler_state
 {
 	texture = <MoonMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
-texture JupiterMap<string ResourceName = "Shader/Textures/jupiter.jpg";>;
-sampler JupiterMapSamp = sampler_state
-{
-	texture = <JupiterMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
@@ -168,17 +158,10 @@ technique MainTech<string MMDPass = "object";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawJupiter;"
 	"Pass=DrawMoon;"
 	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawJupiter {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling);
-		PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp);
-	}
 	pass DrawMoon {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -205,17 +188,10 @@ technique MainTechSS<string MMDPass = "object_ss";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawJupiter;"
 	"Pass=DrawMoon;"
 	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawJupiter {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(jupiterTranslate, jupiterScaling);
-		PixelShader  = compile ps_3_0 SpherePS(JupiterMapSamp);
-	}
 	pass DrawMoon {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
