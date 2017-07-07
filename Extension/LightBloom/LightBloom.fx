@@ -1,5 +1,3 @@
-float time : TIME;
-
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 
 float mBloomRadiusP : CONTROLOBJECT<string name="LightBloomController.pmx"; string item = "BloomRadius+";>;
@@ -185,10 +183,11 @@ float luminance(float3 rgb)
 	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
 }
 
-float3 hsv2rgb(float3 hsv)
+float3 hsv2rgb(float3 c)
 {
-	float3 rgb = smoothstep(2.0,1.0, abs(fmod(hsv.x*6.0+float3(0,4,2), 6.0) - 3.0));
-	return hsv.z * (1.0 - hsv.y * rgb);
+	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
 }
 
 float3 noise3(float2 seed)
@@ -204,7 +203,7 @@ float3 ColorBanding(float2 uv)
 
 float3 ColorDithering(float3 color, float2 uv)
 {
-	color += ColorBanding(uv * (time + 3.14));
+	color += ColorBanding(uv);
 	return color;
 }
 
@@ -371,15 +370,6 @@ float4 GlareLightCompPS(
 	return float4(bloom, 0);
 }
 
-float4 HDRInverseVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float2 oTexcoord : TEXCOORD0) : POSITION
-{
-	oTexcoord = Texcoord.xy + ViewportOffset;
-	return Position;
-}
-
 float4 HDRInversePS(in float4 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
 	float3 color = tex2Dlod(ScnSamp, float4(coord.xy, 0, 0)).rgb;
@@ -387,15 +377,6 @@ float4 HDRInversePS(in float4 coord: TEXCOORD0, uniform sampler source) : COLOR
 	color = TonemapHableInverse(color, 4.0);
 
 	return float4(color, 1);
-}
-
-float4 HDRTonemappingVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float2 oTexcoord : TEXCOORD0) : POSITION
-{
-	oTexcoord = Texcoord.xy + ViewportOffset;
-	return Position;
 }
 
 float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : COLOR
@@ -407,7 +388,7 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	curr = saturate(curr / curr.w);
 	curr = linear2srgb(curr);
 
-	return float4(curr.rgb, 1);
+	return float4(ColorDithering(curr.rgb, coord.xy), 1);
 }
 
 float Script : STANDARDSGLOBAL<
@@ -454,7 +435,7 @@ technique FimicGrain <
 	pass HDRInverse<string Script= "Draw=Buffer;";>{
 		 AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRInverseVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset);
 		PixelShader  = compile ps_3_0 HDRInversePS(ScnSamp);
 	}
 	pass GlareDetection<string Script= "Draw=Buffer;";>{
@@ -569,7 +550,7 @@ technique FimicGrain <
 	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRTonemappingVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset);
 		PixelShader  = compile ps_3_0 HDRTonemappingPS(ScnSamp);
 	}
 }
