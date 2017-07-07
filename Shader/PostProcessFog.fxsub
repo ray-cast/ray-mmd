@@ -16,9 +16,9 @@ float mFogDensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item
 float mFogIntensityP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FogIntensity+";>;
 float mFogIntensityM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FogIntensity-";>;
 
-static const float3 mFogRangeParams = float3(1.0, 1e-3, 10.0f);
+static const float3 mFogRangeParams = float3(1.0, 1e-5, 10.0f);
 static const float3 mFogDensityParams = float3(10, 0, 100);
-static const float3 mFogIntensityParams = float3(1.0, 0.0, 10.0f);
+static const float3 mFogIntensityParams = float3(1.0, 0.0, 100.0f);
 static const float3 mFogMiePhaseParams = float3(0.76, 0.1, 0.998);
 static const float3 mFogMieTurbidityParams = float3(100, 1, 1000);
 static const float3 mFogWaveLength = float3(450e-9, 450e-9, 450e-9);
@@ -66,6 +66,7 @@ void ComputeSkyFogApproximation(float3 V, float3 L, float3 waveLambdaMie, float3
 	extinction = pow(extinction, fogRange);
 
 	inscattering = (betaMie + betaRayleigh) / (inscatteringMie + inscatteringRayleigh);
+	inscattering *= (1 - extinction);
 }
 
 void AtmosphericFogVS(
