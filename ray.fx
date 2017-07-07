@@ -100,7 +100,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if FOG_ATMOSPHERIC_QUALITY
 #	include "shader/PhaseFunctions.fxsub"
-#	include "shader/AerialPerspective.fxsub"
 #	include "shader/PostProcessFog.fxsub"
 #endif
 
