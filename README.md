@@ -22,11 +22,10 @@ Download :
     - Added Beta Version of the RayStudio
 	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
-	- Improved AtmosphericFog
+	- Removed AtmosphericFog
     - Removed SphereFog
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
-	- Support for Godray, see AtmosphericFog [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
-	- Support for MipFog, see Skybox's [(NaughtyDog PDF)](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)
+	- Support for Godray, see ray.conf [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :
