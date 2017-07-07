@@ -681,7 +681,7 @@ float RoughnessToSmoothness(float roughness)
 
 float ShininessToSmoothness(float spec)
 {
-	return 1.0f - pow(max(0, 2.0 / (spec + 2)), 0.25);
+	return 1.0f - pow(max(0, 2.0 / (spec + 2)), 0.125);
 }
 
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
