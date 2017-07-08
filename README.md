@@ -24,6 +24,7 @@ Download :
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Removed AtmosphericFog
     - Removed SphereFog
+    - The Occlusion maps can be fetched from the second UV Sets
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
 	- Support for Godray, see ray.conf [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
