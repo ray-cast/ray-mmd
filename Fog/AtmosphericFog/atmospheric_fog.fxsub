@@ -93,7 +93,7 @@ float4 AtmosphericFogPS(
 	float3 fogAmount = ComputeSkyFogApproximation(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
 #endif
 
-	return float4(fogAmount, mWaveLength.x * material.linearDepth * mFogDensity);
+	return float4(fogAmount, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 #if FOG_WITH_GODRAY
@@ -164,7 +164,7 @@ float4 AtmosphericScatteringPS(
 #endif
 
 	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0));
-	return float4(fogAmount + fogBlur, mWaveLength.x * material.linearDepth * mFogDensity);
+	return float4(fogAmount + fogBlur, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 const float4 BackColor = 0.0;
