@@ -234,13 +234,13 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 		}
 	}
 
-	float3 scattering = scatteringMie;
-	scattering *= param.FogColor * param.FogIntensity;
+	float scattering = scatteringMie;
+	scattering *=  param.FogIntensity;
 #if VOLUMETRIC_FOG_ANISOTROPY == 1
 	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
 #endif
 
-	return float4(scattering + scattering * jitter / 255.0f, 0);
+	return float4(param.FogColor * scattering + scattering * jitter / 255.0f, scattering * param.FogIntensity);
 }
 
 void SphereFogVS(
