@@ -337,6 +337,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadowMapGenPS();
 	}
+#if SHADOW_BLUR_COUNT
 	pass ShadowBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -349,6 +350,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowMapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
+#endif
 #endif
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 	pass SSDO<string Script= "Draw=Buffer;";>{
