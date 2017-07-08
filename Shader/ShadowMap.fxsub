@@ -1,5 +1,4 @@
 #define SHADOW_BLUR_COUNT 6
-#define SHADOW_SAMPLES_COUNT 24
 
 static float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance);
@@ -8,61 +7,39 @@ static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
-static const float2 JitterOffsets[SHADOW_SAMPLES_COUNT] = {
-	{0.029463f,0.029463f},
-	{0.000000f,0.083333f},
-	{-0.088388f,0.088388f},
-	{-0.166667f,0.000000f},
-	{-0.147314f,-0.147314f},
-	{0.000000f,-0.250000f},
-	{0.206239f,-0.206239f},
-	{0.333333f,0.000000f},
-	{0.265165f,0.265165f},
-	{0.000000f,0.416667f},
-	{-0.324091f,0.324091f},
-	{-0.500000f,0.000000f},
-	{-0.383016f,-0.383016f},
-	{0.000000f,-0.583333f},
-	{0.441942f,-0.441942f},
-	{0.666667f,0.000000f},
-	{0.500867f,0.500867f},
-	{0.000000f,0.750000f},
-	{-0.559793f,0.559793f},
-	{-0.833333f,0.000000f},
-	{-0.618718f,-0.618718f},
-	{0.000000f,-0.916667f},
-	{0.677644f,-0.677644f},
-	{1.000000f,0.000000f}
-};
-
-float ShadowPCF(float2 coord, float size, float jitter, float receiverDepth)
+float ShadowPCF(float2 coord, float receiverDepth, int samples = 2)
 {
 	float shadow = 0.0;
-	float basis = jitter / SHADOW_MAP_SIZE * size;
 
 	[unroll]
-	for (int i = 0; i < SHADOW_SAMPLES_COUNT; i++) 
+	for (int x = -samples; x <= samples; x++) 
 	{
-		float2 pos = coord + basis * JitterOffsets[i];
-		shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(PSSMsamp, float4(pos, 0, 0)).r)));
+		[unroll]
+		for (int y = -samples; y <= samples; y++)
+		{
+			float2 pos = coord + float2(x, y) * (1.0 / SHADOW_MAP_SIZE);
+			shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(PSSMsamp, float4(pos, 0, 0)).r)));
+		}
 	}
 
-	return saturate(shadow * (1.0 / SHADOW_SAMPLES_COUNT));
+	samples = samples * 2 + 1;
+
+	return saturate(shadow / (samples * samples));
 }
 
 float4 ShadowMapGenPS(
-	in float4 coord : TEXCOORD0,
+	in float2 coord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1) : COLOR
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord.xy, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0));
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord.xy, 0, 0)).r);
+	float linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
 
 	float3 view = normalize(viewdir);
 	float3 viewPosition = view * linearDepth / view.z;
@@ -98,7 +75,7 @@ float4 ShadowMapGenPS(
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 
-	float shadow = ShadowPCF(texCoord0.xy, 3.0, GetJitterOffset(coord.zw), receiverDepth);
+	float shadow = ShadowPCF(texCoord0.xy, receiverDepth);
 
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = shadow;
