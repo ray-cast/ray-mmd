@@ -160,7 +160,7 @@ float4 AtmosphericScatteringPS(
 #endif
 
 	float4 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0));
-	return float4(fogAmount + fogBlur, 1000);
+	return float4(fogAmount + fogBlur, mWaveLength.x * material.linearDepth * mFogDensity);
 }
 
 const float4 BackColor = 0.0;
