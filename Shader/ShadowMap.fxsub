@@ -35,10 +35,10 @@ static const float2 JitterOffsets[SHADOW_SAMPLES_COUNT] = {
 	{1.000000f,0.000000f}
 };
 
-float ShadowPCF(float2 coord, float jitter, float receiverDepth)
+float ShadowPCF(float2 coord, float size, float jitter, float receiverDepth)
 {
 	float shadow = 0.0;
-	float basis = jitter / SHADOW_MAP_SIZE * 3.0;
+	float basis = jitter / SHADOW_MAP_SIZE * size;
 
 	[unroll]
 	for (int i = 0; i < SHADOW_SAMPLES_COUNT; i++) 
@@ -98,7 +98,7 @@ float4 ShadowMapGenPS(
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 
-	float shadow = ShadowPCF(texCoord0.xy, GetJitterOffset(coord.zw), receiverDepth);
+	float shadow = ShadowPCF(texCoord0.xy, 3.0, GetJitterOffset(coord.zw), receiverDepth);
 
 	if (step(0, sum(material.albedo + material.specular) - 1e-5))
 		shadow = shadow;
