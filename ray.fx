@@ -98,11 +98,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/ShadowMap.fxsub"
 #endif
 
-#if FOG_ATMOSPHERIC_QUALITY
-#	include "shader/PhaseFunctions.fxsub"
-#	include "shader/PostProcessFog.fxsub"
-#endif
-
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 #	include "shader/PostProcessOcclusion.fxsub"
 #endif
@@ -221,9 +216,6 @@ technique DeferredLighting<
 #endif
 
 	"RenderColorTarget=ShadingMap; 	Pass=ShadingTransparent;"
-#if FOG_ATMOSPHERIC_QUALITY > 0
-	"RenderColorTarget=ShadingMap; 	Pass=AtmosphericFog;"
-#endif
 
 #if SSR_QUALITY > 0
 	"RenderColorTarget=SSRLightX1Map;"
@@ -432,14 +424,6 @@ technique DeferredLighting<
 		SrcBlend = DESTCOLOR; DestBlend = ZERO;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
-	}
-#endif
-#if FOG_ATMOSPHERIC_QUALITY > 0
-	pass AtmosphericFog<string Script= "Draw=Buffer;";>{
-		ZEnable = false; ZWriteEnable = false;\
-		AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
-		VertexShader = compile vs_3_0 AtmosphericFogVS();\
-		PixelShader = compile ps_3_0 AtmosphericFogPS(ShadingMapSamp);\
 	}
 #endif
 #if SSR_QUALITY > 0

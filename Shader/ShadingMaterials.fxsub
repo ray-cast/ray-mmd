@@ -196,6 +196,7 @@ float4 ShadingTransparentPS(
 
 #if FOG_ENABLE
 	float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
+	lighting *= exp(-fog.a);
 	lighting += fog.rgb;
 #endif
 
