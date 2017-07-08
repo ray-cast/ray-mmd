@@ -1,12 +1,12 @@
-#if SHADOW_QUALITY == 1
+#if SUN_SHADOW_QUALITY == 1
 #	define SHADOW_MAP_SIZE 1024
-#elif SHADOW_QUALITY == 2
+#elif SUN_SHADOW_QUALITY == 2
 #	define SHADOW_MAP_SIZE 2048
-#elif SHADOW_QUALITY == 3
+#elif SUN_SHADOW_QUALITY == 3
 #	define SHADOW_MAP_SIZE 4096
-#elif SHADOW_QUALITY == 4
+#elif SUN_SHADOW_QUALITY == 4
 #	define SHADOW_MAP_SIZE 8192
-#elif SHADOW_QUALITY == 5
+#elif SUN_SHADOW_QUALITY == 5
 #	define SHADOW_MAP_SIZE 16384
 #endif
 
@@ -162,7 +162,7 @@ sampler DepthMapSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
 shared texture PSSM : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int Width = SHADOW_MAP_SIZE;
@@ -201,12 +201,12 @@ sampler PSSMsamp = sampler_state {
 	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler ShadowmapSamp = sampler_state {
+sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowmapMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler ShadowmapSampTemp = sampler_state {
+sampler ShadowMapSampTemp = sampler_state {
 	texture = <ShadowmapMapTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -318,7 +318,7 @@ sampler ShadingMapTempSpecularSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-#if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#if SSDO_QUALITY > 0 && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	bool AntiAlias = false;

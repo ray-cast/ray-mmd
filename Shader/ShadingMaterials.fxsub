@@ -1,4 +1,4 @@
-#if MAIN_LIGHT_ENABLE
+#if SUN_LIGHT_ENABLE
 void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
 	float4 energy = SurfaceEnergy(material, material.normal, L, V);
@@ -8,12 +8,12 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 
 	float3 lightColor = SunColor * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
 
-#if MAIN_LIGHT_ENABLE == 2
+#if SUN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(SunDirection);
 #endif
 
-#if SHADOW_QUALITY
-	float shadow = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+#if SUN_SHADOW_QUALITY
+	float shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).r;
 	shadow = min(shadow, saturate(dot(material.normal, L) * 2));
 	lightColor *= shadow;
 #endif
@@ -31,7 +31,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	diffuse *= lightColor;
 	specular *= lightColor;
 
-#if SHADOW_QUALITY
+#if SUN_SHADOW_QUALITY
 	diffuse += mColorShadowSunP * (1 - shadow) * step(0, sum(material.albedo + material.specular) - 1e-5);
 #if TOON_TEST
 	if (material.lightModel == SHADINGMODELID_TOON)
@@ -60,8 +60,8 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	float shadow = 1;
 	float envShadow = mSunShadowVM;
 
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
-	float shadowDepth = tex2Dlod(ShadowmapSamp, float4(coord, 0, 0)).r;
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
+	float shadowDepth = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).r;
 	shadowDepth = min(shadowDepth, saturate(dot(material.normal, L) * 2));
 	shadow = lerp(shadow, shadowDepth, envShadow);
 #endif
@@ -92,7 +92,7 @@ void ShadingOpacityPS(
 	float3 diffuse = tex2Dlod(LightMapSamp, float4(coord, 0, 0)).rgb;
 	float3 specular = tex2Dlod(LightSpecMapSamp, float4(coord, 0, 0)).rgb;
 
-#if MAIN_LIGHT_ENABLE
+#if SUN_LIGHT_ENABLE
 	float3 sunDiffuse, sunSpecular;
 	ShadingMaterial(material, V, L, coord, sunDiffuse, sunSpecular);
 #if SSSS_QUALITY
@@ -164,7 +164,7 @@ float4 ShadingTransparentPS(
 
 	float3 lighting = tex2Dlod(LightAlphaMapSamp, float4(coord, 0, 0)).rgb;
 
-#if MAIN_LIGHT_ENABLE
+#if SUN_LIGHT_ENABLE
 	float3 diffuse, specular;
 	ShadingMaterial(material, V, L, coord, diffuse, specular);
 	lighting += diffuse * material.albedo + specular;

@@ -93,7 +93,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 #include "shader/ShadingMaterials.fxsub"
 
-#if SHADOW_QUALITY && MAIN_LIGHT_ENABLE
+#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
 #	include "shader/ShadowMap.fxsub"
 #endif
@@ -103,7 +103,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessFog.fxsub"
 #endif
 
-#if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 #	include "shader/PostProcessOcclusion.fxsub"
 #endif
 
@@ -177,7 +177,7 @@ technique DeferredLighting<
 	"ClearSetDepth=ClearDepth;"
 	"Clear=Color;"
 
-#if SHADOW_QUALITY > 0 && MAIN_LIGHT_ENABLE
+#if SUN_SHADOW_QUALITY > 0 && SUN_LIGHT_ENABLE
 	"RenderColorTarget=ShadowmapMap;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
@@ -195,7 +195,7 @@ technique DeferredLighting<
 	"Clear=Depth;"
 	"ScriptExternal=Color;"
 
-#if SSDO_QUALITY > 0 && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#if SSDO_QUALITY > 0 && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 	"RenderColorTarget=SSDOMap; Pass=SSDO;"
 #if SSDO_BLUR_RADIUS > 0
 	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
@@ -330,7 +330,7 @@ technique DeferredLighting<
 #endif
 ;>
 {
-#if MAIN_LIGHT_ENABLE && SHADOW_QUALITY
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
 	pass ShadowMapGen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -341,16 +341,16 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSamp, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowMapSamp, float2(ViewportOffset2.x, 0.0f));
 	}
 	pass ShadowBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowmapSampTemp, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowMapSampTemp, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
-#if SSDO_QUALITY && (IBL_QUALITY || MAIN_LIGHT_ENABLE)
+#if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 	pass SSDO<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
