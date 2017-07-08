@@ -32,8 +32,6 @@ float mSpecularColGM : CONTROLOBJECT<string name="(self)"; string item = "Specul
 float mSpecularColBM : CONTROLOBJECT<string name="(self)"; string item = "SpecularB-";>;
 float mSpecularCol  :  CONTROLOBJECT<string name="(self)"; string item = "SpecularGray+";>;
 
-float3 LightDirection : DIRECTION< string Object = "Light";>;
-
 static float4 mBalanceDiffuse = float4(float3(mDiffuseColRP, mDiffuseColGP, mDiffuseColBP) - float3(mDiffuseColRM, mDiffuseColGM, mDiffuseColBM), mDiffuseCol);
 static float4 mBalanceSpecular = float4(float3(mSpecularColRP, mSpecularColGP, mSpecularColBP) - float3(mSpecularColRM, mSpecularColGM, mSpecularColBM), mSpecularCol);
 
@@ -101,7 +99,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
 #if TOON_TEST
-	float nl = saturate(dot(worldNormal, -LightDirection) * 0.5 + 0.5);
+	float nl = saturate(dot(worldNormal, -SunDirection) * 0.5 + 0.5);
 	float toon = floor(nl * material.customDataA * 5) / (material.customDataA * 5);
 	toon = (material.lightModel == SHADINGMODELID_TOON) ? toon : 0;
 

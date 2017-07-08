@@ -16,8 +16,6 @@ float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDif
 float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
 float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
 
-float3 LightDirection : DIRECTION< string Object = "Light";>;
-
 static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSSSLightP),  0, mEnvSSSLightM);
 static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
 static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
@@ -72,7 +70,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
 #if TOON_TEST
-	float nl = saturate(dot(worldNormal, -LightDirection) * 0.5 + 0.5);
+	float nl = saturate(dot(worldNormal, -SunDirection) * 0.5 + 0.5);
 	float toon = floor(nl * material.customDataA * 5) / (material.customDataA * 5);
 	toon = (material.lightModel == SHADINGMODELID_TOON) ? toon : 0;
 

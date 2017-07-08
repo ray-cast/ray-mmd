@@ -19,7 +19,6 @@ struct MaterialParam
 	float smoothness;
 	float alpha;
 	float visibility;
-	float emissiveIntensity;
 	float customDataA;
 	float3 customDataB;
 	float linearDepth;
@@ -81,7 +80,6 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	material.smoothness = buffer1.w;
 
 	material.normal = DecodeNormal(buffer2.xyz);
-	material.emissiveIntensity = 0;
 
 	material.customDataA = buffer2.w;
 	material.customDataB = 0;
@@ -99,7 +97,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	{
 		material.specular = buffer3.xxx;
 		material.customDataB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-		material.emissiveIntensity = floor(buffer4.y) / 100.0;
+		material.customDataA = floor(buffer4.y) / 100.0;
 	}
 	else
 	{
