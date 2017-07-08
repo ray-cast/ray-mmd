@@ -240,7 +240,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
 #endif
 
-	return float4(scattering, 0);
+	return float4(scattering + scattering * jitter / 255.0f, 0);
 }
 
 void SphereFogVS(
