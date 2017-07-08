@@ -141,6 +141,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,0,0) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE)
 		result += float3(0,1,0) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_TOON)
+		result += float3(0.0,0.5,0.5) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_CLOTH)
 		result += float3(0,0,1) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_EMISSIVE)
@@ -154,6 +156,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,0,0) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_SUBSURFACE)
 		result += float3(0,1,0) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_TOON)
+		result += float3(0.0,0.5,0.5) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_CLOTH)
 		result += float3(0,0,1) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_EMISSIVE)

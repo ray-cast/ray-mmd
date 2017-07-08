@@ -97,7 +97,10 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	{
 		material.specular = buffer3.xxx;
 		material.customDataB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
-		material.customDataA = floor(buffer4.y) / 100.0;
+		if (material.lightModel == SHADINGMODELID_EMISSIVE)
+		{
+			material.customDataA = floor(buffer4.y) / 100.0;
+		}
 	}
 	else
 	{
