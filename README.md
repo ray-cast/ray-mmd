@@ -19,10 +19,10 @@ Download :
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Notice : Overwrite the old Sky Hemisphere to fix a bug
-	- Added MatCap map support, (see main.fx)
+	- Added MatCap map supports, (see main.fx)
+	- Added Godraay supports, (see AtmosphericFog)
 	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
-	- Removed AtmosphericFog
     - Removed SphereFog
     - The Occlusion maps can be fetched from the second UV Sets
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
