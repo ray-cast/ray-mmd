@@ -100,14 +100,15 @@ float4 AtmosphericFogPS(
 void GenLightShaftVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
 	float4 illuminationPosition = mul(float4(-SunDirection * 80000, 1), matViewProject);
 
 	oPosition = float4(CoordToPos(Texcoord) * step(0, illuminationPosition.w), 0, 1);
-	oTexcoord0 = Texcoord + ViewportOffset2 * 2;
+	oTexcoord0.xy = Texcoord + ViewportOffset2 * 2;
+	oTexcoord0.zw = Texcoord * ViewportSize; 
 	oTexcoord1 = illuminationPosition;
 	oTexcoord1 /= oTexcoord1.w;
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy) + ViewportOffset2 * 2;
@@ -118,12 +119,14 @@ void GenLightShaftVS(
 		oPosition = 0;
 }
 
-float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
+float4 GenLightShaftPS(in float4 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
 {
-	float2 sampleCoord = coord;
+	float jitter = PseudoRandom(coord.zw);
+
 	float3 sampleColor = 0.0;
 	float2 sampleDecay = float2(1.0, 0.96);
-	float2 sampleDelta = (coord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * FogSampleLength;
+	float2 sampleDelta = (coord.xy - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * FogSampleLength;
+	float2 sampleCoord = coord.xy - sampleDelta * jitter;
 
 	for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
 	{
@@ -133,7 +136,8 @@ float4 GenLightShaftPS(in float2 coord : TEXCOORD0, float4 illuminationPosition 
 	}
 
 	sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-	return float4(sampleColor, 0);
+
+	return float4(sampleColor + sampleColor * jitter / 255.0, 0);
 }
 
 float4 AtmosphericScatteringPS(

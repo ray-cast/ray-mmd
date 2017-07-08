@@ -1,10 +1,10 @@
 // ignore sky fog
-#define FOG_DISCARD_SKY 1
+#define FOG_DISCARD_SKY 0
 
 #define FOG_WITH_GODRAY 1
 #define FOG_WITH_GODRAY_SAMPLES 64
 
-static const float FogSampleLength = 0.5f;
+static const float FogSampleLength = 0.7f;
 
 // R : default value
 // G : min value for Slider Bar
