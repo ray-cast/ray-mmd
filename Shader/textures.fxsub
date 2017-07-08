@@ -31,7 +31,8 @@ texture FogMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"AtmosphericFog.pmx = ./Fog/AtmosphericFog/atmospheric_fog.fx;"
+		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
+		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
 		"* = hide;";
 >;
 sampler FogMapSamp = sampler_state {
