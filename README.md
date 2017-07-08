@@ -18,6 +18,7 @@ Download :
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
+	- Notice : Overwrite the old Sky Hemisphere to fix a bug
 	- Added MatCap map support, (see main.fx)
     - Added Beta Version of the RayStudio
 	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
