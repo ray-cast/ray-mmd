@@ -62,7 +62,7 @@ float4 ScatteringFogPS(
 	
 	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
 
-	return float4(fog, 0);
+	return float4(fog, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 #define OBJECT_TEC(name, mmdpass) \

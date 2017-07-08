@@ -36,10 +36,10 @@ float4 ScatteringFogPS(
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
 	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
+	float3 sum1 = material.albedo + material.specular;
 	clip(dot(sum1, 1.0) - 1e-5);
 
 	float3 V = normalize(viewdir);
@@ -56,9 +56,9 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 
-	float3 fog = ComputeSkyFog(setting, materialAlpha.linearDepth, V, LightDirection);
+	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, LightDirection);
 
-	return float4(fog * LightSpecular, 0);
+	return float4(fog * LightSpecular, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 #define OBJECT_TEC(name, mmdpass) \

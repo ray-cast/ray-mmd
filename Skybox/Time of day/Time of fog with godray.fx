@@ -196,12 +196,11 @@ float4 AtmosphericScatteringPS(
 	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, material.linearDepth);
 
 #if FOG_DISCARD_SKY
-	if (dot(material.albedo + material.specular, 1) <= 1e-5)
-		fogAmount = 0;
+	clip(dot(material.albedo + material.specular, 1) - 1e-5);
 #endif
 
 	float3 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0)).rgb;
-	return float4(fogAmount + fogBlur, 0);
+	return float4(fogAmount + fogBlur, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 const float4 BackColor = 0.0;
