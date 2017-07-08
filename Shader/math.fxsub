@@ -52,6 +52,16 @@ float4 srgb2linear(float4 c)
 	return float4(srgb2linear(c.rgb), c.a);
 }
 
+float3 srgb2linear_fast(float3 rgb)
+{
+	return pow(max(rgb, EPSILON), 2.2);
+}
+
+float4 srgb2linear_fast(float4 c)
+{
+	return float4(srgb2linear_fast(c.rgb), c.a);
+}
+
 float3 linear2srgb(float3 srgb)
 {
 	srgb = max(6.10352e-5, srgb);

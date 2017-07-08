@@ -87,7 +87,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	string Description = "Image-based-lighting map for ray";
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
-	float4 ClearColor = { 0, 0.5, 0, 0.5 };
+	float4 ClearColor = { 0, MIDPOINT_8_BIT, 0, MIDPOINT_8_BIT };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
 		"sky*box*.* =./Skybox/skylighting_none.fx;"
