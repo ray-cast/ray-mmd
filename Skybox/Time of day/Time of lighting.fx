@@ -1,6 +1,7 @@
-#include "shader/math.fxsub"
+#include "../../shader/math.fxsub"
+#include "../../shader/phasefunctions.fxsub"
+
 #include "shader/common.fxsub"
-#include "shader/phase.fxsub"
 #include "shader/skylighting.fxsub"
 
 #include "../../shader/gbuffer.fxsub"

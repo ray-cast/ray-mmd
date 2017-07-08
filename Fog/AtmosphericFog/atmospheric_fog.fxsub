@@ -97,7 +97,7 @@ float4 AtmosphericFogPS(
 }
 
 #if FOG_WITH_GODRAY
-void GenLightShaftVS(
+void AtmosphericFogMieBlurVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -119,7 +119,7 @@ void GenLightShaftVS(
 		oPosition = 0;
 }
 
-float4 GenLightShaftPS(in float4 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
+float4 AtmosphericFogMieBlurPS(in float4 coord : TEXCOORD0, float4 illuminationPosition : TEXCOORD1) : COLOR0
 {
 	float jitter = PseudoRandom(coord.zw);
 
@@ -191,8 +191,8 @@ const float4 BackColor = 0.0;
 		pass DrawLightShaft {\
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = false; AlphaTestEnable = FALSE;\
-			VertexShader = compile vs_3_0 GenLightShaftVS();\
-			PixelShader = compile ps_3_0 GenLightShaftPS();\
+			VertexShader = compile vs_3_0 AtmosphericFogMieBlurVS();\
+			PixelShader = compile ps_3_0 AtmosphericFogMieBlurPS();\
 		}\
 		pass DrawGodRay {\
 			ZEnable = false; ZWriteEnable = false;\

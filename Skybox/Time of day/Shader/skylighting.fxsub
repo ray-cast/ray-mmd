@@ -173,12 +173,6 @@ float4 EncodeRGBT(float3 rgb, float range = 1024)
 	return encode;
 }
 
-float3 DecodeRGBT(float4 rgbt, float range = 1024)
-{
-	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
-	return rgbt.rgb * rgbt.a;
-}
-
 float2 SHKernel[6][9] =
 {
 	float2(0.75,0.5),float2(0.625,0.386182),float2(0.828613,0.613818),float2(0.828613,0.386182),float2(0.625,0.613818),float2(0.625,0.461711),float2(0.72843,0.461711),float2(0.77157,0.461711),float2(0.625,0.538289),

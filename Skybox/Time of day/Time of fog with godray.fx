@@ -1,15 +1,16 @@
-#include "shader/math.fxsub"
+#include "../../shader/math.fxsub"
+#include "../../shader/phasefunctions.fxsub"
+
 #include "shader/common.fxsub"
-#include "shader/phase.fxsub"
 #include "shader/fog.fxsub"
 
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 
 #define FOG_DISCARD_SKY 1
-#define FOG_WITH_GODRAY_SAMPLES 64
+#define FOG_WITH_GODRAY_SAMPLES 48
 
-static float FogSampleLength = 0.85;
+static float FogSampleLength = 0.9;
 
 texture FogMap : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 sampler FogMapSamp = sampler_state {
@@ -144,6 +145,9 @@ float4 AtmosphericFogMieBlurPS(in float4 coord : TEXCOORD0, float4 illuminationP
 	float2 sampleDecay = float2(1.0, 0.96);
 	float2 sampleDelta = (sampleCoord - illuminationPosition.xy) / FOG_WITH_GODRAY_SAMPLES * FogSampleLength;
 
+	float jitter = PseudoRandom(sampleCoord * ViewportSize);
+	sampleCoord += sampleDelta * jitter;
+
 	for (int i = 0; i < FOG_WITH_GODRAY_SAMPLES; i++)
 	{
 		sampleColor += tex2Dlod(FogMapSamp, float4(sampleCoord, 0, 0)).rgb * sampleDecay.x;
@@ -152,7 +156,8 @@ float4 AtmosphericFogMieBlurPS(in float4 coord : TEXCOORD0, float4 illuminationP
 	}
 
 	sampleColor /= FOG_WITH_GODRAY_SAMPLES;
-	return float4(sampleColor, 0);
+
+	return float4(sampleColor + sampleColor * jitter / 255.0f, 0);
 }
 
 float4 AtmosphericScatteringPS(
