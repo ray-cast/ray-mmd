@@ -1123,7 +1123,7 @@ float3 GetSpecular(float2 coord)
 {
 #if SPECULAR_MAP_FROM
 	#if CUSTOM_ENABLE && SPECULAR_MAP_TYPE <= 1
-		#error Unsupported material, When CUSTOM_ENABLE and specular with color enable, Please set CUSTOM_ENABLE to 0
+		#error Unsupported material, When CUSTOM_ENABLE > 0 and specular map has multiple channels (RGB), Please set CUSTOM_ENABLE to 0
 	#endif
 
 	#if SPECULAR_MAP_UV_FLIP == 1
