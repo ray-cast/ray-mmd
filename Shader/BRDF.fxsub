@@ -216,10 +216,9 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-#if TOON_TEST
 	if (material.lightModel == SHADINGMODELID_TOON)
 		nl = floor(nl * material.customDataA * 5) / (material.customDataA * 5);
-#endif
+
 	return float4(diffuse, specular) * nl;
 }
 

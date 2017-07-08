@@ -69,17 +69,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
-#if TOON_TEST
-	float nl = saturate(dot(worldNormal, -SunDirection) * 0.5 + 0.5);
-	float toon = floor(nl * material.customDataA * 5) / (material.customDataA * 5);
-	toon = (material.lightModel == SHADINGMODELID_TOON) ? toon : 0;
-
-	float2 coord1 = ComputeSphereCoord(normalize(lerp(N, V, toon)));
-	float2 coord2 = ComputeSphereCoord(normalize(lerp(R, N, toon)));
-#else
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
-#endif
 
 	float3 prefilteredDiffuse = DecodeHDR(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)));
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)));
