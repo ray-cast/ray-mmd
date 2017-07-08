@@ -20,13 +20,12 @@ Download :
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Notice : Overwrite the old Sky Hemisphere to fix a bug
 	- Added MatCap map supports, (see main.fx)
-	- Added Godraay supports, (see AtmosphericFog)
 	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
     - Removed SphereFog
     - The Occlusion maps can be fetched from the second UV Sets
+    - Support the God ray calculated from the AtmosphericFog
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
-	- Support for Godray, see ray.conf [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
 Requirement :
