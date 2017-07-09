@@ -183,10 +183,10 @@ float mColorOffsetHighRM : CONTROLOBJECT<string name="ColorGradingControllerMinu
 float mColorOffsetHighGM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetHighG-";>;
 float mColorOffsetHighBM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "ColorOffsetHighB-";>;
 
-float mWeightLowP : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightLow+";>;
-float mWeightLowM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightLow-";>;
-float mWeightHighP : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightHigh+";>;
-float mWeightHighM : CONTROLOBJECT<string name="ColorGradingControllerMinus.pmx"; string item = "WeightHigh-";>;
+float mWeightLowP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "WeightLow+";>;
+float mWeightLowM : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "WeightLow-";>;
+float mWeightHighP : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "WeightHigh+";>;
+float mWeightHighM : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "WeightHigh-";>;
 
 float mVisualizationLUT : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "VisualizationLUT";>;
 
@@ -511,10 +511,10 @@ void ColorGradingVS(
 
 float4 ColorGradingPS(in float2 coord : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR 
 {
-	float4 color = tex2Dlod(ScnSamp, float4(coord, 0, 0));
-	color.rgb = ColorLookupTable(color.rgb);
-	color.rgb = CreateColorSpectrumDebug(color.rgb, ColorGradingLUTSamp, coord, ViewportAspect, mVisualizationLUT);
-	return color;
+	float3 color = tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb;
+	color = ColorLookupTable(color);
+	color = CreateColorSpectrumDebug(color, ColorGradingLUTSamp, coord, ViewportAspect, mVisualizationLUT);
+	return float4(color, 1);
 }
 
 float Script : STANDARDSGLOBAL <
