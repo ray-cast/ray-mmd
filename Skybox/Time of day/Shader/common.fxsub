@@ -55,20 +55,18 @@ float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "FogInt
 float mFogDensityP : CONTROLOBJECT<string name="(self)"; string item = "FogDensity+";>;
 float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "FogDensity-";>;
 
-static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
-
-static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
-static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
-static float mFogRange       = lerp(lerp(1, 10, mFogRangeP), 1e-5, mFogRangeM);
-static float mFogIntensity   = lerp(lerp(1, 200, mFogIntensityP), 0, mFogIntensityM);
-static float mFogDensity     = lerp(lerp(100, 5000, mFogDensityP), 0.1, mFogDensityM);
-static float mMiePhase       = lerp(lerp(0.86, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
-static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
-static float mMieTurbidity   = lerp(lerp(102, 250, mMieTurbidityP), 1e-5, mMieTurbidityM);
-static float mRayleighHeight = lerp(lerp(8, 24, mRayleighHeightP), 1e-5, mRayleighHeightM);
-static float mCloudDensity   = lerp(lerp(400, 1600, mCloudP), 0.0, mCloudM);
-static float mCloudSpeed     = lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM) * time;
-static float mCloudTurbidity   = lerp(lerp(200, 2000, mCloudTurbidityP), 1e-5, mCloudTurbidityM);
+static float mSunRadius      = lerp(lerp(mSunRadiusParams.x, mSunRadiusParams.z, mSunRadiusP), mSunRadiusParams.y, mSunRadiusM);
+static float mSunRadiance    = lerp(lerp(mSunRadianceParams.x, mSunRadianceParams.z, mSunRadianceP), mSunRadianceParams.y, mSunRadianceM);
+static float mFogRange       = lerp(lerp(mFogRangeParams.x, mFogRangeParams.z, mFogRangeP), mFogRangeParams.y, mFogRangeM);
+static float mFogIntensity   = lerp(lerp(mFogIntensityParams.x, mFogIntensityParams.z, mFogIntensityP), mFogIntensityParams.y, mFogIntensityM);
+static float mFogDensity     = lerp(lerp(mFogDensityParams.x, mFogDensityParams.z, mFogDensityP), mFogDensityParams.y, mFogDensityM);
+static float mMiePhase       = lerp(lerp(mMiePhaseParams.x, mMiePhaseParams.z, mMiePhaseP), mMiePhaseParams.y, mMiePhaseM);
+static float mMieHeight      = lerp(lerp(mMieHeightTopParams.x, mMieHeightTopParams.z, mMieHeightP), mMieHeightTopParams.y, mMieHeightM);
+static float mMieTurbidity   = lerp(lerp(mMieTurbidityParams.x, mMieTurbidityParams.z, mMieTurbidityP), mMieTurbidityParams.y, mMieTurbidityM);
+static float mRayleighHeight = lerp(lerp(mRayleighHeightTopParams.x, mRayleighHeightTopParams.z, mRayleighHeightP), mRayleighHeightTopParams.y, mRayleighHeightM);
+static float mCloudDensity   = lerp(lerp(mCloudDensityParams.x, mCloudDensityParams.z, mCloudP), mCloudDensityParams.y, mCloudM);
+static float mCloudSpeed     = lerp(lerp(mCloudSpeedParams.x, mCloudSpeedParams.z, mCloudSpeedP), mCloudSpeedParams.y, mCloudSpeedM) * time;
+static float mCloudTurbidity = lerp(lerp(mCloudTurbidityParams.x, mCloudTurbidityParams.z, mCloudTurbidityP), mCloudTurbidityParams.y, mCloudTurbidityM);
 
 static float3 mMieColor = LightSpecular;
 static float3 mRayleighColor = hsv2rgb(float3(mRayleighColorHP, mRayleighColorSP, lerp(lerp(1, 2, mRayleighColorVP), 0, mRayleighColorVM)));

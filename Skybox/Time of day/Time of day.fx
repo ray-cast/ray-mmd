@@ -1,3 +1,5 @@
+#include "Time of day.conf"
+
 #include "../../shader/math.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
@@ -5,7 +7,6 @@
 #include "shader/atmospheric.fxsub"
 #include "shader/cloud.fxsub"
 
-static const float3 sunScaling = 2000;
 static const float3 sunTranslate = 80000;
 
 texture SunMap<string ResourceName = "Shader/Textures/realsun.jpg";>;
@@ -23,13 +24,13 @@ void SunVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION,
-	uniform float3 translate, uniform float3 scale)
+	uniform float3 translate)
 {
 	float3 sunDirection = normalize(-LightDirection);
 
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(normalize(Position.xyz), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius + sunDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * mUnitDistance * mSunRadius + sunDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -69,20 +70,18 @@ float4 ScatteringPS(
 {
 	float3 V = normalize(viewdir);
 
-	float scaling = 1000;
-
 	ScatteringParams setting;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+	setting.earthRadius = mEarthRadius * mUnitDistance;
+	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
+	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -95,25 +94,23 @@ float4 ScatteringWithCloudsPS(
 {
 	float3 V = normalize(viewdir);
 
-	float scaling = 1000;
-
 	ScatteringParams setting;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+	setting.earthRadius = mEarthRadius * mUnitDistance;
+	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.cloud = mCloudDensity;
-	setting.cloudTop = 5.2 * scaling;
-	setting.cloudBottom = 5 * scaling;
+	setting.cloudTop = 5.2 * mUnitDistance;
+	setting.cloudBottom = 5 * mUnitDistance;
 	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
 	setting.cloudLambda = cloud;
 
-	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection);
+	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -132,7 +129,7 @@ technique MainTech<string MMDPass = "object";
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling);
+		VertexShader = compile vs_3_0 SunVS(sunTranslate);
 		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
 	}
 	pass DrawScattering {
@@ -155,7 +152,7 @@ technique MainTechSS<string MMDPass = "object_ss";
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate, sunScaling);
+		VertexShader = compile vs_3_0 SunVS(sunTranslate);
 		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
 	}
 	pass DrawScattering {

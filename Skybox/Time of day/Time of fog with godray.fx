@@ -1,3 +1,5 @@
+#include "Time of day.conf"
+
 #include "../../shader/math.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
@@ -65,22 +67,19 @@ float4 AtmosphericFogPS(
 
 	float3 V = normalize(viewdir);
 
-	float scaling = 1000;
-
 	ScatteringParams setting;
-	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+	setting.earthRadius = mEarthRadius * mUnitDistance;
+	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth);
 	return float4(fog, 0);
 }
 
@@ -102,22 +101,19 @@ float4 AtmosphericFogMiePS(
 
 	float3 V = normalize(viewdir);
 
-	float scaling = 1000;
-
 	ScatteringParams setting;
-	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+	setting.earthRadius = mEarthRadius * mUnitDistance;
+	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
+	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth);
 	return float4(fog, 0);
 }
 
@@ -178,22 +174,19 @@ float4 AtmosphericScatteringPS(
 
 	float3 V = normalize(viewdir);
 
-	float scaling = 1000;
-
 	ScatteringParams setting;
-	setting.sunSize = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mMiePhase;
-	setting.mieHeight = mMieHeight * scaling;
-	setting.rayleighHeight = mRayleighHeight * scaling;
-	setting.earthRadius = 6360 * scaling;
-	setting.earthAtmTopRadius = 6380 * scaling;
+	setting.mieHeight = mMieHeight * mUnitDistance;
+	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
+	setting.earthRadius = mEarthRadius * mUnitDistance;
+	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, material.linearDepth);
+	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth);
 	fogAmount *= mFogIntensity;
 
 #if FOG_DISCARD_SKY
