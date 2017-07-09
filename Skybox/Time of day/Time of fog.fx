@@ -21,7 +21,7 @@ void ScatteringFogVS(
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy / oTexcoord1.w) + ViewportOffset;
 	oTexcoord1.xy = oTexcoord1.xy * oTexcoord1.w;
 	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
 float4 ScatteringFogPS(
@@ -37,10 +37,10 @@ float4 ScatteringFogPS(
 	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
 	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
 
-	MaterialParam materialAlpha;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+	MaterialParam material;
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 sum1 = materialAlpha.albedo + materialAlpha.specular;
+	float3 sum1 = material.albedo + material.specular;
 	clip(dot(sum1, 1.0) - 1e-5);
 
 	float3 V = normalize(viewdir);
@@ -60,7 +60,8 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, materialAlpha.linearDepth);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, material.linearDepth);
+	fog *= mFogIntensity;
 
 	return float4(fog, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }

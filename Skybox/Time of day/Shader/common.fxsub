@@ -26,6 +26,7 @@ float mSunRadiusP : CONTROLOBJECT<string name="(self)"; string item = "SunRadius
 float mSunRadiusM : CONTROLOBJECT<string name="(self)"; string item = "SunRadius-";>;
 float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance+";>;
 float mSunRadianceM : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance-";>;
+
 float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
 float mMieHeightP : CONTROLOBJECT<string name="(self)"; string item = "MieHeight+";>;
@@ -40,15 +41,17 @@ float mCloudSpeedM : CONTROLOBJECT<string name="(self)"; string item = "CloudSpe
 float mCloudTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "CloudTurbidity+";>;
 float mCloudTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "CloudTurbidity-";>;
 
+float mRayleighColorHP : CONTROLOBJECT<string name="(self)"; string item = "RayleighColorH+";>;
+float mRayleighColorSP : CONTROLOBJECT<string name="(self)"; string item = "RayleighColorS+";>;
+float mRayleighColorVP : CONTROLOBJECT<string name="(self)"; string item = "RayleighColorV+";>;
+float mRayleighColorVM : CONTROLOBJECT<string name="(self)"; string item = "RayleighColorV-";>;
 float mRayleighHeightP : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight+";>;
 float mRayleighHeightM : CONTROLOBJECT<string name="(self)"; string item = "RayleighHeight-";>;
 
-float mFogColorHP : CONTROLOBJECT<string name="(self)"; string item = "FogColorH+";>;
-float mFogColorSP : CONTROLOBJECT<string name="(self)"; string item = "FogColorS+";>;
-float mFogColorVP : CONTROLOBJECT<string name="(self)"; string item = "FogColorV+";>;
-float mFogColorVM : CONTROLOBJECT<string name="(self)"; string item = "FogColorV-";>;
 float mFogRangeP : CONTROLOBJECT<string name="(self)"; string item = "FogRange+";>;
 float mFogRangeM : CONTROLOBJECT<string name="(self)"; string item = "FogRange-";>;
+float mFogIntensityP : CONTROLOBJECT<string name="(self)"; string item = "FogIntensity+";>;
+float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "FogIntensity-";>;
 float mFogDensityP : CONTROLOBJECT<string name="(self)"; string item = "FogDensity+";>;
 float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "FogDensity-";>;
 
@@ -56,7 +59,8 @@ static float3 mWaveLength = float3(680e-9,550e-9,440e-9);
 
 static float mSunRadius      = lerp(lerp(1, 5.0, mSunRadiusP), 0.1, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(10, 20, mSunRadianceP), 1.0, mSunRadianceM);
-static float mFogRange       = lerp(lerp(1, 20, mFogRangeP), 0.1, mFogRangeM);
+static float mFogRange       = lerp(lerp(1, 10, mFogRangeP), 1e-5, mFogRangeM);
+static float mFogIntensity   = lerp(lerp(1, 200, mFogIntensityP), 0, mFogIntensityM);
 static float mFogDensity     = lerp(lerp(100, 5000, mFogDensityP), 0.1, mFogDensityM);
 static float mMiePhase       = lerp(lerp(0.86, 1.0, mMiePhaseP), 0.65, mMiePhaseM);
 static float mMieHeight      = lerp(lerp(1.2, 2.4, mMieHeightP), 1e-5, mMieHeightM);
@@ -67,8 +71,8 @@ static float mCloudSpeed     = lerp(lerp(0.1, 1, mCloudSpeedP), 0, mCloudSpeedM)
 static float mCloudTurbidity   = lerp(lerp(200, 2000, mCloudTurbidityP), 1e-5, mCloudTurbidityM);
 
 static float3 mMieColor = LightSpecular;
+static float3 mRayleighColor = hsv2rgb(float3(mRayleighColorHP, mRayleighColorSP, lerp(lerp(1, 2, mRayleighColorVP), 0, mRayleighColorVM)));
 static float3 mCloudColor = LightSpecular;
-static float3 mFogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(lerp(1, 2, mFogColorVP), 0, mFogColorVM)));
 
 static float2 ViewportOffset  = float2(0.5,0.5) / ViewportSize;
 static float2 ViewportOffset2 = float2(1.0,1.0) / ViewportSize;

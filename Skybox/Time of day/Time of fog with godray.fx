@@ -39,7 +39,7 @@ void AtmosphericFogVS(
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 	oTexcoord1 = normalize(Position.xyz - CameraPosition);
 	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
 float4 AtmosphericFogPS(
@@ -194,6 +194,7 @@ float4 AtmosphericScatteringPS(
 	setting.fogRange = mFogRange;
 	
 	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, scaling, 0), V, LightDirection, material.linearDepth);
+	fogAmount *= mFogIntensity;
 
 #if FOG_DISCARD_SKY
 	clip(dot(material.albedo + material.specular, 1) - 1e-5);

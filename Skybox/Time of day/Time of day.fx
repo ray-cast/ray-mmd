@@ -8,16 +8,6 @@
 static const float3 sunScaling = 2000;
 static const float3 sunTranslate = 80000;
 
-static const float3 moonScaling = 2000;
-static const float3 moonTranslate = -float3(10000, -5000,10000);
-
-texture MoonMap<string ResourceName = "Shader/Textures/moon.jpg";>;
-sampler MoonMapSamp = sampler_state
-{
-	texture = <MoonMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
 texture SunMap<string ResourceName = "Shader/Textures/realsun.jpg";>;
 sampler SunMapSamp = sampler_state
 {
@@ -25,30 +15,6 @@ sampler SunMapSamp = sampler_state
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
-
-void SphereVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1,
-	out float3 oTexcoord2 : TEXCOORD2,
-	out float4 oPosition : POSITION,
-	uniform float3 translate, uniform float3 scale)
-{
-	oTexcoord0 = Texcoord;
-	oTexcoord1 = normalize(Position);
-	oPosition = mul(float4(oTexcoord1.xyz * scale + translate, 1), matViewProject);
-}
-
-float4 SpherePS(
-	in float2 coord : TEXCOORD0,
-	in float3 normal : TEXCOORD1,
-	uniform sampler source) : COLOR
-{
-	float4 diffuse = tex2D(source, coord + float2(time / 200, 0));
-	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
-	return diffuse;
-}
 
 void SunVS(
 	in float4 Position : POSITION,
@@ -91,7 +57,7 @@ void ScatteringVS(
 {
 	oTexcoord0 = normalize(Position);
 	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	oTexcoord3 = ComputeWaveLengthMie(mWaveLength, mCloudColor, mCloudTurbidity, 4);
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
@@ -159,16 +125,9 @@ technique MainTech<string MMDPass = "object";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawMoon;"
 	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawMoon {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling);
-		PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp);
-	}
 	pass DrawSun {
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -189,16 +148,9 @@ technique MainTechSS<string MMDPass = "object_ss";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawMoon;"
 	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawMoon {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 SphereVS(moonTranslate, moonScaling);
-		PixelShader  = compile ps_3_0 SpherePS(MoonMapSamp);
-	}
 	pass DrawSun {
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
