@@ -59,7 +59,7 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth, mFogDensityFar);
 	fog *= mFogIntensity;
 
 	return float4(fog, luminance(mWaveLength) * material.linearDepth * mFogDensity);

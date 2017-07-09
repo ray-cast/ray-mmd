@@ -79,7 +79,7 @@ float4 AtmosphericFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth, mFogDensityFar);
 	return float4(fog, 0);
 }
 
@@ -186,7 +186,7 @@ float4 AtmosphericScatteringPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth);
+	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth, mFogDensityFar);
 	fogAmount *= mFogIntensity;
 
 #if FOG_DISCARD_SKY

@@ -54,12 +54,15 @@ float mFogIntensityP : CONTROLOBJECT<string name="(self)"; string item = "FogInt
 float mFogIntensityM : CONTROLOBJECT<string name="(self)"; string item = "FogIntensity-";>;
 float mFogDensityP : CONTROLOBJECT<string name="(self)"; string item = "FogDensity+";>;
 float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "FogDensity-";>;
+float mFogDensityFarP : CONTROLOBJECT<string name="(self)"; string item = "FogDensityFar+";>;
+float mFogDensityFarM : CONTROLOBJECT<string name="(self)"; string item = "FogDensityFar-";>;
 
 static float mSunRadius      = lerp(lerp(mSunRadiusParams.x, mSunRadiusParams.z, mSunRadiusP), mSunRadiusParams.y, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(mSunRadianceParams.x, mSunRadianceParams.z, mSunRadianceP), mSunRadianceParams.y, mSunRadianceM);
 static float mFogRange       = lerp(lerp(mFogRangeParams.x, mFogRangeParams.z, mFogRangeP), mFogRangeParams.y, mFogRangeM);
 static float mFogIntensity   = lerp(lerp(mFogIntensityParams.x, mFogIntensityParams.z, mFogIntensityP), mFogIntensityParams.y, mFogIntensityM);
 static float mFogDensity     = lerp(lerp(mFogDensityParams.x, mFogDensityParams.z, mFogDensityP), mFogDensityParams.y, mFogDensityM);
+static float mFogDensityFar  = lerp(lerp(mFogDensityFarParams.x, mFogDensityFarParams.z, mFogDensityFarP), mFogDensityFarParams.y, mFogDensityFarM);
 static float mMiePhase       = lerp(lerp(mMiePhaseParams.x, mMiePhaseParams.z, mMiePhaseP), mMiePhaseParams.y, mMiePhaseM);
 static float mMieHeight      = lerp(lerp(mMieHeightTopParams.x, mMieHeightTopParams.z, mMieHeightP), mMieHeightTopParams.y, mMieHeightM);
 static float mMieTurbidity   = lerp(lerp(mMieTurbidityParams.x, mMieTurbidityParams.z, mMieTurbidityP), mMieTurbidityParams.y, mMieTurbidityM);
