@@ -56,7 +56,7 @@ void ScatteringVS(
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position);
-	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }

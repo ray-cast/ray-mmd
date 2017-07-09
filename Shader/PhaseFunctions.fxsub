@@ -3,11 +3,11 @@ float3 ComputeWaveLengthMie(float3 density)
 	return 2e-5f * density;
 }
 
-float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float V)
+float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float U = 4)
 {
 	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
-	float mieConst = 0.434 * c_pi * pow(2.0 * PI, V - 2.0);
-	return mieConst * K / pow(lambda, V - 2);
+	float mieConst = 0.434 * c_pi * pow(PI_2, U - 2.0);
+	return mieConst * K / pow(lambda, U - 2);
 }
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)

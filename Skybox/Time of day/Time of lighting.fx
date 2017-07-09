@@ -108,7 +108,7 @@ void GenSpecularMapVS(
 	oTexcoord0 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w);
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 

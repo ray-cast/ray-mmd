@@ -22,7 +22,7 @@ void AtmosphericFogVS(
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 	oTexcoord1 = normalize(Position.xyz - CameraPosition);
-	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
+	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity);
 	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
