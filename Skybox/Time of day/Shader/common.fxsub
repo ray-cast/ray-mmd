@@ -1,27 +1,3 @@
-float time : TIME<bool SyncInEditMode=true;>;
-float elapsed : ELAPSEDTIME;
-
-float2 MousePositionn : MOUSEPOSITION;
-
-float4x4 matWorld              : WORLD;
-float4x4 matWorldInverse       : WORLDINVERSE;
-float4x4 matWorldView          : WORLDVIEW;
-float4x4 matWorldViewProject   : WORLDVIEWPROJECTION;
-float4x4 matView               : VIEW;
-float4x4 matViewInverse        : VIEWINVERSE;
-float4x4 matProject            : PROJECTION;
-float4x4 matProjectInverse     : PROJECTIONINVERSE;
-float4x4 matViewProject        : VIEWPROJECTION;
-float4x4 matViewProjectInverse : VIEWPROJECTIONINVERSE;
-
-float3 LightSpecular  : SPECULAR  <string Object = "Light";>;
-float3 LightDirection : DIRECTION <string Object = "Light";>;
-
-float3 CameraPosition  : POSITION  < string Object = "Camera"; >;
-float3 CameraDirection : DIRECTION < string Object = "Camera"; >;
-
-float2 ViewportSize : VIEWPORTPIXELSIZE;
-
 float mSunRadiusP : CONTROLOBJECT<string name="(self)"; string item = "SunRadius+";>;
 float mSunRadiusM : CONTROLOBJECT<string name="(self)"; string item = "SunRadius-";>;
 float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance+";>;
@@ -71,10 +47,6 @@ static float mCloudDensity   = lerp(lerp(mCloudDensityParams.x, mCloudDensityPar
 static float mCloudSpeed     = lerp(lerp(mCloudSpeedParams.x, mCloudSpeedParams.z, mCloudSpeedP), mCloudSpeedParams.y, mCloudSpeedM) * time;
 static float mCloudTurbidity = lerp(lerp(mCloudTurbidityParams.x, mCloudTurbidityParams.z, mCloudTurbidityP), mCloudTurbidityParams.y, mCloudTurbidityM);
 
-static float3 mMieColor = LightSpecular;
+static float3 mMieColor = SunColor;
+static float3 mCloudColor = SunColor;
 static float3 mRayleighColor = hsv2rgb(float3(mRayleighColorHP, mRayleighColorSP, lerp(lerp(1, 2, mRayleighColorVP), 0, mRayleighColorVM)));
-static float3 mCloudColor = LightSpecular;
-
-static float2 ViewportOffset  = float2(0.5,0.5) / ViewportSize;
-static float2 ViewportOffset2 = float2(1.0,1.0) / ViewportSize;
-static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;

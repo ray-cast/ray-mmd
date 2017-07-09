@@ -18,7 +18,70 @@ struct ScatteringParams
 	float earthRadius;
 	float earthAtmTopRadius;
 	float3 earthCenter;
+
+	float cloud;
+	float cloudBias;
+	float cloudTop;
+	float cloudBottom;
+	float3 clouddir;
+	float3 cloudLambda;
 };
+
+texture NoiseMap<string ResourceName = "shader/textures/cloud.dds";>; 
+sampler NoiseMapSamp = sampler_state {
+	texture = <NoiseMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+
+float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+{
+	float3 origin = position - center;
+	float B = dot(origin, dir);
+	float C = dot(origin, origin) - radius * radius;
+	float D = B * B - C;
+
+	float2 minimaxIntersections;
+	if (D < 0.0)
+	{
+		minimaxIntersections = float2(-1.0, -1.0);
+	}
+	else
+	{
+		D = sqrt(D);
+		minimaxIntersections = float2(-B - D, -B + D);
+	}
+
+	return minimaxIntersections;
+}
+
+float ComputeClound(ScatteringParams setting, float3 P)
+{
+	float3 P1 = P + setting.clouddir;
+	float3 P2 = P + setting.clouddir * 0.5;
+
+	float cloud = 0.0;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P1.xz * 0.00009, 0, 0)).a;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00006, 0, 0)).a;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00003, 0, 0)).a;
+	cloud *= setting.cloud;
+
+	return cloud;
+}
+
+float HitCloudsTest(ScatteringParams setting, float3 eye, float3 V, float3 L)
+{
+	float2 cloudsOuterIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudTop);
+	float2 cloudsInnerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudBottom);
+
+	if (cloudsInnerIntersections.y > 0)
+		cloudsOuterIntersections.x = cloudsInnerIntersections.y;
+
+	float3 cloudsStart = eye + V * max(0, cloudsOuterIntersections.x);
+	float3 cloudsEnd = eye + V * cloudsOuterIntersections.y;
+
+	return exp(-0.002 * ComputeClound(setting, cloudsStart));
+}
 
 float ChapmanApproximation(float X, float h, float cosZenith)
 {

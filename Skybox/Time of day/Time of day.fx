@@ -1,6 +1,7 @@
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
 #include "shader/common.fxsub"
@@ -26,7 +27,7 @@ void SunVS(
 	out float4 oPosition : POSITION,
 	uniform float3 translate)
 {
-	float3 sunDirection = normalize(-LightDirection);
+	float3 sunDirection = normalize(-SunDirection);
 
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(normalize(Position.xyz), 1);
@@ -43,7 +44,7 @@ float4 SunPS(
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord);
 	diffuse *= diffuse;
-	diffuse *= saturate(dot(normalize(normal), -LightDirection) + 0.1) * 1.5;
+	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 100));
 	return diffuse;
 }
@@ -81,7 +82,7 @@ float4 ScatteringPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection);
+	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -90,7 +91,8 @@ float4 ScatteringWithCloudsPS(
 	in float3 viewdir : TEXCOORD0,
 	in float3 mieLambda : TEXCOORD1,
 	in float3 rayleight : TEXCOORD2,
-	in float3 cloud : TEXCOORD3) : COLOR
+	in float3 cloud : TEXCOORD3,
+	in float4 screenPosition : SV_Position) : COLOR
 {
 	float3 V = normalize(viewdir);
 
@@ -110,7 +112,7 @@ float4 ScatteringWithCloudsPS(
 	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
 	setting.cloudLambda = cloud;
 
-	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection);
+	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, PseudoRandom(screenPosition.xy));
 
 	return linear2srgb(insctrColor);
 }

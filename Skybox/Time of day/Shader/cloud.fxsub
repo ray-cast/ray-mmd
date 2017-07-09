@@ -1,4 +1,4 @@
-#define NUMS_SAMPLES_CLOUD 16
+#define NUMS_SAMPLES_CLOUD 12
 #define NUMS_SAMPLES_CLOUD2 8
 
 texture NoiseMap<string ResourceName = "shader/textures/cloud.dds";>; 
@@ -7,6 +7,15 @@ sampler NoiseMapSamp = sampler_state {
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
+
+float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float dist)
+{
+	float a = dot(n, viewdir);
+	if (a > 0.0) return -1;
+
+	float t = -(dot(position, n) + dist) / a;
+	return t;
+}
 
 float3 ComputeDensity(ScatteringParams setting, float depth)
 {
@@ -43,10 +52,10 @@ float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 
 	return thickness * length(sampleStep);
 }
 
-void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, inout float opticalDepth, inout float3 insctrMie)
+void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, inout float opticalDepth, inout float3 insctrMie, float jitter)
 {
 	float3 sampleStep = (end - (start)) / float(NUMS_SAMPLES_CLOUD);
-	float3 samplePos = start + sampleStep * 0.5;
+	float3 samplePos = start + sampleStep * jitter;
 
 	float sampleLength = length(sampleStep);
 
@@ -75,7 +84,7 @@ void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 
 	insctrMie = opticalDepthMie;
 }
 
-float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L)
+float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V, float3 L, float jitter)
 {
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
@@ -93,7 +102,7 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 
 	float3 cloudsMie = 0.0;
 	float cloudsOpticalLength = 0.0;
-	ComputeCloudsInsctrIntegral(setting, cloudsStart, cloudsEnd, V, -L, cloudsOpticalLength, cloudsMie);
+	ComputeCloudsInsctrIntegral(setting, cloudsStart, cloudsEnd, V, -L, cloudsOpticalLength, cloudsMie, jitter);
 
 	float phaseTheta = dot(V, -L);
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);

@@ -1,14 +1,14 @@
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/phasefunctions.fxsub"
-
-#include "shader/common.fxsub"
-#include "shader/skylighting.fxsub"
-
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/ibl.fxsub"
+
+#include "shader/common.fxsub"
+#include "shader/skylighting.fxsub"
 
 float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
 float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
@@ -129,7 +129,7 @@ float4 GenSpecularMapPS(
 	setting.waveLambdaRayleigh = rayleight;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.w);
-	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection).rgb;
+	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection).rgb;
 
 	return EncodeRGBT(insctrColor);
 }
@@ -274,5 +274,3 @@ OBJECT_TEC(MainTecBS0, "object_ss")
 technique EdgeTec < string MMDPass = "edge";>{}
 technique ShadowTech < string MMDPass = "shadow";>{}
 technique ZplotTec < string MMDPass = "zplot";>{}
-technique MainTec1<string MMDPass = "object";>{}
-technique MainTecBS1<string MMDPass = "object_ss";>{}

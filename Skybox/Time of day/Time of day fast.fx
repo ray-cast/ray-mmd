@@ -1,12 +1,12 @@
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
 #include "shader/common.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 sunScaling = 2000;
 static const float3 sunTranslate = 80000;
 
 texture SunMap<string ResourceName = "Shader/Textures/realsun.jpg";>;
@@ -26,7 +26,7 @@ void SunVS(
 	out float4 oPosition : POSITION,
 	uniform float3 translate)
 {
-	float3 sunDirection = normalize(-LightDirection);
+	float3 sunDirection = normalize(-SunDirection);
 
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(normalize(Position.xyz), 1);
@@ -43,7 +43,7 @@ float4 SunPS(
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord);
 	diffuse *= diffuse;
-	diffuse *= saturate(dot(normalize(normal), -LightDirection) + 0.1) * 1.5;
+	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 100));
 	return diffuse;
 }
@@ -79,7 +79,7 @@ float4 ScatteringPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection);
+	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection);
 
 	return linear2srgb(insctrColor);
 }

@@ -1,13 +1,13 @@
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/phasefunctions.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
 
 #include "shader/common.fxsub"
 #include "shader/fog.fxsub"
-
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
 
 void ScatteringFogVS(
 	in float4 Position : POSITION,
@@ -59,7 +59,7 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth, mFogDensityFar);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, material.linearDepth, mFogDensityFar);
 	fog *= mFogIntensity;
 
 	return float4(fog, luminance(mWaveLength) * material.linearDepth * mFogDensity);
@@ -83,5 +83,3 @@ OBJECT_TEC(FogTecBS0, "object_ss")
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTech<string MMDPass = "shadow";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
-technique MainTec1<string MMDPass = "object";>{}
-technique MainTecBS1<string MMDPass = "object_ss";>{}

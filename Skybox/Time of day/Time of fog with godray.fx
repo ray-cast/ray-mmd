@@ -1,13 +1,13 @@
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/phasefunctions.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
 
 #include "shader/common.fxsub"
 #include "shader/fog.fxsub"
-
-#include "../../shader/gbuffer.fxsub"
-#include "../../shader/gbuffer_sampler.fxsub"
 
 #define FOG_DISCARD_SKY 1
 #define FOG_WITH_GODRAY_SAMPLES 48
@@ -79,7 +79,7 @@ float4 AtmosphericFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth, mFogDensityFar);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth, mFogDensityFar);
 	return float4(fog, 0);
 }
 
@@ -112,8 +112,14 @@ float4 AtmosphericFogMiePS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
-	
-	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, materialAlpha.linearDepth);
+	setting.cloud = mCloudDensity;
+	setting.cloudTop = 5.2 * mUnitDistance;
+	setting.cloudBottom = 5 * mUnitDistance;
+	setting.clouddir = float3(23175.7, 0, -3000 * mCloudSpeed);
+
+	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth);
+	fog *= step(0.5, HitCloudsTest(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection));
+
 	return float4(fog, 0);
 }
 
@@ -124,7 +130,7 @@ void AtmosphericFogMieBlurVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float4 illuminationPosition = mul(float4(-LightDirection * 80000, 1), matViewProject);
+	float4 illuminationPosition = mul(float4(-SunDirection * 80000, 1), matViewProject);
 
 	oTexcoord0 = oPosition = mul(Position, matWorldViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
@@ -186,11 +192,12 @@ float4 AtmosphericScatteringPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
-	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, LightDirection, material.linearDepth, mFogDensityFar);
+	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, material.linearDepth, mFogDensityFar);
 	fogAmount *= mFogIntensity;
 
 #if FOG_DISCARD_SKY
-	clip(dot(material.albedo + material.specular, 1) - 1e-5);
+	if (dot(material.albedo + material.specular, 1) - 1e-5 < 0)
+		fogAmount = 0;
 #endif
 
 	float3 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0)).rgb;
