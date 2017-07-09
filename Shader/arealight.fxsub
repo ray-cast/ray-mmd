@@ -6,7 +6,7 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 	d = max(d - attenuationBulbSize, 0);
 	float denom = 1 + d / attenuationBulbSize;
 	float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
-	return saturate(attenuation);
+	return attenuation;
 }
 
 float GetSpotLightAttenuation(float3 L, float3 Ld, float angle, float radius = 2)
