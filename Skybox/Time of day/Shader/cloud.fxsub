@@ -54,8 +54,10 @@ float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 
 
 void ComputeCloudsInsctrIntegral(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, inout float opticalDepth, inout float3 insctrMie, float jitter)
 {
-	float3 sampleStep = (end - (start)) / float(NUMS_SAMPLES_CLOUD);
-	float3 samplePos = start + sampleStep * jitter;
+	if (V.y < 0) return;
+
+	float3 sampleStep = (end - start) / float(NUMS_SAMPLES_CLOUD);
+	float3 samplePos = start + sampleStep;
 
 	float sampleLength = length(sampleStep);
 
