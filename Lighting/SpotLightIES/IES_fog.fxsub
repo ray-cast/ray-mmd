@@ -243,7 +243,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	return float4(param.FogColor * scattering + scattering * jitter / 255.0f, scattering * param.FogIntensity);
 }
 
-void SphereFogVS(
+void VolumetricFogVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
 	in float2 Texcoord : TEXCOORD0,
@@ -258,7 +258,7 @@ void SphereFogVS(
 	oTexcoord1 = Position.xyz - CameraPosition;
 }
 
-float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
+float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
 	FogParams param;
 	param.FogPosition = FogPosition;
@@ -298,8 +298,8 @@ technique MainTechBS0<string MMDPass = "object_ss"
 		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = CW;
-		VertexShader = compile vs_3_0 SphereFogVS();
-		PixelShader  = compile ps_3_0 SphereFogPS();
+		VertexShader = compile vs_3_0 VolumetricFogVS();
+		PixelShader  = compile ps_3_0 VolumetricFogPS();
 	}
 }
 
