@@ -29,7 +29,7 @@ Download :
     - Support the God ray calculated from the AtmosphericFog and Time of day
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
-	- 
+- 更改历史:
 	- 注1:需要覆盖旧版本的material_common_2.0.fxsub去修复一个bug
 	- 注2:需要重新编写以前的SkyHemisphere用于修复一个bug
 	- 添加MatCap/Sphere贴图的支持
