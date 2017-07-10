@@ -36,7 +36,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_SUB_MAP_FROM 1
 #define NORMAL_SUB_MAP_TYPE 0
 #define NORMAL_SUB_MAP_UV_FLIP 0
-#define NORMAL_SUB_MAP_FILE "../_MaterialMap/skin.png"
+#define NORMAL_SUB_MAP_FILE "../../_MaterialMap/skin.png"
 
 const float normalSubMapScale = 1.5;
 const float normalSubMapLoopNum = 50.0;
