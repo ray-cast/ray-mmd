@@ -1,4 +1,11 @@
 #if SUN_LIGHT_ENABLE
+float3 ComputeSunIntensity(float zenithAngleCos, float EE = 10)
+{
+	float steepness = 1.5;
+	float cutoffAngle = PI / 1.95;
+	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness))) / PI;
+}
+
 void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
 {
 	float4 energy = SurfaceEnergy(material, material.normal, L, V);
@@ -9,7 +16,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float3 lightColor = SunColor * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
 
 #if SUN_LIGHT_ENABLE == 2
- 	lightColor *= ComputeSunIntensity(SunDirection);
+ 	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
 #endif
 
 #if SUN_SHADOW_QUALITY
