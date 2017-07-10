@@ -19,14 +19,14 @@ Download :
 - Latest changes - Major allocator changes:
 	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Notice : Overwrite the old Sky Hemisphere to fix a bug
-	- Added MatCap map supports, (see main.fx)
+	- Added MatCap map supports (see main.fx)
 	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
 	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
     - Removed SphereFog, but you can put a light source in MMD and assign a fx from its 'fog.fx' to the FogMap tab
 	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
-    - Occlusion maps can be fetched from the second UV Sets
-    - Support the God ray calculated from the AtmosphericFog
+    - Occlusion maps can be fetched from the second UV sets
+    - Support the God ray calculated from the AtmosphericFog and Time of day
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 
