@@ -17,9 +17,9 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-	- Notice : Overwrite the old material_common_2.0.fxsub to fix a bug
-	- Notice : Overwrite the old Sky Hemisphere to fix a bug
-	- Added MatCap map supports (see main.fx)
+	- Notice1 : Overwrite the old material_common_2.0.fxsub to fix a bug
+	- Notice2 : You need to rewrite the Sky Hemisphere for fix a bug
+	- Added MatCap/Sphere map supports (see main.fx)
 	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
 	- Improved Bloom, that allows a greater range for bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
@@ -29,6 +29,18 @@ Download :
     - Support the God ray calculated from the AtmosphericFog and Time of day
 	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
+	- 
+	- 注1:需要覆盖旧版本的material_common_2.0.fxsub去修复一个bug
+	- 注2:需要重新编写以前的SkyHemisphere用于修复一个bug
+	- 添加MatCap/Sphere贴图的支持
+	- 添加SSAOVisibility板块用于控制单个模型材质的AO可见性
+	- 改进了Bloom可以允许更大范围的泛光
+	- 改进了云彩的质量
+	- SphereFog现在已经被多光源的体积雾代替了,你可以添加一个光源并且同时设置它的fog.fx到FogMap板块
+	- 现在不支持计算其阴影在skydome
+	- 环境光遮蔽贴图现在可以从模型中的第二组UV获取
+	- 添加了AtmosphericFog和TimeofDay的Godray支持
+	- 添加了一些多光源(point, sphere, spot, ies)的体积雾的支持
 
 Requirement :
 ------------
