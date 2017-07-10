@@ -34,13 +34,14 @@ Download :
 	- 注2:需要重新编写以前的SkyHemisphere用于修复一个bug
 	- 添加MatCap/Sphere贴图的支持
 	- 添加SSAOVisibility板块用于控制单个模型材质的AO可见性
-	- 改进了Bloom可以允许更大范围的泛光
-	- 改进了云彩的质量
-	- SphereFog现在已经被多光源的体积雾代替了,你可以添加一个光源并且同时设置它的fog.fx到FogMap板块
-	- 现在不支持计算其阴影在skydome
-	- 环境光遮蔽贴图现在可以从模型中的第二组UV获取
 	- 添加了AtmosphericFog和TimeofDay的Godray支持
 	- 添加了一些多光源(point, sphere, spot, ies)的体积雾的支持
+	- 改进了Bloom可以允许更大范围的泛光
+	- 改进了云的质量
+	- 移除SphereFog,现在已经被多光源的体积雾代替了,你可以添加一个光源并且同时设置它的fog.fx到FogMap板块
+	- 移除Skydome的阴影计算
+	- 环境光遮蔽贴图现在可以从模型中的第二组UV中获取
+	- 修复了一个当曝光太强时造成画面整体偏绿的bug
 
 Requirement :
 ------------
