@@ -133,32 +133,18 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
-texture DepthMap : OFFSCREENRENDERTARGET<
-	string Description = "SSAO and shadow rendering for ray";
+texture SSAOVisibility : OFFSCREENRENDERTARGET<
+	string Description = "SSAO visibility for ray";
 	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "R32F";
-	float4 ClearColor = { 1, 0, 0, 0 };
+	string Format = "A8";
+	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
 		"self = hide;"
-		"*fog.pmx=hide;"
-		"*controller*.pmx=hide;"
-		"*editor*.pmx=hide;"
-		"sky*box*.* =shadow/Depth_noalpha.fx;"
-		"DirectionalLight*.* =shadow/Depth_noalpha.fx;"
-		"PointLight*.*=shadow/Depth_noalpha.fx;"
-		"SpotLight*.*=shadow/Depth_noalpha.fx;"
-		"SphereLight*.*=shadow/Depth_noalpha.fx;"
-		"TubeLight*.* =shadow/Depth_noalpha.fx;"
-		"LED*.*=shadow/Depth_noalpha.fx;"
-		"RectangleLight*.*=shadow/Depth_noalpha.fx;"
-		"IESLight*.*=shadow/Depth_noalpha.fx;"
-		"*.pmx=shadow/Depth.fx;"
-		"*.pmd=shadow/Depth.fx;"
-		"*.x=hide;";
+		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
-sampler DepthMapSamp = sampler_state {
-	texture = <DepthMap>;
+sampler SSAOVisibilitySamp = sampler_state {
+	texture = <SSAOVisibility>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };

@@ -39,10 +39,8 @@ float4 ShadowMapGenPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float linearDepth = abs(tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r);
-
 	float3 view = normalize(viewdir);
-	float3 viewPosition = view * linearDepth / view.z;
+	float3 viewPosition = view * material.linearDepth / view.z;
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
 	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
@@ -71,17 +69,11 @@ float4 ShadowMapGenPS(
 	float receiverDepth = proj.z;
 
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax) * mLightZMax;
-	receiverDepth -= (linearDepth + depthSlope) * 0.003 + max(0, linearDepth - 100) * 0.007;
+	receiverDepth -= (material.linearDepth + depthSlope) * 0.003 + max(0, material.linearDepth - 100) * 0.007;
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
 
 	float shadow = ShadowPCF(texCoord0.xy, receiverDepth);
-
-	if (step(0, sum(material.albedo + material.specular) - 1e-5))
-		shadow = shadow;
-	else if (abs(material.linearDepth - linearDepth) < 10)
-		shadow = 1;
-
 	return shadow;
 }
 
@@ -94,7 +86,7 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 	float totalWeight = 1;
 	float totalColor = tex2Dlod(source, float4(coord, 0, 0)).r;
 
-	float center_d = tex2Dlod(DepthMapSamp, float4(coord, 0, 0)).r;
+	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
 
 	[unroll]
 	for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
@@ -102,8 +94,8 @@ float4 ShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform
 		float shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).r;
 		float shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).r;
 
-		float depth1 = tex2Dlod(DepthMapSamp, float4(offset1, 0, 0)).r;
-		float depth2 = tex2Dlod(DepthMapSamp, float4(offset2, 0, 0)).r;
+		float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
+		float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
 
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, 10);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, 10);

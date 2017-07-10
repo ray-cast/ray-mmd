@@ -38,11 +38,6 @@ static const float2 SSDOKernel[16] =
 
 float linearizeDepth(float2 uv)
 {
-	return tex2Dlod(DepthMapSamp, float4(uv, 0, 0)).r;
-}
-
-float linearizeDepth2(float2 uv)
-{
 	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
 }
 
@@ -103,7 +98,6 @@ float4 ScreenSpaceDirOccLowPS(
 		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
 		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
 		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
-		sampleDepths = abs(sampleDepths);
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
@@ -193,7 +187,6 @@ float4 ScreenSpaceDirOccMediumPS(
 		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
 		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
 		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
-		sampleDepths = abs(sampleDepths);
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
@@ -273,7 +266,7 @@ float4 ScreenSpaceDirOccPassPS(
 	float4 sh = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
 #endif
 
-	sh.w = sh.w * (linearDepth < 0.0 ? 0.35 : 1.0);
+	sh.w = sh.w * tex2Dlod(SSAOVisibilitySamp, float4(coord.xy, 0, 0)).a;
 	sh.w = 1 - sh.w;
 	sh.w = pow(sh.w, mSSAOScale);
 
@@ -286,7 +279,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	uniform sampler source,
 	uniform float2 offset) : COLOR
 {
-	float center_d = linearizeDepth2(coord);
+	float center_d = linearizeDepth(coord);
 
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
@@ -306,7 +299,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	[unroll]
 	for (int r = 1; r < SSDO_BLUR_RADIUS; ++r)
 	{
-		float2 depth = float2(linearizeDepth2(offset1), linearizeDepth2(offset2));
+		float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
 		float2 weight = exp2(-r * r * falloff - pow2((depth - float2(center_d, center_d)) * sharpness));
 
 		weight.x *= saturate(dot(GetNormal(offset1), normal));
