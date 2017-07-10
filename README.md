@@ -27,7 +27,7 @@ Download :
 	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
     - Occlusion maps can be fetched from the second UV sets
     - Support the God ray calculated from the AtmosphericFog and Time of day
-	- Support the Volumetric Fog calculated from (point,sphere,spot,ies) light [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
+	- Support the Volumetric lighting calculated from (point,sphere,spot,ies) light source [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
 	- Fixed bug : The green is greater than red and blue, when very bright exposure
 - 更改历史:
 	- 注1:需要覆盖旧版本的material_common_2.0.fxsub去修复一个bug
