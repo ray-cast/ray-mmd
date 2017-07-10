@@ -21,7 +21,7 @@ Download :
 	- Notice : Overwrite the old Sky Hemisphere to fix a bug
 	- Added MatCap map supports (see main.fx)
 	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
-	- Improved Bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
+	- Improved Bloom, that allows a greater range for bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
     - Removed SphereFog, but you can put a light source in MMD and assign a fx from its 'fog.fx' to the FogMap tab
 	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
