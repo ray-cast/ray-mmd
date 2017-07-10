@@ -189,6 +189,7 @@ technique DeferredLighting<
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
+	"RenderDepthStencilTarget=;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #else
@@ -199,8 +200,6 @@ technique DeferredLighting<
 
 #if SSR_QUALITY > 0
 	"RenderColorTarget=SSRLightX1Map;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Depth;"
 	"Clear=Color;"
 	"Pass=SSRConeTracing;"
 
@@ -282,13 +281,16 @@ technique DeferredLighting<
 
 #if AA_QUALITY == 1
 	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
 	"Pass=FXAA;"
 #endif
 
 #if AA_QUALITY == 2 || AA_QUALITY == 3
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation;"
-	"RenderColorTarget=; Pass=SMAANeighborhoodBlending;"
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=SMAANeighborhoodBlending;"
 #endif
 
 #if AA_QUALITY == 4 || AA_QUALITY == 5
@@ -298,7 +300,9 @@ technique DeferredLighting<
 
 	"RenderColorTarget=SMAAEdgeMap;  Clear=Color; Pass=SMAAEdgeDetection2x;"
 	"RenderColorTarget=SMAABlendMap; Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
-	"RenderColorTarget=; Pass=SMAANeighborhoodBlendingFinal;"
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=SMAANeighborhoodBlendingFinal;"
 #endif
 ;>
 {
