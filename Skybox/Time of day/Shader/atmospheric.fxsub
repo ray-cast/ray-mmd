@@ -121,8 +121,8 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 		lastOpticalDepth = opticalDepth;
 	}
 
-	insctrMie = scattering;
-	insctrRayleigh = scattering;
+	insctrMie = scattering * setting.waveLambdaMie;
+	insctrRayleigh = scattering * setting.waveLambdaRayleigh;
 }
 
 bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, out float3 transmittance, out float3 insctrMie, out float3 insctrRayleigh)
@@ -162,8 +162,8 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 	float phaseNight = 1.0 - saturate(insctrOpticalLength.x * EPSILON);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh;
+	float3 insctrTotalMie = insctrMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh;
 
 	float3 sky = insctrTotalMie + insctrTotalRayleigh;
 

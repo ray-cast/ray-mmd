@@ -149,8 +149,8 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 		lastOpticalDepth = opticalDepth;
 	}
 
-	insctrMie = scattering;
-	insctrRayleigh = scattering;
+	insctrMie = scattering * setting.waveLambdaMie;
+	insctrRayleigh = scattering * setting.waveLambdaRayleigh;
 }
 
 float3 ComputeFogChapmanMie(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance)
@@ -166,7 +166,7 @@ float3 ComputeFogChapmanMie(ScatteringParams setting, float3 eye, float3 V, floa
 	float phaseTheta = dot(V, -L);
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
+	float3 insctrTotalMie = insctrMie * phaseMie;
 
 	return insctrTotalMie * setting.sunRadiance;
 }
@@ -184,7 +184,7 @@ float3 ComputeFogChapmanRayleigh(ScatteringParams setting, float3 eye, float3 V,
 	float phaseTheta = dot(V, -L);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh * distance * densityFar;
+	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh * distance * densityFar;
 
 	return insctrTotalRayleigh * setting.sunRadiance;
 }
@@ -203,8 +203,8 @@ float3 ComputeFogChapman(ScatteringParams setting, float3 eye, float3 V, float3 
 	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
 	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
 
-	float3 insctrTotalMie = insctrMie * setting.waveLambdaMie * phaseMie;
-	float3 insctrTotalRayleigh = insctrRayleigh * setting.waveLambdaRayleigh * phaseRayleigh * distance * densityFar;
+	float3 insctrTotalMie = insctrMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh * distance * densityFar;
 
 	float3 scattering = insctrTotalMie + insctrTotalRayleigh;
 
