@@ -51,35 +51,24 @@ struct FogParams
 #endif
 };
 
-float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float dist)
+float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 symbol, float size)
 {
-	float a = dot(n, viewdir);
-	if (a > 0.0) return -1;
-
-	float t = -(dot(position, n) + dist) / a;
-	return t;
-}
-
-float2 ComputeRayCubeIntersection(float3 p, float3 d, float size)
-{
-	float3 inv = 1.0 / d;
-	float3 invSign = 1 - step(0, inv);
-
-	float3 aabb[2] = { -float3(size, size, size), float3(size, size, size) };
+	const float3 inv = 1.0 / (d + 1e-16);
+	const float3 aabb[2] = { -float3(size, size, size), float3(size, size, size) };
 
 	float tmin = 65535;
 	float tmax = -65535;
 
     float tymin, tymax, tzmin, tzmax;
-    tmin  = (aabb[  invSign[0]].x - p.x) * inv.x;
-    tmax  = (aabb[1-invSign[0]].x - p.x) * inv.x;
-    tymin = (aabb[  invSign[1]].y - p.y) * inv.y;
-    tymax = (aabb[1-invSign[1]].y - p.y) * inv.y;
-    tzmin = (aabb[  invSign[2]].z - p.z) * inv.z;
-    tzmax = (aabb[1-invSign[2]].z - p.z) * inv.z;
+    tmin  = (aabb[1-symbol[0]].x - p.x) * inv.x;
+    tmax  = (aabb[  symbol[0]].x - p.x) * inv.x;
+    tymin = (aabb[1-symbol[1]].y - p.y) * inv.y;
+    tymax = (aabb[  symbol[1]].y - p.y) * inv.y;
+    tzmin = (aabb[1-symbol[2]].z - p.z) * inv.z;
+    tzmax = (aabb[  symbol[2]].z - p.z) * inv.z;
 
-    tmin  = max(max(tmin, tymin), tzmin);
-    tmax  = min(min(tmax, tymax), tzmax);
+    tmin = max(max(tmin, tymin), tzmin);
+    tmax = min(min(tmax, tymax), tzmax);
 
     if (tmin > tmax)
     	return -1;
@@ -92,21 +81,10 @@ float ComputeOpticalDepth(FogParams param, float depth)
 	return exp(-depth * param.FogDensity);
 }
 
-float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
-{
-	const float invRadius = 1 / radius;
-	float d = length(L);
-	float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
-	d = max(d - attenuationBulbSize, 0);
-	float denom = 1 + d / attenuationBulbSize;
-	float attenuation = fadeoutFactor * fadeoutFactor / denom;
-	return saturate(attenuation);
-}
-
-float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
+float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
 {
 	float3 sampleStep = (end - start) / stepNum;
-	float3 sampleStart = start + sampleStep;
+	float3 sampleStart = start + sampleStep * jitter;
 
 	float sampleLength = length(sampleStep);
 	float sampleOpticalDepth = ComputeOpticalDepth(param, sampleLength);
@@ -114,10 +92,12 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	float scatteringMie = 0;
 	float scatteringDepth = 1;
 
+	float3 symbol = step(0, L);
+
 	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth *= sampleOpticalDepth)
 	{
-		float2 intersections = ComputeRayCubeIntersection(sampleStart, -SunDirection, param.FogRange);
-		float3 sampleLightPoint = sampleStart - SunDirection * intersections.y;
+		float2 intersections = ComputeRayCubeIntersection(sampleStart, L, symbol, param.FogRange);
+		float3 sampleLightPoint = sampleStart + L * intersections.y;
 
 		float scattering = exp(-distance(sampleLightPoint, sampleStart) * param.FogDensity);
 		scattering *= sampleLength;
@@ -130,7 +110,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	float3 scattering = param.FogColor * SunColor * scatteringMie;
 	scattering *= param.FogIntensity;
 #if VOLUMETRIC_FOG_ANISOTROPY
-	scattering *= ComputePhaseMie(dot(V, normalize(-SunDirection)), -param.FogMiePhase);
+	scattering *= ComputePhaseMie(dot(V, L), -param.FogMiePhase);
 #endif
 
 	return float4(scattering, sampleLength * param.FogIntensity * stepNum * param.FogDensity);
@@ -155,7 +135,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1,
 {
 	FogParams param;
 	param.FogPosition = FogPosition;
-	param.FogRange = sqrt(FogRange * FogRange) / 2;
+	param.FogRange = sqrt(FogRange * FogRange) / 1.75;
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
 	param.FogMiePhase = FogMiePhase;
@@ -168,7 +148,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1,
 #endif
 
 	float3 V = normalize(viewdir);
-	float2 intersection = ComputeRayCubeIntersection(CameraPosition, V, param.FogRange);
+	float2 intersection = ComputeRayCubeIntersection(CameraPosition, V, step(0, V), param.FogRange);
 	clip(intersection.y);
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
@@ -176,7 +156,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1,
 	float3 start = CameraPosition + V * max(0, intersection.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersection.y);
 
-	return VolumetricFog(param, V, start, end, PseudoRandom(screenPosition.xy * (time + PI)));
+	return VolumetricFog(param, V, normalize(-SunDirection), start, end, GetJitterOffset(screenPosition.xy + (time + PI)));
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"
