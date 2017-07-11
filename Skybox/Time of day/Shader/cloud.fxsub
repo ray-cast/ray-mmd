@@ -1,4 +1,4 @@
-#define NUMS_SAMPLES_CLOUD 12
+#define NUMS_SAMPLES_CLOUD 8
 #define NUMS_SAMPLES_CLOUD2 8
 
 texture NoiseMap<string ResourceName = "shader/textures/cloud.dds";>; 
