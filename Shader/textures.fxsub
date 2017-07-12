@@ -33,6 +33,7 @@ texture FogMap: OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
 		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
+		"VolumetricFog.pmx =./Fog/VolumetricFog/volumetric_fog.fx;"
 		"VolumetricCube.pmx =./Fog/VolumetricCube/volumetric_cube.fx;"
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"* = hide;";
