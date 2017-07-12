@@ -33,6 +33,8 @@ texture FogMap: OFFSCREENRENDERTARGET<
 	string DefaultEffect =
 		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
 		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
+		"VolumetricCube.pmx =./Fog/VolumetricCube/volumetric_cube.fx;"
+		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"* = hide;";
 >;
 sampler FogMapSamp = sampler_state {
@@ -121,13 +123,8 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*editor*.pmx=hide;"
 		"sky*box*.* = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
-		"DirectionalLight*.* =./materials/Emissive/material_lighting.fx;"
-		"SpotLight*.* =./materials/Emissive/material_lighting.fx;"
-		"PointLight*.* =./materials/Emissive/material_lighting.fx;"
-		"SphereLight*.* =./materials/Emissive/material_lighting.fx;"
-		"TubeLight*.* =./materials/Emissive/material_lighting.fx;"
-		"RectangleLight*.* =./materials/Emissive/material_lighting.fx;"
-		"IESLight*.* =./materials/Emissive/material_lighting.fx;"
+		"*Light*.pmx =./materials/Emissive/material_lighting.fx;"
+		"Volumetric*.* =hide;"
 		"*.pmd = ./materials/material_2.0.fx;"
 		"*.pmx = ./materials/material_2.0.fx;"
 		"*.x = hide;"
