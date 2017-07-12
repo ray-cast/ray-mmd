@@ -14,66 +14,61 @@ float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
-float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
-float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
-float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
 float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
 float mMieDensityP : CONTROLOBJECT<string name="(self)"; string item = "Density+";>;
 float mMieDensityM : CONTROLOBJECT<string name="(self)"; string item = "Density-";>;
+float mWidthP : CONTROLOBJECT<string name="(self)"; string item = "Width+";>;
+float mHeightP : CONTROLOBJECT<string name="(self)"; string item = "Height+";>;
+float mDepthP : CONTROLOBJECT<string name="(self)"; string item = "Depth+";>;
 
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
 
-static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float FogWidth = lerp(1, FogRangeParams.x, mWidthP);
+static const float FogHeight = lerp(1, FogRangeParams.x, mHeightP);
+static const float FogDepth = lerp(1, FogRangeParams.x, mDepthP);
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 1.5, mRangeP), FogRangeParams.y, mRangeM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
-static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, FogAttenuationBulbParams.z, mAttenuationBulbP), FogAttenuationBulbParams.y, mAttenuationBulbM);
 
 static const float3 FogPosition = mPosition;
-static const float3 FogColor = float3(mR, mG, mB) * FogIntensity * FogBlink;
+static const float3 FogColor = float3(mR, mG, mB) * FogIntensity;
 
 struct FogParams
 {
 	float3 FogColor;
 	float3 FogPosition;
+	float3 FogRange;
 
-	float FogRange;
 	float FogDensity;
 	float FogIntensity;
 	float FogMiePhase;
-	float FogAttenuationBulb;
-
-#if VOLUMETRIC_FOG_ENABLE
-	sampler shadowMap;
-	float shadowSize;
-#endif
 };
 
-float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 symbol, float size)
+float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 symbol, float3 size)
 {
 	const float3 inv = 1.0 / (d + 1e-16);
-	const float3 aabb[2] = { -float3(size, size, size), float3(size, size, size) };
+	const float3 aabb[2] = { -size, size };
 
 	float tmin = 65535;
 	float tmax = -65535;
 
-    float tymin, tymax, tzmin, tzmax;
-    tmin  = (aabb[1-symbol[0]].x - p.x) * inv.x;
-    tmax  = (aabb[  symbol[0]].x - p.x) * inv.x;
-    tymin = (aabb[1-symbol[1]].y - p.y) * inv.y;
-    tymax = (aabb[  symbol[1]].y - p.y) * inv.y;
-    tzmin = (aabb[1-symbol[2]].z - p.z) * inv.z;
-    tzmax = (aabb[  symbol[2]].z - p.z) * inv.z;
+	float tymin, tymax, tzmin, tzmax;
+	tmin  = (aabb[1-symbol[0]].x - p.x) * inv.x;
+	tmax  = (aabb[  symbol[0]].x - p.x) * inv.x;
+	tymin = (aabb[1-symbol[1]].y - p.y) * inv.y;
+	tymax = (aabb[  symbol[1]].y - p.y) * inv.y;
+	tzmin = (aabb[1-symbol[2]].z - p.z) * inv.z;
+	tzmax = (aabb[  symbol[2]].z - p.z) * inv.z;
 
-    tmin = max(max(tmin, tymin), tzmin);
-    tmax = min(min(tmax, tymax), tzmax);
+	tmin = max(max(tmin, tymin), tzmin);
+	tmax = min(min(tmax, tymax), tzmax);
 
-    if (tmin > tmax)
-    	return -1;
+	if (tmin > tmax)
+		return -1;
 
-    return float2(tmin, tmax);
+	return float2(tmin, tmax);
 }
 
 float ComputeOpticalDepth(FogParams param, float depth)
@@ -119,27 +114,24 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 void VolumetricCubeVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
-	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	Position.xyz = FogPosition + Normal * FogRange;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = normalize(Position.xyz - CameraPosition);
+	oTexcoord1 = (Position.xyz - CameraPosition);
 }
 
 float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
 	FogParams param;
 	param.FogPosition = FogPosition;
-	param.FogRange = sqrt(FogRange * FogRange) / 1.75;
+	param.FogRange = float3(FogWidth, FogHeight, FogDepth);
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
 	param.FogMiePhase = FogMiePhase;
-	param.FogAttenuationBulb = FogAttenuationBulb;
 	param.FogDensity = FogDensity;
 
 #if VOLUMETRIC_FOG_ENABLE
@@ -151,7 +143,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1,
 	float2 intersection = ComputeRayCubeIntersection(CameraPosition, V, step(0, V), param.FogRange);
 	clip(intersection.y);
 
-	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
+	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy, 0, 0)).r;
 
 	float3 start = CameraPosition + V * max(0, intersection.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersection.y);
