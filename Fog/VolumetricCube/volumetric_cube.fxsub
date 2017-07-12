@@ -121,7 +121,7 @@ void VolumetricCubeVS(
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = (Position.xyz - CameraPosition);
+	oTexcoord1 = Position.xyz - CameraPosition;
 }
 
 float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
