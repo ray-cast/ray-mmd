@@ -5,6 +5,16 @@
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/ibl.fxsub"
 
+float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
+float mEnvSSSLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight+";>;
+float mEnvSSSLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight-";>;
+float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
+float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
+float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
+float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
+
 #if USE_CUSTOM_PARAMS == 0
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
 float mTopColorSP :  CONTROLOBJECT<string name="(self)"; string item = "TopS+";>;
@@ -22,15 +32,6 @@ float mMediumColorHP :  CONTROLOBJECT<string name="(self)"; string item = "Mediu
 float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "MediumS+";>;
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
 float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
-float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
-float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
-float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
-float mEnvSSSLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight+";>;
-float mEnvSSSLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight-";>;
-float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
-float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
-float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
-float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
 
 static const float3 mTopColor = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))));
 static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))));
