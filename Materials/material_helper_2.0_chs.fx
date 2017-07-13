@@ -91,7 +91,7 @@ const float alphaMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // 如果一些镜头产生了一些奇怪的白边效果，可以试着将场景模型放入PMXEditor，并且检查是否所有的法线的XYZ数值都不为0
 #define NORMAL_MAP_FROM 0  // 参考ALBEDO_MAP_FROM
 
-// 如果图片是使用老式的法线贴图则可以通过设置这里来指定
+// 由于历史的原因法线贴图有很多的变种，则可以通过设置这里来指定
 // 关于 PerturbNormalLQ 和 PerturbNormalHQ 可以参考UE4的文档.
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : 将具有RGB的切线空间的法线贴图用于模型的法线
