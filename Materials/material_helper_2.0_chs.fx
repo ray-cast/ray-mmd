@@ -1,5 +1,5 @@
 // 本文假定在一定程度上能够了解或者熟悉物理的材质的各种含义，有关更详细的基于物理的材质描述你可以查看UE4的文档来入手
-// https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
+// https://docs.unrealengine.com/latest/CHN/Engine/Rendering/Materials/PhysicallyBased/index.html
 
 // 如果需要替换模型的贴图，可以通过设置不同的数值到ALBEDO_MAP_FROM，从而指定模型的的单一色或者纹理贴图,该选项默认时从PMX模型中的纹理插槽获取基本颜色
 // 提示1: ALBEDO是描述物体在消除了非金属材质的镜面反射后的基本颜色，在UE4或者其它引擎中同样也被称为底色或者固有色
@@ -92,8 +92,8 @@ const float alphaMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 #define NORMAL_MAP_FROM 0  // 参考ALBEDO_MAP_FROM
 
 // 由于历史的原因法线贴图有很多的变种，则可以通过设置这里来指定
-// 关于 PerturbNormalLQ 和 PerturbNormalHQ 可以参考UE4的文档.
-// https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
+// 关于 PerturbNormalLQ 和 PerturbNormalHQ 的算法可以参考UE4的文档.
+// https://docs.unrealengine.com/latest/CHN/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html
 // 0 : 将具有RGB的切线空间的法线贴图用于模型的法线
 // 0 : 将只有RG的压缩后的切线空间的法线贴图用于模型的法线
 // 2 : 以PerturbNormalLQ的方式计算凹凸贴图用作模型的法线
@@ -116,7 +116,7 @@ const float normalSubMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // 默认时,参数将从模型中的光泽度转换为光滑度来使用
 #define SMOOTHNESS_MAP_FROM 9			// 参考ALBEDO_MAP_FROM
 
-// Other parameter types for smoothness
+// 描述光滑度贴图是使用光滑度还是粗糙度，以及如何转换粗糙度为光滑度
 // 0 : Smoothness (from Frostbite / CE5 textures)
 // 1 : Calculate smoothness from roughness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)
 // 2 : Calculate smoothness from roughness by 1.0 - Roughness		(from UE4/GGX/SubstancePainter2 with roughness linear roughness)
@@ -143,7 +143,7 @@ const float metalnessMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // 如果你不期望你的模型反射天空的颜色你可以设置const float3 specular = 0.0;为0让模型不具有镜面反射
 #define SPECULAR_MAP_FROM 0 // 参考ALBEDO_MAP_FROM
 
-// Other parameter types for Specular
+// 描述镜面色如何转换成反射率
 // 0 : Calculate reflection coefficient from specular color by F(x) = 0.08*(x  ) (from UE4 textures)
 // 1 : Calculate reflection coefficient from specular color by F(x) = 0.16*(x^2) (from Frostbite textures)
 // 2 : Calculate reflection coefficient from specular grays by F(x) = 0.08*(x  ) (from UE4 textures)
@@ -156,26 +156,23 @@ const float metalnessMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 #define SPECULAR_MAP_FILE "specular.png" // 参考ALBEDO_MAP_FILE
 
 // 默认数值为0.5
-// Notice : Anything less than 2% is physically impossible and is instead considered to be shadowing
-// For example: The reflectance coefficient is equal to F(x) = (x - 1)^2 / (x + 1)^2
-// Consider light that is incident upon a transparent medium with a refractive index of 1.5
-// That result will be equal to (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%).
-// Specular to reflection coefficient is equal to F(x) = 0.08*x, if the x is equal to 0.5 the result will be 0.04.
-// So default value is 0.5 for 0.04 coeff.
+// 注 : 任何物质在物理中其反射率都不可能小于2%, 考虑一个入射光在折射率为1.5的透明介质上的传播，其反射率的计算公式为 F(x) = (x - 1)^2 / (x + 1)^2
+// 反射率则是 (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04 (or 4%), 将镜面数值转换成反射率其方程由SPECULAR_MAP_TYPE决定
+// 如果镜面色转换成反射率其方程为 F(x) = 0.08*x, 为了使反射率等于0.04,解得x必须等于0.5
+// 所以默认值将使用0.5的数值代替0.04的反射率系数
 const float3 specular = 0.5; 			// 色彩范围在0 ~ 1之间
 const float2 specularMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 
-// The ambient occlusion (AO) is an effect that approximates the attenuation of environment light due to occlusion.
-// Bacause sky lighting from many directions, cannot simply to calculating shadows in the real-time.
-// A simply way able to replaced by using occlusion map and SSAO.
-// So you can set the zero to the "const float occlusion = 0.0;", if you dot‘t want that model to calculating the diffuse & specular color of environment.
+// 由于天顶光源是由无数方向发射的光线,无法实时的计算出环境光的遮蔽，所以取而带至的则是使用SSAO或者环境光遮蔽贴图，
+// 因为SSAO只能模拟小范围的闭塞，所以可以离线烘培出环境光遮蔽贴图，并且该贴图是一种非常近视的手法用于模拟环境光的大范围闭塞
+// 并且如果你不希望某个物体反射天空中的漫反射以及镜面反射,你可以将该参数设置为0
 #define OCCLUSION_MAP_FROM 0		// 参考ALBEDO_MAP_FROM
 
-// Other parameter types for occlusion
-// 0 : Fetch ambient occlusion from linear color-space
-// 1 : Fetch ambient occlusion from sRGB   color-space
-// 2 : Fetch ambient occlusion from linear color-space from second UV set
-// 3 : Fetch ambient occlusion from sRGB   color-space from second UV set
+// 用于描述烘培后的贴图是使用的sRGB色域还是线性的色彩空间
+// 0 : 从sRGB的色彩空间中提取环境光遮蔽
+// 1 : 从线性的色彩空间中提取环境光遮蔽
+// 2 : 从sRGB的色彩空间以及使用模型的第二组UV提取环境光遮蔽
+// 3 : 从线性的色彩空间以及使用模型的第二组UV提取环境光遮蔽
 #define OCCLUSION_MAP_TYPE 0
 #define OCCLUSION_MAP_UV_FLIP 0		// 参考ALBEDO_MAP_UV_FLIP
 #define OCCLUSION_MAP_SWIZZLE 0		// 参考ALPHA_MAP_SWIZZLE
@@ -196,11 +193,6 @@ const float occlusionMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 #define PARALLAX_MAP_FILE "height.png"	// 参考ALBEDO_MAP_FILE
 
 const float parallaxMapScale = 1.0;		// 数值必须要大于等于0
-
-// Why increase number of parallaxMapLoopNum will increase the loops/tile/number of albedo, normals, etc
-// Bacause parallax coordinates can be calculated from height map 
-// That are then used to access textures with albedo, normals, smoothness, metalness, etc
-// In other words like fetched data (albedo, normals, etc) from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
 const float parallaxMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 
 // 提示 : 你可以添加一个光源到场景并且绑定该光源到自发光的材质骨骼，用于制造自发光的照明
@@ -211,7 +203,7 @@ const float parallaxMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 #define EMISSIVE_MAP_APPLY_MORPH_COLOR 0		// 参考ALBEDO_MAP_APPLY_MORPH_COLOR
 #define EMISSIVE_MAP_APPLY_MORPH_INTENSITY 0	// Texture colors to multiply with intensity from morph controller (Intensity+/-).
 
-// You can set the blink using the following code.
+// 该参数用于设置不同的数值，可以使材质产生自发光闪烁的效果
 // 1 : colors to multiply with frequency from emissiveBlink. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);
 // 2 : colors to multiply with frequency from morph controller, see Blink morph inside PointLight.pmx
 #define EMISSIVE_MAP_APPLY_BLINK 0
@@ -225,7 +217,7 @@ const float2 emissiveMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // Shading Material ID
 // The curvature also called "opacity"
 // You can see the UE4 docs for more information
-// https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html
+// https://docs.unrealengine.com/latest/CHN/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html
 
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
