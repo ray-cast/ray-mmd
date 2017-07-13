@@ -201,7 +201,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1)
 	float3 start = CameraPosition + V * max(0, intersections.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
 
-	return VolumetricFog(param, V, normalize(-SunDirection), start, end, GetJitterOffset(texcoord * ViewportSize + time));
+	return VolumetricFog(param, V, normalize(-SunDirection), start, end, PseudoRandom(texcoord * ViewportSize + time));
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"
