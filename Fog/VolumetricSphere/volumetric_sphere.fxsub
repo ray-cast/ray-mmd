@@ -132,7 +132,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
 	param.FogMiePhase = FogMiePhase;
-	param.FogDensity = FogDensity;
+	param.FogDensity = FogDensity * FogRangeParams.z / param.FogRange;
 
 	float3 V = normalize(viewdir);
 	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
