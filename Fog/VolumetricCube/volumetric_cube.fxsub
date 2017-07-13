@@ -111,7 +111,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 		float2 intersections = ComputeRayCubeIntersection(sampleStart, L, param.FogPosition, param.FogRange, tmin, tmax);
 		float3 sampleLightPoint = sampleStart + L * intersections.y;
 
-		float scattering = exp(-distance(sampleLightPoint, sampleStart) * param.FogDensity);
+		float scattering = ComputeOpticalDepth(param, distance(sampleLightPoint, sampleStart));
 		scattering *= sampleOpticalDepth;
 		scattering *= scatteringDepth;
 
@@ -134,6 +134,7 @@ void VolumetricCubeVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
+	Position.xyz = (Position.xyz - FogPosition) * float3(FogWidth, FogHeight, FogDepth) + FogPosition;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;

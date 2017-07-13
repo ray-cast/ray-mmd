@@ -1,4 +1,5 @@
 #define VOLUMETRIC_FOG_ANISOTROPY 1
+#define VOLUMETRIC_FOG_WITH_JITTER 0
 #define VOLUMETRIC_FOG_SAMPLES_LENGTH 8
 
 static const float3 FogRangeParams = float3(10.0, 0.0, 100.0);

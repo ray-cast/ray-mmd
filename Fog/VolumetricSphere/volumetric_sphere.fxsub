@@ -80,7 +80,11 @@ float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbS
 float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
 {
 	float3 sampleStep = (end - start) / stepNum;
+#if VOLUMETRIC_FOG_WITH_JITTER
+	float3 sampleStart = start + sampleStep * jitter;
+#else
 	float3 sampleStart = start + sampleStep;
+#endif
 
 	float sampleLength = length(sampleStep);
 	float sampleOpticalDepth = ComputeOpticalDepth(param, sampleLength);
@@ -93,7 +97,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 		float2 intersections = ComputeRaySphereIntersection(sampleStart, L, param.FogPosition, param.FogRange);
 		float3 sampleLightPoint = sampleStart + L * intersections.y;
 
-		float scattering = exp(-distance(sampleLightPoint, sampleStart) * param.FogDensity);
+		float scattering = ComputeOpticalDepth(param, distance(sampleLightPoint, sampleStart));
 		scattering *= sampleOpticalDepth;
 		scattering *= scatteringDepth;
 

@@ -122,10 +122,10 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
+		"Volumetric*.pmx=hide;"
 		"sky*box*.* = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
 		"*Light*.pmx =./materials/Emissive/material_lighting.fx;"
-		"Volumetric*.* =hide;"
 		"*.pmd = ./materials/material_2.0.fx;"
 		"*.pmx = ./materials/material_2.0.fx;"
 		"*.x = hide;"
@@ -139,6 +139,10 @@ texture SSAOVisibility : OFFSCREENRENDERTARGET<
 	float ClearDepth = 1.0;
 	string DefaultEffect =
 		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller*.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"Volumetric*.pmx=hide;"
 		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
 sampler SSAOVisibilitySamp = sampler_state {
@@ -159,6 +163,7 @@ shared texture PSSM : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
+		"Volumetric*.pmx=hide;"
 		"sky*box*.* =shadow/PSSM_noalpha.fx;"
 		"DirectionalLight*.* =shadow/PSSM_noalpha.fx;"
 		"PointLight*.*=shadow/PSSM_noalpha.fx;"
