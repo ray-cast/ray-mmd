@@ -78,7 +78,11 @@ float ComputeOpticalDepth(FogParams param, float depth)
 float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
 {
 	float3 sampleStep = (end - start) / stepNum;
+#if VOLUMETRIC_FOG_SAMPLES_WITH_JITTER
 	float3 sampleStart = start + sampleStep * jitter;
+#else
+	float3 sampleStart = start + sampleStep;
+#endif
 
 	float sampleLength = length(sampleStep);
 	float sampleOpticalDepth = ComputeOpticalDepth(param, sampleLength);
@@ -122,7 +126,7 @@ void VolumetricCubeVS(
 	oTexcoord1 = Position.xyz - CameraPosition;
 }
 
-float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float4 viewdir : TEXCOORD1) : COLOR
 {
 	FogParams param;
 	param.FogPosition = FogPosition;
@@ -132,7 +136,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1)
 	param.FogMiePhase = FogMiePhase;
 	param.FogDensity = FogDensity;
 
-	float3 V = normalize(viewdir);
+	float3 V = normalize(viewdir).xyz;
 	float2 intersections = ComputeRayCubeIntersection(CameraPosition, V, param.FogPosition, step(0, V), param.FogRange);
 	clip(intersections.y);
 
@@ -151,7 +155,7 @@ technique MainTechBS0<string MMDPass = "object_ss"
 ;>{
 	pass DrawObject {
 		ZEnable = false; ZWriteEnable = false;
-		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = CW;
 		VertexShader = compile vs_3_0 VolumetricCubeVS();
