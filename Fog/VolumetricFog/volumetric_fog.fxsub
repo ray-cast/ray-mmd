@@ -25,8 +25,8 @@ float mDepthP : CONTROLOBJECT<string name="(self)"; string item="Depth+";>;
 float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
 
 static const float FogWidth = lerp(FogRangeParams.x, FogRangeParams.z, mWidthP);
-static const float FogHeight = lerp(FogRangeParams.x, FogRangeParams.z, mHeightP);
 static const float FogDepth = lerp(FogRangeParams.x, FogRangeParams.z, mDepthP);
+static const float FogHeight = lerp(FogHeightParams.x, FogHeightParams.z, mHeightP);
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
@@ -88,7 +88,7 @@ float ComputeOpticalDepth(FogParams param, float depth)
 	return exp(-depth * param.FogDensity);
 }
 
-float2 hash( in float2 x )
+float2 hash(float2 x, float time)
 {
     const float2 k = float2( 0.3183099, 0.3678794 );
     x = x*k + k.yx;
@@ -98,30 +98,25 @@ float2 hash( in float2 x )
     return float2( cos(a), sin(a) );
 }
 
-float3 noised(in float2 p)
+float displacementSimple(float2 p, float time, float freq = 0.1)
 {
-    float2 i = floor( p );
-    float2 f = frac( p );
+    float2 i = floor(p * freq);
+    float2 f = frac(p * freq);
 
     float2 u = f*f*f*(f*(f*6.0-15.0)+10.0);
     float2 du = 30.0*f*f*(f*(f-2.0)+1.0);
     
-    float2 ga = hash(i + float2(0.0,0.0));
-    float2 gb = hash(i + float2(1.0,0.0));
-    float2 gc = hash(i + float2(0.0,1.0));
-    float2 gd = hash(i + float2(1.0,1.0));
+    float2 ga = hash(i + float2(0.0,0.0), time);
+    float2 gb = hash(i + float2(1.0,0.0), time);
+    float2 gc = hash(i + float2(0.0,1.0), time);
+    float2 gd = hash(i + float2(1.0,1.0), time);
     
-    float va = dot( ga, f - float2(0.0,0.0) );
-    float vb = dot( gb, f - float2(1.0,0.0) );
-    float vc = dot( gc, f - float2(0.0,1.0) );
-    float vd = dot( gd, f - float2(1.0,1.0) );
+    float va = dot(ga, f - float2(0.0,0.0));
+    float vb = dot(gb, f - float2(1.0,0.0));
+    float vc = dot(gc, f - float2(0.0,1.0));
+    float vd = dot(gd, f - float2(1.0,1.0));
 
-    return float3( va + u.x*(vb-va) + u.y*(vc-va) + u.x*u.y*(va-vb-vc+vd), ga + u.x*(gb-ga) + u.y*(gc-ga) + u.x*u.y*(ga-gb-gc+gd) + du * (u.yx*(va-vb-vc+vd) + float2(vb,vc) - va));
-}
-
-float displacementSimple(float2 p, float time, float freq = 0.1)
-{
-    return noised(p * freq).x;
+    return va + u.x * (vb - va) + u.y * (vc - va) + u.x * u.y * (va - vb - vc + vd);
 }
 
 float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
@@ -181,6 +176,7 @@ void VolumetricCubeVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
+	Position.xyz = (Position.xyz - FogPosition) * float3(FogWidth, FogHeight, FogDepth) + FogPosition;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
@@ -195,7 +191,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1)
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
 	param.FogMiePhase = FogMiePhase;
-	param.FogDensity = FogDensity * (FogRangeParams.z * FogRangeParams.z * 3) / dot(param.FogRange, param.FogRange);
+	param.FogDensity = FogDensity * (FogRangeParams.z * FogRangeParams.z * 2) / dot(param.FogRange.xz, param.FogRange.xz);
 
 	float3 V = normalize(viewdir);
 	float2 intersections = ComputeRayCubeIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
