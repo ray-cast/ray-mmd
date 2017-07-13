@@ -155,7 +155,7 @@ technique MainTechBS0<string MMDPass = "object_ss"
 ;>{
 	pass DrawObject {
 		ZEnable = false; ZWriteEnable = false;
-		AlphaBlendEnable = FALSE; AlphaTestEnable = FALSE;
+		AlphaBlendEnable = true; AlphaTestEnable = false;
 		SrcBlend = ONE; DestBlend = ONE;
 		CullMode = CW;
 		VertexShader = compile vs_3_0 VolumetricCubeVS();
