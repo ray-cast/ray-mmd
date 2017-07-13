@@ -45,12 +45,12 @@ struct FogParams
 	float FogMiePhase;
 };
 
-float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size, float3 symbol)
+void ComputeCubeMinMax(float3 d, float3 q, float3 size, out float3 tmin, out float3 tmax)
 {
-	const float3 inv = 1.0 / (d + 1e-16);
 	const float3 aabb[2] = { q - size, q + size };
 
-	float3 tmin, tmax;
+	float3 symbol = step(0, d);
+
 	tmin.x = aabb[1-symbol[0]].x;
 	tmin.y = aabb[1-symbol[1]].y;
 	tmin.z = aabb[1-symbol[2]].z;
@@ -58,6 +58,11 @@ float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size, flo
 	tmax.x = aabb[symbol[0]].x;
 	tmax.y = aabb[symbol[1]].y;
 	tmax.z = aabb[symbol[2]].z;
+}
+
+float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size, float3 tmin, float3 tmax)
+{
+	const float3 inv = 1.0 / (d + 1e-16);
 
 	tmin = (tmin - p) * inv;
 	tmax = (tmax - p) * inv;
@@ -69,6 +74,13 @@ float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size, flo
 		return -1;
 
 	return float2(tmin.x, tmax.x);
+}
+
+float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size)
+{
+	float3 tmin, tmax;
+	ComputeCubeMinMax(d, q, size, tmin, tmax);
+	return ComputeRayCubeIntersection(p, d, q, size, tmin, tmax);
 }
 
 float ComputeOpticalDepth(FogParams param, float depth)
@@ -91,11 +103,12 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 	float scatteringMie = 0;
 	float scatteringDepth = 1;
 
-	float3 symbol = step(0, L);
+	float3 tmin, tmax;
+	ComputeCubeMinMax(L, param.FogPosition, param.FogRange, tmin, tmax);
 
 	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth *= sampleOpticalDepth)
 	{
-		float2 intersections = ComputeRayCubeIntersection(sampleStart, L, param.FogPosition, param.FogRange, symbol);
+		float2 intersections = ComputeRayCubeIntersection(sampleStart, L, param.FogPosition, param.FogRange, tmin, tmax);
 		float3 sampleLightPoint = sampleStart + L * intersections.y;
 
 		float scattering = exp(-distance(sampleLightPoint, sampleStart) * param.FogDensity);
@@ -138,7 +151,8 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float4 viewdir : TEXCOORD1)
 	param.FogDensity = FogDensity * (FogRangeParams.z * FogRangeParams.z * 3) / dot(param.FogRange, param.FogRange);
 
 	float3 V = normalize(viewdir).xyz;
-	float2 intersections = ComputeRayCubeIntersection(CameraPosition, V, param.FogPosition, param.FogRange, step(0, V));
+
+	float2 intersections = ComputeRayCubeIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
 	clip(intersections.y);
 
 	texcoord.xy /= texcoord.w;
