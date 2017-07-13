@@ -116,13 +116,13 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 		transmittance = transmittance * segment_t;
 		
 		scattering = scattering * segment_t;
-		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s * sampleLength;
+		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s;
 
 		lastOpticalDepth = opticalDepth;
 	}
 
-	insctrMie = scattering * setting.waveLambdaMie;
-	insctrRayleigh = scattering * setting.waveLambdaRayleigh;
+	insctrMie = scattering * setting.waveLambdaMie * sampleLength;
+	insctrRayleigh = scattering * setting.waveLambdaRayleigh * sampleLength;
 }
 
 bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, out float3 transmittance, out float3 insctrMie, out float3 insctrRayleigh)
