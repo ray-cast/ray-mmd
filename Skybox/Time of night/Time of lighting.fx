@@ -15,9 +15,9 @@ float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpe
 float mEnvSSSLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight+";>;
 float mEnvSSSLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSSSLight-";>;
 
-static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
-static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
-static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
+static float mEnvIntensitySSS  = lerp(lerp(1, PI_2, mEnvSSSLightP),  0, mEnvSSSLightM);
+static float mEnvIntensitySpec = lerp(lerp(1, PI_2, mEnvSpecLightP), 0, mEnvSpecLightM);
+static float mEnvIntensityDiff = lerp(lerp(1, PI_2, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 #define IBL_MIPMAP_LEVEL 7
 
