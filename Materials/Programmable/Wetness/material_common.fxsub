@@ -415,6 +415,7 @@ float3 EncodeNormal(float3 normal)
 
 float3 rgb2ycbcr(float3 col)
 {
+	col = sqrt(col);
 	float3 encode;
 	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
 	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb);
@@ -579,29 +580,26 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer3.w = 0;
 
 #if CUSTOM_ENABLE || EMISSIVE_ENABLE
-	if (material.lightModel == SHADINGMODELID_SKIN || 
-		material.lightModel == SHADINGMODELID_SUBSURFACE ||
-		material.lightModel == SHADINGMODELID_GLASS ||
-		material.lightModel == SHADINGMODELID_CLOTH)
+	if (material.lightModel == SHADINGMODELID_EMISSIVE)
+	{
+		material.emissive = rgb2ycbcr(min(0.998, material.emissive));
+		gbuffer.buffer3.yz = material.emissive.gb;
+		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
+	}
+	else
 	{
 #if CUSTOM_ENABLE != SHADINGMODELID_GLASS
 		material.customDataB *= (1 - material.metalness);
 #endif
-		material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
+		material.customDataB = rgb2ycbcr(min(0.998, material.customDataB));
 		gbuffer.buffer3.yz = material.customDataB.gb;
 		gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
-	}
-	else if (material.lightModel == SHADINGMODELID_EMISSIVE)
-	{
-		material.emissive = rgb2ycbcr(min(0.999, material.emissive));
-		gbuffer.buffer3.yz = material.emissive.gb;
-		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
 	}
 #endif
 
 	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
-	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);    
-	gbuffer.buffer4.y = floor(material.emissiveIntensity * 100.0) + saturate(material.visibility - 1e-5);
+	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);
+	gbuffer.buffer4.y = floor(material.emissiveIntensity * 100.0) + saturate(material.visibility - 1e-4);
 
 	return gbuffer;
 }
