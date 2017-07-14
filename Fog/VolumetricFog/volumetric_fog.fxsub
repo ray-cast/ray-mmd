@@ -18,6 +18,8 @@ float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item="MiePhase+";>
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item="MiePhase-";>;
 float mMieDensityP : CONTROLOBJECT<string name="(self)"; string item="Density+";>;
 float mMieDensityM : CONTROLOBJECT<string name="(self)"; string item="Density-";>;
+float mFrequencyP : CONTROLOBJECT<string name="(self)"; string item="Frequency+";>;
+float mFrequencyM : CONTROLOBJECT<string name="(self)"; string item="Frequency-";>;
 float mWidthP : CONTROLOBJECT<string name="(self)"; string item="Width+";>;
 float mHeightP : CONTROLOBJECT<string name="(self)"; string item="Height+";>;
 float mDepthP : CONTROLOBJECT<string name="(self)"; string item="Depth+";>;
@@ -27,6 +29,7 @@ float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";
 static const float FogWidth = lerp(FogRangeParams.x, FogRangeParams.z, mWidthP);
 static const float FogDepth = lerp(FogRangeParams.x, FogRangeParams.z, mDepthP);
 static const float FogHeight = lerp(FogHeightParams.x, FogHeightParams.z, mHeightP);
+static const float FogFrequency = lerp(lerp(FogFreqParams.x, FogFreqParams.z, mFrequencyP), FogFreqParams.y, mFrequencyM);
 static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
 static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.z, mMieDensityP), FogDensityParams.y, mMieDensityM);
 static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mIntensityP), FogIntensityParams.y, mIntensityM);
@@ -43,6 +46,7 @@ struct FogParams
 	float FogDensity;
 	float FogIntensity;
 	float FogMiePhase;
+	float FogFrequency;
 };
 
 void ComputeCubeMinMax(float3 d, float3 q, float3 size, out float3 tmin, out float3 tmax)
@@ -98,7 +102,7 @@ float2 hash(float2 x, float time)
     return float2( cos(a), sin(a) );
 }
 
-float displacementSimple(float2 p, float time, float freq = 0.1)
+float displacementSimple(float2 p, float time, float freq = 0.05)
 {
     float2 i = floor(p * freq);
     float2 f = frac(p * freq);
@@ -140,14 +144,14 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 
 	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth *= sampleOpticalDepth)
 	{
-		float height = displacementSimple(sampleStart.xz, time) * param.FogRange.y + param.FogPosition.y;
+		float height = displacementSimple(sampleStart.xz, time, param.FogFrequency) * param.FogRange.y + param.FogPosition.y;
 		if (height > sampleStart.y)
 		{
 			float2 intersections = ComputeRayCubeIntersection(sampleStart, L, param.FogPosition, param.FogRange, tmin, tmax);
 			float3 sampleLightPoint = sampleStart + L * intersections.y;
 
 #if VOLUMETRIC_FOG_HEIGHT_ADJUST
-			sampleLightPoint.y = displacementSimple(sampleLightPoint.xz, time) * param.FogRange.y + param.FogPosition.y;
+			sampleLightPoint.y = displacementSimple(sampleLightPoint.xz, time, param.FogFrequency) * param.FogRange.y + param.FogPosition.y;
 #endif
 
 			float scattering = ComputeOpticalDepth(param, distance(sampleLightPoint, sampleStart));
@@ -189,6 +193,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0) : COLOR
 	param.FogIntensity = FogIntensity;
 	param.FogColor = FogColor;
 	param.FogMiePhase = FogMiePhase;
+	param.FogFrequency = FogFrequency;
 	param.FogDensity = FogDensity * (FogRangeParams.z * FogRangeParams.z * 2) / dot(param.FogRange.xz, param.FogRange.xz);
 
 	texcoord.xy /= texcoord.w;

@@ -1454,7 +1454,7 @@ void MaterialVS(
 	oTexcoord2 = Texcoord2;
 #endif
 	oPosition = mul(Position, matWorldViewProject);
-	oWorldPos = float4(mul(Position, matWorld).xyz, oPosition.w);
+	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
 GbufferParam MaterialPS(
