@@ -1,5 +1,5 @@
 // Sky Scattering By Ray-MMD
-// Copyright (C) 2017-2018 Ray-MMD Developers. All rights reserved.
+// Copyright (C) 2017-2018 Rui. All rights reserved.
 // https://github.com/ray-cast/ray-mmd
 //
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
