@@ -160,7 +160,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 		}
 	}
 
-	float3 scattering = param.FogColor * SunColor * scatteringMie;
+	float3 scattering = param.FogColor * scatteringMie;
 	scattering *= param.FogIntensity;
 #if VOLUMETRIC_FOG_ANISOTROPY
 	scattering *= ComputePhaseMieHG(dot(V, L), param.FogMiePhase);
@@ -172,18 +172,16 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 void VolumetricCubeVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = (Position.xyz - FogPosition) * float3(FogWidth, FogHeight, FogDepth) + FogPosition;
-	oTexcoord0 = oPosition = mul(Position, matViewProject);
-	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
-	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = Position.xyz - CameraPosition;
+	oTexcoord = oPosition = mul(Position, matViewProject);
+	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
+	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
 }
 
-float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
+float4 VolumetricCubePS(float4 texcoord : TEXCOORD0) : COLOR
 {
 	FogParams param;
 	param.FogPosition = FogPosition;
@@ -193,11 +191,12 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1)
 	param.FogMiePhase = FogMiePhase;
 	param.FogDensity = FogDensity * (FogRangeParams.z * FogRangeParams.z * 2) / dot(param.FogRange.xz, param.FogRange.xz);
 
-	float3 V = normalize(viewdir);
+	texcoord.xy /= texcoord.w;
+
+	float3 V = mul(float4(CoordToPos(texcoord), 1, 1), matViewProjectInverse);
+
 	float2 intersections = ComputeRayCubeIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
 	clip(intersections.y);
-
-	texcoord.xy /= texcoord.w;
 
 	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy, 0, 0)).r;
 	clip(linearDepth - intersections.x);
