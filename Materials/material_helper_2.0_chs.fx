@@ -5,6 +5,7 @@
 // 提示1: ALBEDO是描述物体在消除了非金属材质的镜面反射后的基本颜色，在UE4或者其它引擎中同样也被称为底色或者固有色
 // 提示2: HDR图片是工作在高动态的线性色彩空间中，所以不要将一个HDR文件用作ALBEDO，否则会丢失数据产生一些问题
 // 提示3: 一些图片(bmp, png, jpg, tga, dds, gif, apng)可能不是工作在sRGB的色域中的会产生一些问题，不过大部分图片都是工作在sRGB
+// 提示4：GIF和APNG是占用CPU的开销
 // 设置 0 到 ALBEDO_MAP_FROM 时 : 可以设置一个RGB的颜色到下方的“const float3 albedo = 1.0”来设置模型的颜色
 // 设置 1 到 ALBEDO_MAP_FROM 时 : 模型的基本颜色将使用来至ALBEDO_MAP_FILE的相对或者绝对的(bmp, png, jpg, tga, dds, gif, apng)图片路径
 // 设置 2 到 ALBEDO_MAP_FROM 时 : 模型的基本颜色将使用来至ALBEDO_MAP_FILE的相对或者绝对的GIF/APNG的路径

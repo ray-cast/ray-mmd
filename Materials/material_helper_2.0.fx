@@ -7,6 +7,7 @@
 // Tips 2 : Do not enter a path with HDR file, that will be ignore the HDR and linear color-space
 // Tips 3 : These files (bmp, png, jpg, tga, dds, gif, apng) must be working in a sRGB color-space
 // Tips 4 : You can ignore the Tips 3 because most of the images are working in this color-gamut
+// Tips 5 : The gif/apng is using a lot of of CPU times
 // 0 : Params fetch from a color from the "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
