@@ -299,7 +299,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	for (int r = 1; r < SSDO_BLUR_RADIUS; ++r)
 	{
 		float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
-		float2 weight = exp2(-r * r * falloff - pow2((depth - float2(center_d, center_d)) * sharpness));
+		float2 weight = exp2(-r * r * falloff - pow2((depth - center_d) * sharpness));
 
 		weight.x *= saturate(dot(GetNormal(offset1), normal));
 		weight.y *= saturate(dot(GetNormal(offset2), normal));
