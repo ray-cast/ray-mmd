@@ -243,15 +243,14 @@ float4 ScreenSpaceDirOccPassPS(
 	in float4 SSDOParams2 : TEXCOORD2) : COLOR
 {
 	float linearDepth = linearizeDepth(coord.xy);
-	float linearDepth2 = abs(linearDepth);
 
 	float3 viewNormal = GetNormal(coord.xy);
-	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth2);
+	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth);
 
 	float sampleJitter = GetJitterOffset(coord.zw) * PI_2;
 	float sampleBias = 0;
-	sampleBias += mSSDOBiasFar * linearDepth2;
-	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth2 / mSSDOBiasFalloffNear));
+	sampleBias += mSSDOBiasFar * linearDepth;
+	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth / mSSDOBiasFalloffNear));
 
 	float maxRadius = 1.0;
 	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
