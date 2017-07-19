@@ -170,7 +170,7 @@ float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength =
 
 float GetJitterOffset(float2 uv)
 {
-	return dot(frac(uv * 0.25), float2(0.25, 0.25));
+	return dot(frac(uv * 0.25), float2(1.0, 0.25));
 }
 
 float PseudoRandom(float2 xy)
