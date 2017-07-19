@@ -82,7 +82,7 @@ float4 ScreenSpaceDirOccLowPS(
 	{
 		float2 angle;
 		sincos(i * 7.0 * PI_2 / SSDO_LOW_SAMPLER_COUNT + SSDOJitter, angle.x, angle.y);
-		sampleRotate[i - 1] = angle * sampleRadius * i;
+		sampleRotate[i - 1] = angle * sampleRadius * i * 0.5;
 	}
 
 	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
@@ -167,10 +167,10 @@ float4 ScreenSpaceDirOccMediumPS(
 	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(SSDOKernel[i + 0].xy, sampleRotMat) * sampleRadius;
-		sampleRotate[i + 1] = mul(SSDOKernel[i + 1].xy, sampleRotMat) * sampleRadius;
-		sampleRotate[i + 2] = mul(SSDOKernel[i + 2].xy, sampleRotMat) * sampleRadius;
-		sampleRotate[i + 3] = mul(SSDOKernel[i + 3].xy, sampleRotMat) * sampleRadius;
+		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius;
+		sampleRotate[i + 1] = mul(SSDOKernel[i + 1], sampleRotMat) * sampleRadius;
+		sampleRotate[i + 2] = mul(SSDOKernel[i + 2], sampleRotMat) * sampleRadius;
+		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius;
 	}
 
 	[unroll]
