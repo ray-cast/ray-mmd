@@ -63,7 +63,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define SHADINGMODELID_DEFAULT    0
 #define SHADINGMODELID_SKIN       1
 #define SHADINGMODELID_EMISSIVE   2
-#define SHADINGMODELID_TOON       3
+#define SHADINGMODELID_RESERVED   3
 #define SHADINGMODELID_GLASS      4
 #define SHADINGMODELID_CLOTH      5
 #define SHADINGMODELID_CLEAR_COAT 6

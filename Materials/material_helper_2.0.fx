@@ -240,9 +240,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
-
-// If you always using this material to your skin, the SSSS must be disabled
-// 3 : Toon (Only Testing)// customA = segment,    customB = shadow color
+// 3 : Reserved
 
 // In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
