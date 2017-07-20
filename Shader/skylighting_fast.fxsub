@@ -82,7 +82,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse) * (1 + fresnel);
+		float3 sss = EnvironmentSpecularUnreal4(worldNormal, worldView, 1 - finalSmoothness);
+		diffuse = lerp(diffuse, ImageBasedLightSubsurface(material, N, prefilteredDiffuse), sss);
 	}
 
 	specular *= mEnvIntensitySpec;

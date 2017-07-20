@@ -181,7 +181,7 @@ float4 SpecularBRDF_ClearCoat(float nh, float nl, float vh, float nv, float roug
 float3 ClothShading(MaterialParam material, float nh, float nl, float vh, float nv, float roughness, float normalizeFactor)
 {
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
-	float3 spec2 = SpecularBRDF_InvGGX(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
+	float3 spec2 = SpecularBRDF_Velvet(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
 	float3 spec = lerp(spec1, spec2, material.customDataA);
 	return spec;
 }
