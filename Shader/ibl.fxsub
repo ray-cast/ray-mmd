@@ -13,9 +13,12 @@ float3 FresnelSchlickGlass(float3 N, float3 V, float smoothness, float3 specular
 	return lerp(specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * smoothness));
 }
 
-float3 FresnelSchlickSkin(float3 N, float3 V, float smoothness, float3 specular)
+float3 FresnelSchlickSkin(float3 N, float3 V, float smoothness)
 {
-	return lerp(specular, 1.0, pow5(1 - saturate(dot(N, V))) / (5 - 4 * smoothness));
+	const float2 c0 = float2(-1, -0.0275);
+	const float2 c1 = float2(1, 0.0425);
+	float2 r = smoothness * c0 + c1;
+	return min(r.x * r.x, exp2(-5.28 * abs(dot(N, V)))) * r.x + r.y;
 }
 
 float FresnelSchlickClearCoat(float3 N, float3 V, float smoothness, float specular)
