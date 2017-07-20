@@ -111,7 +111,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	}
 
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
-	specular *= step(0, dot(material.specular, 1) - 1e-5);
 }
 
 void GenSpecularMapVS(

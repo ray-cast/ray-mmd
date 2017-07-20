@@ -125,7 +125,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	}
 
 	specular *= mEnvIntensitySpec;
-	specular *= step(0, sum(material.specular) - 1e-5);
 }
 
 #if AA_GBUFFER_FILTER_QUALITY

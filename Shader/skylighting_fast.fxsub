@@ -76,7 +76,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 prefilteredSpeculr = DecodeHDR(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)));
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
-	specular = prefilteredSpeculr * fresnel;
+	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
 
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
@@ -85,9 +85,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 		float3 sss = FresnelSchlickSkin(worldNormal, worldView, finalSmoothness);
 		diffuse = lerp(diffuse, ImageBasedLightSubsurface(material, N, prefilteredDiffuse), sss);
 	}
-
-	specular *= mEnvIntensitySpec;
-	specular *= step(0, sum(material.specular) - 1e-5);
 }
 
 void EnvLightingVS(
