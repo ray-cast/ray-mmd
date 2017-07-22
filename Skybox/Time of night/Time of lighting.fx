@@ -106,7 +106,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
-		float3 sss = FresnelSchlickSkin(worldNormal, worldView, material.smoothness);
+		float sss = FresnelSchlickSkin(worldNormal, worldView, material.smoothness);
 		diffuse = lerp(diffuse, ImageBasedLightSubsurface(material, N, prefilteredDiffuse), sss);
 	}
 
