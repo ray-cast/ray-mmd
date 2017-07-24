@@ -160,7 +160,7 @@ sampler BloomSamp5thTemp = sampler_state {
 
 float3 srgb2linear(float3 rgb)
 {
-	return pow(rgb, 2.2);
+	return pow(max(rgb, 1e-5), 2.2);
 }
 
 float4 srgb2linear(float4 c)
@@ -170,7 +170,8 @@ float4 srgb2linear(float4 c)
 
 float3 linear2srgb(float3 srgb)
 {
-	return pow(srgb, 1.0 / 2.2);
+	srgb = max(6.10352e-5, srgb);
+	return min(srgb * 12.92, pow(max(srgb, 0.00313067), 1.0/2.4) * 1.055 - 0.055);
 }
 
 float4 linear2srgb(float4 c)
