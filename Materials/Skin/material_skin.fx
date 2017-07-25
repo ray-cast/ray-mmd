@@ -122,7 +122,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_FILE "custom.png"
 #define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 customB = SSS_SKIN_TRANSMITTANCE(0.8);
+const float3 customB = SSS_SKIN_TRANSMITTANCE(0.9);
 const float customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"

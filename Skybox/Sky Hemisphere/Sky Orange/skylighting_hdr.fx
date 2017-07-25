@@ -72,7 +72,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 {
 	float3 dependentSplit = 0.5;
 	float3 scattering = prefilteredDiffuse + SampleSky(-N, 0);
-	scattering *= material.customDataB * material.customDataA * dependentSplit;
+	scattering *= material.customDataB * dependentSplit;
 	return scattering * mEnvIntensitySSS;
 }
 
@@ -91,17 +91,15 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
-	specular = prefilteredSpeculr * fresnel;
+	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
 
 	if (material.lightModel == SHADINGMODELID_SKIN || 
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse) * (1 + fresnel);
+		float sss = FresnelSchlickSkin(worldNormal, worldView, finalSmoothness) * material.customDataA;
+		diffuse = lerp(diffuse, ImageBasedLightSubsurface(material, N, prefilteredDiffuse), sss);
 	}
-
-	specular *= mEnvIntensitySpec;
-	specular *= step(0, dot(material.specular, 1) - 1e-5);
 }
 
 void EnvLightingVS(

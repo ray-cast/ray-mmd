@@ -26,29 +26,29 @@ sampler ColorGradingLUTSamp = sampler_state {
 };
 
 #if USE_CUTSOM_PARAMS
-static const float3 mColorContrastAll   = colorContrastAll;
-static const float3 mColorSaturationAll = colorSaturationAll;
-static const float3 mColorGammaAll      = colorGammaAll;
-static const float3 mColorGainAll       = colorGainAll;
-static const float3 mColorOffsetAll     = colorOffsetAll;
+static const float3 mColorContrastAll   = pow(colorContrastAll, 2);
+static const float3 mColorSaturationAll = pow(colorSaturationAll, 2);
+static const float3 mColorGammaAll      = pow(colorGammaAll, 2);
+static const float3 mColorGainAll       = pow(colorGainAll, 2);
+static const float3 mColorOffsetAll     = pow(colorOffsetAll, 2);
 
-static const float3 mColorContrastLow   = colorContrastLow;
-static const float3 mColorSaturationLow = colorSaturationLow;
-static const float3 mColorGammaLow      = colorGammaLow;
-static const float3 mColorGainLow       = colorGainLow;
-static const float3 mColorOffsetLow     = colorOffsetLow;
+static const float3 mColorContrastLow   = pow(colorContrastLow, 2);
+static const float3 mColorSaturationLow = pow(colorSaturationLow, 2);
+static const float3 mColorGammaLow      = pow(colorGammaLow, 2);
+static const float3 mColorGainLow       = pow(colorGainLow, 2);
+static const float3 mColorOffsetLow     = pow(colorOffsetLow, 2);
 
-static const float3 mColorContrastMid   = colorContrastMid;
-static const float3 mColorSaturationMid = colorSaturationMid;
-static const float3 mColorGammaMid      = colorGammaMid;
-static const float3 mColorGainMid       = colorGainMid;
-static const float3 mColorOffsetMid     = colorOffsetMid;
+static const float3 mColorContrastMid   = pow(colorContrastMid, 2);
+static const float3 mColorSaturationMid = pow(colorSaturationMid, 2);
+static const float3 mColorGammaMid      = pow(colorGammaMid, 2);
+static const float3 mColorGainMid       = pow(colorGainMid, 2);
+static const float3 mColorOffsetMid     = pow(colorOffsetMid, 2);
 
-static const float3 mColorContrastHigh   = colorContrastHigh;
-static const float3 mColorSaturationHigh = colorSaturationHigh;
-static const float3 mColorGammaHigh      = colorGammaHigh;
-static const float3 mColorGainHigh       = colorGainHigh;
-static const float3 mColorOffsetHigh     = colorOffsetHigh;
+static const float3 mColorContrastHigh   = pow(colorContrastHigh, 2);
+static const float3 mColorSaturationHigh = pow(colorSaturationHigh, 2);
+static const float3 mColorGammaHigh      = pow(colorGammaHigh, 2);
+static const float3 mColorGainHigh       = pow(colorGainHigh, 2);
+static const float3 mColorOffsetHigh     = pow(colorOffsetHigh, 2);
 
 static const float mColorCorrectionLowThreshold  = colorCorrectionLowThreshold;
 static const float mColorCorrectionHighThreshold = colorCorrectionHighThreshold;
@@ -190,53 +190,53 @@ float mWeightHighM : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx";
 
 float mVisualizationLUT : CONTROLOBJECT<string name="ColorGradingControllerPlus.pmx"; string item = "VisualizationLUT";>;
 
-static float3 mColorContrastAllP = float3(mContrastAllRP, mContrastAllGP, mContrastAllBP);
-static float3 mColorSaturationAllP = float3(mSaturationAllRP, mSaturationAllGP, mSaturationAllBP);
-static float3 mColorGammaAllP = float3(mGammaAllRP, mGammaAllGP, mGammaAllBP);
-static float3 mColorGainAllP = float3(mColorAllRP, mColorAllGP, mColorAllBP);
-static float3 mColorOffsetAllP = float3(mColorOffsetAllRP, mColorOffsetAllGP, mColorOffsetAllBP);
+static float3 mColorContrastAllP = pow(float3(mContrastAllRP, mContrastAllGP, mContrastAllBP), 2);
+static float3 mColorSaturationAllP = pow(float3(mSaturationAllRP, mSaturationAllGP, mSaturationAllBP), 2);
+static float3 mColorGammaAllP = pow(float3(mGammaAllRP, mGammaAllGP, mGammaAllBP), 2);
+static float3 mColorGainAllP = pow(float3(mColorAllRP, mColorAllGP, mColorAllBP), 2);
+static float3 mColorOffsetAllP = pow(float3(mColorOffsetAllRP, mColorOffsetAllGP, mColorOffsetAllBP), 2);
 
-static float3 mColorContrastLowP = float3(mContrastLowRP, mContrastLowGP, mContrastLowBP);
-static float3 mColorSaturationLowP = float3(mSaturationLowRP, mSaturationLowGP, mSaturationLowBP);
-static float3 mColorGammaLowP = float3(mGammaLowRP, mGammaLowGP, mGammaLowBP);
-static float3 mColorGainLowP = float3(mColorLowRP, mColorLowGP, mColorLowBP);
-static float3 mColorOffsetLowP = float3(mColorOffsetLowRP, mColorOffsetLowGP, mColorOffsetLowBP);
+static float3 mColorContrastLowP = pow(float3(mContrastLowRP, mContrastLowGP, mContrastLowBP), 2);
+static float3 mColorSaturationLowP = pow(float3(mSaturationLowRP, mSaturationLowGP, mSaturationLowBP), 2);
+static float3 mColorGammaLowP = pow(float3(mGammaLowRP, mGammaLowGP, mGammaLowBP), 2);
+static float3 mColorGainLowP = pow(float3(mColorLowRP, mColorLowGP, mColorLowBP), 2);
+static float3 mColorOffsetLowP = pow(float3(mColorOffsetLowRP, mColorOffsetLowGP, mColorOffsetLowBP), 2);
 
-static float3 mColorContrastMidP = float3(mContrastMidRP, mContrastMidGP, mContrastMidBP);
-static float3 mColorSaturationMidP = float3(mSaturationMidRP, mSaturationMidGP, mSaturationMidBP);
-static float3 mColorGammaMidP = float3(mGammaMidRP, mGammaMidGP, mGammaMidBP);
-static float3 mColorGainMidP = float3(mColorMidRP, mColorMidGP, mColorMidBP);
-static float3 mColorOffsetMidP = float3(mColorOffsetMidRP, mColorOffsetMidGP, mColorOffsetMidBP);
+static float3 mColorContrastMidP = pow(float3(mContrastMidRP, mContrastMidGP, mContrastMidBP), 2);
+static float3 mColorSaturationMidP = pow(float3(mSaturationMidRP, mSaturationMidGP, mSaturationMidBP), 2);
+static float3 mColorGammaMidP = pow(float3(mGammaMidRP, mGammaMidGP, mGammaMidBP), 2);
+static float3 mColorGainMidP = pow(float3(mColorMidRP, mColorMidGP, mColorMidBP), 2);
+static float3 mColorOffsetMidP = pow(float3(mColorOffsetMidRP, mColorOffsetMidGP, mColorOffsetMidBP), 2);
 
-static float3 mColorContrastHighP = float3(mContrastHighRP, mContrastHighGP, mContrastHighBP);
-static float3 mColorSaturationHighP = float3(mSaturationHighRP, mSaturationHighGP, mSaturationHighBP);
-static float3 mColorGammaHighP = float3(mGammaHighRP, mGammaHighGP, mGammaHighBP);
-static float3 mColorGainHighP = float3(mColorHighRP, mColorHighGP, mColorHighBP);
-static float3 mColorOffsetHighP = float3(mColorOffsetHighRP, mColorOffsetHighGP, mColorOffsetHighBP);
+static float3 mColorContrastHighP = pow(float3(mContrastHighRP, mContrastHighGP, mContrastHighBP), 2);
+static float3 mColorSaturationHighP = pow(float3(mSaturationHighRP, mSaturationHighGP, mSaturationHighBP), 2);
+static float3 mColorGammaHighP = pow(float3(mGammaHighRP, mGammaHighGP, mGammaHighBP), 2);
+static float3 mColorGainHighP = pow(float3(mColorHighRP, mColorHighGP, mColorHighBP), 2);
+static float3 mColorOffsetHighP = pow(float3(mColorOffsetHighRP, mColorOffsetHighGP, mColorOffsetHighBP), 2);
 
-static float3 mColorContrastAllM = float3(mContrastAllRM, mContrastAllGM, mContrastAllBM);
-static float3 mColorSaturationAllM = float3(mSaturationAllRM, mSaturationAllGM, mSaturationAllBM);
-static float3 mColorGammaAllM = float3(mGammaAllRM, mGammaAllGM, mGammaAllBM);
-static float3 mColorGainAllM = float3(mColorAllRM, mColorAllGM, mColorAllBM);
-static float3 mColorOffsetAllM = float3(mColorOffsetAllRM, mColorOffsetAllGM, mColorOffsetAllBM);
+static float3 mColorContrastAllM = pow(float3(mContrastAllRM, mContrastAllGM, mContrastAllBM), 2);
+static float3 mColorSaturationAllM = pow(float3(mSaturationAllRM, mSaturationAllGM, mSaturationAllBM), 2);
+static float3 mColorGammaAllM = pow(float3(mGammaAllRM, mGammaAllGM, mGammaAllBM), 2);
+static float3 mColorGainAllM = pow(float3(mColorAllRM, mColorAllGM, mColorAllBM), 2);
+static float3 mColorOffsetAllM = pow(float3(mColorOffsetAllRM, mColorOffsetAllGM, mColorOffsetAllBM), 2);
 
-static float3 mColorContrastLowM = float3(mContrastLowRM, mContrastLowGM, mContrastLowBM);
-static float3 mColorSaturationLowM = float3(mSaturationLowRM, mSaturationLowGM, mSaturationLowBM);
-static float3 mColorGammaLowM = float3(mGammaLowRM, mGammaLowGM, mGammaLowBM);
-static float3 mColorGainLowM = float3(mColorLowRM, mColorLowGM, mColorLowBM);
-static float3 mColorOffsetLowM = float3(mColorOffsetLowRM, mColorOffsetLowGM, mColorOffsetLowBM);
+static float3 mColorContrastLowM = pow(float3(mContrastLowRM, mContrastLowGM, mContrastLowBM), 2);
+static float3 mColorSaturationLowM = pow(float3(mSaturationLowRM, mSaturationLowGM, mSaturationLowBM), 2);
+static float3 mColorGammaLowM = pow(float3(mGammaLowRM, mGammaLowGM, mGammaLowBM), 2);
+static float3 mColorGainLowM = pow(float3(mColorLowRM, mColorLowGM, mColorLowBM), 2);
+static float3 mColorOffsetLowM = pow(float3(mColorOffsetLowRM, mColorOffsetLowGM, mColorOffsetLowBM), 2);
 
-static float3 mColorContrastMidM = float3(mContrastMidRM, mContrastMidGM, mContrastMidBM);
-static float3 mColorSaturationMidM = float3(mSaturationMidRM, mSaturationMidGM, mSaturationMidBM);
-static float3 mColorGammaMidM = float3(mGammaMidRM, mGammaMidGM, mGammaMidBM);
-static float3 mColorGainMidM = float3(mColorMidRM, mColorMidGM, mColorMidBM);
-static float3 mColorOffsetMidM = float3(mColorOffsetMidRM, mColorOffsetMidGM, mColorOffsetMidBM);
+static float3 mColorContrastMidM = pow(float3(mContrastMidRM, mContrastMidGM, mContrastMidBM), 2);
+static float3 mColorSaturationMidM = pow(float3(mSaturationMidRM, mSaturationMidGM, mSaturationMidBM), 2);
+static float3 mColorGammaMidM = pow(float3(mGammaMidRM, mGammaMidGM, mGammaMidBM), 2);
+static float3 mColorGainMidM = pow(float3(mColorMidRM, mColorMidGM, mColorMidBM), 2);
+static float3 mColorOffsetMidM = pow(float3(mColorOffsetMidRM, mColorOffsetMidGM, mColorOffsetMidBM), 2);
 
-static float3 mColorContrastHighM = float3(mContrastHighRM, mContrastHighGM, mContrastHighBM);
-static float3 mColorSaturationHighM = float3(mSaturationHighRM, mSaturationHighGM, mSaturationHighBM);
-static float3 mColorGammaHighM = float3(mGammaHighRM, mGammaHighGM, mGammaHighBM);
-static float3 mColorGainHighM = float3(mColorHighRM, mColorHighGM, mColorHighBM);
-static float3 mColorOffsetHighM = float3(mColorOffsetHighRM, mColorOffsetHighGM, mColorOffsetHighBM);
+static float3 mColorContrastHighM = pow(float3(mContrastHighRM, mContrastHighGM, mContrastHighBM), 2);
+static float3 mColorSaturationHighM = pow(float3(mSaturationHighRM, mSaturationHighGM, mSaturationHighBM), 2);
+static float3 mColorGammaHighM = pow(float3(mGammaHighRM, mGammaHighGM, mGammaHighBM), 2);
+static float3 mColorGainHighM = pow(float3(mColorHighRM, mColorHighGM, mColorHighBM), 2);
+static float3 mColorOffsetHighM = pow(float3(mColorOffsetHighRM, mColorOffsetHighGM, mColorOffsetHighBM), 2);
 
 static float3 mColorContrastAll   = lerp(lerp(1.0, 3.0, mColorContrastAllP), 0, mColorContrastAllM);
 static float3 mColorSaturationAll = lerp(lerp(1.0, 3.0, mColorSaturationAllP), 0, mColorSaturationAllM);

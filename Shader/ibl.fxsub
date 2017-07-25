@@ -18,7 +18,7 @@ float FresnelSchlickSkin(float3 N, float3 V, float smoothness)
 	const float2 c0 = float2(-1, -0.0275);
 	const float2 c1 = float2(1, 0.0425);
 	float2 r = smoothness * c0 + c1;
-	return min(r.x * r.x, exp2(-5.28 * abs(dot(N, V)))) * r.x + r.y;
+	return min(r.x * r.x, exp2(-4.28 * abs(dot(N, V)))) * r.x + r.y;
 }
 
 float FresnelSchlickClearCoat(float3 N, float3 V, float smoothness, float specular)

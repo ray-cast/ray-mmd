@@ -60,8 +60,8 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 {
 	float3 dependentSplit = 0.5;
 	float3 scattering = prefilteredDiffuse + DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
-	scattering *= material.customDataB * dependentSplit * mEnvIntensitySSS;
-	return scattering;
+	scattering *= material.customDataB * dependentSplit;
+	return scattering * mEnvIntensitySSS;
 }
 
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
@@ -106,7 +106,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 			 material.lightModel == SHADINGMODELID_SUBSURFACE ||
 			 material.lightModel == SHADINGMODELID_GLASS)
 	{
-		float sss = FresnelSchlickSkin(worldNormal, worldView, material.smoothness);
+		float sss = FresnelSchlickSkin(worldNormal, worldView, material.smoothness) * material.customDataA;
 		diffuse = lerp(diffuse, ImageBasedLightSubsurface(material, N, prefilteredDiffuse), sss);
 	}
 
