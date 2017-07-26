@@ -41,7 +41,7 @@ const float normalMapLoopNum = 1.0;
 const float normalSubMapScale = 1.5;
 const float normalSubMapLoopNum = 25.0;
 
-#define SMOOTHNESS_MAP_FROM 0
+#define SMOOTHNESS_MAP_FROM 9
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
@@ -67,7 +67,7 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;
+const float3 specular = 0.35;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
@@ -106,7 +106,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_ENABLE 1
 
 #define CUSTOM_A_MAP_FROM 1
-#define CUSTOM_A_MAP_UV_FLIP 1
+#define CUSTOM_A_MAP_UV_FLIP 2
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0
 #define CUSTOM_A_MAP_APPLY_SCALE 1
@@ -116,7 +116,7 @@ const float customA = 1.2;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 1
-#define CUSTOM_B_MAP_UV_FLIP 1
+#define CUSTOM_B_MAP_UV_FLIP 2
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_SCALE 1
 #define CUSTOM_B_MAP_FILE "textures/thickness_face.png"

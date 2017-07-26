@@ -106,7 +106,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_ENABLE 1
 
 #define CUSTOM_A_MAP_FROM 1
-#define CUSTOM_A_MAP_UV_FLIP 1
+#define CUSTOM_A_MAP_UV_FLIP 2
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0
 #define CUSTOM_A_MAP_APPLY_SCALE 0
@@ -116,7 +116,7 @@ const float customA = 0.6;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 1
-#define CUSTOM_B_MAP_UV_FLIP 1
+#define CUSTOM_B_MAP_UV_FLIP 2
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_SCALE 1
 #define CUSTOM_B_MAP_FILE "textures/thickness_body.png"

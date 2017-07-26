@@ -1398,8 +1398,6 @@ float3 GetCustomDataB(float2 coord)
 			customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
 		#endif
 
-		customData = srgb2linear(customData);
-
 		#if CUSTOM_B_MAP_COLOR_FLIP
 			customData = 1 - customData;
 		#endif
@@ -1411,7 +1409,7 @@ float3 GetCustomDataB(float2 coord)
 		#endif
 	#endif
 
-	return saturate(customData);
+	return saturate(srgb2linear(customData));
 #else
 	return 0.0;
 #endif
