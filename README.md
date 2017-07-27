@@ -66,7 +66,7 @@ Resources
 Tutroial:
 ------------
 * Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
-* Chinese Videos - by TerayTech \[[link](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\].
+* Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
 
 Features :
 ------------
