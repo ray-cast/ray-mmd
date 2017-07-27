@@ -101,13 +101,6 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 	float3 color = DecodeHDR(tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0)));
 #endif
 
-#if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
-	if (ExistRay)
-	{
-		color *= lerp(1, tex2Dlod(ShadowmapSamp, float4(screenPosition.xy / ViewportSize + ViewportOffset, 0, 0)).r, 0.5);
-	}
-#endif
-
 	color.rgb = ApplyColorBalance(color.rgb);
 
 #if SKYBOX_HDR_ENABLE
