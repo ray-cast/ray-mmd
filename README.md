@@ -19,13 +19,13 @@ Download :
 - Latest changes - Major allocator changes:
 	- Notice1 : Overwrite the old material_common_2.0.fxsub to fix a bug
 	- Notice2 : You need to rewrite the Sky Hemisphere to fix a bug
-	- Added MatCap/Sphere map supports (see main.fx)
+	- Added MatCap/Sphere map supports (see main_ex_with_sphmap.fx)
 	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
-	- Improved Bloom, that allows a larger range for bloom [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
+	- Improved Bloom, that allows a larger range for bloom, and color modified [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
 	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
     - Removed SphereFog, but you can put a light source in MMD and assign a fx from its 'fog.fx' to the FogMap tab
 	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
-    - Occlusion maps can be fetched from the second UV set ~~,In order to use static lightmap/sky visibility in the future work, that lightmass must compute a set of unwrapped UV coordinates for the model and export it to additional UV set~~
+    - Occlusion maps can be fetched from the second UV set, download [blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools) for addUV import/export. ~~,In order to use static lightmap/sky visibility in the future work, that lightmass must compute a set of unwrapped UV coordinates for the model and export it to additional UV set~~
     - Support the God ray calculated from the AtmosphericFog and Time of day
     - Support the Volumetric fog calculated from volumetric (cube, sphere), they can be used to simulate the deep sea, because fog and water are the same as mie scattering [(preview)](https://github.com/ray-cast/images/raw/master/screen2.png)
 	- Support the Volumetric lighting calculated from (point,sphere,spot,ies) light source [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
