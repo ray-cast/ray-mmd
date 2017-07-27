@@ -1,8 +1,14 @@
-#include "shader/math.fxsub"
+#include "Time of night.conf"
+
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/phasefunctions.fxsub"
+
 #include "shader/common.fxsub"
 #include "shader/stars.fxsub"
-#include "shader/phase.fxsub"
 #include "shader/atmospheric.fxsub"
+
+#define MILKYWAY_ENABLE 1
 
 static const float3 moonScaling = 3800;
 static const float3 moonTranslate = 80000;
@@ -17,6 +23,8 @@ sampler MoonMapSamp = sampler_state
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
+
+#if MILKYWAY_ENABLE
 texture MilkWayMap<string ResourceName = "Shader/Textures/milky way.jpg";>;
 sampler MilkWayMapSamp = sampler_state
 {
@@ -24,6 +32,7 @@ sampler MilkWayMapSamp = sampler_state
 	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = NONE;
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
+#endif
 
 void StarsVS(
 	in float4 Position    : POSITION,
@@ -53,21 +62,24 @@ float4 StarsPS(
 	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink * time + PI);
 	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink * time + PI);
 
-	stars1 *= hsv2rgb(float3(dot(normal, LightDirection), 0.2, 1.5));
-	stars2 *= hsv2rgb(float3(dot(normal, -V), 0.2, 1.5));
+	stars1 *= hsv2rgb(float3(dot(normal, SunDirection), mStarSaturation, mStarBrightness));
+	stars2 *= hsv2rgb(float3(dot(normal, -V), mStarSaturation, mStarBrightness));
 
-	float fadeSun = pow(saturate(dot(V, LightDirection)), 15);
+	float fadeSun = pow(saturate(dot(V, SunDirection)), 15);
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
 
-	float meteor = CreateMeteor(V, float3(LightDirection.x, -1, LightDirection.z) + float3(0.5,0,0.0), time / PI);
+	float meteor = CreateMeteor(V, float3(SunDirection.x, -1, SunDirection.z) + float3(0.5,0,0.0), time / PI);
 
-	float3 start = lerp((stars1 + stars2) * fadeStars + meteor, 0, fadeSun);
+	float3 stars = lerp((stars1 + stars2) * fadeStars + meteor * mMeteor, 0, fadeSun);
 
 	float3 up = mul(float3(0,0,1), matTransformMilkWay);
 	float2 coord = ComputeSphereCoord(mul(V, matTransformMilkWay)) - float2(time / 1000, 0.0);
-	start = lerp(start, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, pow2(saturate(-V.y)));
 
-	return float4(start, 1);
+#if MILKYWAY_ENABLE
+	stars = lerp(stars, tex2Dlod(MilkWayMapSamp, float4(coord, 0, 0)).rgb, pow2(saturate(-V.y)));
+#endif
+
+	return float4(stars, 1);
 }
 
 void SphereVS(
@@ -90,7 +102,7 @@ float4 SpherePS(
 	uniform sampler source) : COLOR
 {
 	float4 diffuse = pow(tex2D(source, coord + float2(time / 200, 0)), 2.2);
-	diffuse.rgb *= saturate(dot(normal, -LightDirection) + 0.15);
+	diffuse.rgb *= saturate(dot(normal, -SunDirection) + 0.15);
 	return diffuse;
 }
 
@@ -105,7 +117,7 @@ void MoonVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(mul(normalize(Position).xyz, matTransformMoon), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius - LightDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius - SunDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -117,7 +129,7 @@ float4 MoonPS(
 {
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord + float2(0.4, 0.0));
-	diffuse *= saturate(dot(normalize(normal), -LightDirection) + 0.1) * 1.5;	
+	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;	
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 500));
 	return diffuse;
 }
@@ -131,7 +143,7 @@ void ScatteringVS(
 {
 	oTexcoord0 = normalize(Position);
 	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
 
@@ -153,7 +165,7 @@ float4 ScatteringPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyScattering(setting, V, LightDirection);
+	float4 insctrColor = ComputeSkyScattering(setting, V, SunDirection);
 
 	return linear2srgb(insctrColor);
 }

@@ -1,12 +1,15 @@
-#include "shader/math.fxsub"
-#include "shader/common.fxsub"
-#include "shader/phase.fxsub"
-#include "shader/atmospheric.fxsub"
-#include "shader/skylighting.fxsub"
+#include "Time of night.conf"
 
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/ibl.fxsub"
+#include "../../shader/phasefunctions.fxsub"
+
+#include "shader/common.fxsub"
+#include "shader/atmospheric.fxsub"
+#include "shader/skylighting.fxsub"
 
 float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
 float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
@@ -123,7 +126,7 @@ void GenSpecularMapVS(
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w);
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
 float4 GenSpecularMapPS(
@@ -143,7 +146,7 @@ float4 GenSpecularMapPS(
 	setting.waveLambdaRayleigh = rayleight;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.z);
-	float3 insctrColor = ComputeSkyScattering(setting, V, LightDirection).rgb;
+	float3 insctrColor = ComputeSkyScattering(setting, V, SunDirection).rgb;
 
 	return EncodeRGBT(insctrColor);
 }

@@ -1,10 +1,13 @@
-#include "shader/math.fxsub"
-#include "shader/common.fxsub"
-#include "shader/phase.fxsub"
-#include "shader/atmospheric.fxsub"
+#include "Time of night.conf"
 
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/phasefunctions.fxsub"
+
+#include "shader/common.fxsub"
+#include "shader/atmospheric.fxsub"
 
 void ScatteringFogVS(
 	in float4 Position : POSITION,
@@ -20,7 +23,7 @@ void ScatteringFogVS(
 	oTexcoord1.xy = PosToCoord(oTexcoord1.xy / oTexcoord1.w) + ViewportOffset;
 	oTexcoord1.xy = oTexcoord1.xy * oTexcoord1.w;
 	oTexcoord2 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity, 4);
-	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mFogColor;
+	oTexcoord3 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
 float4 ScatteringFogPS(
@@ -56,9 +59,9 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 
-	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, LightDirection);
+	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, SunDirection);
 
-	return float4(fog * LightSpecular, luminance(mWaveLength) * material.linearDepth * mFogDensity);
+	return float4(fog * SunColor, luminance(mWaveLength) * material.linearDepth * mFogDensity);
 }
 
 #define OBJECT_TEC(name, mmdpass) \
