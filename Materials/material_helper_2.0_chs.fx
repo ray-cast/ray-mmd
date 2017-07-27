@@ -227,10 +227,8 @@ const float2 emissiveMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // If you always using this material to your skin, the SSSS must be disabled
 // 3 : Toon               // customA = segment,    customB = shadow color
 
-// In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
+// 为了时透明材质正确工作必须将模型的透明度数值设置小于0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
-
-// 参考paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
