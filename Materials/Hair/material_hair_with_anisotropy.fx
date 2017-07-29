@@ -25,8 +25,8 @@ const float2 albedoSubMapLoopNum = 1.0;
 const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
-#define NORMAL_MAP_FROM 1
-#define NORMAL_MAP_TYPE 3
+#define NORMAL_MAP_FROM 0
+#define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0
 #define NORMAL_MAP_FILE "shift.jpg"
 

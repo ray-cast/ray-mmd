@@ -117,7 +117,7 @@ float3 SpecularBRDF_Anisotropic(float3 N, float3 H, float nh, float nl, float vh
 
     float alpha = exp2(11 * smoothness + 1);
 
-    float aspect = anisotropic * 0.999;
+    float aspect = clamp(anisotropic, 0.001, 0.999);
     float ax = alpha * pow2(aspect);
     float ay = alpha * pow2(1 - aspect);
 
