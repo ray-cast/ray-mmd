@@ -149,6 +149,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,0,1) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_GLASS)
 		result += float3(0.2,0.3,0.5) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_HAIR)
+		result += float3(1.0,0.5,1.0) * showCustomID;
 
 	if (materialAlpha.lightModel == SHADINGMODELID_SKIN)
 		result += float3(1,0,0) * showCustomIDAlpha;
@@ -162,6 +164,8 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(1,0,1) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_GLASS)
 		result += float3(0.2,0.3,0.5) * showCustomIDAlpha;
+	if (materialAlpha.lightModel == SHADINGMODELID_HAIR)
+		result += float3(1.0,0.5,1.0) * showCustomIDAlpha;
 
 	return float4(result, 1);
 }

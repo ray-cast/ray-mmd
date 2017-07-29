@@ -148,7 +148,7 @@ const float metalnessMapLoopNum = 1.0;	// see albedoMapLoopNum
 // Used to change the colors of the environment reflect.
 // When the diffuse brighter than specular reflect,
 // It will be only a very small contribution to change the colors of environment reflect.
-// So you can set the zero to the "const float3 specular = 0.0;", if you dot‘t want that model to reflect the specular color of environment.
+// So you can set the zero to the "const float3 specular = 0.0;", if you don't want that model to reflect the specular color of environment.
 #define SPECULAR_MAP_FROM 0 // see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for Specular
@@ -176,7 +176,7 @@ const float2 specularMapLoopNum = 1.0;	// see albedoMapLoopNum
 // The ambient occlusion (AO) is an effect that approximates the attenuation of environment light due to occlusion.
 // Bacause sky lighting from many directions, cannot simply to calculating shadows in the real-time.
 // A simply way able to replaced by using occlusion map and SSAO.
-// So you can set the zero to the "const float occlusion = 0.0;", if you dot‘t want that model to calculating the diffuse & specular color of environment.
+// So you can set the zero to the "const float occlusion = 0.0;", if you don't want that model to calculating the diffuse & specular color of environment.
 #define OCCLUSION_MAP_FROM 0		// see ALBEDO_MAP_FROM for more information.
 
 // Other parameter types for occlusion
@@ -240,7 +240,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
-// 3 : Reserved
+// 3 : Hair				  // customA = anisotropy, customB = invalid
 
 // In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
