@@ -63,7 +63,7 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define SHADINGMODELID_DEFAULT    0
 #define SHADINGMODELID_SKIN       1
 #define SHADINGMODELID_EMISSIVE   2
-#define SHADINGMODELID_RESERVED   3
+#define SHADINGMODELID_HAIR       3
 #define SHADINGMODELID_GLASS      4
 #define SHADINGMODELID_CLOTH      5
 #define SHADINGMODELID_CLEAR_COAT 6
@@ -511,6 +511,26 @@ float3 ColorSynthesis(float3 diffuse, float3 m)
 	return diffuse * lerp(1.0, melanin, m);
 }
 
+#if CUSTOM_ENABLE == SHADINGMODELID_HAIR
+float3 ComputeTangentData(float3 N, float3 P, float2 coord)
+{
+	float3 dp1 = ddx(P);
+	float3 dp2 = ddy(P);
+	float2 duv1 = ddx(coord);
+	float2 duv2 = ddy(coord);
+
+	float3x3 M = float3x3(dp1, dp2, N);
+	float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+	float3 T = mul(float2(duv1.x, duv2.x), I);
+	float3 B = mul(float2(duv1.y, duv2.y), I);
+
+	float scaleT = 1.0f / (dot(T, T) + 1e-6);
+	float scaleB = 1.0f / (dot(B, B) + 1e-6);
+
+	return cross(-normalize(B * scaleB), N);
+}
+#endif
+
 #if NORMAL_MAP_FROM || NORMAL_SUB_MAP_FROM
 float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tangentNormal)
 {
@@ -576,7 +596,7 @@ float3 PerturbNormalHQ(sampler source, float2 coord, float center)
 	float slope1 = right - center;
 	float slope2 = center - bottom;
 
-	return normalize(float3(slope1, slope2, 1.0));
+	return normalize(float3(slope1, slope2, 10.0));
 }
 #endif
 #endif
@@ -1368,7 +1388,7 @@ float GetCustomDataA(float2 coord)
 #endif
 }
 
-float3 GetCustomDataB(float2 coord)
+float3 GetCustomDataB(float2 coord, float3 N, float3 P)
 {
 #if CUSTOM_ENABLE
 	float3 customData = customB;
@@ -1489,7 +1509,7 @@ GbufferParam MaterialPS(
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
 	material.customDataA = GetCustomDataA(coord0);
-	material.customDataB = GetCustomDataB(coord0);
+	material.customDataB = GetCustomDataB(coord0, normal, worldPos.xyz);
 	material.emissive = GetEmissiveColor(coord0);
 	material.emissiveIntensity = GetEmissiveIntensity();
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
@@ -1538,7 +1558,7 @@ GbufferParam Material2PS(
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
 	material.customDataA = GetCustomDataA(coord0);
-	material.customDataB = GetCustomDataB(coord0);
+	material.customDataB = GetCustomDataB(coord0, normal, worldPos.xyz);
 	material.emissive = GetEmissiveColor(coord0);
 	material.emissiveIntensity = GetEmissiveIntensity();
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
