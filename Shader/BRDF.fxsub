@@ -104,7 +104,7 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 	float vh = saturate(dot(V, H));
 	float nv = abs(dot(N, V));
 
-	return BurleyBRDF(nl, vh, nv, roughness) * nl;
+	return BurleyBRDF(nl, vh, nv, roughness);
 }
 
 float3 SpecularBRDF_Anisotropic(float3 N, float3 H, float nh, float nl, float vh, float nv, float anisotropic, float3 specular, float smoothness)
@@ -267,7 +267,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float4(diffuse, specular * nl);
+	return float4(diffuse, specular) * saturate(dot(N, Ld));
 }
 
 float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)

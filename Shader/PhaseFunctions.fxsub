@@ -12,12 +12,12 @@ float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float U = 4)
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)
 {
-	const float n = 1.0003;
-	const float N = 2.545E25;
-	const float pn = 0.035;
-	const float n2 = n * n;
-	const float pi3 = PI * PI * PI;
-	const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
+	static const float n = 1.0003;
+	static const float N = 2.545E25;
+	static const float pn = 0.035;
+	static const float n2 = n * n;
+	static const float pi3 = PI * PI * PI;
+	static const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
 	return rayleighConst / (lambda * lambda * lambda * lambda);
 }
 
