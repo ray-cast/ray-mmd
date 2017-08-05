@@ -72,8 +72,8 @@ float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size, flo
 
 	if (tmin.x > tmax.x)
 		return -1;
-
-	return float2(tmin.x, tmax.x);
+	else
+		return float2(tmin.x, tmax.x);
 }
 
 float2 ComputeRayCubeIntersection(float3 p, float3 d, float3 q, float3 size)

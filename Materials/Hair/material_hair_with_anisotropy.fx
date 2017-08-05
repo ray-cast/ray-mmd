@@ -33,7 +33,7 @@ const float alphaMapLoopNum = 1.0;
 const float normalMapScale = 1.0;
 const float normalMapLoopNum = 1.0;
 
-#define NORMAL_SUB_MAP_FROM 1
+#define NORMAL_SUB_MAP_FROM 0
 #define NORMAL_SUB_MAP_TYPE 0
 #define NORMAL_SUB_MAP_UV_FLIP 0
 #define NORMAL_SUB_MAP_FILE "../_MaterialMap/skin.png"
@@ -48,7 +48,7 @@ const float normalSubMapLoopNum = 80.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.8;
+const float smoothness = 0.7;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -112,7 +112,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.97;
+const float customA = 0.9;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 0
