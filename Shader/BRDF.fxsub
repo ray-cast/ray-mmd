@@ -155,7 +155,7 @@ float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, f
 float3 SpecularBRDF_Sheen(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
 {
 	float sin2 = (1 - nh * nh);
-	float spec = (2 + 1 / roughness) * pow(sin2, 0.5 / roughness) / PI_2;
+	float spec = (2 + 1 / roughness) * pow(sin2, 0.5 / roughness) / (2 * NormalizationFactor);
 
 	float G = 4 * (nl + nv - nl * nv);
 	spec /= G;
@@ -200,7 +200,7 @@ float4 SpecularBRDF_ClearCoat(float nh, float nl, float vh, float nv, float roug
 float3 ClothShading(MaterialParam material, float nh, float nl, float vh, float nv, float roughness, float normalizeFactor)
 {
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
-	float3 spec2 = SpecularBRDF_Velvet(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
+	float3 spec2 = SpecularBRDF_Sheen(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
 	float3 spec = lerp(spec1, spec2, material.customDataA);
 	return spec;
 }
