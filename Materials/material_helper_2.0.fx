@@ -246,6 +246,8 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 4 : Glass              // customA = curvature   customB = transmittance color
 
 // see paper for cloth information : http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf
+// Sheen is difference between GGX and InvGGX
+// Fuzz Color is f0 of fresnel params in sRGB color-space
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
