@@ -137,7 +137,7 @@ float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, f
 	float3 Y = cross(N, X);
 
 	float ax = roughness;
-	float ay = max(0.001, lerp(0, roughness, 1 - anisotropic));
+	float ay = lerp(0.001, roughness, 1 - anisotropic);
 	
 	float spec = pow2(dot(X, H) / ax) + pow2(dot(Y, H) / ay) + nh * nh;
 	spec = 1.0 / (ax * ay * spec * spec * NormalizationFactor);
