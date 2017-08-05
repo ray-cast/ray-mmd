@@ -220,19 +220,16 @@ const float2 emissiveMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // You can see the UE4 docs for more information
 // https://docs.unrealengine.com/latest/CHN/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html
 
-// 0 : Default            // customA = invalid,    customB = invalid
-// 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
-// 2 : Unlit placeholder  // customA = invalid,    customB = invalid
-
-// If you always using this material to your skin, the SSSS must be disabled
-// 3 : Toon               // customA = segment,    customB = shadow color
+// 0 : Default				// customA = invalid,    customB = invalid
+// 1 : 皮肤					// customA = curvature,  customB = transmittance color;
+// 2 : Unlit placeholder	// customA = invalid,    customB = invalid
+// 3 : 各向异性				// customA = segment,    customB = shadow color
 
 // 为了时透明材质正确工作必须将模型的透明度数值设置小于0.999
-// 4 : Glass              // customA = curvature   customB = transmittance color
-// 5 : Cloth              // customA = sheen,      customB = Fuzz Color
-
-// 6 : Clear Coat         // customA = smoothness, customB = invalid;
-// 7 : Subsurface         // customA = curvature,  customB = transmittance color;
+// 4 : 玻璃				// customA = curvature   customB = transmittance color
+// 5 : 布料				// customA = sheen,      customB = Fuzz Color
+// 6 : 清漆				// customA = smoothness, customB = invalid;
+// 7 : 次表面散射			// customA = curvature,  customB = transmittance color;
 #define CUSTOM_ENABLE 0
 
 #define CUSTOM_A_MAP_FROM 0	// 参考ALBEDO_MAP_FROM

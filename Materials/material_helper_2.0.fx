@@ -240,7 +240,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 0 : Default            // customA = invalid,    customB = invalid
 // 1 : PreIntegrated Skin // customA = curvature,  customB = transmittance color;
 // 2 : Unlit placeholder  // customA = invalid,    customB = invalid
-// 3 : Hair				  // customA = anisotropy, customB = invalid
+// 3 : Anisotropy		  // customA = Anisotropic, customB = invalid
 
 // In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
