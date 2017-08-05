@@ -245,7 +245,7 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 // In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
 // 4 : Glass              // customA = curvature   customB = transmittance color
 
-// see paper for cloth information : http://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf
+// see paper for cloth information : http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf
 // 5 : Cloth              // customA = sheen,      customB = Fuzz Color
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
