@@ -168,12 +168,11 @@ float3 SpecularBRDF_Sheen(float nh, float nl, float vh, float nv, float roughnes
 
 float3 SpecularBRDF_Velvet(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
 {
-	float m2 = roughness * roughness;
 	float A = 4;
 	float nh2 = nh * nh;
 	float spec = nh2 / (1 - nh2);
 	float sin4 = pow2(1.0 - nh2);
-	spec = (1 + 4 * exp(-spec / m2) / sin4) / (PI * (1 + A * m2)) * NormalizationFactor;
+	spec = (1 + A * exp(-spec / roughness) / sin4) / ((1 + A * roughness) * NormalizationFactor);
 
 	float G = 4 * (nl + nv - nl * nv);
 	spec /= G;
