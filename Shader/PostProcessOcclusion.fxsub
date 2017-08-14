@@ -117,10 +117,12 @@ float4 ScreenSpaceDirOccLowPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		sampleDirection[0] *= rsqrt(sampleLength2[0]);
-		sampleDirection[1] *= rsqrt(sampleLength2[1]);
-		sampleDirection[2] *= rsqrt(sampleLength2[2]);
-		sampleDirection[3] *= rsqrt(sampleLength2[3]);
+		float4 sampleLengthInv = rsqrt(sampleLength2);
+
+		sampleDirection[0] *= sampleLengthInv[0];
+		sampleDirection[1] *= sampleLengthInv[1];
+		sampleDirection[2] *= sampleLengthInv[2];
+		sampleDirection[3] *= sampleLengthInv[3];
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
