@@ -27,8 +27,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 
 #if SSDO_QUALITY
 	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).xyz * 2 - 1;
-	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mSSDOScale);
-	ssdo = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssdo;
+	float ssdo = pow(1 - saturate(dot(bentNormal, L) * any(material.lightModel != SHADINGMODELID_GLASS)), mSSDOScale);
 	diffuse = diffuse * ssdo + subsurface;
 	specular *= ssdo;
 #else
