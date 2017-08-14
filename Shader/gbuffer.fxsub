@@ -108,6 +108,11 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 	}
 }
 
+float3 DecodeGBufferAlbedo(float4 buffer1)
+{
+	return buffer1.rgb;
+}
+
 float3 DecodeGBufferNormal(float4 buffer2)
 {
 	return DecodeNormal(buffer2.rgb);
