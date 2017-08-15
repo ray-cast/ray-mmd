@@ -73,7 +73,7 @@ Features :
 * Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
 * Clear coat material with absorption to simulate a second layer
 * Cloth and anisotropic materials
-* Approximated subsurface scattering materials
+* Approximation subsurface scattering materials
 * Cook-Torrance microfacet specular BRDF (GGX) and burley diffuse BRDF
 * Physical light units
 * Point light, spot light, directional light, ies light and area light
@@ -81,6 +81,8 @@ Features :
 * HDR linear lighting
 * Volumetric light (point, spot and ies light)
 * Volumetric fog (cube and sphere fog)
+* Light shaft effect
+* Approximation atmospheric fog and sky scattering
 * Image-based lighting (RGBT encode)
 * Scene Space Reflection
 * Screen Space Ambient Occlusition
