@@ -120,8 +120,8 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 	float spec = (nh * m2 - nh) * nh + 1;
 	spec = m2 / (spec * spec) * NormalizationFactor;
 
-	float Gv = nl * (nv * (1 - m2) + m2);
-	float Gl = nv * (nl * (1 - m2) + m2);
+	float Gv = nl * (nv * (1 - roughness) + roughness);
+	float Gl = nv * (nl * (1 - roughness) + roughness);
 	spec *= 0.5 / (Gv + Gl);
 
 	float3 f0 = specular;
