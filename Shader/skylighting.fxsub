@@ -98,6 +98,18 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
+	if (material.lightModel == SHADINGMODELID_HAIR)
+	{
+		float3 X = cross(N, float3(0,1,0));
+		float3 Y = cross(N, X);
+
+		float3 anisotropicTangent = cross(-V, Y);
+		float3 anisotropicNormal  = cross(anisotropicTangent, Y);
+		float3 bentNormal  = normalize(lerp(N, anisotropicNormal, material.customDataA * material.customDataA));
+
+		R = reflect(-V, bentNormal);
+	}
+
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
 
