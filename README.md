@@ -70,10 +70,18 @@ Tutroial:
 
 Features :
 ------------
-* Physically-Based Material
-* Multiple Light Source
-* IES Light Profiles
-* Image Based Lighting
+* Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
+* Clear coat material with absorption to simulate a second layer
+* Cloth and anisotropic materials
+* Approximated subsurface scattering materials
+* Cook-Torrance microfacet specular BRDF (GGX) and burley diffuse BRDF
+* Physical light units
+* Point light, spot light, directional light, ies light and area light
+* IES light profiles (point and spot light)
+* HDR linear lighting
+* Volumetric light (point, spot and ies light)
+* Volumetric fog (cube and sphere fog)
+* Image-based lighting (RGBT encode)
 * Scene Space Reflection
 * Screen Space Ambient Occlusition
 * Screen Space Subsurface Scattering
@@ -82,6 +90,7 @@ Features :
 * Bloom PostProcess
 * FXAA PostProcess
 * SMAA PostProcess
+* Reinhard/Hable/ACES-like tone-mapping
 
 Contact
 ------------
