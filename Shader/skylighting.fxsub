@@ -103,9 +103,10 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 		float3 X = cross(N, float3(0,1,0));
 		float3 Y = cross(N, X);
 
-		float3 anisotropicTangent = cross(-V, Y);
-		float3 anisotropicNormal  = cross(anisotropicTangent, Y);
-		float3 bentNormal  = normalize(lerp(N, anisotropicNormal, material.customDataA * material.customDataA));
+		float3 ax = cross(-V, Y);
+		float3 ay = cross(ax, Y);
+
+		float3 bentNormal = normalize(lerp(N, ay, material.customDataA * material.customDataA));
 
 		R = reflect(-V, bentNormal);
 	}
