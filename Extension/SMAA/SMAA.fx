@@ -595,6 +595,7 @@ technique SMAA <
 	"Pass=SMAABlendingWeightCalculation;"
 
 	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
 	"Clear=Color;"
 	"Pass=SMAANeighborhoodBlending;"
 ;> {
