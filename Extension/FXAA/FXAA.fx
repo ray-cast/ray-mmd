@@ -180,6 +180,7 @@ technique FXAA <
 	"ScriptExternal=Color;"
 	
 	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"Clear=Color;"
 	"Pass=FXAA;"
 	;
