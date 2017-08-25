@@ -55,10 +55,10 @@ float4 EyeDownsamplePS(
 	in float2 coord4 : TEXCOORD3,
 	uniform sampler source) : COLOR
 {
-	float color = log(luminance(tex2Dlod(source, float4(coord1, 0, 0)).rgb) + 1e-6);
-	color += log(luminance(tex2Dlod(source, float4(coord2, 0, 0)).rgb) + 1e-6);
-	color += log(luminance(tex2Dlod(source, float4(coord3, 0, 0)).rgb) + 1e-6);
-	color += log(luminance(tex2Dlod(source, float4(coord4, 0, 0)).rgb) + 1e-6);
+	float color = log(max(luminance(tex2Dlod(source, float4(coord1, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(source, float4(coord2, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(source, float4(coord3, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(source, float4(coord4, 0, 0)).rgb), 0.02));
 	color *= 0.25;
 
 	return color;
