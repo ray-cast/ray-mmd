@@ -9,6 +9,10 @@ texture2D ScnMap2 : RENDERCOLORTARGET <
 	bool AntiAlias = false;
 	string Format = "A2R10G10B10";
 >;
+texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
+	float2 ViewportRatio = {1.0,1.0};
+	string Format = "D24S8";
+>;
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
 	MinFilter = POINT;   MagFilter = POINT;   MipFilter = NONE;
@@ -161,13 +165,14 @@ technique FimicGrain <
 	"RenderColorTarget0=ScnMap;"
 	"Clear=Color;"
 	"Clear=Depth;"
-	"RenderDepthStencilTarget=;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"ScriptExternal=Color;"
 	
 	"RenderColorTarget=ScnMap2;"
 	"Pass=FimicGrain;"
 	
 	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
 	"Pass=FimicLoop;"
 ;> {
 	pass FimicGrain<string Script= "Draw=Buffer;";>{
