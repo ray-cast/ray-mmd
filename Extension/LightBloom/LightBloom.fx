@@ -75,6 +75,10 @@ sampler ScnSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU  = CLAMP; AddressV = CLAMP;
 };
+texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
+	float2 ViewportRatio = {1.0,1.0};
+	string Format = "D24S8";
+>;
 
 texture DownsampleMap1st : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
 texture DownsampleMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
@@ -408,9 +412,9 @@ technique FimicGrain <
 	"ClearSetDepth=ClearDepth;"
 
 	"RenderColorTarget0=ScnMap;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"Clear=Color;"
 	"Clear=Depth;"
-	"RenderDepthStencilTarget=;"
 	"ScriptExternal=Color;"
 
 	"RenderColorTarget=ScnMap;	 		 Pass=HDRInverse;"
@@ -431,7 +435,10 @@ technique FimicGrain <
 	"RenderColorTarget=BloomMap5thTemp;  Pass=BloomBlurX5;"
 	"RenderColorTarget=BloomMap5th;		 Pass=BloomBlurY5;"
 	"RenderColorTarget=BloomMap1st;		 Pass=GlareLightComp;"
-	"RenderColorTarget=;		 		 Pass=HDRTonemapping;"
+
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=HDRTonemapping;"
 ;> {
 	pass HDRInverse<string Script= "Draw=Buffer;";>{
 		 AlphaBlendEnable = false; AlphaTestEnable = false;
