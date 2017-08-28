@@ -17,33 +17,8 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
-	- Notice1 : Overwrite the old material_common_2.0.fxsub to fix a bug
-	- Notice2 : You need to rewrite the Sky Hemisphere to fix a bug
-	- Added MatCap/Sphere map supports (see main_ex_with_sphmap.fx)
-	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
-	- Improved Bloom, that allows a larger range for bloom, and color modified [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
-	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
-    - Removed SphereFog, but you can put a light source in MMD and assign a fx from its 'fog.fx' to the FogMap tab
-	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
-    - Occlusion maps can be fetched from the second UV set, download [blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools) for addUV import/export. ~~,In order to use static lightmap/sky visibility in the future work, that lightmass must compute a set of unwrapped UV coordinates for the model and export it to additional UV set~~
-    - Support the God ray calculated from the AtmosphericFog and Time of day
-    - Support the Volumetric fog calculated from volumetric (cube, sphere), they can be used to simulate the deep sea, because fog and water are the same as mie scattering [(preview)](https://github.com/ray-cast/images/raw/master/screen2.png)
-	- Support the Volumetric lighting calculated from (point,sphere,spot,ies) light source [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
-	- Fixed bug : The green is greater than red and blue, when very bright exposure
-- 更改历史:
-	- 注1:需要覆盖旧版本的material_common_2.0.fxsub去修复一个bug
-	- 注2:需要重新编写以前的SkyHemisphere用于修复一个bug
-	- 添加MatCap/Sphere贴图的支持
-	- 添加SSAOVisibility板块用于控制单个模型材质的AO可见性
-	- 添加了AtmosphericFog和TimeofDay的Godray支持
-	- 添加了区域雾用于模拟深海或地面雾气
-	- 添加了一些多光源(point, sphere, spot, ies)的体积雾的支持
-	- 改进了Bloom可以允许更大范围的泛光
-	- 改进了云的质量
-	- 移除SphereFog,现在已经被多光源的体积光代替了,你可以添加一个光源并且同时设置它的fog.fx到FogMap板块
-	- 移除Skydome的阴影计算
-	- 环境光遮蔽贴图现在可以从模型中的第二组UV中获取，用于未来使用
-	- 修复了一个当曝光太强或整体过暗时造成画面整体偏绿的问题
+	- Fix issue : that cause a FilmGrain cannot be used with others MME
+	- Fix issue : that cause a LightBloom cannot be used with others MME
 
 Requirement :
 ------------
