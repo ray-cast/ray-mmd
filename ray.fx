@@ -22,6 +22,14 @@ float mSSSSP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SS
 float mSSSSM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SSSS-";>;
 float mExposureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure+";>;
 float mExposureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure-";>;
+float mApertureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Aperture+";>;
+float mApertureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Aperture-";>;
+float mFocalLengthP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalLength+";>;
+float mFocalLengthM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalLength-";>;
+float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance+";>;
+float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
+float mFocalScaleP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale+";>;
+float mFocalScaleM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale-";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
@@ -88,6 +96,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if SSR_QUALITY
 #	include "shader/PostProcessSSR.fxsub"
+#endif
+
+#if BOKEH_QUALITY
+#	include "shader/PostProcessCircleDOF.fxsub"
 #endif
 
 #if HDR_EYE_ADAPTATION
@@ -184,12 +196,12 @@ technique DeferredLighting<
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY > 0
-	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderDepthStencilTarget=DepthBuffer2;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-	"RenderDepthStencilTarget=;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #else
@@ -213,6 +225,40 @@ technique DeferredLighting<
 	"RenderColorTarget=SSRLightX4Map;	  Pass=SSRGaussionBlurY4;"
 
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
+#endif
+
+#if BOKEH_QUALITY
+	"RenderColorTarget0=FocalBokehMap;	Pass=ComputeDepthBokeh;"
+	"RenderColorTarget0=FocalBokehMapTemp;  Pass=ComplexSmallBlurX;"
+	"RenderColorTarget0=FocalBokehMap; 		Pass=ComplexSmallBlurY;"
+
+#if BOKEH_QUALITY == 1 || BOKEH_QUALITY == 2
+	"RenderColorTarget0=FocalKernelMap;	Pass=ComplexKernel;"
+
+	"RenderColorTarget0=FocalBlurRMap;"
+	"RenderColorTarget1=FocalBlurGMap;"
+	"RenderColorTarget2=FocalBlurBMap;"
+	"RenderColorTarget3=FocalBlurAMap;"
+	"Pass=ComputeComplexX;"
+
+	"RenderColorTarget0=FocalBokehMap;"
+	"RenderColorTarget1=;"
+	"RenderColorTarget2=;"
+	"RenderColorTarget3=;"
+	"Pass=ComputeComplexY;"
+#endif
+
+#if BOKEH_QUALITY == 3
+	"RenderColorTarget0=FocalBlurRMap;"
+	"RenderColorTarget1=FocalBlurGMap;"
+	"Pass=ComputeHexBlurX;"
+
+	"RenderColorTarget0=FocalBokehMap;"
+	"RenderColorTarget1=;"
+	"Pass=ComputeHexBlurY;"
+#endif
+
+	"RenderColorTarget0=ShadingMap;	Pass=ComputeBokehGather;"
 #endif
 
 #if HDR_EYE_ADAPTATION
@@ -385,20 +431,14 @@ technique DeferredLighting<
 	pass SSSSBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
+		StencilEnable = true; StencilFunc = EQUAL; StencilRef = 1; StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempPointSamp, ShadingMapTempPointSamp, float2(1.0, 0.0));
 	}
 	pass SSSSBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = EQUAL;
-		StencilRef = 1;
-		StencilWriteMask = 0;
+		StencilEnable = true; StencilFunc = EQUAL; StencilRef = 1; StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapPointSamp, ShadingMapTempPointSamp,float2(0.0, 1.0));
 	}
@@ -472,6 +512,67 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
+#endif
+#if BOKEH_QUALITY
+	pass ComputeDepthBokeh<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComputeDepthBokehPS(ShadingMapSamp, -1);
+	}
+	pass ComplexSmallBlurX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComplexSmallBlurPS(FocalBokehMapSamp, float2(1.0 / mFocalStepScale.x, 0));
+	}
+	pass ComplexSmallBlurY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComplexSmallBlurPS(FocalBokehMapTempSamp, float2(0, 1.0 / mFocalStepScale.y));
+	}
+	pass ComputeBokehGather<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		DestBlend = INVSRCALPHA; SrcBlend = SRCALPHA;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComputeBokehGatherPS();
+	}
+#if BOKEH_QUALITY == 2
+	pass ComplexKernel<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ComplexKernelVS();
+		PixelShader  = compile ps_3_0 ComplexKernelPS();
+	}
+	pass ComputeComplexX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComputeComplexXPS(FocalBokehMapSamp, ViewportSize);
+	}
+	pass ComputeComplexY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComputeComplexYPS(FocalBokehMapSamp);
+	}
+#endif
+#if BOKEH_QUALITY == 3
+	pass ComputeHexBlurX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComputeHexBlurXPS(FocalBokehMapSamp);
+	}
+	pass ComputeHexBlurY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
+		PixelShader  = compile ps_3_0 ComputeHexBlurYPS(FocalBlurRMapSamp, FocalBlurGMapSamp);
+	}
+#endif
 #endif
 #if HDR_EYE_ADAPTATION > 0
 	pass EyeLum<string Script= "Draw=Buffer;";>{

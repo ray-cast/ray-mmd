@@ -28,6 +28,8 @@ float  MaterialPower    : SPECULARPOWER<string Object = "Geometry";>;
 
 float2 ViewportSize : VIEWPORTPIXELSIZE;
 
+float3 AcsPosition : CONTROLOBJECT<string name = "(self)";>;
+
 static float2 ViewportOffset  = 0.5 / ViewportSize;
 static float2 ViewportOffset2 = 1.0 / ViewportSize;
 static float  ViewportAspect  = ViewportSize.x / ViewportSize.y;
