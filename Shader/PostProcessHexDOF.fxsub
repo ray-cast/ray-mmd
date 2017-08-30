@@ -1,4 +1,5 @@
 #define DOF_BLUR_RADIUS 16
+#define DOF_LEAKAGE_TEST 1
 
 static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
 static const float mFocalLength = lerp(lerp(10.0, 100.0, mFocalLengthP), 1.0, mFocalLengthM);
@@ -153,8 +154,6 @@ float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset, floa
 	float4 finalColor = 0.0f;
 	float blurAmount = 0.0f;
 
-	coord += offset * 0.5f;
-
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		float4 color = tex2Dlod(source, float4(coord, 0, 0));
@@ -172,8 +171,6 @@ float4 ComputeHexagonalNearBlur(sampler source, float2 coord, float2 offset, flo
 {
 	float4 finalColor = 0.0f;
 	float blurAmount = 0.0f;
-
-	coord += offset * 0.5f;
 
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
@@ -196,8 +193,8 @@ float4 ComputeHexBlurXVS(
 	out float2 oTexcoord2 : TEXCOORD2) : POSITION
 {
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = 1.0 / mFocalStepScale * float2(cos(mAngle + PI / 2), sin(mAngle + PI / 2));
-	oTexcoord2 = 1.0 / mFocalStepScale * float2(cos(mAngle - PI / 6), sin(mAngle - PI / 6));
+	oTexcoord1 = float2(1.0, 1.0) / mFocalStepScale * float2(cos(mAngle + PI / 2), sin(mAngle + PI / 2));
+	oTexcoord2 = float2(1.0, 1.0) / mFocalStepScale * float2(cos(mAngle - PI / 6), sin(mAngle - PI / 6));
 	return Position;
 }
 
@@ -209,8 +206,8 @@ float4 ComputeHexBlurYVS(
 	out float2 oTexcoord2 : TEXCOORD2) : POSITION
 {
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = 1.0 / mFocalStepScale * float2(cos(mAngle - PI / 6    ), sin(mAngle - PI / 6));
-	oTexcoord2 = 1.0 / mFocalStepScale * float2(cos(mAngle - PI / 6 * 5), sin(mAngle - PI / 6 * 5));
+	oTexcoord1 = float2(1.0, 1.0) / mFocalStepScale * float2(cos(mAngle - PI / 6    ), sin(mAngle - PI / 6));
+	oTexcoord2 = float2(1.0, 1.0) / mFocalStepScale * float2(cos(mAngle - PI / 6 * 5), sin(mAngle - PI / 6 * 5));
 	return Position;
 }
 
@@ -229,8 +226,16 @@ void ComputeHexBlurXFarPS(
 	float2 blurDirection1 = abs(CoC) * blur1 * matProject._22;
 	float2 blurDirection2 = abs(CoC) * blur2 * matProject._22;
 
-	float4 color0 = ComputeHexagonalFarBlur(source, coord, blurDirection1, CoC);
-	float4 color1 = ComputeHexagonalFarBlur(source, coord, blurDirection2, CoC);
+#if DOF_LEAKAGE_TEST
+	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
+	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+#else
+	float2 coord1 = coord + blurDirection1 * 0.5;
+	float2 coord2 = coord + blurDirection2 * 0.5;
+#endif
+
+	float4 color0 = ComputeHexagonalFarBlur(source, coord1, blurDirection1, CoC);
+	float4 color1 = ComputeHexagonalFarBlur(source, coord2, blurDirection2, CoC);
 
 	oColor0 = float4(color0.rgb, EncodeCoC(CoC));
 	oColor1 = float4(color0.rgb + color1.rgb, EncodeCoC(CoC));
@@ -250,8 +255,16 @@ float4 ComputeHexBlurYFarPS(
 	float2 blurDirection1 = abs(CoC) * blur1 * matProject._22;
 	float2 blurDirection2 = abs(CoC) * blur2 * matProject._22;
 
-	float4 color1 = ComputeHexagonalFarBlur(vertical, coord, blurDirection1, CoC);
-	float4 color2 = ComputeHexagonalFarBlur(diagonal, coord, blurDirection2, CoC);
+#if DOF_LEAKAGE_TEST
+	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
+	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+#else
+	float2 coord1 = coord + blurDirection1 * 0.5;
+	float2 coord2 = coord + blurDirection2 * 0.5;
+#endif
+
+	float4 color1 = ComputeHexagonalFarBlur(vertical, coord1, blurDirection1, CoC);
+	float4 color2 = ComputeHexagonalFarBlur(diagonal, coord2, blurDirection2, CoC);
 
    	return float4((color1.rgb + color2.rgb) * 0.35f, 1);
 }
@@ -270,8 +283,16 @@ void ComputeHexBlurXNearPS(
 	float2 blurDirection1 = abs(CoC) * blur1;
 	float2 blurDirection2 = abs(CoC) * blur2;
 
-	float4 color0 = ComputeHexagonalNearBlur(source, coord, blurDirection1, CoC);
-	float4 color1 = ComputeHexagonalNearBlur(source, coord, blurDirection2, CoC);
+#if DOF_LEAKAGE_TEST
+	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
+	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+#else
+	float2 coord1 = coord + blurDirection1 * 0.5;
+	float2 coord2 = coord + blurDirection2 * 0.5;
+#endif
+
+	float4 color0 = ComputeHexagonalNearBlur(source, coord1, blurDirection1, CoC);
+	float4 color1 = ComputeHexagonalNearBlur(source, coord2, blurDirection2, CoC);
 
 	oColor0 = float4(color0.rgb, EncodeCoC(CoC));
 	oColor1 = float4(color0.rgb + color1.rgb, EncodeCoC(CoC));
@@ -290,8 +311,16 @@ float4 ComputeHexBlurYNearPS(
 	float2 blurDirection1 = abs(CoC) * blur1;
 	float2 blurDirection2 = abs(CoC) * blur2;
 
-	float4 color1 = ComputeHexagonalNearBlur(vertical, coord, blurDirection1, CoC);
-	float4 color2 = ComputeHexagonalNearBlur(diagonal, coord, blurDirection2, CoC);
+#if DOF_LEAKAGE_TEST
+	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
+	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+#else
+	float2 coord1 = coord + blurDirection1 * 0.5;
+	float2 coord2 = coord + blurDirection2 * 0.5;
+#endif
+
+	float4 color1 = ComputeHexagonalNearBlur(vertical, coord1, blurDirection1, CoC);
+	float4 color2 = ComputeHexagonalNearBlur(diagonal, coord2, blurDirection2, CoC);
 
    	return (color1 + color2) * 0.35f;
 }
@@ -313,6 +342,6 @@ float4 ComputeBokehGatherPS(in float2 coord : TEXCOORD0) : COLOR
 
 	float3 color = (mVisualizationMode > 0.5) ? ((CoC > 0) ? float3(0,0.5,1) : float3(1,0.5,0)) : 1;
 
-	//return float4(samp1.rgb * color, 1);
+	//return float4(samp1.rgb * color, CoC > 0 ? 1 : 0);
 	return float4(lerp(samp1, samp2, saturate(CoCalpha * 4)) * color, saturate(CoCalpha * CoCalpha * 4));
 }
