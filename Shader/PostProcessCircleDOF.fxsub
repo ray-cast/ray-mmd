@@ -13,21 +13,11 @@
 #define C1_REAL1 1.5973700402
 #define C1_IM1 -1.4276936105
 
-#if BOKEH_QUALITY == 1
-#	define DOF_BLUR_MODE 0
-#	define DOF_BLUR_RADIUS 10
-#	define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
-#elif BOKEH_QUALITY == 2
-#	define DOF_BLUR_MODE 2
-#	define DOF_BLUR_RADIUS 10
-#	define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
-#elif BOKEH_QUALITY == 3
-#	define DOF_BLUR_MODE 2
-#	define DOF_BLUR_RADIUS 16
-#	define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
-#endif
+#define DOF_BLUR_MODE 2
+#define DOF_BLUR_RADIUS 10
+#define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
 
-static const float mAperture = lerp(lerp(3.2, 8.0, mApertureP), 1.0, mApertureM);
+static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
 static const float mFocalLength = lerp(lerp(10.0, 100.0, mFocalLengthP), 1.0, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(20, 500.0, mFocalDistanceP), 1.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.0, mFocalScaleM);
@@ -120,7 +110,7 @@ float2 ComplexMultiply(in float2 a, in float2 b)
 	return float2(a.x * b.x - a.y * b.y, a.x * b.y + b.x * a.y);
 }
 
-float4 ComputeDepthBokehPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float face) : COLOR
+float4 ComputeDepthBokehPS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
 	float focalDistance = GetFocalDistance();
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
@@ -303,60 +293,6 @@ float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, uniform sampler source) : 
 	}
 
 	return complexColor / complexWeight;
-}
-
-float4 ComputeHexagonalBokehBlur(sampler source, float2 coord, float2 offset, float CoC)
-{
-	float4 finalColor = 0.0f;
-	float blurAmount = 0.0f;
-
-	coord += offset * 0.5f;
-
-	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
-	{
-		float4 color = tex2Dlod(source, float4(coord, 0, 0));
-		color.a = DecodeCoC(color.a);
-		color.a = CoC > 0 && color.a < 0 ? 0 : color.a;
-		color.a = abs(color.a);
-
-		color       *= color.a;
-		blurAmount  += color.a;
-		finalColor  += color;
-	}
-
-	return finalColor / blurAmount * abs(CoC);
-}
-
-void ComputeHexBlurXPS(
-	in float2 coord : TEXCOORD0,
-	out float4 oColor0 : COLOR0,
-	out float4 oColor1 : COLOR1,
-	uniform sampler source)
-{
-   float CoC = tex2Dlod(source, float4(coord, 0, 0)).a;
-
-   float2 blurDirection1 = abs(DecodeCoC(CoC)) / mFocalStepScale * float2(cos(mAngle + PI / 2), sin(mAngle + PI / 2)) * matProject._22;
-   float2 blurDirection2 = abs(DecodeCoC(CoC)) / mFocalStepScale * float2(cos(mAngle - PI / 6), sin(mAngle - PI / 6)) * matProject._22;
-
-   float4 color0 = ComputeHexagonalBokehBlur(source, coord, blurDirection1, DecodeCoC(CoC));
-   float4 color1 = ComputeHexagonalBokehBlur(source, coord, blurDirection2, DecodeCoC(CoC));
-
-   oColor0 = float4(color0.rgb, CoC);
-   oColor1 = float4(color0.rgb + color1.rgb, CoC);
-}
-
-float4 ComputeHexBlurYPS(in float2 coord : TEXCOORD0, uniform sampler vertical, uniform sampler diagonal) : COLOR
-{
-	float coc1 = DecodeCoC(tex2Dlod(vertical, float4(coord, 0, 0)).a);
-	float coc2 = DecodeCoC(tex2Dlod(diagonal, float4(coord, 0, 0)).a);
-
-	float2 blurDirection1 = abs(coc1) / mFocalStepScale * float2(cos(mAngle - PI / 6    ), sin(mAngle - PI / 6)) * matProject._22;
-	float2 blurDirection2 = abs(coc2) / mFocalStepScale * float2(cos(mAngle - PI / 6 * 5), sin(mAngle - PI / 6 * 5)) * matProject._22;
-
-	float4 color1 = ComputeHexagonalBokehBlur(vertical, coord, blurDirection1, coc1);
-	float4 color2 = ComputeHexagonalBokehBlur(diagonal, coord, blurDirection2, coc2);
-
-   	return float4((color1.rgb + color2.rgb) * 0.35f, 1);
 }
 
 float4 ComputeBokehGatherPS(in float2 coord : TEXCOORD0) : COLOR
