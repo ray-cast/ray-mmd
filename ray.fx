@@ -30,6 +30,8 @@ float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string i
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalScaleP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale+";>;
 float mFocalScaleM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale-";>;
+float mManualMode : CONTROLOBJECT<string name="Sweet_controller.pmx"; string item = "ManualMode";>;
+float mVisualizationMode : CONTROLOBJECT<string name="Sweet_controller.pmx"; string item = "VisualizationMode";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
@@ -99,7 +101,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #endif
 
 #if BOKEH_QUALITY
-#	include "shader/PostProcessCircleDOF.fxsub"
+#	include "shader/PostProcessBokehDOF.fxsub"
 #endif
 
 #if HDR_EYE_ADAPTATION
@@ -229,8 +231,6 @@ technique DeferredLighting<
 
 #if BOKEH_QUALITY
 	"RenderColorTarget0=FocalBokehMap;	Pass=ComputeDepthBokeh;"
-	"RenderColorTarget0=FocalBokehMapTemp;  Pass=ComplexSmallBlurX;"
-	"RenderColorTarget0=FocalBokehMap; 		Pass=ComplexSmallBlurY;"
 
 #if BOKEH_QUALITY == 1 || BOKEH_QUALITY == 2
 	"RenderColorTarget0=FocalKernelMap;	Pass=ComplexKernel;"
