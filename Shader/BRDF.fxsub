@@ -104,29 +104,7 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 	float vh = saturate(dot(V, H));
 	float nv = abs(dot(N, V));
 
-	return BurleyBRDF(nl, vh, nv, roughness) * nl;
-}
-
-float3 SpecularBRDF_Anisotropic(float3 N, float3 H, float nh, float nl, float vh, float nv, float anisotropic, float3 specular, float smoothness)
-{
-    float3 V = cross(N, float3(0,1,0));
-    float3 U = cross(N, V);
-
-    float3 X = H - (U * dot(H, U));
-    float3 Y = H - (V * dot(H, V));
-
-    float alpha = exp2(11 * smoothness + 1);
-
-    float aspect = clamp(anisotropic, 0.001, 0.999);
-    float ax = alpha * pow2(aspect);
-    float ay = alpha * pow2(1 - aspect);
-
-    float spec = pow(dot(X, H), ax) * pow(dot(Y, H), ay);
-
-    float k = min(1.0f, smoothness + 0.545f);
-	spec /= (k * vh * vh + 1 - k);
-
-    return spec;
+	return BurleyBRDF(nl, vh, nv, roughness);
 }
 
 float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothness, float3 specular, float NormalizationFactor)
@@ -153,20 +131,26 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 	return fresnel * spec;
 }
 
-float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
+float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, float nv, float3 specular, float roughness, float anisotropic, float NormalizationFactor)
 {
-	float m2 = roughness * roughness;
-	float A = 4;
-	float spec = (nh - nh * m2) * nh + m2;
-	spec = (1 + 4 * m2 * m2 / (spec * spec)) / (PI * (1 + A * m2)) * NormalizationFactor;
+	float3 X = cross(N, float3(0,1,0));
+	float3 Y = cross(N, X);
 
-	float G = 4 * (nl + nv - nl * nv);
-	spec /= G;
+	float aspect = rsqrt(1.0 - anisotropic * 0.9);
+	float ax = 1.0 / (roughness * aspect);
+	float ay = aspect / roughness;
+
+	float spec = pow2(dot(X, H) * ax) + pow2(dot(Y, H) * ay) + nh * nh;
+	spec = (ax * ay) / (spec * spec * NormalizationFactor);
+
+	float Gv = nl * (nv * (1 - roughness) + roughness);
+	float Gl = nv * (nl * (1 - roughness) + roughness);
+	spec *= 0.5 / (Gv + Gl);
 
 	float3 f0 = specular;
 	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
 
-	return fresnel * spec;
+	return spec * fresnel;
 }
 
 float3 SpecularBRDF_Sheen(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
@@ -249,7 +233,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_HAIR)
-		specular = SpecularBRDF_Anisotropic(N, H, nh, nl, vh, nv, material.customDataA, material.specular, material.smoothness);
+		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
@@ -276,11 +260,11 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_HAIR)
-		specular = SpecularBRDF_Anisotropic(N, H, nh, nl, vh, nv, material.customDataA, material.specular, material.smoothness);
+		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float4(diffuse, specular * nl);
+	return float4(diffuse, specular) * saturate(dot(N, Ld));
 }
 
 float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
