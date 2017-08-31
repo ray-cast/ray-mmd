@@ -58,8 +58,8 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2.xy = float2(mSSDOParams[0], mSSDOParams[1]) * float2(matProject._11, matProject._22) * mSSAORadius;
-	oTexcoord2.zw = float2(mSSDOParams[2], mSSDOParams[3]);
+	oTexcoord2.xy = float2(mSSDOParams[0], mSSDOParams[1]) * float2(1, ViewportAspect);
+	oTexcoord2.zw = float2(mSSDOParams[2], mSSDOParams[3]) / oTexcoord1.x;
 	return Position;
 }
 
@@ -78,6 +78,7 @@ float4 ScreenSpaceDirOccLowPS(
 	float4 sampleOcclustion = 0.0f;
 	float2 sampleRadius = SSDOParams2.w * SSDORadius * ViewportAspect / SSDO_LOW_SAMPLER_COUNT;
 
+	[unroll]
 	for (int i = 1; i <= SSDO_LOW_SAMPLER_COUNT; i++)
 	{
 		float2 angle;
@@ -85,6 +86,7 @@ float4 ScreenSpaceDirOccLowPS(
 		sampleRotate[i - 1] = angle * sampleRadius * i * 0.5;
 	}
 
+	[unroll]
 	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
@@ -117,10 +119,12 @@ float4 ScreenSpaceDirOccLowPS(
 			dot(sampleDirection[2], sampleDirection[2]),
 			dot(sampleDirection[3], sampleDirection[3]));
 
-		sampleDirection[0] *= rsqrt(sampleLength2[0]);
-		sampleDirection[1] *= rsqrt(sampleLength2[1]);
-		sampleDirection[2] *= rsqrt(sampleLength2[2]);
-		sampleDirection[3] *= rsqrt(sampleLength2[3]);
+		float4 sampleLengthInv = rsqrt(sampleLength2);
+
+		sampleDirection[0] *= sampleLengthInv[0];
+		sampleDirection[1] *= sampleLengthInv[1];
+		sampleDirection[2] *= sampleLengthInv[2];
+		sampleDirection[3] *= sampleLengthInv[3];
 
 		float4 sampleAngle = float4(
 			dot(sampleDirection[0], viewNormal),
