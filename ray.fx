@@ -557,14 +557,26 @@ technique DeferredLighting<
 	pass ComputeComplexX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
-		PixelShader  = compile ps_3_0 ComputeComplexXPS(FocalBokehMapSamp, ViewportSize);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 ComputeComplexXPS(FocalBokehMapPointSamp, FocalBokehMapSamp);
 	}
 	pass ComputeComplexY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
-		PixelShader  = compile ps_3_0 ComputeComplexYPS(FocalBokehMapSamp);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 ComputeComplexYPS(FocalBokehMapPointSamp);
+	}
+	pass ComputeBlurNearX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComplexBlurNearPS(FocalBokehMapPointSamp, float2(1.0 / mFocalStepScale.x, 0));
+	}
+	pass ComputeBlurNearY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComplexBlurNearPS(FocalBlurRMapSamp, float2(0, 1.0 / mFocalStepScale.y));
 	}
 #endif
 #if BOKEH_MODE == 3
@@ -583,14 +595,14 @@ technique DeferredLighting<
 	pass ComputeHexBlurNearX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ComputeHexBlurXVS();
-		PixelShader  = compile ps_3_0 ComputeHexBlurXNearPS(FocalBokehMapPointSamp, FocalBokehMapSamp);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComplexSmallBlurPS(FocalBokehMapSamp, float2(1.0 / mFocalStepScale.x, 0));
 	}
 	pass ComputeHexBlurNearY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ComputeHexBlurYVS();
-		PixelShader  = compile ps_3_0 ComputeHexBlurYNearPS(FocalBokehMapPointSamp, FocalBlur1MapSamp, FocalBlur2MapSamp);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComplexSmallBlurPS(FocalBlur1MapSamp, float2(0, 1.0 / mFocalStepScale.y));
 	}
 #endif
 #endif
