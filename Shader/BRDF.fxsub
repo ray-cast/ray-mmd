@@ -142,8 +142,8 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 	float spec = (nh * m2 - nh) * nh + 1;
 	spec = m2 / (spec * spec) * NormalizationFactor;
 
-	float Gv = nl * (nv * (1 - m2) + m2);
-	float Gl = nv * (nl * (1 - m2) + m2);
+	float Gv = nl * (nv * (1 - roughness) + roughness);
+	float Gl = nv * (nl * (1 - roughness) + roughness);
 	spec *= 0.5 / (Gv + Gl);
 
 	float3 f0 = specular;
@@ -169,14 +169,27 @@ float3 SpecularBRDF_InvGGX(float nh, float nl, float vh, float nv, float roughne
 	return fresnel * spec;
 }
 
+float3 SpecularBRDF_Sheen(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
+{
+	float sin2 = (1 - nh * nh);
+	float spec = (2 + 1 / roughness) * pow(sin2, 0.5 / roughness) / (2 * NormalizationFactor);
+
+	float G = 4 * (nl + nv - nl * nv);
+	spec /= G;
+
+	float3 f0 = specular;
+	float3 fresnel = fresnelSchlick(f0, 1.0, vh);
+
+	return fresnel * spec;
+}
+
 float3 SpecularBRDF_Velvet(float nh, float nl, float vh, float nv, float roughness, float3 specular, float NormalizationFactor)
 {
-	float m2 = roughness * roughness;
 	float A = 4;
 	float nh2 = nh * nh;
 	float spec = nh2 / (1 - nh2);
 	float sin4 = pow2(1.0 - nh2);
-	spec = (1 + 4 * exp(-spec / m2) / sin4) / (PI * (1 + A * m2)) * NormalizationFactor;
+	spec = (1 + A * exp(-spec / roughness) / sin4) / ((1 + A * roughness) * NormalizationFactor);
 
 	float G = 4 * (nl + nv - nl * nv);
 	spec /= G;
@@ -203,7 +216,7 @@ float4 SpecularBRDF_ClearCoat(float nh, float nl, float vh, float nv, float roug
 float3 ClothShading(MaterialParam material, float nh, float nl, float vh, float nv, float roughness, float normalizeFactor)
 {
 	float3 spec1 = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
-	float3 spec2 = SpecularBRDF_Velvet(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
+	float3 spec2 = SpecularBRDF_Sheen(nh, nl, vh, nv, roughness, material.customDataB, normalizeFactor);
 	float3 spec = lerp(spec1, spec2, material.customDataA);
 	return spec;
 }
