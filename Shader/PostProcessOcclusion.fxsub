@@ -58,8 +58,8 @@ float4 ScreenSpaceDirOccPassVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = GetProjConstant(); 
-	oTexcoord2.xy = float2(mSSDOParams[0], mSSDOParams[1]) * float2(matProject._11, matProject._22) * mSSAORadius;
-	oTexcoord2.zw = float2(mSSDOParams[2], mSSDOParams[3]);
+	oTexcoord2.xy = float2(mSSDOParams[0], mSSDOParams[1]) * float2(1, ViewportAspect);
+	oTexcoord2.zw = float2(mSSDOParams[2], mSSDOParams[3]) / oTexcoord1.x;
 	return Position;
 }
 
@@ -168,6 +168,7 @@ float4 ScreenSpaceDirOccMediumPS(
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
+	[unroll]
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
 		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius;
@@ -176,6 +177,7 @@ float4 ScreenSpaceDirOccMediumPS(
 		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius;
 	}
 
+	[unroll]
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];

@@ -100,9 +100,9 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessSSR.fxsub"
 #endif
 
-#if BOKEH_QUALITY == 1 || BOKEH_QUALITY == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 #	include "shader/PostProcessCircleDOF.fxsub"
-#elif BOKEH_QUALITY == 3
+#elif BOKEH_MODE == 3
 #	include "shader/PostProcessHexDOF.fxsub"
 #endif
 
@@ -231,26 +231,32 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
-#if BOKEH_QUALITY
+#if BOKEH_MODE
 	"RenderColorTarget0=FocalBokehMap;	Pass=ComputeDepthBokeh;"
 
-#if BOKEH_QUALITY == 1 || BOKEH_QUALITY == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 	"RenderColorTarget0=FocalKernelMap;	Pass=ComplexKernel;"
 
 	"RenderColorTarget0=FocalBlurRMap;"
 	"RenderColorTarget1=FocalBlurGMap;"
 	"RenderColorTarget2=FocalBlurBMap;"
-	"RenderColorTarget3=FocalBlurAMap;"
+	"Clear=Color;"
 	"Pass=ComputeComplexX;"
 
-	"RenderColorTarget0=FocalBokehMap;"
+	"RenderColorTarget0=FocalBokehFarMap;"
 	"RenderColorTarget1=;"
 	"RenderColorTarget2=;"
-	"RenderColorTarget3=;"
+	"Clear=Color;"
 	"Pass=ComputeComplexY;"
+
+	"RenderColorTarget0=FocalBlurRMap;"
+	"Pass=ComputeBlurNearX;"
+
+	"RenderColorTarget0=FocalBokehNearMap;"
+	"Pass=ComputeBlurNearY;"
 #endif
 
-#if BOKEH_QUALITY == 3
+#if BOKEH_MODE == 3
 	"RenderColorTarget0=FocalBlur1Map;"
 	"RenderColorTarget1=FocalBlur2Map;"
 	"Clear=Color;"
@@ -527,7 +533,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
 #endif
-#if BOKEH_QUALITY
+#if BOKEH_MODE
 	pass ComputeDepthBokeh<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -541,7 +547,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2 * 2);
 		PixelShader  = compile ps_3_0 ComputeBokehGatherPS();
 	}
-#if BOKEH_QUALITY == 1 || BOKEH_QUALITY == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 	pass ComplexKernel<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -561,7 +567,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ComputeComplexYPS(FocalBokehMapSamp);
 	}
 #endif
-#if BOKEH_QUALITY == 3
+#if BOKEH_MODE == 3
 	pass ComputeHexBlurFarX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
