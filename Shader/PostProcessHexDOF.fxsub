@@ -164,7 +164,7 @@ float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset, floa
 		finalColor  += color;
 	}
 
-	return min(float4(65535, 65535, 65535, 65535), finalColor / max(0.02, blurAmount) * abs(CoC));
+	return min(float4(65535, 65535, 65535, 65535), finalColor / max(0.02, blurAmount) * saturate(CoC));
 }
 
 float4 ComputeHexagonalNearBlur(sampler source, float2 coord, float2 offset, float CoC)
@@ -227,8 +227,8 @@ void ComputeHexBlurXFarPS(
 	float2 blurDirection2 = abs(CoC) * blur2 * matProject._22;
 
 #if DOF_LEAKAGE_TEST
-	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
-	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+	float2 coord1 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a) > 0) ? blurDirection1 * 0.5 : ViewportOffset);
+	float2 coord2 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a) > 0) ? blurDirection2 * 0.5 : ViewportOffset);
 #else
 	float2 coord1 = coord + blurDirection1 * 0.5;
 	float2 coord2 = coord + blurDirection2 * 0.5;
@@ -256,8 +256,8 @@ float4 ComputeHexBlurYFarPS(
 	float2 blurDirection2 = abs(CoC) * blur2 * matProject._22;
 
 #if DOF_LEAKAGE_TEST
-	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
-	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+	float2 coord1 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a) > 0) ? blurDirection1 * 0.5 : ViewportOffset);
+	float2 coord2 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a) > 0) ? blurDirection2 * 0.5 : ViewportOffset);
 #else
 	float2 coord1 = coord + blurDirection1 * 0.5;
 	float2 coord2 = coord + blurDirection2 * 0.5;
@@ -284,8 +284,8 @@ void ComputeHexBlurXNearPS(
 	float2 blurDirection2 = abs(CoC) * blur2;
 
 #if DOF_LEAKAGE_TEST
-	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
-	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+	float2 coord1 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a) > 0) ? blurDirection1 * 0.5 : ViewportOffset);
+	float2 coord2 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a) > 0) ? blurDirection2 * 0.5 : ViewportOffset);
 #else
 	float2 coord1 = coord + blurDirection1 * 0.5;
 	float2 coord2 = coord + blurDirection2 * 0.5;
@@ -312,8 +312,8 @@ float4 ComputeHexBlurYNearPS(
 	float2 blurDirection2 = abs(CoC) * blur2;
 
 #if DOF_LEAKAGE_TEST
-	float2 coord1 = coord + lerp(ViewportOffset, blurDirection1 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a)));
-	float2 coord2 = coord + lerp(ViewportOffset, blurDirection2 * 0.5, step(1e-5, DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a)));
+	float2 coord1 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection1, 0, 0)).a) > 0) ? blurDirection1 * 0.5 : ViewportOffset);
+	float2 coord2 = coord + ((DecodeCoC(tex2Dlod(bokeh, float4(coord + blurDirection2, 0, 0)).a) > 0) ? blurDirection2 * 0.5 : ViewportOffset);
 #else
 	float2 coord1 = coord + blurDirection1 * 0.5;
 	float2 coord2 = coord + blurDirection2 * 0.5;
@@ -342,6 +342,6 @@ float4 ComputeBokehGatherPS(in float2 coord : TEXCOORD0) : COLOR
 
 	float3 color = (mVisualizationMode > 0.5) ? ((CoC > 0) ? float3(0,0.5,1) : float3(1,0.5,0)) : 1;
 
-	//return float4(samp1.rgb * color, CoC > 0 ? 1 : 0);
+	//return float4(samp2.rgb * color, CoC > 0 ? 1 : 0);
 	return float4(lerp(samp1, samp2, saturate(CoCalpha * 4)) * color, saturate(CoCalpha * CoCalpha * 4));
 }
