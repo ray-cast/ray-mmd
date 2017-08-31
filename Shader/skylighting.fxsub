@@ -98,6 +98,19 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
 
+	if (material.lightModel == SHADINGMODELID_HAIR)
+	{
+		float3 X = cross(N, float3(0,1,0));
+		float3 Y = cross(N, X);
+
+		float3 ax = cross(-V, Y);
+		float3 ay = cross(ax, Y);
+
+		float3 bentNormal = normalize(lerp(N, ay, material.customDataA * material.customDataA));
+
+		R = reflect(-V, bentNormal);
+	}
+
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
 
@@ -125,39 +138,6 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 
 	specular *= mEnvIntensitySpec;
 }
-
-#if AA_GBUFFER_FILTER_QUALITY
-float3 ComputeAvgNormal(sampler NormalMap, float2 coord, float2 offset)
-{
-	float3 avgNormal = 0;
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1,  0) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1,  0) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 0,  1) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 0, -1) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1, -1) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1,  1) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2(-1,  1) * offset, 0, 0)));
-	avgNormal += DecodeGBufferNormal(tex2Dlod(NormalMap, float4(coord + float2( 1, -1) * offset, 0, 0)));
-	return avgNormal / 9;
-}
-
-float AdjustRoughness(float roughness, float3 normal)
-{
-	float len = length(normal);
-	if (len < 1.0)
-	{
-		float len2 = len * len;
-		float kappa = (3 * len - len * len2) / (1 - len2);
-		float variance = 1.0 / (2.0 * kappa);
-		return sqrt(roughness * roughness + variance);
-	}
-	else
-	{
-		return roughness;
-	}
-}
-#endif
 
 void EnvLightingVS(
 	in float4 Position : POSITION,
@@ -201,18 +181,10 @@ void EnvLightingPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
-	float finalSmoothness = material.smoothness;
-
-#if AA_GBUFFER_FILTER_QUALITY > 0
-	float roughness = SmoothnessToRoughness(material.smoothness);
-	float3 avgNormal = ComputeAvgNormal(Gbuffer2Map, coord, ViewportOffset2);
-	finalSmoothness = RoughnessToSmoothness(AdjustRoughness(roughness, avgNormal));
-#endif
-
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, V, finalSmoothness, diffuse, specular);
+	ShadingMaterial(material, V, material.smoothness, diffuse, specular);
 
 	float3 diffuse2, specular2;
 	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
