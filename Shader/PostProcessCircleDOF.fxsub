@@ -13,7 +13,7 @@
 #define C1_REAL1 1.5973700402
 #define C1_IM1 -1.4276936105
 
-#define DOF_BLUR_MODE 2
+#define DOF_BLUR_MODE 1
 #define DOF_BLUR_RADIUS 12
 #define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
 
@@ -89,9 +89,6 @@ float DecodeCoC(float CoC)
 float4 ComplexKernel(in float x)
 {
 #if DOF_BLUR_MODE == 0
-	float4 complexWeights = float4(exp(-0.8*x*x), 0, 0, 0);
-	return complexWeights;
-#elif DOF_BLUR_MODE == 1
 	float4 complexWeights = 0;
 	complexWeights.x = (C0_REAL0 * cos(x*x*C0_F0) - C0_IM0   * sin(x*x*C0_F0)) * exp(C0_EXP_MULT0*x*x);
 	complexWeights.y = (C0_IM0   * cos(x*x*C0_F0) + C0_REAL0 * sin(x*x*C0_F0)) * exp(C0_EXP_MULT0*x*x);
