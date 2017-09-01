@@ -326,14 +326,14 @@ float4 ComputeBokehGatherPS(in float2 coord : TEXCOORD0, in float4 focalCameraPa
 	coords[2] = float4(coord + float2(0, 1.5 / (ViewportSize.y * mFocalMapScale)), 0, 0);
 	coords[3] = float4(coord + float2(1.5, 1.5) / (ViewportSize * mFocalMapScale), 0, 0);
 
-	float4 samp1 = tex2Dlod(FocalBokehNearMapSamp, coords[0]);
-	float4 samp2 = tex2Dlod(FocalBokehFarMapSamp, coords[0]);
+	float4 samp1 = tex2Dlod(FocalBokehFarMapSamp, coords[0]);
+	float4 samp2 = tex2Dlod(FocalBokehNearMapSamp, coords[0]);
 
 	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, coords[0]).r, focalCameraParams, mFocalScale) * matProject._22;
 	float CoCalpha = CoC * 2;
 
-	float3 color = (mVisualizationMode > 0.5) ? ((CoC > 0) ? float3(0,0.5,1) : float3(1,0.5,0)) : 1;
+	float3 color = lerp(samp2.rgb, samp1.rgb, saturate(CoCalpha));
+	color = lerp(color, ((CoC.x > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.x), mVisualizationMode);
 
-	//return float4(samp2.rgb * color, CoC > 0 ? 1 : 0);
-	return float4(lerp(samp1, samp2, saturate(CoCalpha)) * color, saturate(pow2(CoC * 2)));
+	return float4(color, saturate(pow2(CoC * 2)));
 }
