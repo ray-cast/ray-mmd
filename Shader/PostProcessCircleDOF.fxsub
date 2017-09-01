@@ -32,7 +32,7 @@ texture FocalBlurBMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Fo
 texture FocalBokehMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
 texture FocalBokehFarMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
 texture FocalBokehNearMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalKernelMap : RENDERCOLORTARGET<int2 Dimensions={DOF_BLUR_LENGTH, 2}; string Format="A16B16G16R16F";>;
+texture FocalKernelMap : RENDERCOLORTARGET<int2 Dimensions={DOF_BLUR_LENGTH, 1}; string Format="A16B16G16R16F";>;
 
 sampler FocalBlurRMapSamp = sampler_state { texture=<FocalBlurRMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBlurGMapSamp = sampler_state { texture=<FocalBlurGMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
@@ -171,11 +171,26 @@ float4 ComputeDepthBokeh4XPS(in float2 coord : TEXCOORD0, uniform sampler source
 float4 ComplexKernelVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0) : POSITION
+{
+	oTexcoord0 = Texcoord.xyxy;
+	return Position;
+}
+
+float4 ComplexKernelPS(in float2 coord : TEXCOORD0) : COLOR
+{
+	float4 kernel = ComplexKernel(coord.x * 2 - 1);
+	return kernel;
+}
+
+float4 ComputeComplexVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
 	oTexcoord0 = Texcoord.xyxy;
-	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.xy += 0.5 / (ViewportSize * mFocalMapScale);
 	oTexcoord0.zw = oTexcoord0.zw * ViewportSize;
 
 	oTexcoord1 = ComplexKernel(0);
@@ -184,16 +199,6 @@ float4 ComplexKernelVS(
 		oTexcoord1 += ComplexKernel(float(i) / DOF_BLUR_RADIUS) * 2;
 
 	return Position;
-}
-
-float4 ComplexKernelPS(in float4 coord : TEXCOORD0, in float4 kernelAccum : TEXCOORD1) : COLOR
-{
-	float4 kernel = ComplexKernel(coord.x * 2 - 1);
-
-	if (coord.y > 0.5)
-		return float4(ComplexMultiply(kernel.xy, kernelAccum.xy).x + ComplexMultiply(kernel.zw, kernelAccum.zw).x, 0.0, 0.0, 0.0);  
-	else
-		return kernel;
 }
 
 void ComputeComplexXPS(
@@ -217,17 +222,21 @@ void ComputeComplexXPS(
 	for (int i = -DOF_BLUR_RADIUS; i <= DOF_BLUR_RADIUS; ++i, complexCoord += offset, complexKernelCoord.x += (1.0 / DOF_BLUR_LENGTH))
 	{
 		float4 samp = tex2Dlod(source, float4(complexCoord, 0, 0));
+		samp.a = DecodeCoC(samp.a);
 
-		float4 kernel = tex2Dlod(FocalKernelMapSamp, float4(complexKernelCoord.x, 0, 0, 0)) * (DecodeCoC(samp.a) > 0 ? 1 : 0);
+		if (samp.a > 0)
+		{
+			float4 kernel = tex2Dlod(FocalKernelMapSamp, float4(complexKernelCoord.x, 0, 0, 0)) * samp.a;
 
-		complexR.xy += ComplexMultiply(float2(samp.r, 0.0), kernel.xy);
-		complexR.zw += ComplexMultiply(float2(samp.r, 0.0), kernel.zw);
+			complexR.xy += ComplexMultiply(float2(samp.r, 0.0), kernel.xy);
+			complexR.zw += ComplexMultiply(float2(samp.r, 0.0), kernel.zw);
 
-		complexG.xy += ComplexMultiply(float2(samp.g, 0.0), kernel.xy);
-		complexG.zw += ComplexMultiply(float2(samp.g, 0.0), kernel.zw);
+			complexG.xy += ComplexMultiply(float2(samp.g, 0.0), kernel.xy);
+			complexG.zw += ComplexMultiply(float2(samp.g, 0.0), kernel.zw);
 
-		complexB.xy += ComplexMultiply(float2(samp.b, 0.0), kernel.xy);
-		complexB.zw += ComplexMultiply(float2(samp.b, 0.0), kernel.zw);
+			complexB.xy += ComplexMultiply(float2(samp.b, 0.0), kernel.xy);
+			complexB.zw += ComplexMultiply(float2(samp.b, 0.0), kernel.zw);
+		}
 	}
 
 	oColor0 = complexR;
@@ -235,7 +244,7 @@ void ComputeComplexXPS(
 	oColor2 = complexB;
 }
 
-float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
+float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, in float4 kernelAccum : TEXCOORD1, uniform sampler source) : COLOR
 {
 	float CoC = DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a);
 	clip(CoC);
@@ -246,28 +255,33 @@ float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, uniform sampler source) : 
 
 	float3 complexColor = 0.0;
 	float2 complexCoord = coord - DOF_BLUR_RADIUS * offset;
-	float2 complexKernelCoord = 0.5 / float2(DOF_BLUR_LENGTH , 2);
+	float2 complexKernelCoord = 0.5 / float2(DOF_BLUR_LENGTH , 1);
 
 	for (int i = -DOF_BLUR_RADIUS; i <= DOF_BLUR_RADIUS; ++i, complexCoord += offset, complexKernelCoord.x += (1.0 / DOF_BLUR_LENGTH))
 	{
 		float4 samp0 = tex2Dlod(source, float4(complexCoord, 0, 0));
-		float4 samp1 = tex2Dlod(FocalBlurRMapSamp, float4(complexCoord, 0, 0));
-		float4 samp2 = tex2Dlod(FocalBlurGMapSamp, float4(complexCoord, 0, 0));
-		float4 samp3 = tex2Dlod(FocalBlurBMapSamp, float4(complexCoord, 0, 0));
+		samp0.a = DecodeCoC(samp0.a);
 
-		float4 sampKernel = tex2Dlod(FocalKernelMapSamp, float4(complexKernelCoord.x, 0, 0, 0)) * (DecodeCoC(samp0.a) > 0 ? 1 : 0);
-		float4 sampKernelW = tex2Dlod(FocalKernelMapSamp, float4(complexKernelCoord.x, 1, 0, 0)) * (DecodeCoC(samp0.a) > 0 ? 1 : 0);
+		if (samp0.a > 0)
+		{
+			float4 samp1 = tex2Dlod(FocalBlurRMapSamp, float4(complexCoord, 0, 0));
+			float4 samp2 = tex2Dlod(FocalBlurGMapSamp, float4(complexCoord, 0, 0));
+			float4 samp3 = tex2Dlod(FocalBlurBMapSamp, float4(complexCoord, 0, 0));
 
-		complexColor.r += ComplexMultiply(samp1.xy, sampKernel.xy).x;
-		complexColor.r += ComplexMultiply(samp1.zw, sampKernel.zw).x;
+			float4 sampKernel = tex2Dlod(FocalKernelMapSamp, float4(complexKernelCoord.x, 0, 0, 0)) * samp0.a;
 
-		complexColor.g += ComplexMultiply(samp2.xy, sampKernel.xy).x;
-		complexColor.g += ComplexMultiply(samp2.zw, sampKernel.zw).x;
+			complexColor.r += ComplexMultiply(samp1.xy, sampKernel.xy).x;
+			complexColor.r += ComplexMultiply(samp1.zw, sampKernel.zw).x;
 
-		complexColor.b += ComplexMultiply(samp3.xy, sampKernel.xy).x;
-		complexColor.b += ComplexMultiply(samp3.zw, sampKernel.zw).x;
+			complexColor.g += ComplexMultiply(samp2.xy, sampKernel.xy).x;
+			complexColor.g += ComplexMultiply(samp2.zw, sampKernel.zw).x;
 
-		complexWeight += sampKernelW.r;
+			complexColor.b += ComplexMultiply(samp3.xy, sampKernel.xy).x;
+			complexColor.b += ComplexMultiply(samp3.zw, sampKernel.zw).x;
+
+			complexWeight += ComplexMultiply(sampKernel.xy, kernelAccum.xy * samp0.a).x;
+			complexWeight += ComplexMultiply(sampKernel.zw, kernelAccum.zw * samp0.a).x;
+		}
 	}
 
 	return float4(complexColor / complexWeight, EncodeCoC(CoC));

@@ -581,13 +581,13 @@ technique DeferredLighting<
 	pass ComputeComplexX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(1.0 / (ViewportSize * mFocalMapScale));
+		VertexShader = compile vs_3_0 ComputeComplexVS();
 		PixelShader  = compile ps_3_0 ComputeComplexXPS(FocalBokehMapPointSamp, FocalBokehMapSamp);
 	}
 	pass ComputeComplexY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(1.0 / (ViewportSize * mFocalMapScale));
+		VertexShader = compile vs_3_0 ComputeComplexVS();
 		PixelShader  = compile ps_3_0 ComputeComplexYPS(FocalBokehMapPointSamp);
 	}
 	pass ComputeBlurNearX<string Script= "Draw=Buffer;";>{
