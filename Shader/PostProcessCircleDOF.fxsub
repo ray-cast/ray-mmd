@@ -78,12 +78,12 @@ float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
 
 float EncodeCoC(float CoC)
 {
-	return CoC * 0.5 + 0.5;
+	return CoC;
 }
 
 float DecodeCoC(float CoC)
 {
-	return CoC * 2 - 1;
+	return CoC;
 }
 
 float4 ComplexKernel(in float x)
