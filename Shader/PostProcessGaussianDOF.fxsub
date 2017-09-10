@@ -199,7 +199,7 @@ float4 GaussianBlurFarPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uni
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
 		float weight = DecodeCoC(color1.a);
-		weight = weights[i] * max(0.0, weight) * saturate(0.1 / max(EPSILON, CoC - weight));
+		weight = weights[i] * max(0.0, weight) * exp2(-pow2((CoC - weight) * 10));
 
 		color.rgb += color1.rgb * weight;
 		color.a += weight;
