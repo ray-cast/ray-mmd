@@ -3,9 +3,9 @@
 
 static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
 static const float mFocalLength = lerp(lerp(50.0, 100.0, mFocalLengthP), 1.0, mFocalLengthM);
-static const float mFocalDistance = lerp(lerp(20, 500.0, mFocalDistanceP), 1.0, mFocalDistanceM);
+static const float mFocalDistance = lerp(lerp(1, 250.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.5, mFocalScaleM);
-static const float mFocalMapScale = 1;
+static const float mFocalMapScale = 0.5;
 static const float mAngle = 1.24;
 
 static const float2 mFocalStepScale = 512 * float2(ViewportAspect, 1);
@@ -25,8 +25,8 @@ sampler FocalBokehMapPointSamp = sampler_state { texture=<FocalBokehMap>; MinFil
 
 float GetFocalDistance()
 {
-	float focalDistance = step(0.5, mManualMode) ? mFocalDistance : max(1, distance(CameraPosition, AcsPosition));
-	return focalDistance;
+	float focalDistance = step(0.5, mManualMode) ? mFocalDistance : distance(CameraPosition, AcsPosition) + mFocalDistance;
+	return max(1, focalDistance);
 }
 
 float GetFocalAperture(float Fstop)
