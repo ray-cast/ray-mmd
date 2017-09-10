@@ -295,8 +295,7 @@ float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, in float4 kernelAccum : TE
 
 float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
-	static const float weights[15] = { 153, 816, 3060, 8568, 18564, 31824, 43758, 48620, 43758, 31824, 18564, 8568, 3060, 816, 153 };
-	static const float weightSum = 262106.0;
+	float weights[15] = {0.0001f, 0.0009f, 0.0047f, 0.0188f, 0.0553f, 0.1196f, 0.1899f, 0.2216f, 0.1899f, 0.1196f, 0.0553f, 0.0188f, 0.0047f, 0.0009f, 0.0001f};
 
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
 
@@ -310,10 +309,10 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 	for(int i = 0; i < 15; i++, coord += offset)
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
-		float weight = max(0.1, abs(DecodeCoC(color1.a)));
+		float weight = weights[i] * max(0.1, abs(DecodeCoC(color1.a)));
 
-		color.rgb += weights[i] * color1.rgb * weight;
-		color.a += weights[i] * weight;
+		color.rgb += color1.rgb * weight;
+		color.a += weight;
 	}
 
 	return float4(color.rgb / color.a, CoC);

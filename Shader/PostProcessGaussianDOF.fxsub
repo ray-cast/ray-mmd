@@ -160,6 +160,8 @@ float4 ComputeNearSamllBlurPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 
 float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
+	float weights[15] = {0.0001f, 0.0009f, 0.0047f, 0.0188f, 0.0553f, 0.1196f, 0.1899f, 0.2216f, 0.1899f, 0.1196f, 0.0553f, 0.0188f, 0.0047f, 0.0009f, 0.0001f};
+
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
 
 	offset *= matProject._22 * abs(DecodeCoC(CoC));
@@ -196,7 +198,8 @@ float4 GaussianBlurFarPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uni
 	for(int i = 0; i < 15; i++, coord += offset)
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
-		float weight = weights[i] * max(0.1, DecodeCoC(color1.a));
+		float weight = DecodeCoC(color1.a);
+		weight = weights[i] * max(0.0, weight) * saturate(0.1 / max(EPSILON, CoC - weight));
 
 		color.rgb += color1.rgb * weight;
 		color.a += weight;
