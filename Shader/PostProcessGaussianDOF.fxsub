@@ -172,10 +172,10 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 	for(int i = 0; i < 15; i++, coord += offset)
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
-		float weight = max(0.1, abs(DecodeCoC(color1.a)));
+		float weight = weights[i] * max(0.1, abs(DecodeCoC(color1.a)));
 
-		color.rgb += weights[i] * color1.rgb * weight;
-		color.a += weights[i] * weight;
+		color.rgb += color1.rgb * weight;
+		color.a += weight;
 	}
 
 	return float4(color.rgb / color.a, CoC);
@@ -196,10 +196,10 @@ float4 GaussianBlurFarPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uni
 	for(int i = 0; i < 15; i++, coord += offset)
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
-		float weight = max(0.1, DecodeCoC(color1.a));
+		float weight = weights[i] * max(0.1, DecodeCoC(color1.a));
 
-		color.rgb += weights[i] * color1.rgb * weight;
-		color.a += weights[i] * weight;
+		color.rgb += color1.rgb * weight;
+		color.a += weight;
 	}
 
 	return float4(color.rgb / color.a, CoC);

@@ -202,12 +202,12 @@ technique DeferredLighting<
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY > 0
-	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderDepthStencilTarget=DepthBuffer2;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-	"RenderDepthStencilTarget=;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #else
@@ -276,7 +276,7 @@ technique DeferredLighting<
 	"RenderColorTarget=FocalBokehNearMap; Pass=ComputeHexBlurNearY;"
 #endif
 
-	"RenderColorTarget0=ShadingMap;	Pass=ComputeBokehGather;"
+	"RenderColorTarget=ShadingMap; Pass=ComputeBokehGather;"
 #endif
 
 #if HDR_EYE_ADAPTATION

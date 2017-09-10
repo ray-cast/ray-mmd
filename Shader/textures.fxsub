@@ -14,6 +14,12 @@ texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";
 >;
+#if SSSS_QUALITY
+texture2D DepthBuffer2 : RENDERDEPTHSTENCILTARGET<
+	float2 ViewportRatio = {1.0,1.0};
+	string Format = "D24S8";
+>;
+#endif
 texture2D ScnMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";

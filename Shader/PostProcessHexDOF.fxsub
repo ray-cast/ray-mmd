@@ -161,12 +161,15 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset, float CoC)
 {
 	float4 finalColor = 0.0f;
+
 	float blurAmount = 0.0f;
+	float blurCoC = saturate(DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a));
 
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i)
 	{
 		float4 color = tex2Dlod(source, float4(coord, 0, 0));
 		color.a = saturate(DecodeCoC(color.a));
+		color.a = color.a * saturate(0.1 / max(EPSILON, (blurCoC - color.a)));
 
 		color       *= color.a;
 		blurAmount  += color.a;
