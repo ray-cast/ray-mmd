@@ -30,8 +30,8 @@ float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string i
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalScaleP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale+";>;
 float mFocalScaleM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalScale-";>;
-float mManualMode : CONTROLOBJECT<string name="Sweet_controller.pmx"; string item = "ManualMode";>;
-float mVisualizationMode : CONTROLOBJECT<string name="Sweet_controller.pmx"; string item = "VisualizationMode";>;
+float mManualMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "ManualMode";>;
+float mVisualizationMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "VisualizationMode";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
@@ -202,12 +202,12 @@ technique DeferredLighting<
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY > 0
-	"RenderDepthStencilTarget=DepthBuffer2;"
+	"RenderDepthStencilTarget=DepthBuffer;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderDepthStencilTarget=;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #else
@@ -535,7 +535,7 @@ technique DeferredLighting<
 	pass ComputeDepthBokeh<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		VertexShader = compile vs_3_0 ComputeDepthBokehVS();
 		PixelShader  = compile ps_3_0 ComputeDepthBokehPS(ShadingMapSamp);
 	}
 	pass ComputeBokehGather<string Script= "Draw=Buffer;";>{

@@ -158,7 +158,6 @@ float4 ComputeNearSamllBlurPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 	return sum / 4;
 }
 
-
 float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;

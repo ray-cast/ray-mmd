@@ -327,9 +327,3 @@ sampler SSDOMapSampTemp = sampler_state {
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
 #endif
-#if SSSS_QUALITY
-texture2D DepthBuffer2 : RENDERDEPTHSTENCILTARGET<
-	float2 ViewportRatio = {1.0,1.0};
-	string Format = "D24S8";
->;
-#endif
