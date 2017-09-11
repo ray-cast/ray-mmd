@@ -18,20 +18,20 @@
 #define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
 
 static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
-static const float mFocalLength = lerp(lerp(50.0, 100.0, mFocalLengthP), 1.0, mFocalLengthM);
-static const float mFocalDistance = lerp(lerp(1, 250.0, mFocalDistanceP), -10.0, mFocalDistanceM);
+static const float mFocalLength = lerp(lerp(2.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
+static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.5, mFocalScaleM);
-static const float mFocalMapScale = 0.5;
 static const float mFocalMapScale = 1;
+static const float mFocalCircleRadius = 4;
 
 static const float2 mFocalStepScale = 512 * float2(ViewportAspect, 1);
 
-texture FocalBlurRMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalBlurGMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalBlurBMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalBokehMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalBokehFarMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
-texture FocalBokehNearMap : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="A16B16G16R16F";>;
+texture FocalBlurRMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
+texture FocalBlurGMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
+texture FocalBlurBMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
+texture FocalBokehMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
+texture FocalBokehFarMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
+texture FocalBokehNearMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 texture FocalKernelMap : RENDERCOLORTARGET<int2 Dimensions={DOF_BLUR_LENGTH, 1}; string Format="A16B16G16R16F";>;
 
 sampler FocalBlurRMapSamp = sampler_state { texture=<FocalBlurRMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
@@ -57,7 +57,8 @@ float GetFocalAperture(float Fstop)
 
 float GetFocalLength(float mFocalLength, float focalDistance)
 {
-	return 1.0 / (1.0 / mFocalLength + 1.0 / focalDistance);
+	float F = 0.5 * 35 * matProject._22;
+	return F / (1.0 / mFocalLength + F / focalDistance);
 }
 
 float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
@@ -73,7 +74,7 @@ float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
 
-	return clamp(CoC * focalScale, -1, 1);
+	return clamp(CoC * focalScale, -2, 3);
 }
 
 float EncodeCoC(float CoC)
@@ -218,7 +219,7 @@ void ComputeComplexXPS(
 	float CoC = DecodeCoC(tex2Dlod(bokeh, float4(coord, 0, 0)).a);
 	clip(CoC);
 
-	float2 offset = float2(mFocalCircleRadius / mFocalStepScale.x, 0.0) * CoC / DOF_BLUR_RADIUS * matProject._22;
+	float2 offset = float2(mFocalCircleRadius / mFocalStepScale.x, 0.0) * CoC / DOF_BLUR_RADIUS;
 
 	float4 complexR = 0.0, complexG = 0.0, complexB = 0.0;
 
@@ -255,7 +256,7 @@ float4 ComputeComplexYPS(in float2 coord : TEXCOORD0, in float4 kernelAccum : TE
 	float CoC = DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a);
 	clip(CoC);
 
-	float2 offset = float2(0, mFocalCircleRadius / mFocalStepScale.y) * CoC / DOF_BLUR_RADIUS * matProject._22;
+	float2 offset = float2(0, mFocalCircleRadius / mFocalStepScale.y) * CoC / DOF_BLUR_RADIUS;
 
 	float complexWeight = 0;
 
@@ -299,7 +300,7 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
 
-	offset *= matProject._22 * abs(DecodeCoC(CoC));
+	offset *= abs(DecodeCoC(CoC));
 
 	coord -= offset * 7;
 
@@ -347,7 +348,7 @@ float4 ComputeBokehGatherPS(in float4 coord : TEXCOORD0, in float4 focalCameraPa
 	float4 samp1 = tex2Dlod(FocalBokehFarMapSamp, coords[0]);
 	float4 samp2 = tex2Dlod(FocalBokehNearMapSamp, coords[0]);
 
-	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalScale) * matProject._22;
+	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalScale);
 	float CoCalpha = CoC * 2;
 
 	float4 color;

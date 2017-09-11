@@ -1,6 +1,6 @@
 static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
-static const float mFocalLength = lerp(lerp(50.0, 100.0, mFocalLengthP), 1.0, mFocalLengthM);
-static const float mFocalDistance = lerp(lerp(1, 250.0, mFocalDistanceP), -10.0, mFocalDistanceM);
+static const float mFocalLength = lerp(lerp(2.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
+static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.5, mFocalScaleM);
 static const float mFocalMapScale = 0.5;
 
@@ -34,7 +34,8 @@ float GetFocalAperture(float Fstop)
 
 float GetFocalLength(float mFocalLength, float focalDistance)
 {
-	return 1.0 / (1.0 / mFocalLength + 1.0 / focalDistance);
+	float F = 0.5 * 35 * matProject._22;
+	return F / (1.0 / mFocalLength + F / focalDistance);
 }
 
 float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
@@ -50,7 +51,7 @@ float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
 
-	return clamp(CoC * focalScale, -1, 1);
+	return clamp(CoC * focalScale, -2, 2);
 }
 
 float EncodeCoC(float CoC)
@@ -132,7 +133,7 @@ float4 GaussianBlurCoCNearPS(in float2 coord : TEXCOORD0, uniform sampler source
 	for(int i = -7; i < 7; i++)
 	{
 		float stepCoC = DecodeCoC(tex2Dlod(source, float4(coord + offset * i, 0, 0)).a);
-		CoCs += weights[i + 7] * (offset.x >= 0 ? saturate(-stepCoC) : stepCoC);
+		CoCs += weights[i + 7] * (offset.x >= 0 ? max(0, -stepCoC) : stepCoC);
 	}
 
 	CoCs = EncodeCoC(CoCs / weightSum);
@@ -142,7 +143,7 @@ float4 GaussianBlurCoCNearPS(in float2 coord : TEXCOORD0, uniform sampler source
 
 float4 ComputeNearCoCPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform sampler sourceBlured) : COLOR
 {
-	float shrunk = saturate(-DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a));
+	float shrunk = max(0, -DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a));
 	float4 blured = tex2Dlod(sourceBlured, float4(coord, 0, 0));
 	float4 color = float4(blured.rgb, 2 * max(shrunk, DecodeCoC(blured.a)) - shrunk);
 	return color;
@@ -164,7 +165,7 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
 
-	offset *= matProject._22 * abs(DecodeCoC(CoC));
+	offset *= abs(DecodeCoC(CoC));
 
 	coord -= offset * 7;
 
@@ -185,10 +186,12 @@ float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, un
 
 float4 GaussianBlurFarPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
+	float weights[15] = {0.0001f, 0.0009f, 0.0047f, 0.0188f, 0.0553f, 0.1196f, 0.1899f, 0.2216f, 0.1899f, 0.1196f, 0.0553f, 0.0188f, 0.0047f, 0.0009f, 0.0001f};
+	
 	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
 	clip(DecodeCoC(CoC));
 
-	offset *= abs(CoC) * matProject._22;
+	offset *= abs(CoC);
 
 	coord -= offset * 7;
 
@@ -199,7 +202,7 @@ float4 GaussianBlurFarPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uni
 	{
 		float4 color1 = tex2Dlod(source, float4(coord,0,0));
 		float weight = DecodeCoC(color1.a);
-		weight = weights[i] * max(0.0, weight) * exp2(-pow2((CoC - weight) * 8));
+		weight = weights[i] * max(0.0, weight);
 
 		color.rgb += color1.rgb * weight;
 		color.a += weight;
@@ -246,7 +249,7 @@ float4 ComputeBokehGatherPS(in float4 coord : TEXCOORD0, in float4 focalCameraPa
 	float CoCmin = min(CoCs.x, min(CoCs.y, min(CoCs.z, CoCs.w)));
 	float CoCmax = max(CoCs.x, max(CoCs.y, max(CoCs.z, CoCs.w)));
 	float CoCalpha = CoCmin * 2;
-	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalScale) * matProject._22;
+	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalScale);
 
 	float4 color;
 	color.rgb = lerp(samp2.rgb, samp1.rgb, saturate(CoCalpha));
