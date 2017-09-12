@@ -146,7 +146,7 @@ float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset)
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		float4 color = tex2Dlod(source, float4(coord, 0, 0));
-		color.a = max(0, DecodeCoC(color.a));
+		color.a = pow2(max(0, DecodeCoC(color.a)));
 		color.rgb *= color.a;
 
 		colors += color;
