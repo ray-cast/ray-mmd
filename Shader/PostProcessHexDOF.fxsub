@@ -1,7 +1,7 @@
 #define DOF_BLUR_RADIUS 10
 #define DOF_LEAKAGE_TEST 1
 
-static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
+static const float mFstop = lerp(lerp(2.8, 8.0, mFstopP), 1.0, mFstopM);
 static const float mFocalLength = lerp(lerp(2.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.5, mFocalScaleM);
@@ -41,7 +41,7 @@ float GetFocalLength(float mFocalLength, float focalDistance)
 	return F / (1.0 / mFocalLength + F / focalDistance);
 }
 
-float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
+float ComputeDepthCoC(float depth, float4 focalParams, float focalRegion)
 {
 	float D = depth;
 	float P = focalParams.x;
@@ -54,7 +54,7 @@ float ComputeDepthCoC(float depth, float4 focalParams, float focalScale)
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
 
-	return clamp(CoC * focalScale, -2, 3);
+	return clamp(pow(abs(CoC), focalRegion) * sign(CoC), -2, 3);
 }
 
 float EncodeCoC(float CoC)
@@ -75,7 +75,7 @@ float4 ComputeDepthBokehVS(
 {
 	float focalDistance = GetFocalDistance();
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
-	float focalAperture = GetFocalAperture(mAperture);
+	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
 
 	oTexcoord0 = Texcoord.xyxy;
@@ -162,20 +162,16 @@ float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset, floa
 {
 	float4 finalColor = 0.0f;
 
-	float blurAmount = 0.0f;
-	float blurCoC = max(0, DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a));
-
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		float4 color = tex2Dlod(source, float4(coord, 0, 0));
 		color.a = max(0, DecodeCoC(color.a));
+		color.rgb *= color.a;
 
-		color       *= color.a;
-		blurAmount  += color.a;
 		finalColor  += color;
 	}
 
-	return min(float4(65535, 65535, 65535, 65535), finalColor / max(0.1, blurAmount) * max(0, CoC));
+	return min(float4(65535, 65535, 65535, 65535), finalColor / max(1e-5, finalColor.a));
 }
 
 float4 ComputeHexBlurXVS(
@@ -270,7 +266,7 @@ float4 ComputeBokehGatherVS(
 {
 	float focalDistance = GetFocalDistance();
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
-	float focalAperture = GetFocalAperture(mAperture);
+	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
 
 	oTexcoord0 = Texcoord.xyxy;

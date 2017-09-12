@@ -17,7 +17,7 @@
 #define DOF_BLUR_RADIUS 12
 #define DOF_BLUR_LENGTH (DOF_BLUR_RADIUS * 2)
 
-static const float mAperture = lerp(lerp(2.8, 8.0, mApertureP), 1.0, mApertureM);
+static const float mFstop = lerp(lerp(2.8, 8.0, mFstopP), 1.0, mFstopM);
 static const float mFocalLength = lerp(lerp(2.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalScale = lerp(lerp(1.0, 5.0, mFocalScaleP), 0.5, mFocalScaleM);
@@ -117,7 +117,7 @@ float4 ComputeDepthBokehVS(
 {
 	float focalDistance = GetFocalDistance();
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
-	float focalAperture = GetFocalAperture(mAperture);
+	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
 
 	oTexcoord0 = Texcoord.xyxy;
@@ -327,7 +327,7 @@ float4 ComputeBokehGatherVS(
 {
 	float focalDistance = GetFocalDistance();
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
-	float focalAperture = GetFocalAperture(mAperture);
+	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
 
 	oTexcoord0 = Texcoord.xyxy;
