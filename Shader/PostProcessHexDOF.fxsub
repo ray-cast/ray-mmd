@@ -244,22 +244,22 @@ float4 ComputeHexBlurYFarPS(
 float4 ComputeNearDownPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
 	float4 CoC = tex2Dlod(source, float4(coord, 0, 0));
-	return DecodeCoC(CoC.a) >= 01 ? float4(CoC.rgb, 0) : float4(CoC.rgb, abs(CoC.a));
+	return CoC;
 }
 
 float4 ComputeSmoothingNearPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-	float weights[15] = {0.0001f, 0.0009f, 0.0047f, 0.0188f, 0.0553f, 0.1196f, 0.1899f, 0.2216f, 0.1899f, 0.1196f, 0.0553f, 0.0188f, 0.0047f, 0.0009f, 0.0001f};
+	float weights[5] = {1.0/16.0, 2.0/16.0, 4.0/16.0, 2.0/16.0, 1.0/16.0};
 
 	float4 CoCs = 0;
 	float weight = 0;
 
 	[unroll]
-	for(int i = -7; i < 7; i++)
+	for(int i = -2; i < 2; i++)
 	{
 		float4 stepCoC = tex2Dlod(source, float4(coord + offset * i, 0, 0));
-		CoCs += weights[i + 7] * stepCoC;
-		weight += weights[i + 7];
+		CoCs += weights[i + 2] * stepCoC;
+		weight += weights[i + 2];
 	}
 
 	return CoCs / weight;
@@ -267,9 +267,10 @@ float4 ComputeSmoothingNearPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 
 float4 ComputeNearCoCPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform sampler sourceBlured) : COLOR
 {
-	float shrunk = max(0, -DecodeCoC(tex2Dlod(source, float4(coord, 0, 0)).a));
+	float4 shrunk = tex2Dlod(source, float4(coord, 0, 0));
 	float4 blured = tex2Dlod(sourceBlured, float4(coord, 0, 0));
-	float4 color = float4(blured.rgb, 2 * max(shrunk, abs(DecodeCoC(blured.a))) - shrunk);
+	float weight = 2 * max(saturate(DecodeCoC(shrunk.a)), saturate(DecodeCoC(blured.a)));
+	float4 color = lerp(shrunk, blured, saturate(weight));
 	return color;
 }
 
@@ -281,32 +282,6 @@ float4 ComputeNearSamllBlurPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 	sum += tex2Dlod(source, float4(coord + float2(-0.5,  1.5) * offset, 0, 0));
 	sum += tex2Dlod(source, float4(coord + float2( 1.5,  0.5) * offset, 0, 0));
 	return sum / 4;
-}
-
-float4 GaussianBlurNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
-{
-	float weights[15] = {0.0001f, 0.0009f, 0.0047f, 0.0188f, 0.0553f, 0.1196f, 0.1899f, 0.2216f, 0.1899f, 0.1196f, 0.0553f, 0.0188f, 0.0047f, 0.0009f, 0.0001f};
-
-	float CoC = tex2Dlod(bokeh, float4(coord, 0, 0)).a;
-	clip(CoC - 1e-5);
-
-	offset *= abs(DecodeCoC(CoC));
-
-	coord -= offset * 7;
-
-	float4 colors = 0;
-
-	[unroll]
-	for(int i = 0; i < 15; i++, coord += offset)
-	{
-		float4 color = tex2Dlod(source, float4(coord,0,0));
-		float weight = weights[i] * max(0.1, abs(DecodeCoC(color.a)));
-
-		colors.rgb += color.rgb * weight;
-		colors.a += weight;
-	}
-
-	return float4(colors.rgb / colors.a, CoC);
 }
 
 float4 ComputeBokehGatherVS(
@@ -327,7 +302,7 @@ float4 ComputeBokehGatherVS(
 	return Position;
 }
 
-float4 ComputeBokehGatherPS(in float4 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1) : COLOR
+float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1) : COLOR
 {
 	float4 coords[4];
 	coords[0] = float4(coord.zw, 0, 0);
@@ -336,17 +311,52 @@ float4 ComputeBokehGatherPS(in float4 coord : TEXCOORD0, in float4 focalCameraPa
 	coords[3] = float4(coord.zw + float2(1.0, 1.0) / (ViewportSize * mFocalMapScale), 0, 0);
 
 	float4 samp1 = tex2Dlod(FocalBokehFarMapSamp, coords[0]);
-	float4 samp2 = tex2Dlod(FocalBokehNearMapSamp, coords[0]);
-	float4 samp3 = tex2Dlod(ShadingMapSamp, float4(coord.xy, 0, 0));
+	float4 samp2 = tex2Dlod(ShadingMapSamp, float4(coord.xy, 0, 0));
 
 	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalRegion);
 	float CoCalpha = CoC * 2;
 
 	float4 color;
-	color.rgb = lerp(samp3.rgb, samp1.rgb, pow2(saturate(CoC * 2)));
-	color.rgb = lerp(color.rgb, samp2.rgb, min(saturate(samp2.a * 2), saturate(-CoC * 2)));
-	color.rgb = lerp(color, ((CoC > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC), mVisualizationMode);
-	color.a = 1;
+	color.rgb = lerp(samp2.rgb, samp1.rgb, pow2(saturate(CoC * 2)));
+	color.a = CoC;
 
 	return color;
+}
+
+float4 PoissonGatherNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
+{
+	float2 poisson[12];
+	poisson[0]  = float2(-0.326212f, -0.40581f);
+	poisson[1]  = float2(-0.840144f, -0.07358f);
+	poisson[2]  = float2(-0.695914f,  0.457137f);
+	poisson[3]  = float2(-0.203345f,  0.620716f);
+	poisson[4]  = float2(0.96234f  , -0.194983f);
+	poisson[5]  = float2(0.473434f , -0.480026f);
+	poisson[6]  = float2(0.519456f ,  0.767022f);
+	poisson[7]  = float2(0.185461f , -0.893124f);
+	poisson[8]  = float2(0.507431f ,  0.064425f);
+	poisson[9]  = float2(0.89642f  ,  0.412458f);
+	poisson[10] = float2(-0.32194f , -0.932615f);
+	poisson[11] = float2(-0.791559f, -0.59771f);
+
+	float4 CoC = tex2Dlod(bokeh, float4(coord, 0, 0));
+	CoC.a = DecodeCoC(CoC.a);
+
+	float4 colors = float4(tex2Dlod(source, float4(coord, 0, 0)).rgb, 1);
+
+	[unroll]
+	for(int i = 0; i < 12; i++)
+	{
+		float4 color = tex2Dlod(source, float4(coord + poisson[i] * offset * 5, 0, 0));
+		float weight = max(0.0, -DecodeCoC(color.a));
+
+		colors.rgb += color.rgb * weight;
+		colors.a += weight;
+	}
+
+	colors.rgb /= colors.a;
+	colors.rgb = lerp(colors, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
+	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
+
+	return colors;
 }
