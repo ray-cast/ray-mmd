@@ -528,7 +528,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeBokehGatherVS();
-		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(FocalBokehMapPointSamp);
+		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(FocalBokehMapPointSamp, FocalBokehFarMapSamp);
 	}
 	pass ComputeNearDown<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

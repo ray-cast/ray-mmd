@@ -94,7 +94,7 @@ float4 ComputeDepthBokehVS(
 float4 ComputeDepthBokehPS(in float2 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1, uniform sampler source) : COLOR
 {
 	float CoC = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r, focalCameraParams, mFocalRegion);
-	return float4(tex2Dlod(source, float4(coord, 0, 0)).rgb, EncodeCoC(CoC));
+	return float4(min(tex2Dlod(source, float4(coord, 0, 0)).rgb, float3(65535, 65535, 65535)), EncodeCoC(CoC));
 }
 
 float4 ComputeDepthBokeh4XPS(in float2 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1, uniform sampler source) : COLOR
@@ -239,7 +239,7 @@ float4 ComputeHexBlurYFarPS(
 	float4 color1 = ComputeHexagonalFarBlur(vertical, coord1, blurDirection1);
 	float4 color2 = ComputeHexagonalFarBlur(diagonal, coord2, blurDirection2);
 
-   	return float4((color1.rgb + color2.rgb) * (1.0f / 3.0f), 1);
+   	return float4((color1.rgb + color2.rgb) * (1.0f / 3.0f), CoC);
 }
 
 float4 ComputeNearDownPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
@@ -291,19 +291,14 @@ float4 ComputeBokehGatherVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float focalDistance = GetFocalDistance();
-	float focalLength = GetFocalLength(mFocalLength, focalDistance);
-	float focalAperture = GetFocalAperture(mFstop);
-	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
-
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw += float2(0.5, 0.5) / (ViewportSize * mFocalMapScale);
-	oTexcoord1 = focalCameraParams;
+
 	return Position;
 }
 
-float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, uniform sampler bokeh, in float4 focalCameraParams : TEXCOORD1) : COLOR
+float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source) : COLOR
 {
 	float4 coords[4];
 	coords[0] = float4(coord.zw, 0, 0);
@@ -311,7 +306,7 @@ float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, uniform sampler boke
 	coords[2] = float4(coord.zw + float2(0.0, 1.0) / (ViewportSize * mFocalMapScale), 0, 0);
 	coords[3] = float4(coord.zw + float2(1.0, 1.0) / (ViewportSize * mFocalMapScale), 0, 0);
 
-	float4 samp1 = tex2Dlod(FocalBokehFarMapSamp, coords[0]);
+	float4 samp1 = tex2Dlod(source, coords[0]);
 	float4 samp2 = tex2Dlod(ShadingMapSamp, float4(coord.xy, 0, 0));
 
 	float4 CoC = tex2Dlod(bokeh, float4(coord.xy, 0, 0));
