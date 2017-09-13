@@ -70,7 +70,7 @@ Features :
 * SMAA PostProcess
 * Reinhard/Hable/ACES-like tone-mapping
 
-Contact
+Contact :
 ------------
 
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
@@ -98,7 +98,7 @@ Contact
 	AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Digging Deeper
+References :
 --------
 * Moving to the Next Generation - The Rendering Technology of Ryse \[[link](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)\].
 * ACES Filmic Tone Mapping Curve \[[link](https://knarkowicz.wordpress.com/2016/08/31/hdr-display-first-steps/)\].
