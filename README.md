@@ -63,6 +63,7 @@ Features :
 * Screen Space Ambient Occlusition
 * Screen Space Subsurface Scattering
 * Color Balance PostProcess
+* Bokeh Depth Of Field PostProcess
 * HDR PostProcess
 * Bloom PostProcess
 * FXAA PostProcess
@@ -122,3 +123,4 @@ Digging Deeper
 * Gaussian-kernel-calculator \[[link](http://dev.theomader.com/gaussian-kernel-calculator/)\]
 * Ray Box Intersection on the GPU \[[link](https://github.com/hpicgs/cgsee/wiki/Ray-Box-Intersection-on-the-GPU)\]
 * Hexagonal Bokeh Blur Revisited \[[link](https://colinbarrebrisebois.com/2017/04/18/hexagonal-bokeh-blur-revisited/)\]
+* Practical Post-Process Depth of Field \[[link](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch28.html)\]
