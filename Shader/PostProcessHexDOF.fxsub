@@ -2,7 +2,7 @@
 #define DOF_LEAKAGE_TEST 1
 
 static const float mFstop = lerp(lerp(2.8, 8.0, mFstopP), 1.0, mFstopM);
-static const float mFocalLength = lerp(lerp(2.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
+static const float mFocalLength = lerp(lerp(1.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalRegion = lerp(lerp(1.0, 5.0, mFocalRegionP), 0.5, mFocalRegionM);
 static const float mFilmSize = 35.0f;
@@ -325,36 +325,34 @@ float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, in float4 focalCamer
 
 float4 PoissonGatherNearPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
-	float2 poisson[12];
-	poisson[0]  = float2(-0.326212f, -0.40581f);
-	poisson[1]  = float2(-0.840144f, -0.07358f);
-	poisson[2]  = float2(-0.695914f,  0.457137f);
-	poisson[3]  = float2(-0.203345f,  0.620716f);
-	poisson[4]  = float2(0.96234f  , -0.194983f);
-	poisson[5]  = float2(0.473434f , -0.480026f);
-	poisson[6]  = float2(0.519456f ,  0.767022f);
-	poisson[7]  = float2(0.185461f , -0.893124f);
-	poisson[8]  = float2(0.507431f ,  0.064425f);
-	poisson[9]  = float2(0.89642f  ,  0.412458f);
-	poisson[10] = float2(-0.32194f , -0.932615f);
-	poisson[11] = float2(-0.791559f, -0.59771f);
+	float2 poisson[36] =
+	{
+		-1.0,  0.0, -2.0,  0.0, -3.0,  0.0, 3.0,  0.0,
+		 2.0,  0.0,  1.0,  0.0, -1.0, -1.0,-2.0, -1.0,
+		-3.0, -1.0,  0.0, -1.0,  3.0, -1.0, 2.0, -1.0, 
+		 1.0, -1.0, -1.0,  1.0, -2.0,  1.0, 3.0,  1.0,
+		 0.0,  1.0,  3.0,  1.0,  2.0,  1.0, 1.0,  1.0,
+		-2.0,  2.0, -1.0,  2.0,  0.0,  2.0, 1.0,  2.0, 
+		 2.0,  2.0, -2.0, -2.0, -1.0, -2.0, 0.0, -2.0,
+		 1.0, -2.0,  2.0, -2.0, -1.0,  3.0, 0.0,  3.0, 
+		 1.0,  3.0, -1.0, -3.0,  0.0, -3.0, 1.0, -3.0,
+	};
 
 	float4 CoC = tex2Dlod(bokeh, float4(coord, 0, 0));
 	CoC.a = DecodeCoC(CoC.a);
 
+	offset *= (saturate(-CoC.a) + 1.96);
+
 	float4 colors = float4(tex2Dlod(source, float4(coord, 0, 0)).rgb, 1);
 
 	[unroll]
-	for(int i = 0; i < 12; i++)
+	for(int i = 0; i < 36; i++)
 	{
-		float4 color = tex2Dlod(source, float4(coord + poisson[i] * offset * 5, 0, 0));
-		float weight = max(0.0, -DecodeCoC(color.a));
-
-		colors.rgb += color.rgb * weight;
-		colors.a += weight;
+		float4 color = tex2Dlod(source, float4(coord + poisson[i] * offset, 0, 0));
+		colors.rgb += color.rgb;
 	}
 
-	colors.rgb /= colors.a;
+	colors.rgb /= 37;
 	colors.rgb = lerp(colors, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
 	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
 
