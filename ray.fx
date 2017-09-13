@@ -510,7 +510,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeDepthBokehVS();
-		PixelShader  = compile ps_3_0 ComputeDepthBokehPS(ShadingMapSamp);
+		PixelShader  = compile ps_3_0 ComputeDepthBokehPS(ShadingMapPointSamp);
 	}
 	pass ComputeHexBlurFarX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
