@@ -7,7 +7,7 @@ static const float mFocalLength = lerp(lerp(1.0, 20.0, mFocalLengthP), 1e-5, mFo
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalRegion = lerp(lerp(1.0, 5.0, mFocalRegionP), 0.5, mFocalRegionM);
 static const float mFilmSize = 35.0f;
-static const float mFocalMapScale = 1;
+static const float mFocalMapScale = 0.5;
 static const float mAngle = 1.24;
 
 static const float2 mFocalStepScale = 1024 * float2(ViewportAspect, 1);
@@ -244,8 +244,35 @@ float4 ComputeHexBlurYFarPS(
 
 float4 ComputeNearDownPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
-	float4 CoC = tex2Dlod(source, float4(coord, 0, 0));
-	return CoC;
+	float4 coords[4];
+	coords[0] = float4(coord, 0, 0);
+	coords[1] = float4(coord + float2(ViewportOffset2.x, 0), 0, 0);
+	coords[2] = float4(coord + float2(0, ViewportOffset2.y), 0, 0);
+	coords[3] = float4(coord + float2(ViewportOffset2.x, ViewportOffset2.y), 0, 0);
+
+	float4 colors[4];
+	colors[0] = tex2Dlod(source, coords[0]);
+	colors[1] = tex2Dlod(source, coords[1]);
+	colors[2] = tex2Dlod(source, coords[2]);
+	colors[3] = tex2Dlod(source, coords[3]);
+
+	float4 CoC = float4(colors[0].w, colors[1].w, colors[2].w, colors[3].w);
+
+	float4 color = 0;
+	color.rgb += colors[0].rgb * abs(CoC.x);
+	color.rgb += colors[1].rgb * abs(CoC.y);
+	color.rgb += colors[2].rgb * abs(CoC.z);
+	color.rgb += colors[3].rgb * abs(CoC.w);
+	color.rgb /= dot(abs(CoC), 1.0f);
+
+	color.a = CoC.x;
+	if(abs(color.a) > CoC.y) color.a = CoC.y;
+	if(abs(color.a) > CoC.z) color.a = CoC.z;
+	if(abs(color.a) > CoC.w) color.a = CoC.w;
+	if(color.a > 0)	color.a = dot(0.25f, max(0, CoC));
+	color.a = EncodeCoC(color.a);
+
+	return min(color, float4(65535, 65535, 65535, 65535));
 }
 
 float4 ComputeSmoothingNearPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
@@ -288,11 +315,18 @@ float4 ComputeNearSamllBlurPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 float4 ComputeBokehGatherVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0) : POSITION
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
+	float focalDistance = GetFocalDistance();
+	float focalLength = GetFocalLength(mFocalLength, focalDistance);
+	float focalAperture = GetFocalAperture(mFstop);
+	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
+
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw += float2(0.5, 0.5) / (ViewportSize * mFocalMapScale);
+	oTexcoord1 = focalCameraParams;
 
 	return Position;
 }
@@ -313,12 +347,12 @@ float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, uniform sampler boke
 
 	float4 color;
 	color.rgb = lerp(samp2.rgb, samp1.rgb, pow2(saturate(CoC.a * 2)));
-	color.a = CoC;
+	color.a = CoC.a;
 
 	return color;
 }
 
-float4 ComputeBokehGatherFinalPS(in float2 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
+float4 ComputeBokehGatherFinalPS(in float2 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1, uniform sampler bokeh, uniform sampler source, uniform float2 offset) : COLOR
 {
 	static const float2 poisson[DOF_POSSION_SAMPLES] =
 	{
@@ -343,6 +377,8 @@ float4 ComputeBokehGatherFinalPS(in float2 coord : TEXCOORD0, uniform sampler bo
 		float4 color = tex2Dlod(source, float4(coord + poisson[i] * offset, 0, 0));
 		colors.rgb += color.rgb;
 	}
+
+	CoC.a = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalRegion);
 
 	colors.rgb /= (DOF_POSSION_SAMPLES + 1);
 	colors.rgb = lerp(colors, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
