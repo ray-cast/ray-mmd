@@ -3,7 +3,7 @@
 #define DOF_POSSION_SAMPLES 36
 
 static const float mFstop = lerp(lerp(2.8, 8.0, mFstopP), 1.0, mFstopM);
-static const float mFocalLength = lerp(lerp(1.0, 100.0, mFocalLengthP), 1e-5, mFocalLengthM);
+static const float mFocalLength = lerp(lerp(1.0, 20.0, mFocalLengthP), 1e-5, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalRegion = lerp(lerp(1.0, 5.0, mFocalRegionP), 0.5, mFocalRegionM);
 static const float mFilmSize = 35.0f;
@@ -288,8 +288,7 @@ float4 ComputeNearSamllBlurPS(in float2 coord : TEXCOORD0, uniform sampler sourc
 float4 ComputeBokehGatherVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+	out float4 oTexcoord0 : TEXCOORD0) : POSITION
 {
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;

@@ -16,6 +16,12 @@
 #	define SSDO_LOW_SAMPLER_COUNT 12
 #endif
 
+#if SSDO_QUALITY >= 5
+#	define SSDO_UNROLL
+#else
+#	define SSDO_UNROLL [unroll]
+#endif
+
 static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),
@@ -78,7 +84,7 @@ float4 ScreenSpaceDirOccLowPS(
 	float4 sampleOcclustion = 0.0f;
 	float2 sampleRadius = SSDOParams2.w * SSDORadius * ViewportAspect / SSDO_LOW_SAMPLER_COUNT;
 
-	[unroll]
+	SSDO_UNROLL
 	for (int i = 1; i <= SSDO_LOW_SAMPLER_COUNT; i++)
 	{
 		float2 angle;
@@ -86,7 +92,7 @@ float4 ScreenSpaceDirOccLowPS(
 		sampleRotate[i - 1] = angle * sampleRadius * i * 0.5;
 	}
 
-	[unroll]
+	SSDO_UNROLL
 	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
@@ -168,7 +174,7 @@ float4 ScreenSpaceDirOccMediumPS(
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
-	[unroll]
+	SSDO_UNROLL
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
 		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius;
@@ -177,7 +183,7 @@ float4 ScreenSpaceDirOccMediumPS(
 		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius;
 	}
 
-	[unroll]
+	SSDO_UNROLL
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
