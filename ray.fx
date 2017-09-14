@@ -230,7 +230,7 @@ technique DeferredLighting<
 #endif
 
 #if BOKEH_QUALITY
-	"RenderColorTarget=FocalBokehMap; Pass=ComputeDepthBokeh;"
+	"RenderColorTarget0=FocalBokehMap; Pass=ComputeDepthBokeh;"
 
 	"RenderColorTarget0=FocalBlur1Map;"
 	"RenderColorTarget1=FocalBlur2Map;"
@@ -242,7 +242,7 @@ technique DeferredLighting<
 	"Clear=Color;"
 	"Pass=ComputeHexBlurFarY;"
 
-	"RenderColorTarget=ShadingMapTemp;	Pass=ComputeBokehFarGather;"
+	"RenderColorTarget=FocalBokehTempMap; Pass=ComputeBokehFarGather;"
 
 	"RenderColorTarget=FocalBokehCoCNearMap; Pass=ComputeNearDown;"
 	"RenderColorTarget=FocalBokehTempMap;    Clear=Color; Pass=ComputeSmoothingNearX;"
@@ -528,13 +528,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeBokehGatherVS();
-		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(FocalBokehMapPointSamp, FocalBokehFarMapSamp);
+		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(FocalBokehMapSamp, FocalBokehFarMapSamp);
 	}
 	pass ComputeNearDown<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(1.0 / (ViewportSize * mFocalMapScale));
-		PixelShader  = compile ps_3_0 ComputeNearDownPS(ShadingMapTempPointSamp, float2(1.0 / mFocalStepScale.x, 0));
+		PixelShader  = compile ps_3_0 ComputeNearDownPS(FocalBokehTempMapPointSamp, float2(1.0 / mFocalStepScale.x, 0));
 	}
 	pass ComputeSmoothingNearX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

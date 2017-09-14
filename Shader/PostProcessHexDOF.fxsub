@@ -2,7 +2,7 @@
 #define DOF_LEAKAGE_TEST 1
 #define DOF_POSSION_SAMPLES 36
 
-static const float mFstop = lerp(lerp(2.8, 8.0, mFstopP), 1.0, mFstopM);
+static const float mFstop = lerp(lerp(1.8, 8.0, mFstopP), 1.0, mFstopM);
 static const float mFocalLength = lerp(lerp(1.0, 20.0, mFocalLengthP), 1e-5, mFocalLengthM);
 static const float mFocalDistance = lerp(lerp(1, 100.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static const float mFocalRegion = lerp(lerp(1.0, 5.0, mFocalRegionP), 0.5, mFocalRegionM);
@@ -18,13 +18,12 @@ texture FocalBokehCoCNearMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMap
 texture FocalBokehTempMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 texture FocalBokehMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 texture FocalBokehFarMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
-texture FocalBokehNearMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 
 sampler FocalBokehFarMapSamp = sampler_state { texture=<FocalBokehFarMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
-sampler FocalBokehNearMapSamp = sampler_state { texture=<FocalBokehNearMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBokehCoCNearMapSamp = sampler_state { texture=<FocalBokehCoCNearMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBokehCoCNearMapPointSamp = sampler_state { texture=<FocalBokehCoCNearMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBokehTempMapSamp = sampler_state { texture=<FocalBokehTempMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler FocalBokehTempMapPointSamp = sampler_state { texture=<FocalBokehTempMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBlur1MapSamp = sampler_state { texture=<FocalBlur1Map>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBlur2MapSamp = sampler_state { texture=<FocalBlur2Map>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBokehMapSamp = sampler_state { texture=<FocalBokehMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
@@ -333,21 +332,14 @@ float4 ComputeBokehGatherVS(
 
 float4 ComputeBokehFarGatherPS(in float4 coord : TEXCOORD0, uniform sampler bokeh, uniform sampler source) : COLOR
 {
-	float4 coords[4];
-	coords[0] = float4(coord.zw, 0, 0);
-	coords[1] = float4(coord.zw + float2(1.0, 0.0) / (ViewportSize * mFocalMapScale), 0, 0);
-	coords[2] = float4(coord.zw + float2(0.0, 1.0) / (ViewportSize * mFocalMapScale), 0, 0);
-	coords[3] = float4(coord.zw + float2(1.0, 1.0) / (ViewportSize * mFocalMapScale), 0, 0);
+	float4 samp1 = tex2Dlod(bokeh, float4(coord.zw, 0, 0));
+	float4 samp2 = tex2Dlod(source, float4(coord.zw, 0, 0));
 
-	float4 samp1 = tex2Dlod(source, coords[0]);
-	float4 samp2 = tex2Dlod(ShadingMapSamp, float4(coord.xy, 0, 0));
-
-	float4 CoC = tex2Dlod(bokeh, float4(coord.xy, 0, 0));
-	CoC.a = DecodeCoC(CoC.a);
+	samp1.a = DecodeCoC(samp1.a);
 
 	float4 color;
-	color.rgb = lerp(samp2.rgb, samp1.rgb, pow2(saturate(CoC.a * 2)));
-	color.a = CoC.a;
+	color.rgb = lerp(samp1.rgb, samp2.rgb, pow2(saturate(samp1.a * 2)));
+	color.a = samp1.a;
 
 	return color;
 }
@@ -381,7 +373,7 @@ float4 ComputeBokehGatherFinalPS(in float2 coord : TEXCOORD0, in float4 focalCam
 	CoC.a = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0)).r, focalCameraParams, mFocalRegion);
 
 	colors.rgb /= (DOF_POSSION_SAMPLES + 1);
-	colors.rgb = lerp(colors, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
+	colors.rgb = lerp(colors.rgb, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
 	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
 
 	return colors;
