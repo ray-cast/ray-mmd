@@ -534,7 +534,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(1.0 / (ViewportSize * mFocalMapScale));
-		PixelShader  = compile ps_3_0 ComputeNearDownPS(FocalBokehTempMapPointSamp, float2(1.0 / mFocalStepScale.x, 0));
+		PixelShader  = compile ps_3_0 ComputeNearDownPS(FocalBokehTempMapPointSamp, 1.0 / mFocalStepScale);
 	}
 	pass ComputeSmoothingNearX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
