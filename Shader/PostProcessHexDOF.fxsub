@@ -1,6 +1,6 @@
 #define DOF_BLUR_RADIUS 10
 #define DOF_LEAKAGE_TEST 1
-#define DOF_POSSION_SAMPLES 36
+#define DOF_POSSION_SAMPLES 37
 
 static const float mFstop = lerp(lerp(1.8, 8.0, mFstopP), 1.0, mFstopM);
 static const float mFocalLength = lerp(lerp(35.0, 70.0, mFocalLengthP), 1e-5, mFocalLengthM);
@@ -348,12 +348,13 @@ float4 ComputeBokehGatherFinalPS(in float4 coord : TEXCOORD0, in float4 focalCam
 {
 	static const float2 poisson[DOF_POSSION_SAMPLES] =
 	{
-		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2( 3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
-		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2( 0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0),
-		float2( 1.0, -1.0), float2(-1.0,  1.0), float2(-2.0,  1.0), float2( 3.0,  1.0), float2(0.0,  1.0), float2(3.0,  1.0),
-		float2( 2.0,  1.0), float2( 1.0,  1.0), float2(-2.0,  2.0), float2(-1.0,  2.0), float2(0.0,  2.0), float2(1.0,  2.0),
-		float2( 2.0,  2.0), float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2(1.0, -2.0), float2(2.0, -2.0),
-		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0), float2(-1.0, -3.0), float2(0.0, -3.0), float2(1.0, -3.0),
+		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2( 0.0,  0.0), float2(3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
+		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2( 0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0), float2(1.0, -1.0),
+		float2(-1.0,  1.0), float2(-2.0,  1.0), float2(-3.0,  1.0), float2( 0.0,  1.0), float2(3.0,  1.0), float2(2.0,  1.0), float2(1.0,  1.0),
+		float2(-2.0,  2.0), float2(-1.0,  2.0), float2( 0.0,  2.0), float2( 1.0,  2.0), float2(2.0,  2.0),
+		float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2( 1.0, -2.0), float2(2.0, -2.0),
+		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0),
+		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
 	};
 
 	float4 CoC = tex2Dlod(bokeh, float4(coord.xy, 0, 0));
@@ -370,7 +371,7 @@ float4 ComputeBokehGatherFinalPS(in float4 coord : TEXCOORD0, in float4 focalCam
 
 	CoC.a = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.zw, 0, 0)).r, focalCameraParams, mFocalRegion);
 
-	colors.rgb /= (DOF_POSSION_SAMPLES + 1);
+	colors.rgb /= float(DOF_POSSION_SAMPLES);
 	colors.rgb = lerp(colors.rgb, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
 	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
 
