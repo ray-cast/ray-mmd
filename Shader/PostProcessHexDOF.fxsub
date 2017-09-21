@@ -30,7 +30,7 @@ sampler FocalBokehMapPointSamp = sampler_state { texture=<FocalBokehMap>; MinFil
 
 float GetFocalDistance()
 {
-	float focalDistance = step(0.5, mManualMode) ? mFocalDistance : distance(CameraPosition, AcsPosition) + mFocalDistance;
+	float focalDistance = step(0.5, mManualMode) ? mFocalDistance : distance(CameraPosition, AcsPosition) + mFocalDistance - 1;
 	return max(1, focalDistance);
 }
 
