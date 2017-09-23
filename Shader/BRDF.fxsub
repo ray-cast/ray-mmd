@@ -232,7 +232,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 		specular = ClearCoatShading(material, nh, nl, vh, nv, roughness, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
-	else if (material.lightModel == SHADINGMODELID_HAIR)
+	else if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
@@ -259,7 +259,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 		specular = ClearCoatShading(material, nh, nl, vh, nv, roughness, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
-	else if (material.lightModel == SHADINGMODELID_HAIR)
+	else if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);

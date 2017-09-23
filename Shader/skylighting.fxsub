@@ -83,7 +83,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
 
-	if (material.lightModel == SHADINGMODELID_HAIR)
+	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 	{
 		float3 X = normalize(cross(N, float3(0,1,0)) + N * material.customDataB.r);
 		float3 Y = normalize(cross(N, X) + N * material.customDataB.r);
