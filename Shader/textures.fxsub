@@ -136,6 +136,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
+#if SSDO_QUALITY
 texture SSAOVisibility : OFFSCREENRENDERTARGET<
 	string Description = "SSAO visibility for ray";
 	float2 ViewportRatio = {1.0, 1.0};
@@ -155,6 +156,7 @@ sampler SSAOVisibilitySamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+#endif
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
 shared texture PSSM : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";

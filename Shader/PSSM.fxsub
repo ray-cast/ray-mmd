@@ -17,7 +17,7 @@
 #	define SHADOW_MAP_SIZE 1024
 #endif
 
-#define SHADOW_MAP_OFFSET  (1.0 / SHADOW_MAP_SIZE)
+#define SHADOW_MAP_OFFSET (1.0 / SHADOW_MAP_SIZE)
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, mLightZMax);
 static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance);
