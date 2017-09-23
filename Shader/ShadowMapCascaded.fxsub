@@ -91,8 +91,14 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	float4 unit = (cropBB.zwzw - cropBB.xyxy) * 2 / shadowMapSize;
 	cropBB = floor(cropBB / unit) * unit;
 
+	// approximate flickering removal
+	float quantizer = 64.0f;
+
 	float2 scale = 2.0 / (cropBB.zw - cropBB.xy);
+	scale = quantizer / ceil(quantizer / scale);
+
 	float2 offset = -0.5 * (cropBB.xy + cropBB.zw) * scale;
+	offset = ceil(offset * shadowMapSize * 0.5f) / (shadowMapSize * 0.5f);
 
 	return float4(scale, offset);
 }
