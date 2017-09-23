@@ -59,7 +59,7 @@ sampler SSRayTracingSamp = sampler_state {
 };
 #endif
 
-#if SHADOW_QUALITY > 0
+#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 shared texture PSSM : OFFSCREENRENDERTARGET;
 sampler PSSMsamp = sampler_state {
 	texture = <PSSM>;
@@ -133,7 +133,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += tex2Dlod(SSRayTracingSamp, float4(coord, 0, 0)).rgb * showSSR;
 	#endif
 
-	#if SHADOW_QUALITY > 0
+	#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 		result += pow(saturate(tex2Dlod(PSSMsamp, float4(coord, 0, 0)).r / 1500), 2) * showPSSM;
 	#endif
 
