@@ -2,9 +2,6 @@
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 
-float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
-float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
-float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
 float mColBalanceRP : CONTROLOBJECT<string name="(self)"; string item = "BalanceR+";>;
 float mColBalanceGP : CONTROLOBJECT<string name="(self)"; string item = "BalanceG+";>;
 float mColBalanceBP : CONTROLOBJECT<string name="(self)"; string item = "BalanceB+";>;
@@ -14,16 +11,11 @@ float mColBalanceBM : CONTROLOBJECT<string name="(self)"; string item = "Balance
 float mColBalance  :  CONTROLOBJECT<string name="(self)"; string item = "BalanceGray+";>;
 
 #if SKYBOX_WITHOUT_ENV_ROTATION == 0
-static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
-#endif
+float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
+float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
+float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
 
-#if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
-shared texture2D ShadowmapMap : RENDERCOLORTARGET;
-sampler ShadowmapSamp = sampler_state {
-	texture = <ShadowmapMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU  = CLAMP;  AddressV = CLAMP;
-};
+static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 #endif
 
 #if SKYBOX_BLUR_ENABLE
