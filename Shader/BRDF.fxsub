@@ -131,10 +131,10 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 	return fresnel * spec;
 }
 
-float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, float nv, float3 specular, float roughness, float anisotropic, float NormalizationFactor)
+float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, float nv, float3 specular, float roughness, float anisotropic, float3 shift, float NormalizationFactor)
 {
-	float3 X = cross(N, float3(0,1,0));
-	float3 Y = cross(N, X);
+	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift.r);
+	float3 Y = normalize(cross(N, X) + N * shift.r);
 
 	float aspect = rsqrt(1.0 - anisotropic * 0.9);
 	float ax = 1.0 / (roughness * aspect);
@@ -233,7 +233,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_HAIR)
-		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, normalizeFactor);
+		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
@@ -260,7 +260,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_HAIR)
-		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, normalizeFactor);
+		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB, normalizeFactor);
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 

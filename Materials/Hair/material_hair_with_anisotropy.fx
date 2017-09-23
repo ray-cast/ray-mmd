@@ -48,7 +48,7 @@ const float normalSubMapLoopNum = 80.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.7;
+const float smoothness = 0.8;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -115,13 +115,13 @@ const float2 emissiveMapLoopNum = 1.0;
 const float customA = 0.9;
 const float customAMapLoopNum = 1.0;
 
-#define CUSTOM_B_MAP_FROM 0
+#define CUSTOM_B_MAP_FROM 1
 #define CUSTOM_B_MAP_UV_FLIP 0
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_APPLY_SCALE 0
-#define CUSTOM_B_MAP_FILE "custom.png"
+#define CUSTOM_B_MAP_FILE "shift2.png"
 
 const float3 customB = 0.0;
-const float2 customBMapLoopNum = 1.0;
+const float2 customBMapLoopNum = 8.0;
 
 #include "../material_common_2.0.fxsub"
