@@ -1,5 +1,3 @@
-#define WARP_RANGE 8
-
 float4x4 CreateOrthoProject(float width, float height, float near, float far)
 {
 	float cx = 2.0f / width;
@@ -88,12 +86,9 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	minBB = min(float4(vltn, vltf), minBB);
 	maxBB = max(float4(vltn, vltf), maxBB);
 
-	const float normalizeByBufferSize = 2.0 / shadowMapSize;
-	const float scaleDuetoBlureAMT = (WARP_RANGE * 2.0 + 1) * normalizeByBufferSize * 0.5;
-
 	float4 cropBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
-	cropBB += (cropBB.xyzw - cropBB.zwxy) * scaleDuetoBlureAMT;
-	float4 unit = (cropBB.zwzw - cropBB.xyxy) * normalizeByBufferSize;
+	cropBB += (cropBB.xyzw - cropBB.zwxy) * (mPSSMPadding * 2.0 + 1) / shadowMapSize;
+	float4 unit = (cropBB.zwzw - cropBB.xyxy) * 2 / shadowMapSize;
 	cropBB = floor(cropBB / unit) * unit;
 
 	float2 scale = 2.0 / (cropBB.zw - cropBB.xy);
@@ -116,8 +111,8 @@ float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float shadow
 
 float CalcEdgeFalloff(float2 coord, int shadowMapSize, float shadowMapOffset)
 {
-	const float m = shadowMapSize * 0.5 / WARP_RANGE;
-	const float a = shadowMapOffset * 1.0 / WARP_RANGE;
+	const float m = shadowMapSize * 0.5 / mPSSMPadding;
+	const float a = shadowMapOffset * 1.0 / mPSSMPadding;
 	float2 falloff = abs(coord) * (-m * 4.0) + (m - a);
 	return saturate(min(falloff.x, falloff.y));
 }
