@@ -55,7 +55,7 @@ float4 CreateFrustumFromProjInverse()
 	return float4(r, l, t, b);
 }
 
-float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frustumInfo, int shadowMapSize, float near, float far)
+float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumInfo, int shadowMapSize, float near, float far)
 {
 	float4 zfar = float4(far.xxx, 1);
 	float4 znear = float4(near.xxx, 1);
@@ -88,30 +88,30 @@ float4 CreateLightProjParameter(float4x4 matLightViewFromCameraView, float4 frus
 	minBB = min(float4(vltn, vltf), minBB);
 	maxBB = max(float4(vltn, vltf), maxBB);
 
-	float4 orthographicBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
-
 	const float normalizeByBufferSize = 2.0 / shadowMapSize;
 	const float scaleDuetoBlureAMT = (WARP_RANGE * 2.0 + 1) * normalizeByBufferSize * 0.5;
 
-	orthographicBB += (orthographicBB.xyzw - orthographicBB.zwxy) * scaleDuetoBlureAMT;
-	float4 unit = (orthographicBB.zwzw - orthographicBB.xyxy) * normalizeByBufferSize;
-	orthographicBB = floor(orthographicBB / unit) * unit;
+	float4 cropBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
+	cropBB += (cropBB.xyzw - cropBB.zwxy) * scaleDuetoBlureAMT;
+	float4 unit = (cropBB.zwzw - cropBB.xyxy) * normalizeByBufferSize;
+	cropBB = floor(cropBB / unit) * unit;
 
-	float2 invBB = 1.0 / (orthographicBB.zw - orthographicBB.xy);
-	float2 endPos = -(orthographicBB.xy + orthographicBB.zw);
-	return float4(2.0, 2.0, endPos.xy) * invBB.xyxy;
+	float2 scale = 2.0 / (cropBB.zw - cropBB.xy);
+	float2 offset = -0.5 * (cropBB.xy + cropBB.zw) * scale;
+
+	return float4(scale, offset);
 }
 
-float4x4 CreateLightProjParameters(float4x4 matLightViewFromCameraView, float shadowMapSize)
+float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float shadowMapSize)
 {
 	const float4 frustumInfo = CreateFrustumFromProjInverse();
 	const float4 frustumSplit = CreateFrustumSplitPoint(mPSSMCascadeZMin, mPSSMCascadeZMax, mPSSMCascadeLambda);
 
 	return float4x4(
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, mPSSMCascadeZMin, frustumSplit.x),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.x, frustumSplit.y),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
-		CreateLightProjParameter(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, mPSSMCascadeZMin, frustumSplit.x),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.x, frustumSplit.y),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
 }
 
 float CalcEdgeFalloff(float2 coord, int shadowMapSize, float shadowMapOffset)

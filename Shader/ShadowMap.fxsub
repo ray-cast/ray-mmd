@@ -5,7 +5,7 @@ static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
 float ShadowPCF(float2 coord, float receiverDepth, int samples = 2)
 {
@@ -46,11 +46,11 @@ float4 ShadowMapGenPS(
 	float3 viewPosition = view * material.linearDepth / view.z;
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
-	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
-	float4 LightPPos23 = proj.xyxy * float4(lightParam[2].xy, lightParam[3].xy);
+	float4 LightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy);
+	float4 LightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy);
 
-	LightPPos01 += float4(lightParam[0].zw, lightParam[1].zw);
-	LightPPos23 += float4(lightParam[2].zw, lightParam[3].zw);
+	LightPPos01 += float4(lightCropParams[0].zw, lightCropParams[1].zw);
+	LightPPos23 += float4(lightCropParams[2].zw, lightCropParams[3].zw);
 
 	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
 	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
