@@ -28,7 +28,7 @@ static const float LightRange = lerp(lerp(1000, 2000, mRangeP), 0, mRangeM);
 static const float3 LightPosition = mPosition;
 static const float3 LightDirection = normalize(mDirection - mPosition);
 
-static const float4x4 matLightProject = CreateOrthoProject(2, 2, 0, mLightZMax);
+static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
@@ -60,7 +60,7 @@ void CascadeShadowMapVS(
 	oTexcoord1.xy = oTexcoord1.xy * 0.5 + offset.xy * 0.5f;
 
 	oPosition = oTexcoord1;
-	oPosition.z /= mLightZMax;
+	oPosition.z /= mPSSMDepthZMax;
 }
 
 float4 CascadeShadowMapPS(

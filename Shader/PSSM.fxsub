@@ -19,7 +19,7 @@
 
 #define SHADOW_MAP_OFFSET (1.0 / SHADOW_MAP_SIZE)
 
-static float4x4 matLightProject = CreateOrthoProject(2, 2, 0, mLightZMax);
+static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
@@ -55,7 +55,7 @@ void CascadeShadowMapVS(
 	oTexcoord1.xy = oTexcoord1.xy * 0.5 + offset.xy * 0.5f;
 
 	oPosition = oTexcoord1;
-	oPosition.z /= mLightZMax;
+	oPosition.z /= mPSSMDepthZMax;
 }
 
 float4 CascadeShadowMapPS(

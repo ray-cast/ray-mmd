@@ -75,7 +75,7 @@ sampler PSSMsamp = sampler_state {
 static const float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
 static const float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
-static const float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, 0, mLightZMax);
+static const float4x4 matLightProject = CreateOrthoProject(2.0, 2.0, mPSSMDepthZMin, mPSSMDepthZMax);
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
@@ -130,7 +130,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = proj.z;
 
-	float depthSlope = ShadowSlopeScaledBias(proj.z / mLightZMax) * mLightZMax;
+	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
 	receiverDepth -= (viewPosition.z + depthSlope) * 0.003 + max(0, viewPosition.z - 100) * 0.007;
 
 	clip(casterDepth1 + casterDepth0 - 1e-5);
