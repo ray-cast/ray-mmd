@@ -2,8 +2,6 @@
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 
-bool ExistRay : CONTROLOBJECT<string name = "ray.x";>;
-
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
 float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
@@ -14,7 +12,10 @@ float mColBalanceRM : CONTROLOBJECT<string name="(self)"; string item = "Balance
 float mColBalanceGM : CONTROLOBJECT<string name="(self)"; string item = "BalanceG-";>;
 float mColBalanceBM : CONTROLOBJECT<string name="(self)"; string item = "BalanceB-";>;
 float mColBalance  :  CONTROLOBJECT<string name="(self)"; string item = "BalanceGray+";>;
+
+#if SKYBOX_WITHOUT_ENV_ROTATION == 0
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
+#endif
 
 #if SKYDOME_ENABLE && SHADOW_QUALITY && MAIN_LIGHT_ENABLE
 shared texture2D ShadowmapMap : RENDERCOLORTARGET;
@@ -26,36 +27,22 @@ sampler ShadowmapSamp = sampler_state {
 #endif
 
 #if SKYBOX_BLUR_ENABLE
-texture SkyboxBlurMap<string ResourceName = SKYBOX_BLUR_MAP_FILE;>;
-sampler SkyboxBlurMapSamp = sampler_state {
-	texture = <SkyboxBlurMap>;
+	texture SkyboxMap<string ResourceName = SKYBOX_BLUR_MAP_FILE; int Miplevels = SKYBOX_BLUR_MIPMAP_LEVEL + 1;>;
+#elif SKYBOX_HDR_ENABLE
+	texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE; int Miplevels = 1;>;
+#else
+	texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE; int Miplevels = 1;>;
+#endif
+sampler SkyboxMapSamp = sampler_state
+{
+	texture = <SkyboxMap>;
+#if SKYBOX_BLUR_ENABLE
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+#else
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+#endif
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
-#endif
-
-#if SKYBOX_BLUR_ENABLE == 0
-	#if SKYBOX_HDR_ENABLE
-		texture SkyboxMap<string ResourceName = SKYBOX_HDR_FILE; int Miplevels = 1;>;
-	#else
-		texture SkyboxMap<string ResourceName = SKYBOX_MAP_FILE; int Miplevels = 1;>;
-	#endif
-	sampler SkyboxMapSamp = sampler_state
-	{
-		texture = <SkyboxMap>;
-		MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
-	};
-#endif
-
-float3 DecodeHDR(float4 rgbx)
-{
-#if SKYBOX_HDR_RGBT_ENABLE
-	return DecodeRGBT(rgbx, 1024);
-#else
-	return rgbx.rgb;
-#endif
-}
 
 float3 ApplyColorBalance(float3 color)
 {
@@ -84,26 +71,22 @@ void SkyboxVS(
 
 float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
+#if SKYBOX_WITHOUT_ENV_ROTATION
+	float3 N = normalize(normal);
+#else
 	float3 N = normalize(mul(matTransform, normal));
+#endif
 
 	float2 uv = ComputeSphereCoord(N);
 
 #if SKYBOX_BLUR_ENABLE
-	float4 color = tex2Dlod(SkyboxBlurMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
-	#if SKYBOX_BLUR_COLOR_RANGE == 1024
-		color.rgb = DecodeRGBT(color, 1024);
-	#elif SKYBOX_BLUR_COLOR_RANGE == 24
-		color.rgb = DecodeRGBM(color, 24);
-	#else
-		color.rgb = DecodeRGBM(color, 6);
-	#endif
+	float3 color = DecodeRGBT(tex2Dlod(SkyboxMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL)));
 #else
-	float3 color = DecodeHDR(tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0)));
+	float3 color = DecodeRGBT(tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0)));
 #endif
-
 	color.rgb = ApplyColorBalance(color.rgb);
 
-#if SKYBOX_HDR_ENABLE
+#if SKYBOX_HDR_ENABLE || SKYBOX_BLUR_ENABLE
 	return float4(linear2srgb(color.rgb), 1);
 #else
 	return float4(color.rgb, 1);
