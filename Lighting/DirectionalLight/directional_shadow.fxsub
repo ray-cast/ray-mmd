@@ -32,7 +32,7 @@ static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin,
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-static const float4x4 lightParam = CreateLightProjParameters(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static const float4x4 lightParam = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
