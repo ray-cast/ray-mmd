@@ -31,6 +31,24 @@ sampler FocalBlur2MapSamp = sampler_state { texture=<FocalBlur2Map>; MinFilter=L
 sampler FocalBokehMapSamp = sampler_state { texture=<FocalBokehMap>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler FocalBokehMapPointSamp = sampler_state { texture=<FocalBokehMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 
+float GetSampleRadius()
+{
+	return 0.2;
+}
+
+float2 GetSamplePoint()
+{
+	return 0.5;
+}
+
+float GetSampleCircleSDF(float2 uv, float2 pos, float radius)
+{
+	float d = length(pos - uv);
+	float d1 = d - radius;
+	float d2 = d - radius * 0.85;
+	return saturate(saturate(d2) - saturate(d1));
+}
+
 float GetFocalDistance()
 {
 	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
@@ -87,8 +105,8 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
 	};
 
-	static const float sampleRadius = 0.05;
-	static const float2 samplePoint = 0.5;
+	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect * 3, 3.0);
+	const float2 samplePoint = GetSamplePoint();
 
 	float minDepth = 65535;
 
@@ -115,7 +133,7 @@ float4 ComputeDepthBokehVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0));
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0)).r;
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
 	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
@@ -357,7 +375,7 @@ float4 ComputeBokehGatherVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0));
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0)).r;
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
 	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
@@ -409,8 +427,11 @@ float4 ComputeBokehGatherFinalPS(in float4 coord : TEXCOORD0, in float4 focalCam
 
 	CoC.a = ComputeDepthCoC(tex2Dlod(Gbuffer8Map, float4(coord.zw, 0, 0)).r, focalCameraParams, mFocalRegion);
 
+	float SDF = GetSampleCircleSDF(coord.xy * ViewportSize, ViewportSize * GetSamplePoint(), ViewportSize.y * GetSampleRadius()) * 0.5;
+
 	colors.rgb /= float(DOF_POSSION_SAMPLES + 1);
 	colors.rgb = lerp(colors.rgb, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
+	colors.rgb = lerp(colors.rgb, float3(0.01, 0.4, 0.09), SDF * mVisualizationMode * (1 - step(0.5, mMeasureMode)));
 	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
 
 	return colors;
