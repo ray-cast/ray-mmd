@@ -11,6 +11,9 @@ static const float mAngle = 1.236;
 
 static const float2 mFocalStepScale = 1024 * float2(ViewportAspect, 1);
 
+texture AutoFocalMap : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
+sampler AutoFocalMapSamp = sampler_state { texture=<AutoFocalMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
 texture FocalBlur1Map : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 texture FocalBlur2Map : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
 texture FocalBokehCoCNearMap : RENDERCOLORTARGET<float2 ViewportRatio={mFocalMapScale, mFocalMapScale}; string Format="A16B16G16R16F";>;
@@ -30,7 +33,7 @@ sampler FocalBokehMapPointSamp = sampler_state { texture=<FocalBokehMap>; MinFil
 
 float GetFocalDistance()
 {
-	float focalDistance = step(0.5, mManualMode) ? mFocalDistance : distance(CameraPosition, AcsPosition) + mFocalDistance - 1;
+	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
 	return max(1, focalDistance);
 }
 
@@ -71,13 +74,48 @@ float DecodeCoC(float CoC)
 	return CoC;
 }
 
+float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
+{
+	static const float2 poisson[DOF_POSSION_SAMPLES] =
+	{
+		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2(3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
+		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2(0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0), float2(1.0, -1.0),
+		float2(-1.0,  1.0), float2(-2.0,  1.0), float2(-3.0,  1.0), float2(0.0,  1.0), float2(3.0,  1.0), float2(2.0,  1.0), float2(1.0,  1.0),
+		float2(-2.0,  2.0), float2(-1.0,  2.0), float2( 0.0,  2.0), float2(1.0,  2.0), float2(2.0,  2.0),
+		float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2(1.0, -2.0), float2(2.0, -2.0),
+		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0),
+		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
+	};
+
+	static const float sampleRadius = 0.05;
+	static const float2 samplePoint = 0.5;
+
+	float minDepth = 65535;
+
+	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[i] * sampleRadius, 0, 0)).r;
+		minDepth = min(minDepth, depth);
+	}
+
+	float2 avgDepth = 0;
+
+	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[j] * sampleRadius, 0, 0)).r;
+		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
+	}
+
+	return lerp(avgDepth.x / avgDepth.y, GetFocalDistance(), step(0.5, mMeasureMode));
+}
+
 float4 ComputeDepthBokehVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float focalDistance = GetFocalDistance();
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0));
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
 	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
@@ -319,7 +357,7 @@ float4 ComputeBokehGatherVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
-	float focalDistance = GetFocalDistance();
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0));
 	float focalLength = GetFocalLength(mFocalLength, focalDistance);
 	float focalAperture = GetFocalAperture(mFstop);
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);

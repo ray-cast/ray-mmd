@@ -30,7 +30,7 @@ float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string i
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalRegionP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion+";>;
 float mFocalRegionM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion-";>;
-float mManualMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "ManualMode";>;
+float mMeasureMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MeasureMode";>;
 float mVisualizationMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "VisualizationMode";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
@@ -230,6 +230,8 @@ technique DeferredLighting<
 #endif
 
 #if BOKEH_QUALITY
+	"RenderColorTarget0=AutoFocalMap; Pass=ComputeFocalDistance;"
+
 	"RenderColorTarget0=FocalBokehMap; Pass=ComputeDepthBokeh;"
 
 	"RenderColorTarget0=FocalBlur1Map;"
@@ -506,6 +508,12 @@ technique DeferredLighting<
 	}
 #endif
 #if BOKEH_QUALITY
+	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComputeFocalDistancePS(ShadingMapPointSamp);
+	}
 	pass ComputeDepthBokeh<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
