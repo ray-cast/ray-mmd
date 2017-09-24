@@ -92,6 +92,11 @@ float DecodeCoC(float CoC)
 	return CoC;
 }
 
+float CalcAdaptedLength(float adaptedLength, float len, float speed, float delta)
+{
+    return max(0, adaptedLength + (len - adaptedLength) * (1.0f - exp2(-speed * delta)));
+}
+
 float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
 {
 	static const float2 poisson[DOF_POSSION_SAMPLES] =
@@ -124,7 +129,16 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
 	}
 
-	return lerp(avgDepth.x / avgDepth.y, GetFocalDistance(), step(0.5, mMeasureMode));
+	float distnace = avgDepth.x / avgDepth.y;
+	float distnaceLast = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5,0,0)).r;
+
+	if (!all(isfinite(distnace)))
+		distnace = 1.0f;
+
+	if (!all(isfinite(distnaceLast)))
+		distnaceLast = 1.0f;
+
+	return lerp(CalcAdaptedLength(distnaceLast, distnace, 14.5, elapsed), GetFocalDistance(), step(0.5, mMeasureMode));
 }
 
 float4 ComputeDepthBokehVS(
