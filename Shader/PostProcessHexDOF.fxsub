@@ -78,8 +78,10 @@ float ComputeDepthCoC(float depth, float4 focalParams, float focalRegion)
 	F *= 0.001f;
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
+ 	CoC = clamp(CoC, -2, 4);
+ 	CoC = pow(abs(CoC) / 4, focalRegion) * sign(CoC) * 4;
 
-	return clamp(pow(abs(CoC), focalRegion) * sign(CoC), -2, 4);
+	return CoC;
 }
 
 float EncodeCoC(float CoC)
@@ -139,7 +141,7 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 		distnaceLast = 1.0f;
 
 	float distnaceAdapted = CalcAdaptedLength(distnaceLast, distnace, 14.5, elapsed) + mFocalDistance - 1;
-	return lerp(distnaceAdapted, GetFocalDistance(), step(0.5, mMeasureMode));
+	return lerp(distnace, GetFocalDistance(), step(0.5, mMeasureMode));
 }
 
 float4 ComputeDepthBokehVS(

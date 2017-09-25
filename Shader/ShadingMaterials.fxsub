@@ -59,6 +59,9 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, material.visibility, material.smoothness);
 #endif
 
+	float subsurface = (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE);
+	diffuse += material.customDataB * material.customDataA * (1 - material.visibility) * subsurface;
+
 	float shadow = 1;
 	float envShadow = mSunShadowVM;
 
