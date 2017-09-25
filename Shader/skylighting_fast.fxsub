@@ -33,7 +33,7 @@ sampler SpecularMapSamp = sampler_state {
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
-	float3 dependentSplit = 0.5;
+	float3 dependentSplit = 0.5 + (1 - material.visibility) * 5;
 	float3 scattering = prefilteredDiffuse + DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)), IBL_RGBT_RANGE);
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
 	return scattering * mEnvIntensitySSS;

@@ -70,7 +70,7 @@ float3 SampleSky(float3 N, float smoothness)
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
-	float3 dependentSplit = 0.5;
+	float3 dependentSplit = 0.5 + (1 - material.visibility) * 5;
 	float3 scattering = prefilteredDiffuse + SampleSky(-N, 0);
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
 	return scattering * mEnvIntensitySSS;
