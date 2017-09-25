@@ -444,9 +444,9 @@ float4 ComputeBokehGatherFinalPS(in float4 coord : TEXCOORD0, in float4 focalCam
 	float SDF = GetSampleCircleSDF(coord.xy * ViewportSize, ViewportSize * GetSamplePoint(), ViewportSize.y * GetSampleRadius()) * 0.5;
 
 	colors.rgb /= float(DOF_POSSION_SAMPLES + 1);
-	colors.rgb = lerp(colors.rgb, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mVisualizationMode);
-	colors.rgb = lerp(colors.rgb, float3(0.01, 0.4, 0.09), SDF * mVisualizationMode * (1 - step(0.5, mMeasureMode)));
-	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mVisualizationMode);
+	colors.rgb = lerp(colors.rgb, ((CoC.a > 0) ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(CoC.a), mTestMode);
+	colors.rgb = lerp(colors.rgb, float3(0.01, 0.4, 0.09), SDF * mTestMode * (1 - step(0.5, mMeasureMode)));
+	colors.a = lerp(saturate(pow2(CoC.a * 2)), 1, mTestMode);
 
 	return colors;
 }

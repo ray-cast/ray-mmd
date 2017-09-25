@@ -31,7 +31,7 @@ float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string i
 float mFocalRegionP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion+";>;
 float mFocalRegionM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion-";>;
 float mMeasureMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MeasureMode";>;
-float mVisualizationMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "VisualizationMode";>;
+float mTestMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "TestMode";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
