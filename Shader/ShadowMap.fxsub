@@ -27,6 +27,26 @@ float ShadowPCF(float2 coord, float receiverDepth, int samples = 2)
 	return saturate(shadow / (samples * samples));
 }
 
+float4 PSSMMapGenVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += 0.5 / float(SHADOW_MAP_SIZE);
+	return Position;
+}
+
+float4 PSSMMapGenPS(
+	in float2 coord : TEXCOORD0) : COLOR
+{
+	float depth1 = tex2Dlod(PSSM1Samp, float4(coord * 2.0, 0, 0)).r;
+	float depth2 = tex2Dlod(PSSM2Samp, float4(coord * 2.0 - float2(1.0, 0.0), 0, 0)).r;
+	float depth3 = tex2Dlod(PSSM3Samp, float4(coord * 2.0 - float2(0.0, 1.0), 0, 0)).r;
+	float depth4 = tex2Dlod(PSSM4Samp, float4(coord * 2.0 - float2(1.0, 1.0), 0, 0)).r;
+	return depth1 + depth2 + depth3 + depth4;
+}
+
 float4 ShadowMapGenPS(
 	in float2 coord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1) : COLOR

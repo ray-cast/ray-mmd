@@ -39,20 +39,18 @@ void CascadeShadowMapVS(
 	in float4 Position : POSITION,
 	in float3 Normal   : NORMAL,
 	in float2 Texcoord : TEXCOORD0,
-	out float4 oTexcoord0 : TEXCOORD0,
+	out float2 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
-	out float4 oPosition : POSITION,
-	uniform int3 offset)
+	out float4 oPosition : POSITION)
 {
 	float cosAngle = 1 - saturate(dot(Normal, -SunDirection));
 	float distanceSqr = sqrt(distance(Position.xyz, CameraPosition));
 	float distanceBias = cosAngle * distanceSqr * 0.005;
 
-	oTexcoord0 = float4(Texcoord, offset.xy);
+	oTexcoord0 = Texcoord;
 
 	oTexcoord1 = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
-	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[offset.z].xy + lightCropParams[offset.z].zw;
-	oTexcoord1.xy = oTexcoord1.xy * 0.5 + offset.xy * 0.5f;
+	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
 
 	oPosition = oTexcoord1;
 	oPosition.z /= mPSSMDepthZMax;
@@ -62,10 +60,6 @@ float4 CascadeShadowMapPS(
 	in float4 coord0 : TEXCOORD0,
 	in float4 coord1 : TEXCOORD1) : COLOR
 {
-	float2 clipUV = (coord1.xy - SHADOW_MAP_OFFSET) * coord0.zw;
-	clip(clipUV.x);
-	clip(clipUV.y);
-
 #if CASTER_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
@@ -78,24 +72,9 @@ float4 CascadeShadowMapPS(
 
 technique DepthTech<string MMDPass = "object_ss";
 >{
-	pass CascadeShadowMap0 {
+	pass CascadeShadowMap {
 		AlphaBlendEnable = false; AlphaTestEnable = false;
-		VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1, 1, 0));
-		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
-	}
-	pass CascadeShadowMap1 {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1, 1, 1));
-		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
-	}
-	pass CascadeShadowMap2 {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		VertexShader = compile vs_3_0 CascadeShadowMapVS(int3(-1,-1, 2));
-		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
-	}
-	pass CascadeShadowMap3 {
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		VertexShader = compile vs_3_0 CascadeShadowMapVS(int3( 1,-1, 3));
+		VertexShader = compile vs_3_0 CascadeShadowMapVS();
 		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
 	}
 }

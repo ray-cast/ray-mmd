@@ -102,7 +102,7 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	scale = quantizer / ceil(quantizer / scale);
 
 	float2 offset = -0.5 * (cropBB.xy + cropBB.zw) * scale;
-	offset = ceil(offset * shadowMapSize * 0.5f) / (shadowMapSize * 0.5f);
+	offset = ceil(offset * shadowMapSize * 0.25) / (shadowMapSize * 0.25);
 
 	return float4(scale, offset);
 }
