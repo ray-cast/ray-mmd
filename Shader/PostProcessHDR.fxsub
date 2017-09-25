@@ -43,7 +43,7 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 	float2 offset = (coord * 2 - 1.0) * dist;
 	return ChromaticAberration(source, coord, offset);
 #else
-	return tex2Dlod(source, float4(coord, 0, 0));
+	return tex2Dlod(source, float4(coord, 0, 0)).rgb;
 #endif
 }
 

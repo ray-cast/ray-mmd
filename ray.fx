@@ -167,6 +167,7 @@ technique DeferredLighting<
 	"Clear=Color;"
 
 #if SUN_SHADOW_QUALITY > 0 && SUN_LIGHT_ENABLE
+	"RenderColorTarget=PSSM; Pass=PSSMMapGen;"
 	"RenderColorTarget=ShadowmapMap;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
@@ -347,6 +348,12 @@ technique DeferredLighting<
 ;>
 {
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
+	pass PSSMMapGen<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 PSSMMapGenVS();
+		PixelShader  = compile ps_3_0 PSSMMapGenPS();
+	}
 	pass ShadowMapGen<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
