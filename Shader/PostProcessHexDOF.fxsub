@@ -132,16 +132,7 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 	}
 
 	float distnace = avgDepth.x / avgDepth.y;
-	float distnaceLast = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5,0,0)).r;
-
-	if (!all(isfinite(distnace)))
-		distnace = 1.0f;
-
-	if (!all(isfinite(distnaceLast)))
-		distnaceLast = 1.0f;
-
-	float distnaceAdapted = CalcAdaptedLength(distnaceLast, distnace, 14.5, elapsed) + mFocalDistance - 1;
-	return lerp(distnace, GetFocalDistance(), step(0.5, mMeasureMode));
+	return lerp(distnace + mFocalDistance - 1, GetFocalDistance(), step(0.5, mMeasureMode));
 }
 
 float4 ComputeDepthBokehVS(
