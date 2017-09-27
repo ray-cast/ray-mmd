@@ -44,6 +44,8 @@ float mFilmLineFadeY : CONTROLOBJECT<string name="FilmGrainController.pmx"; stri
 float mFilmLoop : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoop";>;
 float mFilmLoopX : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoopX";>;
 float mFilmLoopY : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmLoopY";>;
+float mFilmBordersX : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmBordersX";>;
+float mFilmBordersY : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "FilmBordersY";>;
 float mDispersion : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "DispersionRadius";>;
 float mVignette : CONTROLOBJECT<string name="FilmGrainController.pmx"; string item = "Vignette";>;
@@ -144,7 +146,10 @@ float4 FimicGrainPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Po
 float4 FimicLoopPS(in float2 coord: TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
 	float2 loop = floor(1 + float2(mFilmLoop + mFilmLoopX, mFilmLoop + mFilmLoopY) * 10);
-	return float4(tex2Dlod(ScnSamp2, float4(coord * loop, 0, 0)));
+	float4 color = float4(tex2Dlod(ScnSamp2, float4(coord * loop, 0, 0)));
+	color.rgb *= (1 - step(1.0 - mFilmBordersY, abs(coord.y * 2 - 1)));
+	color.rgb *= (1 - step(1.0 - mFilmBordersX, abs(coord.x * 2 - 1)));
+	return color;
 }
 
 float Script : STANDARDSGLOBAL<
