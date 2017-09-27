@@ -17,8 +17,13 @@ Download :
 	- Adding new features to the most recent version
 	- Fewer Bugs in this version
 - Latest changes - Major allocator changes:
+	- Material : Optimize the fps
+	- Shadow : Optimize the fps (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
+	- FilmGrain : Added black borders around a video
 	- Fix issue : that cause a FilmGrain cannot be used with others MME
 	- Fix issue : that cause a LightBloom cannot be used with others MME
+	- Fix issue : that cause a FXAA cannot be used with others MME
+	- Fix issue : that cause a SMAA cannot be used with others MME
 
 Requirement :
 ------------
