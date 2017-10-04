@@ -193,7 +193,7 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 texture PSSM3 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
-	string Format = "R16F";
+	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
@@ -209,7 +209,7 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 texture PSSM4 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
-	string Format = "R16F";
+	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
