@@ -48,10 +48,10 @@ static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x
 #elif SHADOW_QUALITY == 4
 #	define SHADOW_MAP_SIZE 8192
 #else
-#	define SHADOW_MAP_SIZE 4096
+#	define SHADOW_MAP_SIZE 2048
 #endif
 
-texture PSSM: OFFSCREENRENDERTARGET<
+texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DirectionalLight";
 	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
@@ -62,13 +62,73 @@ texture PSSM: OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../directional_shadow.fx;"
-		"*.pmd = ../directional_shadow.fx;"
+		"*.pmx = ../PSSM1.fx;"
+		"*.pmd = ../PSSM1.fx;"
 		"* = hide";
 >;
-sampler PSSMsamp = sampler_state {
-	texture = <PSSM>;
-	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
+texture PSSM2 : OFFSCREENRENDERTARGET<
+	string Description = "Shadow Rendering for DirectionalLight";
+	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	string Format = "G32R32F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	string DefaultEffect = 
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"*.pmx = ../PSSM2.fx;"
+		"*.pmd = ../PSSM2.fx;"
+		"* = hide";
+>;
+texture PSSM3 : OFFSCREENRENDERTARGET<
+	string Description = "Shadow Rendering for DirectionalLight";
+	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	string Format = "G32R32F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	string DefaultEffect = 
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"*.pmx = ../PSSM3.fx;"
+		"*.pmd = ../PSSM3.fx;"
+		"* = hide";
+>;
+texture PSSM4 : OFFSCREENRENDERTARGET<
+	string Description = "Shadow Rendering for DirectionalLight";
+	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	string Format = "G32R32F";
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	string DefaultEffect = 
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"*.pmx = ../PSSM4.fx;"
+		"*.pmd = ../PSSM4.fx;"
+		"* = hide";
+>;
+sampler PSSM1Samp = sampler_state {
+	texture = <PSSM1>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler PSSM2Samp = sampler_state {
+	texture = <PSSM2>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler PSSM3Samp = sampler_state {
+	texture = <PSSM3>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler PSSM4Samp = sampler_state {
+	texture = <PSSM4>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
@@ -80,11 +140,11 @@ static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -Ligh
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static const float4x4 lightParam = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
-float ShadowPCF(float2 coord, float receiverDepth) 
+float ShadowPCF(sampler source, float2 coord, float receiverDepth) 
 {
-	float shadow = 0.0;
+	float2 shadow = 0.0;
 
 	[unroll]
 	for (int x = -sampleRadius; x <= sampleRadius; x++) 
@@ -93,7 +153,7 @@ float ShadowPCF(float2 coord, float receiverDepth)
 		for (int y = -sampleRadius; y <= sampleRadius; y++)
 		{
 			float2 pos = coord + float2(x, y) * (1.0 / SHADOW_MAP_SIZE);
-			shadow += tex2Dlod(PSSMsamp, float4(pos, 0, 0)).rg * sampleKernel[sampleRadius + x] * sampleKernel[sampleRadius + y];
+			shadow += tex2Dlod(source, float4(pos, 0, 0)).rg * sampleKernel[sampleRadius + x] * sampleKernel[sampleRadius + y];
 		}
 	}
 
@@ -105,37 +165,42 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	float3 view = normalize(viewPosition);
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
-	float4 LightPPos01 = proj.xyxy * float4(lightParam[0].xy, lightParam[1].xy);
-	float4 LightPPos23 = proj.xyxy * float4(lightParam[2].xy, lightParam[3].xy);
+	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
+	float4 lightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy) + float4(lightCropParams[2].zw, lightCropParams[3].zw);
 
-	LightPPos01 += float4(lightParam[0].zw, lightParam[1].zw);
-	LightPPos23 += float4(lightParam[2].zw, lightParam[3].zw);
+	float4 lightCoord01 = PosToCoord(lightPPos01);// * 0.5 + float4(float2(0, 0), float2(1, 0)) * 0.5;
+	float4 lightCoord23 = PosToCoord(lightPPos23);// * 0.5 + float4(float2(0, 1), float2(1, 1)) * 0.5;
 
-	LightPPos01 *= float4(0.25, -0.25, 0.25, -0.25);
-	LightPPos23 *= float4(0.25, -0.25, 0.25, -0.25);
+	float4 lightPPos0 = float4(lightCoord01.xy, CalcEdgeFalloff(lightPPos01.xy, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 0);
+	float4 lightPPos1 = float4(lightCoord01.zw, CalcEdgeFalloff(lightPPos01.zw, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 1);
+	float4 lightPPos2 = float4(lightCoord23.xy, CalcEdgeFalloff(lightPPos23.xy, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 2);
+	float4 lightPPos3 = float4(lightCoord23.zw, CalcEdgeFalloff(lightPPos23.zw, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 3);
 
-	float4 lightPPos0 = CalcCascadePPos(LightPPos01.xy, float2(0, 0), 0, SHADOW_MAP_SIZE);
-	float4 lightPPos1 = CalcCascadePPos(LightPPos01.zw, float2(1, 0), 1, SHADOW_MAP_SIZE);
-	float4 lightPPos2 = CalcCascadePPos(LightPPos23.xy, float2(0, 1), 2, SHADOW_MAP_SIZE);
-	float4 lightPPos3 = CalcCascadePPos(LightPPos23.zw, float2(1, 1), 3, SHADOW_MAP_SIZE);
+	float4 coord0 = lightPPos3;
+	float4 coord1 = 0;
+	if (lightPPos2.z > 0.0) { coord1 = coord0; coord0 = lightPPos2; }
+	if (lightPPos1.z > 0.0) { coord1 = coord0; coord0 = lightPPos1; }
+	if (lightPPos0.z > 0.0) { coord1 = coord0; coord0 = lightPPos0; }
+	clip(coord0.z);
 
-	float4 texCoord0 = lightPPos3;
-	float4 texCoord1 = 0;
-	if (lightPPos2.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos2; }
-	if (lightPPos1.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos1; }
-	if (lightPPos0.w > 0.0) { texCoord1 = texCoord0; texCoord0 = lightPPos0; }
+	coord0.xy += 0.5 / float(SHADOW_MAP_SIZE);
+	coord1.xy += 0.5 / float(SHADOW_MAP_SIZE);
 
-	float casterDepth0 = tex2Dlod(PSSMsamp, float4(texCoord0.xy, 0, 0)).r;
-	float casterDepth1 = tex2Dlod(PSSMsamp, float4(texCoord1.xy, 0, 0)).r;
-	float casterDepth = lerp(lerp(1, casterDepth1, texCoord1.w), casterDepth0, texCoord0.w);
 	float receiverDepth = proj.z;
-
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
-	receiverDepth -= (viewPosition.z + depthSlope) * 0.003 + max(0, viewPosition.z - 100) * 0.007;
+	receiverDepth -= (material.linearDepth + depthSlope) * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
 
-	clip(casterDepth1 + casterDepth0 - 1e-5);
+	float shadow = 0;
 
-	float shadow = ShadowPCF(texCoord0.xy, receiverDepth);
+	[branch]
+	if (coord0.w == 0)
+		shadow = ShadowPCF(PSSM1Samp, coord0.xy, receiverDepth);
+	else if (coord0.w == 1)
+		shadow = ShadowPCF(PSSM2Samp, coord0.xy, receiverDepth);
+	else if (coord0.w == 2)
+		shadow = ShadowPCF(PSSM3Samp, coord0.xy, receiverDepth);
+	else
+		shadow = ShadowPCF(PSSM4Samp, coord0.xy, receiverDepth);
 
 	return shadow;
 }

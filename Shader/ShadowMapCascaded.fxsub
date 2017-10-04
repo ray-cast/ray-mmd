@@ -102,7 +102,7 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	scale = quantizer / ceil(quantizer / scale);
 
 	float2 offset = -0.5 * (cropBB.xy + cropBB.zw) * scale;
-	offset = ceil(offset * shadowMapSize * 0.25) / (shadowMapSize * 0.25);
+	offset = ceil(offset * shadowMapSize * 0.5) / (shadowMapSize * 0.5);
 
 	return float4(scale, offset);
 }
@@ -121,15 +121,10 @@ float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float shadow
 
 float CalcEdgeFalloff(float2 coord, int shadowMapSize, float shadowMapOffset)
 {
-	const float m = shadowMapSize * 0.5 / mPSSMPadding;
-	const float a = shadowMapOffset * 1.0 / mPSSMPadding;
-	float2 falloff = abs(coord) * (-m * 4.0) + (m - a);
+	const float m = shadowMapSize / mPSSMPadding;
+	const float a = shadowMapOffset / mPSSMPadding;
+	float2 falloff = abs(coord) * -m + (m - a);
 	return min(falloff.x, falloff.y);
-}
-
-float4 CalcCascadePPos(float2 uv, float2 offset, float index, int shadowMapSize)
-{
-	return float4(uv + 0.25 + offset * 0.5 + (0.5 / shadowMapSize), index, CalcEdgeFalloff(uv, shadowMapSize, 1.0 / shadowMapSize));
 }
 
 float ShadowSlopeScaledBias(float depth)

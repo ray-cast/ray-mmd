@@ -1,13 +1,13 @@
 #if SUN_SHADOW_QUALITY == 1
-#	define SHADOW_MAP_SIZE 1024
+#	define SHADOW_MAP_SIZE 512
 #elif SUN_SHADOW_QUALITY == 2
-#	define SHADOW_MAP_SIZE 2048
+#	define SHADOW_MAP_SIZE 1024
 #elif SUN_SHADOW_QUALITY == 3
-#	define SHADOW_MAP_SIZE 4096
+#	define SHADOW_MAP_SIZE 2048
 #elif SUN_SHADOW_QUALITY == 4
-#	define SHADOW_MAP_SIZE 8192
+#	define SHADOW_MAP_SIZE 4096
 #elif SUN_SHADOW_QUALITY == 5
-#	define SHADOW_MAP_SIZE 16384
+#	define SHADOW_MAP_SIZE 8192
 #endif
 
 texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
@@ -160,7 +160,7 @@ sampler SSAOVisibilitySamp = sampler_state {
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
 texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE / 2, SHADOW_MAP_SIZE / 2 };
+	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -176,7 +176,7 @@ texture PSSM1 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM2 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE / 2, SHADOW_MAP_SIZE / 2 };
+	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -192,7 +192,7 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM3 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE / 2, SHADOW_MAP_SIZE / 2 };
+	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -208,7 +208,7 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM4 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE / 2, SHADOW_MAP_SIZE / 2 };
+	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R16F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
@@ -222,32 +222,23 @@ texture PSSM4 : OFFSCREENRENDERTARGET<
 		"*.pmd=shadow/PSSM4.fx;"
 		"*.x=hide;";
 >;
-shared texture PSSM : RENDERCOLORTARGET<
-	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
-	string Format = "R32F";
->;
 sampler PSSM1Samp = sampler_state {
 	texture = <PSSM1>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler PSSM2Samp = sampler_state {
 	texture = <PSSM2>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler PSSM3Samp = sampler_state {
 	texture = <PSSM3>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler PSSM4Samp = sampler_state {
 	texture = <PSSM4>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
-};
-sampler PSSMsamp = sampler_state {
-	texture = <PSSM>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };

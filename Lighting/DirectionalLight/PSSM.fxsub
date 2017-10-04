@@ -1,0 +1,90 @@
+#include "../../ray.conf"
+#include "../../ray_advanced.conf"
+#include "../../shader/common.fxsub"
+#include "../../shader/ShadowMapCascaded.fxsub"
+
+#if SHADOW_QUALITY == 1
+#	define SHADOW_MAP_SIZE 1024
+#elif SHADOW_QUALITY == 2
+#	define SHADOW_MAP_SIZE 2048
+#elif SHADOW_QUALITY == 3
+#	define SHADOW_MAP_SIZE 4096
+#elif SHADOW_QUALITY == 4
+#	define SHADOW_MAP_SIZE 8192
+#else
+#	define SHADOW_MAP_SIZE 2048
+#endif
+
+#define SHADOW_MAP_OFFSET (1.0 / SHADOW_MAP_SIZE)
+
+float mRangeP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range+";>;
+float mRangeM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range-";>;
+
+float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Position";>;
+float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Direction";>;
+
+static const float LightRange = lerp(lerp(1000, 2000, mRangeP), 0, mRangeM);
+
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
+
+static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
+static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
+static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
+static const float4x4 lightParam = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+
+#if CASTER_ALPHA_MAP_ENABLE
+texture DiffuseMap: MATERIALTEXTURE;
+sampler DiffuseSamp = sampler_state
+{
+	texture = <DiffuseMap>;
+	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+#endif
+
+void CascadeShadowMapVS(
+	in float4 Position : POSITION,
+	in float3 Normal   : NORMAL,
+	in float2 Texcoord : TEXCOORD0,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oPosition : POSITION)
+{
+	oTexcoord0 = Texcoord;
+
+	oTexcoord1 = mul(Position, matLightViewProject);
+	oTexcoord1.xy = oTexcoord1.xy * lightParam[PSSM_LAYERED_NUM].xy + lightParam[PSSM_LAYERED_NUM].zw;
+
+	oPosition = oTexcoord1;
+	oPosition.z /= mPSSMDepthZMax;
+}
+
+float4 CascadeShadowMapPS(
+	in float4 coord0 : TEXCOORD0,
+	in float4 coord1 : TEXCOORD1) : COLOR
+{
+#if CASTER_ALPHA_ENABLE
+	float alpha = MaterialDiffuse.a;
+#if CASTER_ALPHA_MAP_ENABLE
+	if (use_texture) alpha *= tex2D(DiffuseSamp, coord0.xy).a;
+#endif
+	clip(alpha - CasterAlphaThreshold);
+#endif
+	return ComputeMoments(coord1.z).xxyy;
+}
+
+technique DepthTech<string MMDPass = "object_ss";
+>{
+	pass CascadeShadowMap {
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		VertexShader = compile vs_3_0 CascadeShadowMapVS();
+		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
+	}
+}
+
+technique DepthTec<string MMDPass = "object";>{}
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTec<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}

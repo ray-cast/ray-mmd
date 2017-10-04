@@ -1,4 +1,4 @@
-float time : TIME;//<bool SyncInEditMode=true;>;
+float time : TIME<bool SyncInEditMode=true;>;
 float elapsed : ELAPSEDTIME;
 
 float2 MousePosition : MOUSEPOSITION;
