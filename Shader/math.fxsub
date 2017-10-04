@@ -36,6 +36,8 @@ float length2(float2 v) { return dot(v, v); }
 float length2(float3 v) { return dot(v, v); }
 float length2(float4 v) { return dot(v, v); }
 
+float min2(float2 v) { return min(v.x, v.y); }
+
 float luminance(float3 rgb)
 {
 	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));

@@ -158,7 +158,7 @@ sampler SSAOVisibilitySamp = sampler_state {
 };
 #endif
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
-texture PSSM1 : OFFSCREENRENDERTARGET<
+shared texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
@@ -174,7 +174,7 @@ texture PSSM1 : OFFSCREENRENDERTARGET<
 		"*.pmd=shadow/PSSM1.fx;"
 		"*.x=hide;";
 >;
-texture PSSM2 : OFFSCREENRENDERTARGET<
+shared texture PSSM2 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
@@ -190,7 +190,7 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 		"*.pmd=shadow/PSSM2.fx;"
 		"*.x=hide;";
 >;
-texture PSSM3 : OFFSCREENRENDERTARGET<
+shared texture PSSM3 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
@@ -206,7 +206,7 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 		"*.pmd=shadow/PSSM3.fx;"
 		"*.x=hide;";
 >;
-texture PSSM4 : OFFSCREENRENDERTARGET<
+shared texture PSSM4 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";

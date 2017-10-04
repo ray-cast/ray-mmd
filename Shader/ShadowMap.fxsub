@@ -49,13 +49,13 @@ float4 ShadowMapGenPS(
 	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
 	float4 lightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy) + float4(lightCropParams[2].zw, lightCropParams[3].zw);
 
-	float4 lightCoord01 = PosToCoord(lightPPos01);// * 0.5 + float4(float2(0, 0), float2(1, 0)) * 0.5;
-	float4 lightCoord23 = PosToCoord(lightPPos23);// * 0.5 + float4(float2(0, 1), float2(1, 1)) * 0.5;
+	float4 lightCoord01 = PosToCoord(lightPPos01);
+	float4 lightCoord23 = PosToCoord(lightPPos23);
 
-	float4 lightPPos0 = float4(lightCoord01.xy, CalcEdgeFalloff(lightPPos01.xy, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 0);
-	float4 lightPPos1 = float4(lightCoord01.zw, CalcEdgeFalloff(lightPPos01.zw, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 1);
-	float4 lightPPos2 = float4(lightCoord23.xy, CalcEdgeFalloff(lightPPos23.xy, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 2);
-	float4 lightPPos3 = float4(lightCoord23.zw, CalcEdgeFalloff(lightPPos23.zw, SHADOW_MAP_SIZE, 1.0 / SHADOW_MAP_SIZE), 3);
+	float4 lightPPos0 = float4(lightCoord01.xy, min2(float2(1, 1) - abs(lightPPos01.xy)), 0);
+	float4 lightPPos1 = float4(lightCoord01.zw, min2(float2(1, 1) - abs(lightPPos01.zw)), 1);
+	float4 lightPPos2 = float4(lightCoord23.xy, min2(float2(1, 1) - abs(lightPPos23.xy)), 2);
+	float4 lightPPos3 = float4(lightCoord23.zw, min2(float2(1, 1) - abs(lightPPos23.zw)), 3);
 
 	float4 coord0 = lightPPos3;
 	float4 coord1 = 0;
@@ -73,13 +73,13 @@ float4 ShadowMapGenPS(
 
 	[branch]
 	if (coord0.w == 0)
-		clip(tex2Dlod(PSSM1Samp, float4(coord0.xy, 0, 0)) - 1e-5);
+		clip(tex2Dlod(PSSM1Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
 	else if (coord0.w == 1)
-		clip(tex2Dlod(PSSM2Samp, float4(coord0.xy, 0, 0)) - 1e-5);
+		clip(tex2Dlod(PSSM2Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
 	else if (coord0.w == 2)
-		clip(tex2Dlod(PSSM3Samp, float4(coord0.xy, 0, 0)) - 1e-5);
+		clip(tex2Dlod(PSSM3Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
 	else
-		clip(tex2Dlod(PSSM4Samp, float4(coord0.xy, 0, 0)) - 1e-5);
+		clip(tex2Dlod(PSSM4Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
 
 	float shadow = 0;
 

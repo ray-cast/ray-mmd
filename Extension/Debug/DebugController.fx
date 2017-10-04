@@ -60,9 +60,9 @@ sampler SSRayTracingSamp = sampler_state {
 #endif
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
-shared texture PSSM : RENDERCOLORTARGET;
+shared texture PSSM1 : OFFSCREENRENDERTARGET;
 sampler PSSMsamp = sampler_state {
-	texture = <PSSM>;
+	texture = <PSSM1>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };

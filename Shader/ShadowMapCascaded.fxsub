@@ -91,9 +91,6 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	maxBB = max(float4(vltn, vltf), maxBB);
 
 	float4 cropBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
-	cropBB += (cropBB.xyzw - cropBB.zwxy) * (mPSSMPadding * 2 + 1) / shadowMapSize;
-	float4 unit = (cropBB.zwzw - cropBB.xyxy) * 2 / shadowMapSize;
-	cropBB = floor(cropBB / unit) * unit;
 
 	// approximate flickering removal
 	float quantizer = 64.0f;
@@ -117,14 +114,6 @@ float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float shadow
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.x, frustumSplit.y),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
-}
-
-float CalcEdgeFalloff(float2 coord, int shadowMapSize, float shadowMapOffset)
-{
-	const float m = shadowMapSize / mPSSMPadding;
-	const float a = shadowMapOffset / mPSSMPadding;
-	float2 falloff = abs(coord) * -m + (m - a);
-	return min(falloff.x, falloff.y);
 }
 
 float ShadowSlopeScaledBias(float depth)
