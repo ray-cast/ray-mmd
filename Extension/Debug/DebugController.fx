@@ -61,10 +61,28 @@ sampler SSRayTracingSamp = sampler_state {
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 shared texture PSSM1 : OFFSCREENRENDERTARGET;
-sampler PSSMsamp = sampler_state {
+sampler PSSM1Samp = sampler_state {
 	texture = <PSSM1>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+shared texture PSSM2 : OFFSCREENRENDERTARGET;
+sampler PSSM2Samp = sampler_state {
+	texture = <PSSM2>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+shared texture PSSM3 : OFFSCREENRENDERTARGET;
+sampler PSSM3Samp = sampler_state {
+	texture = <PSSM3>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+shared texture PSSM4 : OFFSCREENRENDERTARGET;
+sampler PSSM4Samp = sampler_state {
+	texture = <PSSM4>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 #endif
 
@@ -134,7 +152,11 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	#endif
 
 	#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
-		result += pow(saturate(tex2Dlod(PSSMsamp, float4(coord, 0, 0)).r / 1500), 2) * showPSSM;
+		float depth1 = tex2Dlod(PSSM1Samp, float4(coord * 2.0, 0, 0)).r;		
+		float depth2 = tex2Dlod(PSSM2Samp, float4(coord * 2.0 - float2(1.0, 0.0), 0, 0)).r;		
+		float depth3 = tex2Dlod(PSSM3Samp, float4(coord * 2.0 - float2(0.0, 1.0), 0, 0)).r;		
+		float depth4 = tex2Dlod(PSSM4Samp, float4(coord * 2.0 - float2(1.0, 1.0), 0, 0)).r;		
+		result += pow(saturate((depth1 + depth2 + depth3 + depth4) / 1500), 2) * showPSSM;
 	#endif
 
 	if (material.lightModel == SHADINGMODELID_SKIN)
@@ -178,7 +200,7 @@ float Script : STANDARDSGLOBAL<
 
 technique DebugController <
 	string Script = 
-	"RenderColorTarget0=ScnMap;"
+	"RenderColorTarget=ScnMap;"
 	"RenderDepthStencilTarget=;"
 	"ScriptExternal=Color;"
 
