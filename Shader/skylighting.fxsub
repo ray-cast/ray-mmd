@@ -43,6 +43,12 @@ static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 #endif
 
+texture BRDF<string ResourceName = "../../shader/textures/BRDF.tga"; int Miplevels = 1;>;
+sampler BRDFSamp = sampler_state {
+	texture = <BRDF>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
 texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
@@ -89,7 +95,9 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 #endif
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+
+	float2 brdf = pow(tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg, 2.2);
+	float3 fresnel = material.specular * brdf.r + brdf.g;
 
 	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 	{

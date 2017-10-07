@@ -17,6 +17,12 @@ static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
 static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
 
+texture BRDF<string ResourceName = "../../shader/textures/BRDF.tga"; int Miplevels = 1;>;
+sampler BRDFSamp = sampler_state {
+	texture = <BRDF>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
 texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
 	texture = <DiffuseMap>;
@@ -49,7 +55,9 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 R = worldReflect;
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+
+	float2 brdf = pow(tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg, 2.2);
+	float3 fresnel = material.specular * brdf.r + brdf.g;
 
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
