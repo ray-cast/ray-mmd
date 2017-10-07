@@ -69,7 +69,7 @@ float4 ShadowMapGenPS(
 
 	float receiverDepth = proj.z;
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
-	receiverDepth -= (material.linearDepth + depthSlope) * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
+	receiverDepth -= (material.linearDepth + depthSlope) * 0.004 + max(0, material.linearDepth - 100) * 0.007;
 
 	[branch]
 	if (coord0.w == 0)
