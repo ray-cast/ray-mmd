@@ -60,6 +60,13 @@ static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLig
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
+texture BRDF<string ResourceName = "Textures/BRDF.tga"; int Miplevels = 1;>;
+sampler BRDFSamp = sampler_state {
+	texture = <BRDF>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
+
 float3 SampleSky(float3 N, float smoothness)
 {
 	float3 color = 0;
@@ -85,7 +92,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
 
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, finalSmoothness, material.specular);
+	float2 brdf = pow(tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg, 2.2);
+	float3 fresnel = material.specular * brdf.r + brdf.g;
 
 	float3 prefilteredDiffuse = SampleSky(N, 0) * (1 - fresnel);
 	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
