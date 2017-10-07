@@ -73,13 +73,13 @@ float4 ShadowMapGenPS(
 
 	[branch]
 	if (coord0.w == 0)
-		clip(tex2Dlod(PSSM1Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
+		clip(tex2Dlod(PSSM1Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
 	else if (coord0.w == 1)
-		clip(tex2Dlod(PSSM2Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
+		clip(tex2Dlod(PSSM2Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
 	else if (coord0.w == 2)
-		clip(tex2Dlod(PSSM3Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
+		clip(tex2Dlod(PSSM3Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
 	else
-		clip(tex2Dlod(PSSM4Samp, float4(coord0.xy, 0, 0).r) - 1e-5);
+		clip(tex2Dlod(PSSM4Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
 
