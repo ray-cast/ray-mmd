@@ -41,7 +41,7 @@ float2 GetSamplePoint()
 	float4 proj = mul(float4(AcsPosition, 1), matViewProject);
 	proj /= proj.w;
 	proj.xy = PosToCoord(proj.xy);
-	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.5, mMeasureMode);
+	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.25, mMeasureMode);
 }
 
 float GetSampleCircleSDF(float2 uv, float2 pos, float radius)
