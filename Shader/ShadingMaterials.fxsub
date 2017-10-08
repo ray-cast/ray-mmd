@@ -13,7 +13,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	diffuse = energy.r;
 	specular = energy.gba;
 
-	float3 lightColor = SunColor * mSunIntensity * step(0, sum(material.albedo + material.specular) - 1e-5);
+	float3 lightColor = SunColor * mSunIntensity * any(sum(material.albedo + material.specular));
 
 #if SUN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
@@ -38,7 +38,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	specular *= lightColor;
 
 #if SUN_SHADOW_QUALITY
-	diffuse += mColorShadowSunP * (1 - shadow) * step(0, sum(material.albedo + material.specular) - 1e-5);
+	diffuse += mColorShadowSunP * (1 - shadow) * any(sum(material.albedo + material.specular));
 #endif
 }
 #endif
@@ -53,10 +53,10 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	ssao = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao;
 	ssao = min(ssao, material.visibility);
 	diffuse *= ssao;
-	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, ssao, material.smoothness);
+	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)), ssao, material.smoothness);
 #else
 	diffuse *= material.visibility;
-	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + EPSILON, material.visibility, material.smoothness);
+	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)), material.visibility, material.smoothness);
 #endif
 
 	float shadow = 1;

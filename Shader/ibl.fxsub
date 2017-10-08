@@ -60,7 +60,7 @@ float3 ComputeSpecularDominantDir(float3 N, float3 R, float roughness)
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
 {
-	return saturate(pow(abs(nv + ao), smoothness) - 1 + ao);
+	return saturate(pow(abs(nv + ao) + EPSILON, smoothness) - 1 + ao);
 }
 
 float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
