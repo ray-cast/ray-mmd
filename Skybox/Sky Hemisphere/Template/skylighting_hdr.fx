@@ -95,7 +95,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float2 brdf = tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg;
 	float3 fresnel = material.specular * brdf.r + brdf.g;
 
-	float3 prefilteredDiffuse = SampleSky(N, 0) * (1 - fresnel);
+	float3 prefilteredDiffuse = SampleSky(N, 0);
 	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
