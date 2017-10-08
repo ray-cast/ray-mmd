@@ -10,17 +10,11 @@
 #	define SHADOW_MAP_SIZE 8192
 #endif
 
-texture2D DepthBuffer : RENDERDEPTHSTENCILTARGET<
+texture DepthBuffer : RENDERDEPTHSTENCILTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";
 >;
-#if SSSS_QUALITY
-texture2D DepthBuffer2 : RENDERDEPTHSTENCILTARGET<
-	float2 ViewportRatio = {1.0,1.0};
-	string Format = "D24S8";
->;
-#endif
-texture2D ScnMap : RENDERCOLORTARGET<
+texture ScnMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
@@ -242,21 +236,21 @@ sampler PSSM4Samp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-shared texture2D ShadowmapMap : RENDERCOLORTARGET<
+texture ShadowMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
-texture2D ShadowmapMapTemp : RENDERCOLORTARGET<
+texture ShadowMapTemp : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
 sampler ShadowMapSamp = sampler_state {
-	texture = <ShadowmapMap>;
+	texture = <ShadowMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 sampler ShadowMapSampTemp = sampler_state {
-	texture = <ShadowmapMapTemp>;
+	texture = <ShadowMapTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };

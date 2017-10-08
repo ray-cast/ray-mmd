@@ -159,30 +159,26 @@ float Script : STANDARDSGLOBAL<
 
 technique DeferredLighting<
 	string Script =
-	"RenderColorTarget=;"
+	"RenderColorTarget=ScnMap;"
 	"RenderDepthStencilTarget=DepthBuffer;"
-	"ClearSetStencil=ClearStencil;"
 	"ClearSetColor=BackColor;"
 	"ClearSetDepth=ClearDepth;"
+	"ClearSetStencil=ClearStencil;"
 	"Clear=Color;"
+	"Clear=Depth;"
+	"ScriptExternal=Color;"
 
 #if SUN_SHADOW_QUALITY > 0 && SUN_LIGHT_ENABLE
-	"RenderColorTarget=ShadowmapMap;"
+	"RenderColorTarget=ShadowMap;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
 	"Pass=ShadowMapGen;"
 #if SHADOW_BLUR_COUNT
-	"RenderColorTarget=ShadowmapMapTemp; Pass=ShadowBlurX;"
-	"RenderColorTarget=ShadowmapMap;	 Pass=ShadowBlurY;"
+	"RenderColorTarget=ShadowMapTemp; Pass=ShadowBlurX;"
+	"RenderColorTarget=ShadowMap;	  Pass=ShadowBlurY;"
 #endif
 	"ClearSetColor=BackColor;"
 #endif
-
-	"RenderColorTarget=ScnMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
-	"Clear=Color;"
-	"Clear=Depth;"
-	"ScriptExternal=Color;"
 
 #if SSDO_QUALITY > 0 && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 	"RenderColorTarget=SSDOMap; Pass=SSDO;"
@@ -198,12 +194,12 @@ technique DeferredLighting<
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY > 0
-	"RenderDepthStencilTarget=DepthBuffer2;"
+	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderColorTarget=;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
 	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-	"RenderDepthStencilTarget=DepthBuffer;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
 	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
 #else
