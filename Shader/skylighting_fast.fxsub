@@ -21,7 +21,7 @@ texture BRDF<string ResourceName = "../../shader/textures/BRDF.tga"; int Mipleve
 sampler BRDFSamp = sampler_state {
 	texture = <BRDF>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP; SRGBTexture = TRUE;
 };
 texture DiffuseMap<string ResourceName = IBLDIFF_MAP_FILE; int Miplevels = 1;>;
 sampler DiffuseMapSamp = sampler_state {
@@ -56,7 +56,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 
-	float2 brdf = pow(tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg, 2.2);
+	float2 brdf = tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg;
 	float3 fresnel = material.specular * brdf.r + brdf.g;
 
 	float2 coord1 = ComputeSphereCoord(N);

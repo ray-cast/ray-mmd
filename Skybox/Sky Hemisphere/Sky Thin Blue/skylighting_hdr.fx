@@ -64,7 +64,7 @@ texture BRDF<string ResourceName = "Textures/BRDF.tga"; int Miplevels = 1;>;
 sampler BRDFSamp = sampler_state {
 	texture = <BRDF>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP; SRGBTexture = TRUE;
 };
 
 float3 SampleSky(float3 N, float smoothness)
@@ -92,7 +92,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
 
-	float2 brdf = pow(tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg, 2.2);
+	float2 brdf = tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg;
 	float3 fresnel = material.specular * brdf.r + brdf.g;
 
 	float3 prefilteredDiffuse = SampleSky(N, 0) * (1 - fresnel);
