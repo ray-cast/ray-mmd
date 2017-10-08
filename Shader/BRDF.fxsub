@@ -18,10 +18,9 @@ float3 fresnelSchlick(float3 f0, float3 f9, float vh)
 	return lerp(f0, f9, pow5(1 - vh));
 }
 
-float ComputeAmbientMicroOcclusion(float3 N, float3 L, float ao)
+float ComputeAmbientMicroOcclusion(float nl, float ao)
 {
-	float nl = dot(N, L);
-	float aperture = 2.0 * pow2(ao);
+	float aperture = 2.0 * ao;
 	float shadow = saturate(abs(nl) + aperture - 1.0);
 	return shadow;
 }
@@ -224,6 +223,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float diffuse = BurleyBRDF(nl, vh, nv, roughness);
+	float shadow = ComputeAmbientMicroOcclusion(nl, material.visibility);
 
 	float3 specular = 0;
 	if (material.lightModel == SHADINGMODELID_CLOTH)
@@ -237,7 +237,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float4(diffuse, specular) * nl;
+	return float4(diffuse, specular) * nl * shadow;
 }
 
 float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor = 1.0)
