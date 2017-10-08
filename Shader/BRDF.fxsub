@@ -257,13 +257,15 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 {
 	float3 H = normalize(V + Ls);
 
-	float nh = saturate(dot(N, H));
-	float nl = saturate(dot(N, Ls));
-	float vh = saturate(dot(V, H));
-	float nv = abs(dot(N, V)) + 1e-5h;
+	float nh  = saturate(dot(N, H));
+	float nl  = saturate(dot(N, Ls));
+	float nl2 = saturate(dot(N, Ld));
+	float vh  = saturate(dot(V, H));
+	float nv  = abs(dot(N, V)) + 1e-5h;
 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
+	float shadow = ComputeAmbientMicroOcclusion(nl2, material.visibility);
 
 	float3 specular = 0;
 	if (material.lightModel == SHADINGMODELID_CLOTH)
@@ -277,7 +279,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float4(diffuse, specular) * saturate(dot(N, Ld));
+	return float4(diffuse, specular) * nl2 * shadow;
 }
 
 float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
