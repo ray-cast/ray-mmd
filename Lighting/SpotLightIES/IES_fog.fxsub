@@ -260,7 +260,7 @@ void VolumetricFogVS(
 
 float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in float4 screenPosition : SV_Position) : COLOR
 {
-	FogParams param;
+	FogParams param = (FogParams)0;
 	param.FogPosition = FogPosition;
 	param.FogDirection = FogDirection;
 	param.FogAngle = cos(FogAngle);

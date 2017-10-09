@@ -130,7 +130,7 @@ void SphereFogVS(
 
 float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : COLOR
 {
-	FogParams param;
+	FogParams param = (FogParams)0;
 	param.FogPosition = FogPosition;
 	param.FogRange = FogRange;
 	param.FogIntensity = FogIntensity;
