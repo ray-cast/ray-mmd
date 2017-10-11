@@ -168,7 +168,7 @@ technique DeferredLighting<
 	"Clear=Depth;"
 	"ScriptExternal=Color;"
 
-#if SUN_SHADOW_QUALITY > 0 && SUN_LIGHT_ENABLE
+#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 	"RenderColorTarget=ShadowMap;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
@@ -193,7 +193,7 @@ technique DeferredLighting<
 	"Pass=ShadingOpacity;"
 	"RenderColorTarget1=;"
 
-#if SSSS_QUALITY > 0
+#if SSSS_QUALITY
 	"RenderDepthStencilTarget=DepthBuffer;"
 	"RenderColorTarget=;"
 	"Clear=Depth;"
@@ -208,7 +208,7 @@ technique DeferredLighting<
 
 	"RenderColorTarget=ShadingMap; 	Pass=ShadingTransparent;"
 
-#if SSR_QUALITY > 0
+#if SSR_QUALITY
 	"RenderColorTarget=SSRLightX1Map;"
 	"Clear=Color;"
 	"Pass=SSRConeTracing;"
@@ -256,7 +256,7 @@ technique DeferredLighting<
 	"RenderColorTarget=EyeLumAveMap; Pass=EyeAdapation;"
 #endif
 
-#if HDR_BLOOM_MODE > 0
+#if HDR_BLOOM_MODE
 	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
 #if HDR_STAR_MODE || HDR_FLARE_MODE
 	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample2nd;"
@@ -300,7 +300,7 @@ technique DeferredLighting<
 	"RenderColorTarget=StreakMap4th;	 Pass=Star4thStreak3rd;"
 #endif
 	"RenderColorTarget=BloomMap1st;		Pass=GlareLightComp;"
-#if HDR_FLARE_MODE > 0
+#if HDR_FLARE_MODE
 	"RenderColorTarget=BloomMap1stTemp; Pass=GhostImage1st;"
 	"RenderColorTarget=BloomMap1st;		Pass=GhostImage2nd;"
 #endif
@@ -403,7 +403,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingTransparentPS();
 	}
-#if SSSS_QUALITY > 0
+#if SSSS_QUALITY
 	pass SSSSStencilTest<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -440,7 +440,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
 	}
 #endif
-#if SSR_QUALITY > 0
+#if SSR_QUALITY
 	pass SSRConeTracing<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -572,7 +572,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ComputeBokehGatherFinalPS(FocalBokehMapPointSamp, FocalBokehCoCNearMapSamp, 1.0 / mFocalStepScale);
 	}
 #endif
-#if HDR_EYE_ADAPTATION > 0
+#if HDR_EYE_ADAPTATION
 	pass EyeLum<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -586,7 +586,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 EyeAdapationPS();
 	}
 #endif
-#if HDR_BLOOM_MODE > 0
+#if HDR_BLOOM_MODE
 	pass GlareDetection<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

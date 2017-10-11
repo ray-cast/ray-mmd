@@ -239,6 +239,8 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, float
 	float shadow = ComputeAmbientMicroOcclusion(nl, material.visibility);
 
 	float3 specular = 0;
+
+	[branch]
 	if (material.lightModel == SHADINGMODELID_CLOTH)
 		specular = ClothShading(material, nh, nl, vh, nv, roughness, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
@@ -268,6 +270,8 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	float shadow = ComputeAmbientMicroOcclusion(nl2, material.visibility);
 
 	float3 specular = 0;
+
+	[branch]
 	if (material.lightModel == SHADINGMODELID_CLOTH)
 		specular = ClothShading(material, nh, nl, vh, nv, roughness, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
@@ -284,6 +288,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 
 float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
+	[branch]
 	if (material.lightModel == SHADINGMODELID_SKIN)
 		return SubsurfaceShadingPreIntegratedSkin(material, N, L);
 	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
@@ -294,6 +299,7 @@ float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 
 float3 SubsurfaceShadingFast(MaterialParam material, float3 N, float3 L, float3 V)
 {
+	[branch]
 	if (material.lightModel == SHADINGMODELID_SKIN)
 		return SubsurfaceShadingSkinRamp(material, N, L);
 	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)

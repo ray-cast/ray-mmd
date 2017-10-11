@@ -59,9 +59,9 @@ float3 EncodeYcbcr(float3 col)
 {
 	col = sqrt(col);
 	float3 encode;
-	encode.x = dot(float3(0.299, 0.587, 0.114),   col.rgb);
-	encode.y = dot(float3(-0.1687, -0.3312, 0.5), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
-	encode.z = dot(float3(0.5, -0.4186, -0.0813), col.rgb) * MIDPOINT_8_BIT + MIDPOINT_8_BIT;
+	encode.x = dot(col.rgb, float3(0.299, 0.587, 0.114));
+	encode.y = dot(col.rgb, float3(-0.1687, -0.3312, 0.5) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
+	encode.z = dot(col.rgb, float3(0.5, -0.4186, -0.0813) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
 	return encode;
 }
 
