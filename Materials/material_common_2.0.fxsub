@@ -477,7 +477,7 @@ float3 EncodeNormal(float3 normal)
 
 float luminance(float3 rgb)
 {
-	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+	return dot(rgb, float3(0.299, 0.587, 0.114));
 }
 
 float srgb2linear(float rgb)
