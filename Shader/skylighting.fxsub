@@ -79,19 +79,31 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 	return scattering * mEnvIntensitySSS;
 }
 
+float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float shift)
+{
+	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
+	float3 Y = normalize(cross(N, X) + N * shift);
+
+	float3 ax = cross(-V, Y);
+	float3 ay = cross(ax, Y);
+
+	float3 bentNormal = normalize(lerp(N, ay, anisotropy * anisotropy));
+
+	return reflect(-V, bentNormal);
+}
+
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
 
 #if IBL_WITHOUT_ENV_ROTATION
 	float3 V = worldView;
 	float3 N = worldNormal;
-	float3 R = worldReflect;
+	float3 R = EnvironmentReflect(N, V);
 #else
 	float3 V = mul(matTransform, worldView);
 	float3 N = mul(matTransform, worldNormal);
-	float3 R = mul(matTransform, worldReflect);
+	float3 R = EnvironmentReflect(N, V);
 #endif
 
 	float nv = abs(dot(worldNormal, worldView));
@@ -108,22 +120,14 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 
 	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 	{
-		float3 X = normalize(cross(N, float3(0,1,0)) + N * material.customDataB.r);
-		float3 Y = normalize(cross(N, X) + N * material.customDataB.r);
-
-		float3 ax = cross(-V, Y);
-		float3 ay = cross(ax, Y);
-
-		float3 bentNormal = normalize(lerp(N, ay, material.customDataA * material.customDataA));
-
-		R = reflect(-V, bentNormal);
+		R = ComputeAnisotropyDominantDir(N, V, material.customDataA, material.customDataB.r);
 	}
 
 	float2 coord1 = ComputeSphereCoord(N);
 	float2 coord2 = ComputeSphereCoord(R);
 
-	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)), IBL_RGBT_RANGE);
-	float3 prefilteredSpeculr = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)), IBL_RGBT_RANGE);
+	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)));
+	float3 prefilteredSpeculr = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)));
 
 	prefilteredDiffuse = ColorBalance(prefilteredDiffuse, mBalanceDiffuse);
 	prefilteredSpeculr = ColorBalance(prefilteredSpeculr, mBalanceSpecular);

@@ -70,18 +70,17 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
 
 	float3 V = normalize(worldView);
 	float3 N = normalize(worldNormal);
-	float3 R = normalize(worldReflect);
+	float3 R = EnvironmentReflect(N, V);
 
 	float2 coord = ComputeSphereCoord(R);
 	float2 coord1 = ComputeSphereCoord(mul(N, matTransform));
 	float2 coord2 = ComputeSphereCoord(mul(R, matTransform));
 
 	float nv = abs(dot(worldNormal, worldView));
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+	float roughness = SmoothnessToRoughness(material.smoothness);
 
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);

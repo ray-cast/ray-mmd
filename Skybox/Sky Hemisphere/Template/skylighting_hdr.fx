@@ -70,8 +70,8 @@ sampler BRDFSamp = sampler_state {
 float3 SampleSky(float3 N, float smoothness)
 {
 	float3 color = 0;
-	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, pow2(smoothness))));
-	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, pow2(smoothness))));
+	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, smoothness)));
+	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, smoothness)));
 	return color / PI;
 }
 
@@ -83,18 +83,17 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 	return scattering * mEnvIntensitySSS;
 }
 
-void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmoothness, out float3 diffuse, out float3 specular)
+void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
 
 	float3 V = mul(matTransform, worldView);
 	float3 N = mul(matTransform, worldNormal);
-	float3 R = mul(matTransform, worldReflect);
+	float3 R = EnvironmentReflect(N, V);
 
 	float nv = abs(dot(worldNormal, worldView));
 	float roughness = SmoothnessToRoughness(material.smoothness);
-	
+
 	float3 fresnel = 0;
 
 	[branch]
@@ -104,7 +103,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 		fresnel = EnvironmentSpecularLUT(BRDFSamp, nv, roughness, material.specular);
 
 	float3 prefilteredDiffuse = SampleSky(N, 0);
-	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
+	float3 prefilteredSpeculr = SampleSky(R, pow2(material.smoothness));
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
@@ -161,10 +160,10 @@ void EnvLightingPS(
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, V, material.smoothness, diffuse, specular);
+	ShadingMaterial(material, V, diffuse, specular);
 
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, V, materialAlpha.smoothness, diffuse2, specular2);
+	ShadingMaterial(materialAlpha, V, diffuse2, specular2);
 
 	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);

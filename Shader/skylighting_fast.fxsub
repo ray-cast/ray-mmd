@@ -42,22 +42,18 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
-	float3 worldReflect = EnvironmentReflect(worldNormal, worldView);
 
 	float3 V = worldView;
 	float3 N = worldNormal;
-	float3 R = worldReflect;
+	float3 R = EnvironmentReflect(N, V);
 
 	float nv = abs(dot(worldNormal, worldView));
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
 
 	float3 fresnel = EnvironmentSpecularUnreal4(nv, material.smoothness, material.specular);
 
-	float2 coord1 = ComputeSphereCoord(N);
-	float2 coord2 = ComputeSphereCoord(R);
-
-	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord1, 0, 0)), IBL_RGBT_RANGE);
-	float3 prefilteredSpeculr = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord2, 0, mipLayer)), IBL_RGBT_RANGE);
+	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
+	float3 prefilteredSpeculr = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(ComputeSphereCoord(R), 0, mipLayer)));
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
