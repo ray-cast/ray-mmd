@@ -275,7 +275,7 @@ float4 ScreenSpaceDirOccPassPS(
 	float4 sh = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams1, SSDOParams2);
 #endif
 
-	sh.w = sh.w * tex2Dlod(SSAOVisibilitySamp, float4(coord.xy, 0, 0)).a;
+	sh.w = sh.w * tex2Dlod(SSAOMapSamp, float4(coord.xy, 0, 0)).a;
 	sh.w = 1 - sh.w;
 	sh.w = pow(sh.w, mSSAOScale);
 

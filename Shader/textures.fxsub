@@ -131,7 +131,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"* = hide;";
 >;
 #if SSDO_QUALITY
-texture SSAOVisibility : OFFSCREENRENDERTARGET<
+texture SSAOMap : OFFSCREENRENDERTARGET<
 	string Description = "SSAO visibility for ray";
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A8";
@@ -145,8 +145,8 @@ texture SSAOVisibility : OFFSCREENRENDERTARGET<
 		"Volumetric*.pmx=hide;"
 		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
-sampler SSAOVisibilitySamp = sampler_state {
-	texture = <SSAOVisibility>;
+sampler SSAOMapSamp = sampler_state {
+	texture = <SSAOMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
