@@ -169,8 +169,10 @@ void EnvLightingPS(
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
 }
 
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
+
 const float4 BackColor = float4(0,0,0,0);
-const float4 IBLColor  = float4(0,0.5,0,0.5);
+const float4 IBLColor  = float4(0,MIDPOINT_8_BIT,0,MIDPOINT_8_BIT);
 
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 
@@ -178,16 +180,13 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 	technique name<string MMDPass = mmdpass; \
 		string Script =\
 		"ClearSetColor=BackColor;"\
-		"RenderColorTarget0=LightAlphaMap;"\
-		"Clear=Color;"\
-		"RenderColorTarget0=LightSpecMap;"\
-		"Clear=Color;"\
-		"RenderColorTarget0=;"\
-		"RenderColorTarget1=EnvLightAlphaMap;"\
+		"RenderColorTarget0=LightAlphaMap; Clear=Color;"\
+		"RenderColorTarget0=LightSpecMap;  Clear=Color;"\
+		"RenderColorTarget0=; RenderColorTarget1=EnvLightAlphaMap;"\
 		"ClearSetColor=IBLColor;"\
 		"Clear=Color;"\
 		"Pass=DrawObject;"\
-;> {\
+;>{\
 	pass DrawObject {\
 		AlphaBlendEnable = false; AlphaTestEnable = false;\
 		CullMode = CCW;\
@@ -199,6 +198,6 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")
 
-technique EdgeTec<string MMDPass = "edge";>{}
-technique ShadowTech<string MMDPass = "shadow";>{}
-technique ZplotTec<string MMDPass = "zplot";>{}
+technique EdgeTec<string MMDPass="edge";>{}
+technique ShadowTech<string MMDPass="shadow";>{}
+technique ZplotTec<string MMDPass="zplot";>{}
