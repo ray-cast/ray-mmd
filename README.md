@@ -19,6 +19,7 @@ Download :
 - Latest changes - Major allocator changes:
 	- Support for Depth Of Field
 	- Material : Optimize the fps
+	- Material : Better Cloth
 	- Shadow : Optimize the fps (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- FilmGrain : Added black borders around a video
 	- Fix issue : that cause a FilmGrain cannot be used with others MME
