@@ -53,9 +53,9 @@ sampler SkyDiffuseMapSample = sampler_state {
 
 static float3x3 matTransform = CreateRotate(float3(3.14 / 2,0.0,0.0));
 
-float4 ImageBasedLightClearCost(MaterialParam material, float3 N, float3 V, float3 prefilteredSpeculr)
+float4 ImageBasedLightClearCost(MaterialParam material, float nv, float3 prefilteredSpeculr)
 {
-	float fresnel = EnvironmentSpecularUnreal4(N, V, material.customDataA);
+	float fresnel = EnvironmentSpecularUnreal4(nv, material.customDataA);
 	return float4(prefilteredSpeculr, fresnel);
 }
 
@@ -80,12 +80,14 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float2 coord1 = ComputeSphereCoord(mul(N, matTransform));
 	float2 coord2 = ComputeSphereCoord(mul(R, matTransform));
 
+	float nv = abs(dot(worldNormal, worldView));
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 1e-4);
+
 	N = ComputeDiffuseDominantDir(N, V, roughness);
 	R = ComputeSpecularDominantDir(N, R, roughness);
 
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
-	float3 fresnel = EnvironmentSpecularUnreal4(worldNormal, worldView, material.smoothness, material.specular);
+	float3 fresnel = EnvironmentSpecularUnreal4(nv, material.smoothness, material.specular);
 
 	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(SkyDiffuseMapSample, float4(ComputeSphereCoord(N), 0, 0)));
 
@@ -102,7 +104,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CLEAR_COAT)
 	{
-		float4 specular2 = ImageBasedLightClearCost(material, worldNormal, worldView, prefilteredSpeculr);
+		float4 specular2 = ImageBasedLightClearCost(material, nv, prefilteredSpeculr);
 		specular = lerp(specular, specular2.rgb, specular2.a);
 	}
 	else if (material.lightModel == SHADINGMODELID_SKIN || 

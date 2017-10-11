@@ -92,8 +92,16 @@ void ShadingMaterial(MaterialParam material, float3 worldView, float finalSmooth
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = mul(matTransform, worldReflect);
 
-	float2 brdf = tex2Dlod(BRDFSamp, float4(dot(worldNormal, worldView), SmoothnessToRoughness(material.smoothness), 0, 0)).rg;
-	float3 fresnel = material.specular * brdf.r + brdf.g;
+	float nv = abs(dot(worldNormal, worldView));
+	float roughness = SmoothnessToRoughness(material.smoothness);
+	
+	float3 fresnel = 0;
+
+	[branch]
+	if (material.lightModel == SHADINGMODELID_CLOTH)
+		fresnel = EnvironmentSpecularCloth(nv, roughness, material.specular);
+	else
+		fresnel = EnvironmentSpecularLUT(BRDFSamp, nv, roughness, material.specular);
 
 	float3 prefilteredDiffuse = SampleSky(N, 0);
 	float3 prefilteredSpeculr = SampleSky(R, material.smoothness);
