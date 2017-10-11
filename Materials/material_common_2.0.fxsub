@@ -696,30 +696,23 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer2.xyz = EncodeNormal(material.normal);
 	gbuffer.buffer2.w = material.customDataA;
 
-	gbuffer.buffer3.xyz = rgb2ycbcr(lerp(material.specular, max(0.02, material.albedo), material.metalness));
+	gbuffer.buffer3.xyz = lerp(material.specular, max(0.02, material.albedo), material.metalness);
 	gbuffer.buffer3.w = 0;
 
 #if CUSTOM_ENABLE || EMISSIVE_ENABLE
-	if (material.lightModel == SHADINGMODELID_EMISSIVE)
+	if (material.lightModel != SHADINGMODELID_DEFAULT)
 	{
-		material.emissive = rgb2ycbcr(min(0.998, material.emissive));
-		gbuffer.buffer3.yz = material.emissive.gb;
-		gbuffer.buffer3.w = material.emissive.r * MAX_FRACTIONAL_8_BIT;
-	}
-	else
-	{
-#if CUSTOM_ENABLE != SHADINGMODELID_GLASS
+#if EMISSIVE_ENABLE
+		material.customDataB = material.emissive;
+#elif CUSTOM_ENABLE != SHADINGMODELID_GLASS
 		material.customDataB *= (1 - material.metalness);
 #endif
-		material.customDataB = rgb2ycbcr(min(0.998, material.customDataB));
-		gbuffer.buffer3.yz = material.customDataB.gb;
-		gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
+		gbuffer.buffer3 = float4(luminance(gbuffer.buffer3.x), material.customDataB);
 	}
 #endif
 
-	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
-	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);
-	gbuffer.buffer4.y = floor(material.emissiveIntensity * 100.0) + saturate(material.visibility - 1e-4);
+	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.visibility, material.lightModel);
+	gbuffer.buffer4.w += material.alpha * MAX_FRACTIONAL_8_BIT;
 
 	return gbuffer;
 }
@@ -878,9 +871,9 @@ float GetAlpha(float2 coord)
 		float alphaValue = alphaValues.a;
 	#endif
 
-	return alphaValue;
+	return saturate(alphaValue);
 #else
-	return alpha * MaterialDiffuse.a;
+	return saturate(alpha * MaterialDiffuse.a);
 #endif
 }
 

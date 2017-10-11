@@ -77,34 +77,29 @@ float3 DecodeYcbcr(float3 YCbCr)
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
 	material.albedo = buffer1.xyz;
-	material.smoothness = buffer1.w;
+	material.specular = buffer3.xyz;
 
 	material.normal = DecodeNormal(buffer2.xyz);
+	material.smoothness = buffer1.w;
 
 	material.customDataA = buffer2.w;
 	material.customDataB = 0;
 
-	material.alpha = buffer4.w;
+	material.alpha = frac(buffer4.w) / MAX_FRACTIONAL_8_BIT;
 
 	material.linearDepth = buffer4.x;
-	material.visibility = saturate(frac(buffer4.y));
-	material.lightModel = (int)floor(buffer4.z);
+	material.visibility = buffer4.z;
+	material.lightModel = (int)floor(buffer4.w);
 
 	if (material.lightModel >= SHADINGMODELID_MASK)
 		material.lightModel = SHADINGMODELID_DEFAULT;
 
 	if (material.lightModel != SHADINGMODELID_DEFAULT)
 	{
-		material.specular = pow2(buffer3.x);
-		material.customDataB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
+		material.specular = buffer3.x;
+		material.customDataB = buffer3.yzw;
 		if (material.lightModel == SHADINGMODELID_EMISSIVE)
-		{
-			material.customDataA = floor(buffer4.y) / 100.0;
-		}
-	}
-	else
-	{
-		material.specular = DecodeYcbcr(buffer3.xyz);
+			material.customDataA = floor(buffer4.y);
 	}
 }
 
@@ -120,21 +115,22 @@ float3 DecodeGBufferNormal(float4 buffer2)
 
 int DecodeLightModel(float4 buffer4)
 {
-	int lightModel = (int)floor(abs(buffer4.z));
+	int lightModel = (int)floor(buffer4.w);
 	return lightModel;
 }
 
 float DecodeEmissiveIntensity(float4 buffer4)
 {
-	return floor(buffer4.y) / 100.0;
+	return floor(buffer4.y);
 }
 
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
 {
 	int lightModel = DecodeLightModel(buffer4);
-	float intensity = DecodeEmissiveIntensity(buffer4);
-	float3 emissive = max(0, DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz)));
-	return emissive * intensity * any(lightModel == SHADINGMODELID_EMISSIVE);
+	if (lightModel != SHADINGMODELID_EMISSIVE)
+		return 0;
+	else
+		return buffer3.yzw * DecodeEmissiveIntensity(buffer4);
 }
 
 float4 GetProjConstant()
