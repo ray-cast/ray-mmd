@@ -71,8 +71,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
-	float3 V = normalize(worldView);
-	float3 N = normalize(worldNormal);
+	float3 V = worldView;
+	float3 N = worldNormal;
 	float3 R = EnvironmentReflect(N, V);
 
 	float2 coord = ComputeSphereCoord(R);
