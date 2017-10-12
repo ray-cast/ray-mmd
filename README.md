@@ -27,29 +27,6 @@ Download :
 	- Fix issue : that cause a FXAA cannot be used with others MME
 	- Fix issue : that cause a SMAA cannot be used with others MME
 
-Requirement :
-------------
-* MikuMikuDance - 926ver and above (Without Anti-Aliasing)
-* MikuMikuEffect - 037ver and above
-* Direct3D 9 With Shader Model 3.0 (ps_3_0)
-
-Resources
-------------
-- HDRi
-	- sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
-	- ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
-	- USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
-- Text editor
-	- Notepad++ \[[link](https://notepad-plus-plus.org)\].
-	- Visual studio code \[[link](http://code.visualstudio.com/Download)\].
-- Materials
-	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
-
-Tutroial:
-------------
-* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
-* Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
-
 Features :
 ------------
 * Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
@@ -83,6 +60,29 @@ Features :
 * Post-Process FXAA
 * Post-Process SMAA
 * Post-Process stereo rendering
+
+Requirement :
+------------
+* MikuMikuDance - 926ver and above (Without Anti-Aliasing)
+* MikuMikuEffect - 037ver and above
+* Direct3D 9 With Shader Model 3.0 (ps_3_0)
+
+Resources
+------------
+- HDRi
+	- sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
+	- ++skies; - **[aokcub](https://twitter.com/aokcub_cg)** \[[link](https://aokcub.net/cg/incskies/)\].
+	- USC Institute \[[link](http://gl.ict.usc.edu/Data/HighResProbes)\].
+- Text editor
+	- Notepad++ \[[link](https://notepad-plus-plus.org)\].
+	- Visual studio code \[[link](http://code.visualstudio.com/Download)\].
+- Materials
+	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
+
+Tutroial:
+------------
+* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
+* Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
 
 Contact :
 ------------
