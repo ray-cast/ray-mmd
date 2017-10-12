@@ -20,6 +20,7 @@ Download :
 	- Support for Depth Of Field
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
+	- Material : Better Skin when use ao map
 	- Shadow : Optimize and improve the shadow quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
