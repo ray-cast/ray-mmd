@@ -54,28 +54,35 @@ Features :
 ------------
 * Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
 * Clear coat material with absorption to simulate a second layer
-* Cloth and anisotropic materials
+* Cloth material with cloth-DFG to simulate a specular reflection
+* Anisotropic material to simulate a specular reflection
+* Special-Case Materials Wetness
 * Approximation subsurface scattering materials
 * Cook-Torrance microfacet specular BRDF (GGX) and burley diffuse BRDF
 * Physical light units
-* Point light, spot light, directional light, ies light and area light
-* IES light profiles (point and spot light)
+* Multiple light sources (Point, spot, sun, area, ies)
+* IES light profiles (point and spot light support)
+* Soft shadow (PCF, VSM, PSSM)
+* Omni light shadow support based on dual-paraboloid project
 * HDR linear lighting
-* Volumetric light (point, spot and ies light)
-* Volumetric fog (cube and sphere fog)
+* Volumetric light (point, spot and ies light source support)
+* Volumetric fog (cube and sphere fog support)
 * Light shaft effect
 * Approximation atmospheric fog and sky scattering
-* Image-based lighting (RGBT encode)
-* Scene Space Reflection
+* Ground fog effect
+* Skybox based on RGBT encode
+* Image-based lighting based on RGBT encode
+* Screen Space Reflection
 * Screen Space Ambient Occlusition
 * Screen Space Subsurface Scattering
-* Color Balance PostProcess
-* Bokeh Depth Of Field PostProcess
-* HDR PostProcess
-* Bloom PostProcess
-* FXAA PostProcess
-* SMAA PostProcess
-* Reinhard/Hable/ACES-like tone-mapping
+* Post-Process Bokeh Depth Of Field
+* Post-Process Bloom
+* Post-Process Eye adaptation
+* Post-Process Tone-mapping (ACES-like,Reinhard,Hable,Hejl2015,NaughtyDog support)
+* Post-Process Color Balance
+* Post-Process FXAA
+* Post-Process SMAA
+* Post-Process stereo rendering
 
 Contact :
 ------------
