@@ -1,7 +1,7 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　The aim of the project is to create a physically-based rendering at MMD.
+　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012)
 
 Screenshots :
 ------------
@@ -63,11 +63,11 @@ Features :
 
 Requirement :
 ------------
-* MikuMikuDance - 926ver and above (Without Anti-Aliasing)
-* MikuMikuEffect - 037ver and above
+* [MikuMikuDance](http://www.geocities.jp/higuchuu4/index_e.htm) - 926ver (x64) (Without Anti-Aliasing)
+* [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
-Resources
+Resources :
 ------------
 - HDRi
 	- sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
@@ -79,7 +79,7 @@ Resources
 - Materials
 	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
 
-Tutroial:
+Tutroial :
 ------------
 * Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
 * Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
