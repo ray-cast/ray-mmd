@@ -1,7 +1,7 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　The aim of the project is to create a physically-based rendering at MMD.
+　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012).
 
 Screenshots :
 ------------
@@ -12,46 +12,50 @@ Screenshots :
 
 Download :
 ------------
-* [Ray-MMD alpha - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/alpha.zip)
-- About alpha version :
-	- Adding new features to the most recent version
-	- Fewer Bugs in this version
-- Latest changes - Major allocator changes:
-	- Notice1 : Overwrite the old material_common_2.0.fxsub to fix a bug
-	- Notice2 : You need to rewrite the Sky Hemisphere to fix a bug
-	- Added MatCap/Sphere map supports (see main_ex_with_sphmap.fx)
-	- Added SSAOVisibility tab, single subset of the model can now set its visibility for SSAO
-	- Improved Bloom, that allows a larger range for bloom, and color modified [(preview)](https://github.com/ray-cast/images/raw/master/20_bloom.jpg)
-	- Improved Quality of cloud [(preview)](https://github.com/ray-cast/images/raw/master/20_godray.jpg).
-    - Removed SphereFog, but you can put a light source in MMD and assign a fx from its 'fog.fx' to the FogMap tab
-	- Removed DepthMap tab and now cannot support the cast shadows on the skydome
-    - Occlusion maps can be fetched from the second UV set, download [blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools) for addUV import/export. ~~,In order to use static lightmap/sky visibility in the future work, that lightmass must compute a set of unwrapped UV coordinates for the model and export it to additional UV set~~
-    - Support the God ray calculated from the AtmosphericFog and Time of day
-    - Support the Volumetric fog calculated from volumetric (cube, sphere), they can be used to simulate the deep sea, because fog and water are the same as mie scattering [(preview)](https://github.com/ray-cast/images/raw/master/screen2.png)
-	- Support the Volumetric lighting calculated from (point,sphere,spot,ies) light source [(preview)](https://github.com/ray-cast/images/raw/master/20_volumetric_light.jpg)
-	- Fixed bug : The green is greater than red and blue, when very bright exposure
-- 更改历史:
-	- 注1:需要覆盖旧版本的material_common_2.0.fxsub去修复一个bug
-	- 注2:需要重新编写以前的SkyHemisphere用于修复一个bug
-	- 添加MatCap/Sphere贴图的支持
-	- 添加SSAOVisibility板块用于控制单个模型材质的AO可见性
-	- 添加了AtmosphericFog和TimeofDay的Godray支持
-	- 添加了区域雾用于模拟深海或地面雾气
-	- 添加了一些多光源(point, sphere, spot, ies)的体积雾的支持
-	- 改进了Bloom可以允许更大范围的泛光
-	- 改进了云的质量
-	- 移除SphereFog,现在已经被多光源的体积光代替了,你可以添加一个光源并且同时设置它的fog.fx到FogMap板块
-	- 移除Skydome的阴影计算
-	- 环境光遮蔽贴图现在可以从模型中的第二组UV中获取，用于未来使用
-	- 修复了一个当曝光太强或整体过暗时造成画面整体偏绿的问题
+* [Ray-MMD - Source code (zip)](https://github.com/ray-cast/ray-mmd/archive/140beta2.zip)
+* [Ray-MMD - Source code (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz)
+
+Features :
+------------
+* Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
+* Clear coat material with absorption to simulate a second layer
+* Cloth material with cloth-DFG to simulate a specular reflection
+* Anisotropic material to simulate a specular reflection
+* Special-Case Materials Wetness
+* Approximation subsurface scattering materials
+* Cook-Torrance microfacet specular BRDF (GGX) and burley diffuse BRDF
+* Physical light units
+* Multiple light sources (Point, spot, sun, area, ies)
+* IES light profiles (point and spot light support)
+* Soft shadow (PCF, VSM, PSSM)
+* Omni light shadow support based on dual-paraboloid project
+* HDR linear lighting
+* Volumetric light (point, spot and ies light source support)
+* Volumetric fog (cube and sphere fog support)
+* Light shaft effect
+* Approximation atmospheric fog and sky scattering
+* Ground fog effect
+* Skybox based on RGBT encode
+* Image-based lighting based on RGBT encode
+* Screen Space Reflection
+* Screen Space Ambient Occlusition
+* Screen Space Subsurface Scattering
+* Post-Process Bokeh Depth Of Field
+* Post-Process Bloom
+* Post-Process Eye adaptation
+* Post-Process Tone-mapping (ACES-like,Reinhard,Hable,Hejl2015,NaughtyDog support)
+* Post-Process Color Balance
+* Post-Process FXAA
+* Post-Process SMAA
+* Post-Process stereo rendering
 
 Requirement :
 ------------
-* MikuMikuDance - 926ver and above (Without Anti-Aliasing)
-* MikuMikuEffect - 037ver and above
+* [MikuMikuDance](http://www.geocities.jp/higuchuu4/index_e.htm) - 926ver (x64) (Without Anti-Aliasing)
+* [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
-Resources
+Resources :
 ------------
 - HDRi
 	- sIBL Archive - Hdrlabs.com \[[link](http://www.hdrlabs.com/sibl/archive.html)\].
@@ -63,27 +67,12 @@ Resources
 - Materials
 	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
 
-Tutroial:
+Tutroial :
 ------------
 * Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
 * Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
 
-Features :
-------------
-* Physically-Based Material
-* Multiple Light Source
-* IES Light Profiles
-* Image Based Lighting
-* Scene Space Reflection
-* Screen Space Ambient Occlusition
-* Screen Space Subsurface Scattering
-* Color Balance PostProcess
-* HDR PostProcess
-* Bloom PostProcess
-* FXAA PostProcess
-* SMAA PostProcess
-
-Contact
+Contact :
 ------------
 
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
@@ -111,7 +100,7 @@ Contact
 	AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Digging Deeper
+References :
 --------
 * Moving to the Next Generation - The Rendering Technology of Ryse \[[link](http://www.crytek.com/download/2014_03_25_CRYENGINE_GDC_Schultz.pdf)\].
 * ACES Filmic Tone Mapping Curve \[[link](https://knarkowicz.wordpress.com/2016/08/31/hdr-display-first-steps/)\].
@@ -135,3 +124,6 @@ Digging Deeper
 * Mip Fog \[[link](http://advances.realtimerendering.com/other/2016/naughty_dog/NaughtyDog_TechArt_Final.pdf)\]
 * Gaussian-kernel-calculator \[[link](http://dev.theomader.com/gaussian-kernel-calculator/)\]
 * Ray Box Intersection on the GPU \[[link](https://github.com/hpicgs/cgsee/wiki/Ray-Box-Intersection-on-the-GPU)\]
+* Hexagonal Bokeh Blur Revisited \[[link](https://colinbarrebrisebois.com/2017/04/18/hexagonal-bokeh-blur-revisited/)\]
+* Practical Post-Process Depth of Field \[[link](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch28.html)\]
+* Cloth-DFG for IBL \[[link](https://gist.github.com/romainguy/52d0e7f070d9ed7b44a0327d735fe33e)\]
