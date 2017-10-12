@@ -18,9 +18,10 @@ Download :
 * [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
 - Latest changes - Major allocator changes:
 	- Support for Depth Of Field
-	- Material : Optimize the fps
+	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
-	- Shadow : Optimize the fps (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
+	- Shadow : Optimize and improve the shadow quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
+	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
 	- Fix issue : that cause a FilmGrain cannot be used with others MME
 	- Fix issue : that cause a LightBloom cannot be used with others MME
