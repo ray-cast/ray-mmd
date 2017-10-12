@@ -56,7 +56,7 @@ void ScatteringVS(
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = normalize(Position);
-	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity);
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mSunTurbidity);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
 }
@@ -70,7 +70,7 @@ float4 ScatteringPS(
 
 	ScatteringParams setting;
 	setting.sunRadiance = mSunRadiance;
-	setting.mieG = mMiePhase;
+	setting.mieG = mSunPhase;
 	setting.mieHeight = mMieHeight * mUnitDistance;
 	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
 	setting.earthRadius = mEarthRadius * mUnitDistance;

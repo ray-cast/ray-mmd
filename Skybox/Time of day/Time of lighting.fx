@@ -108,7 +108,7 @@ void GenSpecularMapVS(
 	oTexcoord0 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w);
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mMieTurbidity);
+	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mSunTurbidity);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 }
 
@@ -119,7 +119,7 @@ float4 GenSpecularMapPS(
 {
 	ScatteringParams setting;
 	setting.sunRadiance = mSunRadiance;
-	setting.mieG = mMiePhase;
+	setting.mieG = mSunPhase;
 	setting.mieHeight = mMieHeight * mUnitDistance;
 	setting.rayleighHeight = mRayleighHeight * mUnitDistance;
 	setting.earthRadius = mEarthRadius * mUnitDistance;

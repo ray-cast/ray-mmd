@@ -2,6 +2,10 @@ float mSunRadiusP : CONTROLOBJECT<string name="(self)"; string item = "SunRadius
 float mSunRadiusM : CONTROLOBJECT<string name="(self)"; string item = "SunRadius-";>;
 float mSunRadianceP : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance+";>;
 float mSunRadianceM : CONTROLOBJECT<string name="(self)"; string item = "SunRadiance-";>;
+float mSunPhaseP : CONTROLOBJECT<string name="(self)"; string item = "SunPhase+";>;
+float mSunPhaseM : CONTROLOBJECT<string name="(self)"; string item = "SunPhase-";>;
+float mSunTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "SunTurbidity+";>;
+float mSunTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "SunTurbidity-";>;
 
 float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
 float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
@@ -35,6 +39,8 @@ float mFogDensityFarM : CONTROLOBJECT<string name="(self)"; string item = "FogDe
 
 static float mSunRadius      = lerp(lerp(mSunRadiusParams.x, mSunRadiusParams.z, mSunRadiusP), mSunRadiusParams.y, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(mSunRadianceParams.x, mSunRadianceParams.z, mSunRadianceP), mSunRadianceParams.y, mSunRadianceM);
+static float mSunPhase       = lerp(lerp(mSunPhaseParams.x, mSunPhaseParams.z, mSunPhaseP), mSunPhaseParams.y, mSunPhaseM);
+static float mSunTurbidity   = lerp(lerp(mSunTurbidityParams.x, mSunTurbidityParams.z, mSunTurbidityP), mSunTurbidityParams.y, mSunTurbidityM);
 static float mFogRange       = lerp(lerp(mFogRangeParams.x, mFogRangeParams.z, mFogRangeP), mFogRangeParams.y, mFogRangeM);
 static float mFogIntensity   = lerp(lerp(mFogIntensityParams.x, mFogIntensityParams.z, mFogIntensityP), mFogIntensityParams.y, mFogIntensityM);
 static float mFogDensity     = lerp(lerp(mFogDensityParams.x, mFogDensityParams.z, mFogDensityP), mFogDensityParams.y, mFogDensityM);
