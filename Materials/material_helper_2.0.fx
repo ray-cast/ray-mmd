@@ -252,6 +252,8 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
+// 8 : Cel Shading        // customA = threshold,  customB = shadow color;
+// 9 : ToonBased Shading  // customA = haredness,  customB = shadow color;
 #define CUSTOM_ENABLE 0
 
 #define CUSTOM_A_MAP_FROM 0	// see ALBEDO_MAP_FROM for more information.

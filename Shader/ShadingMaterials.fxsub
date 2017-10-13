@@ -11,7 +11,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float shadow = 1;
 #if SUN_SHADOW_QUALITY
 	shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).r;
-	shadow = min(shadow, saturate(dot(material.normal, L) * 3));
+	//shadow = min(shadow, saturate(dot(material.normal, L) * 3));
 #endif
 
 #if SSDO_QUALITY
@@ -20,29 +20,16 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	shadow *= ssdo;
 #endif
 
-	float4 energy = SurfaceEnergy(material, material.normal, L, V) * shadow;
-	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
-
-#if TOON_ENABLE
-	if (material.lightModel == SHADINGMODELID_CEL || material.lightModel == SHADINGMODELID_TONEBASED)
-		diffuse = ToneBasedShading(material, material.normal, L, V, shadow);
-	else
-		diffuse = energy.r;
-#else
-	diffuse = energy.r;
-#endif
-
-	diffuse += subsurface;
-	specular = energy.gba;
-
 	float3 lightColor = SunColor * mSunIntensity * any(sum(material.albedo + material.specular));
-
 #if SUN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
 #endif
 
-	diffuse *= lightColor;
-	specular *= lightColor;
+	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
+	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
+
+	diffuse = (energy[0] + subsurface) * lightColor;
+	specular = energy[1] * lightColor;
 
 #if SUN_SHADOW_QUALITY
 	diffuse += mColorShadowSunP * (1 - shadow) * any(sum(material.albedo + material.specular));

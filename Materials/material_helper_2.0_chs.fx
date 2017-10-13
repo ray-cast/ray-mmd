@@ -226,10 +226,12 @@ const float2 emissiveMapLoopNum = 1.0;	// 参考albedoMapLoopNum
 // 3 : 各向异性				// customA = segment,    customB = shadow color
 
 // 为了时透明材质正确工作必须将模型的透明度数值设置小于0.999
-// 4 : 玻璃				// customA = curvature   customB = transmittance color
-// 5 : 布料				// customA = sheen,      customB = Fuzz Color
-// 6 : 清漆				// customA = smoothness, customB = invalid;
-// 7 : 次表面散射			// customA = curvature,  customB = transmittance color;
+// 4 : 玻璃					// customA = curvature   customB = transmittance color
+// 5 : 布料					// customA = sheen,      customB = Fuzz Color
+// 6 : 清漆					// customA = smoothness, customB = invalid;
+// 7 : 次表面散射				// customA = curvature,  customB = transmittance color;
+// 8 : Cel Shading        	// customA = threshold,  customB = shadow color;
+// 9 : ToonBased Shading  	// customA = haredness,  customB = shadow color;
 #define CUSTOM_ENABLE 0
 
 #define CUSTOM_A_MAP_FROM 0	// 参考ALBEDO_MAP_FROM
