@@ -1,0 +1,53 @@
+float4x4 matView : VIEW;
+float4x4 matWorld : WORLD;
+float4x4 matWorldView : WORLDVIEW;
+float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
+
+void MaterialVS(
+	in float4 Position : POSITION, 
+	in float3 Normal : NORMAL, 
+	out float4 oPosition  : POSITION)
+{
+	oPosition = mul(float4(Position.xyz - normalize(Normal) * edgeLinePadding / 100, 1), matWorldViewProject);
+}
+
+float4 MaterialPS(in float3 normal : TEXCOORD01) : COLOR
+{
+	return 0;
+}
+
+void EdgeLineVS(
+	in float4 Position : POSITION, 
+	in float3 Normal : NORMAL, 
+	in float2 Texcoord1 : TEXCOORD0,
+	out float3 oNormal  : TEXCOORD0,
+	out float4 oPosition  : POSITION)
+{
+	oNormal = Normal;
+	oPosition = mul(Position, matWorldViewProject);
+}
+
+float4 EdgeLinePS(in float3 normal : TEXCOORD01) : COLOR
+{
+	return float4(pow(edgeLineColor, 2.2), 1.0);
+}
+
+technique EdgeTec<string MMDPass = "edge";>{
+	pass DrawEdgeLine {
+		AlphaTestEnable = false; AlphaBlendEnable = false;
+		VertexShader = compile vs_3_0 EdgeLineVS();
+		PixelShader  = compile ps_3_0 EdgeLinePS();
+	}
+}
+
+technique MainTecSS<string MMDPass = "object_ss";>{
+	pass DrawObject {
+		AlphaTestEnable = false; AlphaBlendEnable = false;
+		VertexShader = compile vs_3_0 MaterialVS();
+		PixelShader  = compile ps_3_0 MaterialPS();
+	}
+}
+
+technique MainTec0<string MMDPass = "object";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}

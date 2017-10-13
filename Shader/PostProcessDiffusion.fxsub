@@ -1,0 +1,41 @@
+#define DIFFUSION_BLUR_RADIUS 3
+
+static const float2 mDiffusionScale = 512 * float2(ViewportAspect, 1);
+
+static const float2 mDiffusionOffsetX = float2(2.0 / mDiffusionScale.x, 0.0);
+static const float2 mDiffusionOffsetY = float2(0.0, 2.0 / mDiffusionScale.y);
+
+float4 ScreenSpaceBilateralFilterPS(
+	in float2 coord   : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	uniform sampler source,
+	uniform float2 offset) : COLOR
+{
+	float center_d = linearizeDepth(coord);
+
+	float total_w = 1.0f;
+	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
+
+	float2 offset1 = coord + offset;
+	float2 offset2 = coord - offset;
+
+	[unroll]
+	for (int r = 1; r <= DIFFUSION_BLUR_RADIUS; ++r)
+	{
+		float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
+
+		float weight1 = BilateralWeight(r, center_d, depth.x, DIFFUSION_BLUR_RADIUS, 8);
+		float weight2 = BilateralWeight(r, center_d, depth.y, DIFFUSION_BLUR_RADIUS, 8);
+
+		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * weight1;
+		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * weight2;
+
+		total_w += weight1;
+		total_w += weight2;
+
+		offset1 += offset;
+		offset2 -= offset;
+	}
+
+	return float4(total_c.rgb / total_w, 0.2);
+}

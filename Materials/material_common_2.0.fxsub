@@ -68,7 +68,9 @@ static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, m
 #define SHADINGMODELID_CLOTH      5
 #define SHADINGMODELID_CLEAR_COAT 6
 #define SHADINGMODELID_SUBSURFACE 7
-#define SHADINGMODELID_MASK       0xF
+#define SHADINGMODELID_CEL        8
+#define SHADINGMODELID_TONEBASED  9
+#define SHADINGMODELID_MASK       10
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)
@@ -1366,7 +1368,7 @@ float GetCustomDataA(float2 coord)
 float3 GetCustomDataB(float2 coord)
 {
 #if CUSTOM_ENABLE
-	float3 customData = customB;
+	float3 customData = srgb2linear(customB);
 
 	#if CUSTOM_B_MAP_FROM
 		#if CUSTOM_B_MAP_UV_FLIP == 1
@@ -1393,6 +1395,10 @@ float3 GetCustomDataB(float2 coord)
 			customData = tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb;
 		#endif
 
+		#if CUSTOM_B_MAP_FROM && CUSTOM_B_MAP_TYPE == 0
+			customData = srgb2linear(customData);
+		#endif
+
 		#if CUSTOM_B_MAP_COLOR_FLIP
 			customData = 1 - customData;
 		#endif
@@ -1404,7 +1410,7 @@ float3 GetCustomDataB(float2 coord)
 		#endif
 	#endif
 
-	return saturate(srgb2linear(customData));
+	return saturate(customData);
 #else
 	return 0.0;
 #endif
@@ -1413,7 +1419,7 @@ float3 GetCustomDataB(float2 coord)
 float GetLightMode(MaterialParam material)
 {
 #if CUSTOM_ENABLE
-	#if CUSTOM_ENABLE > SHADINGMODELID_SUBSURFACE
+	#if CUSTOM_ENABLE >= SHADINGMODELID_MASK
 		#error Unsupported option Shading Material ID
 	#endif
 	#if EMISSIVE_ENABLE

@@ -130,6 +130,31 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
+#if OUTLINE_ENABLE
+shared texture OutlineMap : OFFSCREENRENDERTARGET<
+	string Description = "Outline shading for ray";
+	float2 ViewportRatio = {1.0, 1.0};
+	float4 ClearColor = { 0, 0, 0, 0 };
+	float ClearDepth = 1.0;
+	string Format = "A8R8G8B8";
+	string DefaultEffect =
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller*.pmx=hide;"
+		"*editor*.pmx=hide;"
+		"Volumetric*.pmx=hide;"
+		"sky*box*.* =hide;"
+		"*.pmd = ./outline/Fixed Color/outline.fx;"
+		"*.pmx = ./outline/Fixed Color/outline.fx;"
+		"*.x = hide;"
+		"* = hide;";
+>;
+sampler OutlineMapSamp = sampler_state {
+	texture = <OutlineMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+#endif
 #if SSDO_QUALITY
 texture SSAOMap : OFFSCREENRENDERTARGET<
 	string Description = "SSAO visibility for ray";

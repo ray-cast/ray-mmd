@@ -118,6 +118,28 @@ float DiffuseBRDF(float3 N, float3 L, float3 V, float roughness)
 	return BurleyBRDF(nl, nv, vh, roughness);
 }
 
+float3 ToonBasedShading(float nl, float vh, float nv, float3 shadowColor, float3 specular, float shadow, float roughness, float hardness)
+{
+	float Fd90 = (0.5 + 2.0 * vh * vh) * roughness;
+	float FdV = lerp(1, Fd90, pow5(1 - max(nv, 0.1)));
+
+	float3 f0 = specular;
+	float3 f90 = ComputeSpecularMicroOcclusion(f0);
+	float3 fresnel = fresnelSchlick(f0, f90, vh);
+
+	return lerp(shadowColor, 1.0, saturate(nl * hardness + 1 - hardness) * shadow) * (1  - fresnel);
+}
+
+float3 CelShading(float nl, float vh, float nv, float3 shadowColor, float3 specular, float shadow, float roughness, float threshold)
+{
+	float bias = 0.02;
+	float x = threshold * 2 - 1;
+	float darkness = nl * shadow;
+	float3 I = lerp(shadowColor, 1.0, smoothstep(x - bias, x, darkness));
+
+	return I;
+}
+
 float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothness, float3 specular, float NormalizationFactor)
 {
 	float alpha = exp2(10 * smoothness + 1);
@@ -306,4 +328,25 @@ float3 SubsurfaceShadingFast(MaterialParam material, float3 N, float3 L, float3 
 		return SubsurfaceShadingScattering(material, N, L, V);
 	else
 		return 0;
+}
+
+float3 ToneBasedShading(MaterialParam material, float3 N, float3 L, float3 V, float shadow, float normalizeFactor = 1.0)
+{
+	float3 H = normalize(V + L);
+
+	float nl = dot(N, L);
+	float nh = saturate(dot(N, H));
+	float vh = saturate(dot(V, H));
+	float nv = abs(dot(N, V)) + 1e-5h;
+
+	float roughness = SmoothnessToRoughness(material.smoothness);
+	float visibility = ComputeAmbientMicroOcclusion(nl, material.visibility);
+
+	float3 diffuse = 0;
+	if (material.lightModel == SHADINGMODELID_TONEBASED)
+		diffuse = ToonBasedShading(nl, vh, nv, material.customDataB, material.specular, shadow * visibility, roughness, material.customDataA);
+	else
+		diffuse = CelShading(nl, vh, nv, material.customDataB, material.specular, shadow * visibility, roughness, material.customDataA);
+
+	return diffuse;
 }

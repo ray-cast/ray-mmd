@@ -96,6 +96,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessScattering.fxsub"
 #endif
 
+#if TOON_ENABLE == 2
+#	include "shader/PostProcessDiffusion.fxsub"
+#endif
+
 #if SSR_QUALITY
 #	include "shader/PostProcessSSR.fxsub"
 #endif
@@ -207,6 +211,11 @@ technique DeferredLighting<
 #endif
 
 	"RenderColorTarget=ShadingMap; 	Pass=ShadingTransparent;"
+
+#if TOON_ENABLE == 2
+	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
+	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
+#endif
 
 #if SSR_QUALITY
 	"RenderColorTarget=SSRLightX1Map;"
@@ -438,6 +447,21 @@ technique DeferredLighting<
 		SrcBlend = DESTCOLOR; DestBlend = ZERO;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
+	}
+#endif
+#if TOON_ENABLE == 2
+	pass DiffusionBlurX<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(ShadingMapSamp, mDiffusionOffsetX);
+	}
+	pass DiffusionBlurY<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(ShadingMapTempSamp, mDiffusionOffsetY);
 	}
 #endif
 #if SSR_QUALITY
