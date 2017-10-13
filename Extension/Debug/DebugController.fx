@@ -38,7 +38,7 @@ texture2D ScnMap : RENDERCOLORTARGET<
 sampler ScnSamp = sampler_state {
 	texture = <ScnMap>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP; SRGBTexture = TRUE;
+	AddressU = CLAMP; AddressV = CLAMP;
 };
 
 #if SSDO_QUALITY > 0
@@ -118,7 +118,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showVisibilityAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA;
 	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM;
 
-	float3 result = tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb * !any(showTotal);
+	float3 result = srgb2linear_fast(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb) * !any(showTotal);
 	result += material.albedo * showAlbedo;
 	result += (mul(material.normal, (float3x3)matViewInverse).xyz * 0.5 + 0.5) * showNormal;
 	result += material.specular * showSpecular;
@@ -135,7 +135,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.customDataB * showCustomDataAlphaB;
 	result += materialAlpha.visibility * showVisibilityAlpha;
 
-	result = pow(result, 1.0 / 2.2);
+	result = linear2srgb(result);
 
 	result += materialAlpha.alpha * showAlpha;
 	result += pow(saturate(material.linearDepth / 200), 0.5) * showDepth;

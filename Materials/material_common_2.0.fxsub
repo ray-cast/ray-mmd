@@ -138,7 +138,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP; SRGBTexture = TRUE;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
 #endif
 
@@ -388,7 +388,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 #endif
 		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
-		ADDRESSU = WRAP; ADDRESSV = WRAP; SRGBTexture = TRUE;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
 #endif
 
@@ -729,15 +729,15 @@ float3 GetAlbedo(float2 coord)
 	#endif
 
 	#if ALBEDO_MAP_FROM == 3
-		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : srgb2linear(MaterialDiffuse.rgb);
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 4
-		float3 albedoColor = use_spheremap ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : srgb2linear(MaterialDiffuse.rgb);
+		float3 albedoColor = use_spheremap ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 5
-		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : srgb2linear(MaterialDiffuse.rgb);
+		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 7
-		float3 albedoColor = srgb2linear(MaterialAmbient.rgb);
+		float3 albedoColor = MaterialAmbient.rgb;
 	#elif ALBEDO_MAP_FROM == 8
-		float3 albedoColor = srgb2linear(MaterialSpecular.rgb);
+		float3 albedoColor = MaterialSpecular.rgb;
 	#elif ALBEDO_MAP_FROM == 9
 		#error Unsupported options 9.
 	#else
@@ -746,15 +746,17 @@ float3 GetAlbedo(float2 coord)
 
 	#if ALBEDO_MAP_APPLY_DIFFUSE
 		#if ALBEDO_MAP_FROM == 3
-			albedoColor *= use_texture ? srgb2linear(MaterialDiffuse.rgb) : 1.0;
+			albedoColor *= use_texture ? MaterialDiffuse.rgb : 1.0;
 		#elif ALBEDO_MAP_FROM == 4
-			albedoColor *= use_spheremap ? srgb2linear(MaterialDiffuse.rgb) : 1.0;
+			albedoColor *= use_spheremap ? MaterialDiffuse.rgb : 1.0;
 		#elif ALBEDO_MAP_FROM == 5
-			albedoColor *= use_toon ? srgb2linear(MaterialDiffuse.rgb) : 1.0;
+			albedoColor *= use_toon ? MaterialDiffuse.rgb : 1.0;
 		#else
-			albedoColor *= srgb2linear(MaterialDiffuse.rgb);
+			albedoColor *= MaterialDiffuse.rgb;
 		#endif
 	#endif
+
+	albedoColor = srgb2linear(albedoColor);
 
 	#if ALBEDO_MAP_APPLY_SCALE == 1
 		albedoColor *= albedo;
@@ -1262,6 +1264,8 @@ float3 GetEmissiveColor(float2 coord)
 	#else
 		float3 emissiveColor = emissive;
 	#endif
+
+	emissiveColor = srgb2linear(emissiveColor);
 
 	#if EMISSIVE_MAP_APPLY_SCALE
 		emissiveColor *= emissive.rgb;
