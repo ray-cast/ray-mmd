@@ -1,6 +1,8 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
+　　<img style="vertical-align: top;" src="https://github.com/ray-cast/images/raw/master/logo.png" alt="logo" height="48px">
+
 　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012).
 
 Screenshots :
@@ -140,4 +142,4 @@ References :
 * Ray Box Intersection on the GPU \[[link](https://github.com/hpicgs/cgsee/wiki/Ray-Box-Intersection-on-the-GPU)\]
 * Hexagonal Bokeh Blur Revisited \[[link](https://colinbarrebrisebois.com/2017/04/18/hexagonal-bokeh-blur-revisited/)\]
 * Practical Post-Process Depth of Field \[[link](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch28.html)\]
-* Cloth-DFG for IBL \[[link](https://gist.github.com/romainguy/52d0e7f070d9ed7b44a0327d735fe33e)\]
+* Approximation of the IBL’s DFG term for a cloth BRDF \[[link](https://gist.github.com/romainguy/52d0e7f070d9ed7b44a0327d735fe33e)\]
