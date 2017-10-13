@@ -7,7 +7,7 @@ Screenshots :
 ------------
 [![link text](https://github.com/ray-cast/images/raw/master/screen1_small.jpg)](https://github.com/ray-cast/images/raw/master/screen1.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/screen2_small.png)](https://github.com/ray-cast/images/raw/master/screen2.png)
-[![link text](https://github.com/ray-cast/images/raw/master/hou_small.jpg)](https://github.com/ray-cast/images/raw/master/hou.jpg)
+[![link text](https://github.com/ray-cast/images/raw/master/screen3_small.jpg)](https://github.com/ray-cast/images/raw/master/screen3.jpg)
 [![link text](https://github.com/ray-cast/images/raw/master/screen4_small.jpg)](https://github.com/ray-cast/images/raw/master/screen4.png)
 
 Download :
