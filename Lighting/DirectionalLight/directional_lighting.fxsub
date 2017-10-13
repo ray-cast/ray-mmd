@@ -206,17 +206,17 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 }
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 diffuse, inout float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, inout float3 diffuse, inout float3 specular)
 {
 	float3 L = viewLightDirection;
 	float3 L2 = normalize(L);
 
-	float4 energy = SurfaceEnergy(material, material.normal, L2, L2, V, 1.0);
-	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L, V);
+	float2x3 energy = SurfaceEnergy(material, material.normal, L2, V, shadow);
+	diffuse = energy[0] + SubsurfaceShadingFast(material, material.normal, L2, V);
 	diffuse *= LightColor;
 
 #if LIGHT_PARAMS_TYPE == 0 || LIGHT_PARAMS_TYPE == 2
-	specular = energy.gba;
+	specular = energy[1];
 	specular *= LightColor;
 #endif
 }
@@ -268,11 +268,16 @@ void LightSourcePS(
 	float3 P1 = V * material.linearDepth / V.z;
 	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
+	float shadow = 1;
+#if SHADOW_MAP_FROM >= 1
+	shadow = ShadingShadow(materialAlpha, P2);
+#endif
+
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, diffuse, specular);
+	ShadingMaterial(material, P1, V, shadow, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, shadow, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
@@ -281,15 +286,6 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-
-#if SHADOW_MAP_FROM >= 1
-	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-
-	float shadow = ShadingShadow(materialAlpha, P2);
-	oColor0 *= shadow;
-	oColor1 *= shadow;
-	oColor2 *= shadow;
-#endif
 }
 
 void LightSourceShadowlessPS(
@@ -309,10 +305,10 @@ void LightSourceShadowlessPS(
 	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, diffuse, specular);
+	ShadingMaterial(material, P1, V, 1, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, 1, diffuseAlpha, specularAlpha);
 
 #if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
