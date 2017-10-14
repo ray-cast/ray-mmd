@@ -22,7 +22,7 @@ float4 ScreenSpaceBilateralFilterPS(
 	[unroll]
 	for (int r = 1; r <= DIFFUSION_BLUR_RADIUS; ++r)
 	{
-		float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
+		float2 depth = float2(tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r, tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r);
 
 		float weight1 = BilateralWeight(r, center_d, depth.x, DIFFUSION_BLUR_RADIUS, 8);
 		float weight2 = BilateralWeight(r, center_d, depth.y, DIFFUSION_BLUR_RADIUS, 8);

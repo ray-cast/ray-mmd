@@ -22,6 +22,17 @@
 #	define SSDO_UNROLL [unroll]
 #endif
 
+float linearizeDepth(float2 uv)
+{
+	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
+}
+
+float3 GetNormal(float2 uv)
+{
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
+	return DecodeGBufferNormal(MRT6);
+}
+
 static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),
@@ -41,17 +52,6 @@ static const float2 SSDOKernel[16] =
 	float2(-0.338, -0.684),
 	float2(-0.622, -0.415)
 };
-
-float linearizeDepth(float2 uv)
-{
-	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
-}
-
-float3 GetNormal(float2 uv)
-{
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
-	return DecodeGBufferNormal(MRT6);
-}
 
 float4 ScreenSpaceDirOccPassVS(
 	in float4 Position : POSITION,
