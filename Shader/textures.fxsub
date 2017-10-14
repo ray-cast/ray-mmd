@@ -43,6 +43,7 @@ sampler FogMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
+#if MULTI_LIGHT_ENABLE
 texture LightMap: OFFSCREENRENDERTARGET<
 	string Description = "Multi light source map for ray";
 	float2 ViewportRatio = {1.0, 1.0};
@@ -84,6 +85,7 @@ sampler LightAlphaMapSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+#endif
 #if IBL_QUALITY
 texture EnvLightMap: OFFSCREENRENDERTARGET<
 	string Description = "Image-based-lighting map for ray";

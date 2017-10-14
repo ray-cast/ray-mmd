@@ -184,33 +184,33 @@ technique DeferredLighting<
 	"ClearSetColor=BackColor;"
 #endif
 
-#if SSDO_QUALITY > 0 && (IBL_QUALITY || SUN_LIGHT_ENABLE)
+#if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
 	"RenderColorTarget=SSDOMap; Pass=SSDO;"
-#if SSDO_BLUR_RADIUS > 0
+#if SSDO_BLUR_RADIUS
 	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
 	"RenderColorTarget=SSDOMap;	    Pass=SSDOBlurY;"
 #endif
 #endif
 
+#if SSSS_QUALITY
 	"RenderColorTarget0=ShadingMapTemp;"
 	"RenderColorTarget1=ShadingMapTempSpecular;"
 	"Pass=ShadingOpacity;"
 	"RenderColorTarget1=;"
 
-#if SSSS_QUALITY
 	"RenderDepthStencilTarget=DepthBuffer;"
 	"RenderColorTarget=;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"
 	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
-	"RenderColorTarget=ShadingMapTemp; Pass=SSSSBlurY;"
-	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacityAlbedo;"
-	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
+	"RenderColorTarget=ShadingMapTemp;	Pass=SSSSBlurY;"
+	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacityAlbedo;"
+	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacitySpecular;"
+	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
 #else
-	"RenderColorTarget=ShadingMapTemp; Pass=ShadingOpacitySpecular;"
+	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacity;"
+	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
 #endif
-
-	"RenderColorTarget=ShadingMap; 	Pass=ShadingTransparent;"
 
 #if TOON_ENABLE == 2
 	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
