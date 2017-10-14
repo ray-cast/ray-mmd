@@ -20,16 +20,18 @@ Download :
 * [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
 - Latest changes - Major allocator changes:
 	- Support for Depth Of Field
+	- Support for Toon material
+	- Support for edge line shading
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
-	- Material : Better Skin when use ao map
+	- Material : Better Skin when used ao map
 	- Shadow : Optimize and improve the shadow quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
-	- Fix issue : that cause a FilmGrain cannot be used with others MME
-	- Fix issue : that cause a LightBloom cannot be used with others MME
-	- Fix issue : that cause a FXAA cannot be used with others MME
-	- Fix issue : that cause a SMAA cannot be used with others MME
+	- Fix issue : that caused a FilmGrain cannot be work with others MME
+	- Fix issue : that caused a LightBloom cannot be work with others MME
+	- Fix issue : that caused a FXAA cannot be work with others MME
+	- Fix issue : that caused a SMAA cannot be work with others MME
 
 Features :
 ------------
