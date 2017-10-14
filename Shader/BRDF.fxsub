@@ -127,7 +127,7 @@ float3 ToonBasedShading(float nl, float vh, float nv, float3 shadowColor, float3
 	float3 f90 = ComputeSpecularMicroOcclusion(f0);
 	float3 fresnel = fresnelSchlick(f0, f90, vh);
 
-	return lerp(shadowColor, 1.0, lerp(nl, 1, hardness) * shadow) * (1  - fresnel);
+	return lerp(shadowColor, 1.0, saturate(lerp(nl, 1, hardness)) * shadow) * (1  - fresnel);
 }
 
 float3 CelShading(float nl, float vh, float nv, float3 shadowColor, float3 specular, float shadow, float roughness, float threshold)
