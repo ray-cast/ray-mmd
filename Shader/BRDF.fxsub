@@ -288,7 +288,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 	if (material.lightModel == SHADINGMODELID_CEL)
 		diffuse = CelShading(dot(N, L), vh, nv, material.customDataB, material.specular, occlusion, roughness, material.customDataA);
 	else if (material.lightModel == SHADINGMODELID_TONEBASED)
-		diffuse = ToonBasedShading(dot(N, L), vh, nv, material.customDataB, material.specular, occlusion, roughness, material.customDataA);
+		diffuse = ToonBasedShading(dot(N, L), vh, nv, material.customDataB, material.specular, material.visibility * shadow, roughness, material.customDataA);
 	else
 		diffuse = BurleyBRDF(nl, nv, vh, roughness) * nl * occlusion;
 #else
