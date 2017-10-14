@@ -213,15 +213,6 @@ void LightSourcePS(
 #endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
-
-#if SHADOW_MAP_FROM > 0
-	clip(sum(oColor0 + oColor1 + oColor2) - 1e-5);
-
-	float shadow = ShadingShadow(materialAlpha, P2);
-	oColor0 *= shadow;
-	oColor1 *= shadow;
-	oColor2 *= shadow;
-#endif
 }
 
 void LightSourceShadowlessPS(

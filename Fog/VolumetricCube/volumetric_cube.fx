@@ -1,6 +1,6 @@
 #define VOLUMETRIC_FOG_ANISOTROPY 1
 #define VOLUMETRIC_FOG_SAMPLES_LENGTH 24
-#define VOLUMETRIC_FOG_SAMPLES_WITH_JITTER 1
+#define VOLUMETRIC_FOG_SAMPLES_WITH_JITTER 0
 
 static const float3 FogRangeParams = float3(1.0, 0.0, 100.0);
 static const float3 FogIntensityParams = float3(1.0, 0.0, 20.0);

@@ -38,7 +38,7 @@ float ComputePhaseMie(float theta, float g)
 float ComputePhaseMieHG(float theta, float g)
 {
 	float g2 = g * g;
-	return (1 - g2) / pow(1 + g2 - 2 * g * theta, 1.5) / (4 * PI);
+	return (1 - g2) / pow(1 + g2 - 2 * g * saturate(theta), 1.5) / (4 * PI);
 }
 
 float ComputePhaseRayleigh(float theta)
