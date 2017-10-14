@@ -24,7 +24,7 @@ Download :
 	- Support for edge line shading
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
-	- Material : Better Skin when used ao map
+	- Material : Better Skin when used ao map [preview](https://github.com/ray-cast/images/raw/master/ao.jpg)
 	- Shadow : Optimize and improve the shadow quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
