@@ -399,13 +399,6 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingOpacityPS();
 	}
-	pass ShadingOpacitySpecular<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = ONE;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
-	}
 	pass ShadingTransparent<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -447,6 +440,13 @@ technique DeferredLighting<
 		SrcBlend = DESTCOLOR; DestBlend = ZERO;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
+	}
+	pass ShadingOpacitySpecular<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = ONE;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
 	}
 #endif
 #if TOON_ENABLE == 2
