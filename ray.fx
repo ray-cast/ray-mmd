@@ -176,12 +176,12 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadowMap;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
+	"ClearSetColor=BackColor;"
 	"Pass=ShadowMapGen;"
 #if SHADOW_BLUR_COUNT
 	"RenderColorTarget=ShadowMapTemp; Pass=ShadowBlurX;"
 	"RenderColorTarget=ShadowMap;	  Pass=ShadowBlurY;"
 #endif
-	"ClearSetColor=BackColor;"
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)

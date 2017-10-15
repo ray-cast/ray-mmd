@@ -199,7 +199,7 @@ float4 ShadingTransparentPS(
 	lighting += lerp(emissive0, emissive1, MRT8.a);
 
 #if OUTLINE_ENABLE == 1
-	float4 edge = tex2D(OutlineMapSamp, coord);
+	float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
 	lighting = lerp(lighting, edge.rgb, edge.a);
 #endif
 
