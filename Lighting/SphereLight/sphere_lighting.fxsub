@@ -227,11 +227,7 @@ void LightSourcePS(
 	float3 diffuseAlpha, specularAlpha = 0;
 	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
-#if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
-#else
-	oColor0 = float4(diffuse * material.albedo, 0);
-#endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 
@@ -267,11 +263,7 @@ void LightSourceShadowlessPS(
 	float3 diffuseAlpha, specularAlpha = 0;
 	ShadingMaterial(materialAlpha, P2, V, diffuseAlpha, specularAlpha);
 
-#if SSSS_QUALITY
 	oColor0 = float4(diffuse, 0);
-#else
-	oColor0 = float4(diffuse * material.albedo, 0);
-#endif
 	oColor1 = float4(specular, 0);
 	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
 }
