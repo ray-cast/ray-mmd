@@ -709,7 +709,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 #elif CUSTOM_ENABLE != SHADINGMODELID_GLASS
 		material.customDataB *= (1 - material.metalness);
 #endif
-		gbuffer.buffer3 = float4(luminance(gbuffer.buffer3.x), material.customDataB);
+		gbuffer.buffer3 = float4(luminance(gbuffer.buffer3.xyz), material.customDataB);
 	}
 #endif
 
