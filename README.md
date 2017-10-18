@@ -82,10 +82,8 @@ Resources :
 - Text editor
 	- Notepad++ \[[link](https://notepad-plus-plus.org)\].
 	- Visual studio code \[[link](http://code.visualstudio.com/Download)\].
-- MMD-Export
+- Addons
 	- Ray-MMD for substance painter 2.x \[[link](https://github.com/ray-cast/mmd-export)\].
-- Materials
-	- Hair for Apperience Models - by VanillaBear3600 \[[link](http://vanillabear3600.deviantart.com/art/RayCast-Hair-Shader-For-Apperience-Models-664061177)\].
 
 Tutroial :
 ------------
