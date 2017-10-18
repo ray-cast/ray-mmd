@@ -99,7 +99,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 		material.customDataB = DecodeYcbcr(float3(frac(buffer3.w * TWO_BITS_EXTRACTION_FACTOR), buffer3.yz));
 		if (material.lightModel == SHADINGMODELID_EMISSIVE)
 		{
-			material.customDataA = floor(buffer4.y) / 100.0;
+			material.customDataA = floor(buffer4.y) / 1000.0;
 		}
 	}
 	else
@@ -121,7 +121,7 @@ int DecodeLightModel(float4 buffer4)
 
 float DecodeEmissiveIntensity(float4 buffer4)
 {
-	return floor(buffer4.y) / 100.0;
+	return floor(buffer4.y) / 1000.0;
 }
 
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
