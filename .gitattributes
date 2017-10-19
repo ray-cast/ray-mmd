@@ -2,4 +2,4 @@
 .gitattributes export-ignore
 .gitignore export-ignore
 # Folders/Files
-images/ export-ignore
+Shader/screenshots/ export-ignore
