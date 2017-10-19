@@ -1,16 +1,16 @@
 Ray-MMD
 ========
 ### Physically-Based Rendering ###
-　　<img style="vertical-align: top;" src="./shader/screenshots/logo.png" alt="logo" height="48px">
+　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
 　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012).
 
 Screenshots :
 ------------
-[![link text](./shader/screenshots/screen1_small.jpg)](./shader/screenshots/screen1.jpg)
-[![link text](./shader/screenshots/screen2_small.png)](./shader/screenshots/screen2.png)
-[![link text](./shader/screenshots/screen3_small.jpg)](./shader/screenshots/screen3.png)
-[![link text](./shader/screenshots/screen4_small.jpg)](./shader/screenshots/screen4.png)
+[![link text](./Shader/screenshots/screen1_small.jpg)](./Shader/screenshots/screen1.jpg)
+[![link text](./Shader/screenshots/screen2_small.png)](./Shader/screenshots/screen2.png)
+[![link text](./Shader/screenshots/screen3_small.jpg)](./Shader/screenshots/screen3.png)
+[![link text](./Shader/screenshots/screen4_small.jpg)](./Shader/screenshots/screen4.png)
 
 Download :
 ------------
@@ -24,7 +24,7 @@ Download :
 	- Support for edge line shading
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
-	- Material : Better Skin when used ao map [(preview)](./shader/screenshots/ao.jpg)
+	- Material : Better Skin when used ao map [(preview)](./Shader/screenshots/ao.jpg)
 	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
