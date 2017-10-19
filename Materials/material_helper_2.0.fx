@@ -3,11 +3,11 @@
 // https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/PhysicallyBased/index.html
 
 // You can use a color and texture to change colors in your model by set the code to the ALBEDO_MAP_FROM.
-// Tips 1 : The albedo is also called "Base Color", default data will fetched params from texture from the pmx.
-// Tips 2 : Do not enter a path with HDR file, that will be ignore the HDR and linear color-space
+// Tips 1 : Albedo is also called "Base Color", default data will fetched params from texture from the pmx.
+// Tips 2 : Do not enter a path with HDR file, that will not be able to work
 // Tips 3 : These files (bmp, png, jpg, tga, dds, gif, apng) must be working in a sRGB color-space
-// Tips 4 : You can ignore the Tips 3 because most of the images are working in this color-gamut
-// Tips 5 : The gif/apng is using a lot of of CPU times
+// Tips 4 : You can ignore the Tips 3 because most images are working in sRGB
+// Tips 5 : GIF and APNG will take up a lot of CPU time for animation
 // 0 : Params fetch from a color from the "const float3 albedo = 1.0".
 // 1 : You can use an image (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
 // 2 : You can use an animation image (gif, apng) by enter a relative and absolutely path to the ALBEDO_MAP_FILE.
@@ -252,6 +252,9 @@ const float2 emissiveMapLoopNum = 1.0;	// see albedoMapLoopNum
 
 // 6 : Clear Coat         // customA = smoothness, customB = invalid;
 // 7 : Subsurface         // customA = curvature,  customB = transmittance color;
+
+// see this paper for more information, but chinese
+// https://zhuanlan.zhihu.com/p/26409746
 // 8 : Cel Shading        // customA = threshold,  customB = shadow color;
 // 9 : ToonBased Shading  // customA = haredness,  customB = shadow color;
 #define CUSTOM_ENABLE 0
