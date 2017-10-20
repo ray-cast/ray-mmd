@@ -7,10 +7,10 @@ Ray-MMD
 
 Screenshots :
 ------------
-[![link text](./Shader/screenshots/screen1_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen1.jpg)
-[![link text](./Shader/screenshots/screen2_small.png)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen2.png)
-[![link text](./Shader/screenshots/screen3_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen3.png)
-[![link text](./Shader/screenshots/screen4_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen4.png)
+[![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen1.jpg)
+[![link text](./Shader/screenshots/screen2_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen2.png)
+[![link text](./Shader/screenshots/screen3_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen3.png)
+[![link text](./Shader/screenshots/screen4_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen4.png)
 
 Download :
 ------------
@@ -24,7 +24,7 @@ Download :
 	- Support for edge line shading
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
-	- Material : Better Skin when used ao map [(preview)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/ao.jpg)
+	- Material : Better Skin when used ao map [(preview)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ao.jpg)
 	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
 	- FilmGrain : Added black borders around a video
