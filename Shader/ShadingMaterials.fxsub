@@ -198,8 +198,14 @@ float4 ShadingTransparentPS(
 
 	lighting += lerp(emissive0, emissive1, MRT8.a);
 
-#if OUTLINE_ENABLE == 1
-	float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+#if OUTLINE_ENABLE
+	#if OUTLINE_ENABLE == 1
+		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+	#elif OUTLINE_ENABLE == 2
+		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord + ViewportOffset, 0, 0));
+	#elif OUTLINE_ENABLE == 3
+		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord + ViewportOffset2, 0, 0));
+	#endif
 	lighting = lerp(lighting, edge.rgb, edge.a);
 #endif
 

@@ -135,7 +135,13 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 #if OUTLINE_ENABLE
 texture OutlineMap : OFFSCREENRENDERTARGET<
 	string Description = "Outline shading for ray";
+#if OUTLINE_ENABLE == 1
 	float2 ViewportRatio = {1.0, 1.0};
+#elif OUTLINE_ENABLE == 2
+	float2 ViewportRatio = {2.0, 2.0};
+#else
+	float2 ViewportRatio = {3.0, 3.0};
+#endif
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string Format = "A8R8G8B8";
