@@ -7,10 +7,10 @@ Ray-MMD
 
 Screenshots :
 ------------
-[![link text](./Shader/screenshots/screen1_small.jpg)](./Shader/screenshots/screen1.jpg)
-[![link text](./Shader/screenshots/screen2_small.png)](./Shader/screenshots/screen2.png)
-[![link text](./Shader/screenshots/screen3_small.jpg)](./Shader/screenshots/screen3.png)
-[![link text](./Shader/screenshots/screen4_small.jpg)](./Shader/screenshots/screen4.png)
+[![link text](./Shader/screenshots/screen1_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen1.jpg)
+[![link text](./Shader/screenshots/screen2_small.png)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen2.png)
+[![link text](./Shader/screenshots/screen3_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen3.png)
+[![link text](./Shader/screenshots/screen4_small.jpg)](https://github.com/ray-cast/ray-mmd/raw/developing/Shader/screenshots/screen4.png)
 
 Download :
 ------------
