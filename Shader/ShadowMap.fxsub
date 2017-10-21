@@ -39,8 +39,7 @@ float4 ShadowMapGenPS(
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-	float3 sum1 = material.albedo + material.specular;
-	clip(sum(sum1) - 1e-5);
+	clip(any(material.visibility) - 1e-5);
 
 	float3 view = normalize(viewdir);
 	float3 viewPosition = view * material.linearDepth / view.z;
