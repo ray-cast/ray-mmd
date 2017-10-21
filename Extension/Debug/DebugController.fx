@@ -146,7 +146,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 
 	#if OUTLINE_QUALITY
 		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
-		result = lerp(float3(1, 1, 1), edge.rgb, any(edge.a))  * showOutline;
+		result += lerp(float3(1, 1, 1), edge.rgb, any(edge.a))  * showOutline;
 	#endif
 
 	result = linear2srgb(result);
