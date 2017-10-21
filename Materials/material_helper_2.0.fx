@@ -103,6 +103,7 @@ const float alphaMapLoopNum = 1.0;	// see albedoMapLoopNum
 // 1 : Calculate world-space normal from RG  compressed tangent-space map.
 // 2 : Calculate world-space normal from Grayscale bump map by PerturbNormalLQ (Low  Quality). It has no effect on small objects.
 // 3 : Calculate world-space normal from Grayscale bump map by PerturbNormalHQ (High Quality).
+// 4 : Calculate world-space normal from RGB world-space map.
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0		 // see ALBEDO_MAP_APPLY_SCALE for more information.
 #define NORMAL_MAP_FILE "normal.png" // see ALBEDO_MAP_FILE for more information.
