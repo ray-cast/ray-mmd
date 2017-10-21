@@ -29,6 +29,7 @@ float showSSAO : CONTROLOBJECT<string name="(self)"; string item = "SSAO";>;
 float showSSDO : CONTROLOBJECT<string name="(self)"; string item = "SSDO";>;
 float showSSR : CONTROLOBJECT<string name="(self)"; string item = "SSR";>;
 float showPSSM : CONTROLOBJECT<string name="(self)"; string item = "PSSM";>;
+float showOutline : CONTROLOBJECT<string name="(self)"; string item = "Outline";>;
 
 texture2D ScnMap : RENDERCOLORTARGET<
 	float2 ViewPortRatio = {1.0,1.0};
@@ -85,6 +86,14 @@ sampler PSSM4Samp = sampler_state {
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 #endif
+#if OUTLINE_QUALITY
+shared texture OutlineMap : OFFSCREENRENDERTARGET;
+sampler OutlineMapSamp = sampler_state {
+	texture = <OutlineMap>;
+	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+#endif
 
 void DebugControllerVS(
 	in float4 Position : POSITION,
@@ -116,7 +125,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 
 	float showTotal = showAlbedo + showNormal + showSpecular + showSmoothness + showVisibility + showCustomID + showCustomDataB + showCustomDataA;
 	showTotal += showAlpha + showAlbedoAlpha + showSpecularAlpha + showNormalAlpha + showSmoothnessAlpha + showVisibilityAlpha + showCustomIDAlpha + showCustomDataAlphaB + showCustomDataAlphaA;
-	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM;
+	showTotal += showDepth + showDepthAlpha + showSSAO + showSSDO + showSSR + showPSSM + showOutline;
 
 	float3 result = srgb2linear_fast(tex2Dlod(ScnSamp, float4(coord, 0, 0)).rgb) * !any(showTotal);
 	result += material.albedo * showAlbedo;
@@ -134,6 +143,11 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.customDataA * showCustomDataAlphaA;
 	result += materialAlpha.customDataB * showCustomDataAlphaB;
 	result += materialAlpha.visibility * showVisibilityAlpha;
+
+	#if OUTLINE_QUALITY
+		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+		result = lerp(float3(1, 1, 1), edge.rgb, any(edge.a))  * showOutline;
+	#endif
 
 	result = linear2srgb(result);
 
@@ -173,6 +187,10 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(0.2,0.3,0.5) * showCustomID;
 	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 		result += float3(1.0,0.5,1.0) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_CEL)
+		result += float3(0.0,0.5,1.0) * showCustomID;
+	if (material.lightModel == SHADINGMODELID_TONEBASED)
+		result += float3(0.5,0.5,1.0) * showCustomID;
 
 	if (materialAlpha.lightModel == SHADINGMODELID_SKIN)
 		result += float3(1,0,0) * showCustomIDAlpha;
@@ -188,6 +206,10 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		result += float3(0.2,0.3,0.5) * showCustomIDAlpha;
 	if (materialAlpha.lightModel == SHADINGMODELID_ANISOTROPY)
 		result += float3(1.0,0.5,1.0) * showCustomIDAlpha;
+	if (material.lightModel == SHADINGMODELID_CEL)
+		result += float3(0.0,0.5,1.0) * showCustomIDAlpha;
+	if (material.lightModel == SHADINGMODELID_TONEBASED)
+		result += float3(0.5,0.5,1.0) * showCustomIDAlpha;
 
 	return float4(result, 1);
 }

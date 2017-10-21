@@ -133,7 +133,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"* = hide;";
 >;
 #if OUTLINE_QUALITY
-texture OutlineMap : OFFSCREENRENDERTARGET<
+shared texture OutlineMap : OFFSCREENRENDERTARGET<
 	string Description = "Outline shading for ray";
 #if OUTLINE_QUALITY == 1 || OUTLINE_QUALITY == 2
 	float2 ViewportRatio = {1.0, 1.0};
