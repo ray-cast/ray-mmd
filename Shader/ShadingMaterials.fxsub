@@ -204,7 +204,14 @@ float4 ShadingTransparentPS(
 	#elif OUTLINE_QUALITY == 2
 		float4 edge = tex2Dlod(OutlineTempMapSamp, float4(coord, 0, 0));
 	#elif OUTLINE_QUALITY == 3
-		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord - ViewportOffset, 0, 0));
+		float2 offset = 1.0 / (ViewportSize * 2.0);
+		coord -= ViewportOffset;
+		coord += offset * 0.5;
+		float4 edge1 = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+		float4 edge2 = tex2Dlod(OutlineMapSamp, float4(coord + float2(offset.x, 0), 0, 0));
+		float4 edge3 = tex2Dlod(OutlineMapSamp, float4(coord + float2(0, offset.y), 0, 0));
+		float4 edge4 = tex2Dlod(OutlineMapSamp, float4(coord + offset, 0, 0));
+		float4 edge = (edge1 + edge2 + edge3 + edge4) * 0.25;
 	#endif
 	lighting = lerp(lighting, edge.rgb, edge.a);
 #endif

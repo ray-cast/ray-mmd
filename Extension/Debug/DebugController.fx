@@ -90,7 +90,7 @@ sampler PSSM4Samp = sampler_state {
 shared texture OutlineMap : OFFSCREENRENDERTARGET;
 sampler OutlineMapSamp = sampler_state {
 	texture = <OutlineMap>;
-	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
