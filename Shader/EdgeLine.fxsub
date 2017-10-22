@@ -13,21 +13,18 @@ void MaterialVS(
 
 float4 MaterialPS(in float3 normal : TEXCOORD01) : COLOR
 {
-	return 0;
+	return float4(pow(edgeLineColor, 2.2), 0.0);
 }
 
 void EdgeLineVS(
 	in float4 Position : POSITION, 
-	in float3 Normal : NORMAL, 
 	in float2 Texcoord1 : TEXCOORD0,
-	out float3 oNormal  : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
-	oNormal = Normal;
 	oPosition = mul(Position, matWorldViewProject);
 }
 
-float4 EdgeLinePS(in float3 normal : TEXCOORD01) : COLOR
+float4 EdgeLinePS() : COLOR
 {
 	return float4(pow(edgeLineColor, 2.2), 1.0);
 }
