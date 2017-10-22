@@ -40,6 +40,8 @@ technique EdgeTec<string MMDPass = "edge";>{
 technique MainTecSS<string MMDPass = "object_ss";>{
 	pass DrawObject {
 		AlphaTestEnable = false; AlphaBlendEnable = false;
+		DepthBias = edgeLineDepthBias;
+		SlopeScaleDepthBias = edgeLineDepthSlopeScaleBias;
 		VertexShader = compile vs_3_0 MaterialVS();
 		PixelShader  = compile ps_3_0 MaterialPS();
 	}
