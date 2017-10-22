@@ -145,8 +145,18 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += materialAlpha.visibility * showVisibilityAlpha;
 
 	#if OUTLINE_QUALITY
-		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
-		result += lerp(float3(1, 1, 1), edge.rgb, any(edge.a))  * showOutline;
+		#if OUTLINE_QUALITY == 3
+			float2 offset = 1.0 / (ViewportSize * 2.0);
+			coord -= ViewportOffset;
+			float4 edge1 = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+			float4 edge2 = tex2Dlod(OutlineMapSamp, float4(coord + float2(offset.x, 0), 0, 0));
+			float4 edge3 = tex2Dlod(OutlineMapSamp, float4(coord + float2(0, offset.y), 0, 0));
+			float4 edge4 = tex2Dlod(OutlineMapSamp, float4(coord + offset, 0, 0));
+			float4 edge = (edge1 + edge2 + edge3 + edge4) * 0.25;
+		#else
+			float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+		#endif
+		result += lerp(float3(1, 1, 1), edge.rgb, edge.a)  * showOutline;
 	#endif
 
 	result = linear2srgb(result);
