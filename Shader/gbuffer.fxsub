@@ -101,7 +101,7 @@ void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer
 		material.specular = buffer3.x;
 		material.customDataB = buffer3.yzw;
 		if (material.lightModel == SHADINGMODELID_EMISSIVE)
-			material.customDataA = floor(buffer4.y);
+			material.customDataA = buffer4.y;
 	}
 }
 
