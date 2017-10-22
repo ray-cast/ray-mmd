@@ -5,20 +5,20 @@ float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
 
 void MaterialVS(
 	in float4 Position : POSITION, 
-	in float3 Normal : NORMAL, 
+	in float4 Normal : NORMAL, 
+	out float2 oTexcoord  : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
 	oPosition = mul(float4(Position.xyz - normalize(Normal) * edgeLinePadding / 100, 1), matWorldViewProject);
 }
 
-float4 MaterialPS(in float3 normal : TEXCOORD01) : COLOR
+float4 MaterialPS() : COLOR
 {
 	return float4(pow(edgeLineColor, 2.2), 0.0);
 }
 
 void EdgeLineVS(
 	in float4 Position : POSITION, 
-	in float2 Texcoord1 : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
 	oPosition = mul(Position, matWorldViewProject);

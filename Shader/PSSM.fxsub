@@ -23,7 +23,7 @@ static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraVi
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
-sampler DiffuseSamp = sampler_state
+sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
 	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
@@ -59,7 +59,7 @@ float4 CascadeShadowMapPS(
 #if CASTER_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-	if (use_texture) alpha *= tex2D(DiffuseSamp, coord0.xy).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord0.xy).a;
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
