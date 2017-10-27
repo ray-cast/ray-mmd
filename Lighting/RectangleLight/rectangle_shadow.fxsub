@@ -33,13 +33,13 @@ void ShadowMapVS(
 	out float4 oPosition : POSITION)
 {
 	float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
-	float distanceSqr = sqrt(distance(Position, CameraPosition));
+	float distanceSqr = sqrt(distance(Position.xyz, CameraPosition));
 	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
 }
 
-float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
+float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
 	clip(!opadd - 0.001f);  

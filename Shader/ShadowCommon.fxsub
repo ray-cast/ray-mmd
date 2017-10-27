@@ -119,12 +119,11 @@ float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amou
 
 float2 ComputeMoments(float depth)
 {
-	float dx = ddx(depth);
-	float dy = ddy(depth);
+	float2 delta = float2(ddx(depth), ddy(depth));
 
 	float2 moments;
 	moments.x = depth;
-	moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
+	moments.y = depth * depth;// + clamp(0.25 * dot(delta, delta), -1, 1);
 
 	return moments;
 }
