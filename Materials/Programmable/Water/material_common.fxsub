@@ -139,6 +139,11 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tan
 	return normalize(mul(tangentNormal, tbnTransform));
 }
 
+float luminance(float3 rgb)
+{
+	return dot(rgb, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
 	GbufferParam gbuffer;
@@ -151,16 +156,11 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer2.xyz = EncodeNormal(material.normal);
 	gbuffer.buffer2.w = material.customDataA;
 
-	gbuffer.buffer3.xyz = rgb2ycbcr(material.specular);
-	gbuffer.buffer3.w = 0;
+	gbuffer.buffer3.xyz = material.specular;
+	gbuffer.buffer3 = float4(luminance(gbuffer.buffer3.xyz), material.customDataB);
 
-	material.customDataB = rgb2ycbcr(min(0.999, material.customDataB));
-	gbuffer.buffer3.yz = material.customDataB.gb;
-	gbuffer.buffer3.w = material.customDataB.r * MAX_FRACTIONAL_8_BIT;
-	gbuffer.buffer3.w = gbuffer.buffer3.w / TWO_BITS_EXTRACTION_FACTOR;
-
-	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.lightModel, material.alpha);    
-	gbuffer.buffer4.y = floor(material.emissiveIntensity * 100.0) + saturate(material.visibility) - 1e-5;
+	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.visibility, material.lightModel);
+	gbuffer.buffer4.w += material.alpha * MAX_FRACTIONAL_8_BIT;
 
 	return gbuffer;
 }
@@ -296,7 +296,7 @@ GbufferParam MaterialPS(
 	material.customDataB = scatteringHigh;
 	material.emissive = 0.0;
 	material.emissiveIntensity = 0.0;
-	material.visibility = 0.0;
+	material.visibility = 1.0;
 	material.lightModel = SHADINGMODELID_GLASS;
 	material.alpha = MaterialDiffuse.a;
 
