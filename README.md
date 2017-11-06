@@ -3,7 +3,11 @@ Ray-MMD
 ### Physically-Based Rendering ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
-　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012).
+　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
+
+　　There are lots of new features and better effect TODO, but now i don't have the more time to do it at the same pace, only with your support, Ray-MMD can go further, so if you like my shader or have the means to do so, please consider financial support.Your help is very useful for me. Thanks! 
+
+　　[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/cubizer)
 
 Screenshots :
 ------------
@@ -38,12 +42,6 @@ Requirement :
 * [MikuMikuDance](http://www.geocities.jp/higuchuu4/index_e.htm) - 926ver (x64) (Without Anti-Aliasing)
 * [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
-
-Support：
-------------
-　　This library is free to use, but now i don't have the more time to do it at the same pace, there are lots of new features and better effect TODO, so only with your support, Ray-MMD can go further, if you like my shader or have the means to do so, please consider financial support.Your help is very useful for me. Thanks! 
-
-[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/cubizer)
 
 Features :
 ------------
