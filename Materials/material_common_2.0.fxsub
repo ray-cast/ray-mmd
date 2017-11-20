@@ -4,7 +4,7 @@ float4x4 matWorldView : WORLDVIEW;
 float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
 
 float4 MaterialDiffuse : DIFFUSE<string Object = "Geometry";>;
-float4 MaterialAmbient : AMBIENT<string Object = "Geometry";>;
+float4 MaterialAmbient : EMISSIVE<string Object = "Geometry";>;
 float4 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
 float  MaterialPower : SPECULARPOWER<string Object = "Geometry";>;
 
@@ -119,7 +119,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	shared texture2D DummyScreenTex : RENDERCOLORTARGET;
 #endif
 
-#if ALBEDO_MAP_FROM >= 1 && ALBEDO_MAP_FROM <= 6
+#if ALBEDO_MAP_FROM >= 1 && ALBEDO_MAP_FROM <= 8
 	#if ALBEDO_MAP_FROM == 1
 		texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>;
 	#elif ALBEDO_MAP_FROM == 2
@@ -127,7 +127,7 @@ shared texture Gbuffer8RT: RENDERCOLORTARGET;
 	#endif
 	sampler AlbedoMapSamp = sampler_state
 	{
-#if ALBEDO_MAP_FROM == 3
+#if ALBEDO_MAP_FROM == 3 || ALBEDO_MAP_FROM == 7 || ALBEDO_MAP_FROM == 8
 		texture = DiffuseMap;
 #elif ALBEDO_MAP_FROM == 4
 		texture = SphereMap;
@@ -737,9 +737,9 @@ float3 GetAlbedo(float2 coord)
 	#elif ALBEDO_MAP_FROM == 5
 		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
 	#elif ALBEDO_MAP_FROM == 7
-		float3 albedoColor = MaterialAmbient.rgb;
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialAmbient.rgb;
 	#elif ALBEDO_MAP_FROM == 8
-		float3 albedoColor = MaterialSpecular.rgb;
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialSpecular.rgb;
 	#elif ALBEDO_MAP_FROM == 9
 		#error Unsupported options 9.
 	#else
