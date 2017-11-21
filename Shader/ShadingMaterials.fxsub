@@ -30,7 +30,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
 	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
 
-	diffuse = (energy[0] + subsurface) * lightColor;
+	diffuse = (energy[0] + subsurface * shadow) * lightColor;
 	specular = energy[1] * lightColor;
 
 #if SUN_SHADOW_QUALITY
