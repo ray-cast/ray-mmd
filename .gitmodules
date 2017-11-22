@@ -10,3 +10,6 @@
 [submodule "Extension/SMAA"]
 	path = Extension/SMAA
 	url = https://github.com/MikuMikuShaders/SMAA.git
+[submodule "Extension/StereoImage"]
+	path = Extension/StereoImage
+	url = https://github.com/MikuMikuShaders/StereoImage.git
