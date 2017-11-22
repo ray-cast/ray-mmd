@@ -1,3 +1,12 @@
 [submodule "Extension/FilmGrain"]
 	path = Extension/FilmGrain
 	url = https://github.com/MikuMikuShaders/FilmGrain.git
+[submodule "Extension/LightBloom"]
+	path = Extension/LightBloom
+	url = https://github.com/MikuMikuShaders/LightBloom.git
+[submodule "Extension/FXAA"]
+	path = Extension/FXAA
+	url = https://github.com/MikuMikuShaders/FXAA.git
+[submodule "Extension/SMAA"]
+	path = Extension/SMAA
+	url = https://github.com/MikuMikuShaders/SMAA.git
