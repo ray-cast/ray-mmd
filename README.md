@@ -95,8 +95,8 @@ Resources :
 
 Credits:
 -------------
-Financially supported on [Patreon](http://www.patreon.com/cubizer)  
-`Thanks!, If you would like to be added or remove from this list Please contact me`
+`Financially supported on [Patreon](http://www.patreon.com/cubizer):`  
+`Thanks! (If you would like to be added or remove from this list Please contact me)`
 
 ##### Gold supporters:
 * Sarashina - 更科
