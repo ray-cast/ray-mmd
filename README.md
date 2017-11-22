@@ -90,17 +90,16 @@ Resources :
 - Text editor
 	- Notepad++ \[[link](https://notepad-plus-plus.org)\].
 	- Visual studio code \[[link](http://code.visualstudio.com/Download)\].
-- Addons
-	- Ray-MMD for substance painter 2.x \[[link](https://github.com/ray-cast/mmd-export)\].
 
 Credits:
 -------------
-`Financially supported on [Patreon](http://www.patreon.com/cubizer):`  
-`Thanks! (If you would like to be added or remove from this list Please contact me)`
+Financially supported on [Patreon](http://www.patreon.com/cubizer):  
 
 ##### Gold supporters:
 * Sarashina - 更科
 * Birdway
+
+`Thanks! (If you would like to be added or remove from this list Please contact me)`
 
 Contact:
 ------------
