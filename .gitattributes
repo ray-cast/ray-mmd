@@ -1,5 +1,6 @@
 # git files
 .gitattributes export-ignore
 .gitignore export-ignore
+.gitmodules export-ignore
 # Folders/Files
 Shader/screenshots/ export-ignore
