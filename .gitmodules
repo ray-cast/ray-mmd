@@ -1,0 +1,3 @@
+[submodule "Extension/FilmGrain"]
+	path = Extension/FilmGrain
+	url = https://github.com/MikuMikuShaders/FilmGrain.git
