@@ -26,8 +26,6 @@ Download :
 * [Ray-MMD - 1.3.1v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.tar.gz)  (updated: 27. Apr 2017)
 * [Ray-MMD - 1.4.0beta v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/140beta2.zip) (updated: 30. Jul 2017)
 * [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
-- Note:
-	- Some effects are moved to new project, click this [link](https://github.com/MikuMikuShaders) to jump to new address
 - Latest changes - Major allocator changes:
 	- Support for Depth Of Field
 	- Support for Toon material
@@ -95,14 +93,17 @@ Resources :
 - Addons
 	- Ray-MMD for substance painter 2.x \[[link](https://github.com/ray-cast/mmd-export)\].
 
-Tutroial :
-------------
-* Chinese Pages \[[link](https://github.com/ray-cast/ray-mmd/wiki/0.0-%E6%95%99%E7%A8%8B)\].
-* Chinese Videos - by TerayTech \[[bilibili](https://space.bilibili.com/24434095/#!/channel/detail?cid=18483)\]\[[Youtube](https://www.youtube.com/playlist?list=PLlHmdNgS3E_z65bxBy1SYT7XKCVf8wU4k)\].
+Credits:
+-------------
+Financially supported on [Patreon](http://www.patreon.com/cubizer)  
+`Thanks!, If you would like to be added or remove from this list Please contact me`
 
-Contact :
-------------
+##### Gold supporters:
+* Sarashina - 更科
+* Birdway
 
+Contact:
+------------
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
 
 [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
