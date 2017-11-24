@@ -13,3 +13,9 @@
 [submodule "Extension/StereoImage"]
 	path = Extension/StereoImage
 	url = https://github.com/MikuMikuShaders/StereoImage.git
+[submodule "Extension/OpticalFlares"]
+	path = Extension/OpticalFlares
+	url = https://github.com/MikuMikuShaders/OpticalFlares.git
+[submodule "Extension/ColorGrading"]
+	path = Extension/ColorGrading
+	url = https://github.com/MikuMikuShaders/ColorGrading.git
