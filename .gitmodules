@@ -16,3 +16,6 @@
 [submodule "Extension/ColorGrading"]
 	path = Extension/ColorGrading
 	url = https://github.com/MikuMikuShaders/ColorGrading.git
+[submodule "Extension/FilmGrain"]
+	path = Extension/FilmGrain
+	url = https://github.com/MikuMikuShaders/FilmGrain.git
