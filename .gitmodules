@@ -1,6 +1,3 @@
-[submodule "Extension/FilmGrain"]
-	path = Extension/FilmGrain
-	url = https://github.com/MikuMikuShaders/FilmGrain.git
 [submodule "Extension/LightBloom"]
 	path = Extension/LightBloom
 	url = https://github.com/MikuMikuShaders/LightBloom.git
