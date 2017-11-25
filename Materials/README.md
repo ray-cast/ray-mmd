@@ -326,8 +326,11 @@ FAQ:
 * What is gloss map
     * Gloss map is a `smoothness map`
 
+* How to use roughness map
+    * Enter the path to the `SMOOTHNESS_MAP_FILE` and set `SMOOTHNESS_MAP_TYPE` to 1
+
 * Where melanin
     * It has moved into `ALBEDO_SUB_ENABLE`, see `ALBEDO_SUB_ENABLE` for more information
 
 * Why increase number of parallaxMapLoopNum will increase the loop number of albedo, normals, etc  
-    * Bacause parallax coordinates can be calculated from height map,that are then used to access textures with albedo, normals, smoothness, metalness, etc, In other words like fetched data (albedo, normals, etc) from parallax coordinates * parallaxMapLoopNum * albedo/normal/MapLoopNum
+    * Bacause parallax coordinates can be calculated from `height map`,that are then used to access textures with `albedo`, `normals`, `smoothness`, `metalness`, etc, In other words like fetched data (`albedo`, `normals`, etc) from parallax coordinates * `parallaxMapLoopNum` * `albedo`/`normal`/MapLoopNum
