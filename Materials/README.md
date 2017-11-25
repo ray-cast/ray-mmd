@@ -31,7 +31,7 @@ ALBEDO:
     You can apply the color from `albedo` to change the colors in your texture by set `code` to the `ALBEDO_MAP_APPLY_SCALE`  
 
     1 . map values * albedo  
-    2 . map values ^ albedo  
+    2 . map values ^ albedo (The `^` is exponential operations of `X` and `Y`)  
 
 * ##### ALBEDO_MAP_APPLY_DIFFUSE  
     Texture colors to multiply with `diffuse` from the `PMX`.
@@ -75,7 +75,7 @@ ALBEDO:
     ##### For example:
     ###### If X and Y are the same numbers:
     * `const flaot2 albedoMapLoopNum = 2;`
-    ###### otherwise (2 is X-axis, 3 is Y-axis):
+    ###### Otherwise (2 is X-axis, 3 is Y-axis):
     * `const flaot2 albedoMapLoopNum = float2(2, 3);`
 
 SubAlbedo:
@@ -115,10 +115,10 @@ Alpha:
 * ##### ALPHA_MAP_SWIZZLE
     The ordering of the data fetched from a `texture` from the `code`.
 
-    0 . R channel  
-    1 . G channel  
-    2 . B channel  
-    3 . A channel  
+    0 . `R` channel  
+    1 . `G` channel  
+    2 . `B` channel  
+    3 . `A` channel  
 
 * ##### ALPHA_MAP_FILE "alpha.png"
     see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
@@ -128,9 +128,9 @@ Alpha:
 
 Normal:
 -------------
-　　`SSAO` only supports `non-empty` normals else will result a `white edge` issue, 
-When you see some error that looks like some `white edges` on your actor's model, you can put the scene in the `PMXEditor`
-And check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
+　　`SSAO` only supports `non-empty normal` else will result a `white edge` issue, 
+when you see some `error` that looks like some `white edges` on your actor's model, you can put the scene in the `PMXEditor`
+and check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM
     see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
@@ -207,9 +207,9 @@ Metalness:
 
 Specular:
 -------------
-　　It has no effect on `Metalness` > 0 and `CUSTOM_ENABLE` > 0, `specular maps` are not `environment` and `sphere` maps,
-only modifies the `reflection index` of the model, Used to change the colors of the environment reflect.
-If you don't want model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
+　　It has no effect on `Metalness > 0` and `CUSTOM_ENABLE > 0`, specular maps are not `environment` and `sphere` maps,
+only modifies the `reflection index` of the model, used to change the colors of the environment reflect.
+if you don't want model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
 
 * ##### SPECULAR_MAP_FROM
     see ALBEDO_MAP_FROM
@@ -236,10 +236,10 @@ If you don't want model to reflect the specular color, you can set zero to `cons
     Consider light that is incident upon a transparent medium with a refractive index of `1.5`  
     That result will be equal `to (1.5 - 1)^2 / (1.5 + 1)^2` = `0.04` (or `4%`).  
     Specular to reflection coefficient is equal to `F(x) = 0.08*x`, if the `x` is equal to `0.5` the result will be `0.04`.  
-    So default value is `0.5` for `0.04` coeff and clamped value between `0` ~ `1`  
+    So default value is `0.5` for `0.04` coeff and clamped value between `0.0` ~ `1.0`  
 
 * ##### const float2 specularMapLoopNum = 1.0;
-    see albedoMapLoopNum
+    see [albedoMapLoopNum](#albedoMapLoopNum)
 
 Occlusion
 -------------
@@ -252,28 +252,28 @@ and also you can set zero to the `const float occlusion = 1.0` if you don't want
     see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 
 * ##### OCCLUSION_MAP_TYPE
-    Other parameter types for `occlusion`
+    Other parameter types for `Occlusion`
 
-    0 . Fetch ambient occlusion from linear color-space  
-    1 . Fetch ambient occlusion from sRGB   color-space  
-    2 . Fetch ambient occlusion from linear color-space from second UV set  
-    3 . Fetch ambient occlusion from sRGB   color-space from second UV set  
+    0 . Fetch `ambient occlusion` from linear color-space  
+    1 . Fetch `ambient occlusion` from sRGB   color-space  
+    2 . Fetch `ambient occlusion` from linear color-space from second UV set  
+    3 . Fetch `ambient occlusion` from sRGB   color-space from second UV set  
 
 * ##### OCCLUSION_MAP_UV_FLIP
-    see ALBEDO_MAP_UV_FLIP for more information.
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### OCCLUSION_MAP_SWIZZLE
-    see ALPHA_MAP_SWIZZLE for more information.
+    see [ALPHA_MAP_SWIZZLE](#ALBEDO_MAP_UV_FLIP)
 * ##### OCCLUSION_MAP_APPLY_SCALE
-    see ALBEDO_MAP_APPLY_SCALE for more information.
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### const float occlusion = 0.0 ~ 1.0;
 * ##### const float occlusionMapLoopNum = 0.0 ~ inf;
 
 Parallax:
 -------------
-　　The parallax map does not work with vertex displacement in the `DX9`
+　　You can use a `height map` but the `parallax` does not work with vertex displacement in the `DX9`
 
 * ##### PARALLAX_MAP_FROM
-    see ALBEDO_MAP_FROM for more information.
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 
 * ##### PARALLAX_MAP_TYPE
     Other parameter types for `parallax`
@@ -295,7 +295,7 @@ Parallax:
 
 Emissive
 -------------
-　　You can add a light source in MMD (PointLight or others), And key it as part of emissive of the model, and same color set it to your light source and emissive color
+　　You can add a light source in MMD (PointLight or others), And key it as part of emissive of the model, and the same color set it to your light source and emissive color
 * ##### EMISSIVE_ENABLE
 * ##### EMISSIVE_MAP_FROM
    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
@@ -309,7 +309,7 @@ Emissive
 * ##### EMISSIVE_MAP_APPLY_MORPH_INTENSITY
    Texture colors to multiply with intensity from morph controller (Intensity+/-).
 * ##### EMISSIVE_MAP_APPLY_BLINK
-   You can set the blink using following code.
+   You can set the blink using following `code`.
 
    1 . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
    2 . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
