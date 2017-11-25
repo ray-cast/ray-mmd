@@ -33,8 +33,8 @@ Download :
 	- Material : Optimize and improve the gbuffer
 	- Material : Better Cloth
 	- Material : Better Skin when used ao map [(preview)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ao.jpg)
-	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
-	- Time of day : Add the SunPhase and SunTurbidity 
+	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculating the sun shadow)
+	- Time of day : Add SunPhase and SunTurbidity 
 	- Remove Vignette and ColorDispersion, Please use FilmGrain instead
 
 Requirement :
@@ -95,7 +95,7 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 * Sarashina - 更科
 * Birdway
 
-`Thanks! (If you would like to be added or remove from this list Please contact me)`
+`Thanks! and others support (If you would like to be added or remove from this list Please contact me)`
 
 Contact:
 ------------
