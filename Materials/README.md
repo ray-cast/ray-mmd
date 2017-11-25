@@ -1,6 +1,6 @@
 Material
 ========
-This document is designed to help those who wanted to quickly get up to speed in Ray-MMD
+This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`
 
 ALBEDO:
 ------
@@ -43,13 +43,13 @@ ALBEDO:
     If `ALBEDO_MAP_FROM` is `1` or `2`, you will need to enter the path to the texture resource.   
 
     ##### For example :
-    ###### If the xxx.png and material.fx is inside same folder
+    ###### 1. If the xxx.png and material.fx is inside same folder
     * `You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "xxx.png"`
-    ###### If the xxx.png is inside parent path of the material.fx
+    ###### 2. If the xxx.png is inside parent path of the material.fx
     * `You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../xxx.png"`
-    ###### If the xxx.png is inside other path from parent path of the material.fx
+    ###### 3. If the xxx.png is inside other path from parent path of the material.fx
     * `You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "../other path/xxx.png"`
-    ###### If the xxx.png is inside your desktop or other disk
+    ###### 4. If the xxx.png is inside your desktop or other disk
     * `You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"`
 
     ##### Tips:
@@ -57,14 +57,14 @@ ALBEDO:
     * Change all "\\" to "/".
 
 * ##### const float3 albedo = 1.0;
-    If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you will need to set color to the `const float3 albedo = 1.0;`.
+    If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you need to set color to the `const float3 albedo = 1.0;`.
     
     ##### For example:
-    ###### If the red is normalized value, it can be set to albedo like:
+    ###### 1. If the red is normalized value, it can be set to albedo like:
     * `const float3 albedo = float3(1.0, 0.0, 0.0);`
-    ###### If the red is unnormalized value, it can be set to albedo like:
+    ###### 2. If the red is unnormalized value, it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
-    ###### If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by `color ^ gamma`
+    ###### 3. If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by `color ^ gamma`
     * Convert the `srgb color-space` from normalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
     * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
@@ -73,9 +73,9 @@ ALBEDO:
 * #### albedoMapLoopNum
     You can `tile` your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
     ##### For example:
-    ###### If X and Y are the same numbers:
+    ###### 1. If X and Y are the same numbers:
     * `const flaot2 albedoMapLoopNum = 2;`
-    ###### Otherwise (2 is X-axis, 3 is Y-axis):
+    ###### 2. Otherwise (2 is X-axis, 3 is Y-axis):
     * `const flaot2 albedoMapLoopNum = float2(2, 3);`
 
 SubAlbedo:
