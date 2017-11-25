@@ -9,29 +9,29 @@ ALBEDO:
 * ##### ALBEDO_MAP_FROM  
     You can use a `linear-color` and `texture` to change the colors in your model by set the `code` to the `ALBEDO_MAP_FROM`.
 
-    0 . Parameter fetch from `linear-color` from the `const float3 albedo = 1.0`.  
-    1 . You can use a `srgb-image` (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the `ALBEDO_MAP_FILE`.  
-    2 . You can use a `animation srgb-image` (gif, apng) by enter a relative and absolutely path to the `ALBEDO_MAP_FILE`.  
-    3 . Parameter fetch from `Texture` from the `pmx`.  
-    4 . Parameter fetch from `Sphere map` from the `pmx`.  
-    5 . Parameter fetch from `Toon map` from the `pmx`.  
-    6 . Parameter fetch from `avi` or `screen` from the `DummyScreen.x` inside `extension` folder.  
-    7 . Parameter fetch from `Ambient Color` from the `pmx`.  
-    8 . Parameter fetch from `Specular Color` from the `pmx`.  
-    9 . Parameter fetch from `Specular Power` from the `pmx`. // `Only for smoothness`  
+    `0` . Parameter fetch from `linear-color` from the `const float3 albedo = 1.0`.  
+    `1` . You can use a `srgb-image` (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the `ALBEDO_MAP_FILE`.  
+    `2` . You can use a `animation srgb-image` (gif, apng) by enter a relative and absolutely path to the `ALBEDO_MAP_FILE`.  
+    `3` . Parameter fetch from `Texture` from the `pmx`.  
+    `4` . Parameter fetch from `Sphere map` from the `pmx`.  
+    `5` . Parameter fetch from `Toon map` from the `pmx`.  
+    `6` . Parameter fetch from `avi` or `screen` from the `DummyScreen.x` inside `extension` folder.  
+    `7` . Parameter fetch from `Ambient Color` from the `pmx`.  
+    `8` . Parameter fetch from `Specular Color` from the `pmx`.  
+    `9` . Parameter fetch from `Specular Power` from the `pmx`. // `Only for smoothness`  
 
 * ##### ALBEDO_MAP_UV_FLIP
     You can flip your texture for the `X` and `Y` axis mirror by set `code` to the `ALBEDO_MAP_UV_FLIP`
 
-    1 . Flip axis `X`  
-    2 . Flip axis `Y`  
-    3 . Flip axis `X` and `Y`  
+    `1` . Flip axis `X`  
+    `2` . Flip axis `Y`  
+    `3` . Flip axis `X` and `Y`  
 
 * ##### ALBEDO_MAP_APPLY_SCALE  
     You can apply the color from `albedo` to change the colors in your texture by set `code` to the `ALBEDO_MAP_APPLY_SCALE`  
 
-    1 . map values * albedo  
-    2 . map values ^ albedo (The `^` is exponential operations of `X` and `Y`)  
+    `1` . map values * albedo  
+    `2` . map values ^ albedo (The `^` is exponential operations of `X` and `Y`)  
 
 * ##### ALBEDO_MAP_APPLY_DIFFUSE  
     Texture colors to multiply with `diffuse` from the `PMX`.
@@ -83,12 +83,12 @@ SubAlbedo:
 * ##### ALBEDO_SUB_ENABLE
     You can apply second value for `base color` change by set the `code` to `ALBEDO_SUB_ENABLE`
 
-    0 . None  
-    1 . albedo * albedoSub  
-    2 . albedo ^ albedoSub  
-    3 . albedo + albedoSub  
-    4 . melanin  
-    5 . Alpha Blend  
+    `0` . None  
+    `1` . albedo * albedoSub  
+    `2` . albedo ^ albedoSub  
+    `3` . albedo + albedoSub  
+    `4` . melanin  
+    `5` . Alpha Blend  
 
 * ##### ALBEDO_SUB_MAP_FROM
     see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
@@ -115,10 +115,10 @@ Alpha:
 * ##### ALPHA_MAP_SWIZZLE
     The ordering of the data fetched from a `texture` from the `code`.
 
-    0 . `R` channel  
-    1 . `G` channel  
-    2 . `B` channel  
-    3 . `A` channel  
+    `0` . `R` channel  
+    `1` . `G` channel  
+    `2` . `B` channel  
+    `3` . `A` channel  
 
 * ##### ALPHA_MAP_FILE "alpha.png"
     see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
@@ -137,11 +137,11 @@ and check the scene that all `normals` are not `zero-length` (XYZ are same equal
 * ##### NORMAL_MAP_TYPE
     Other parameter types for `normal`, see UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html) for `PerturbNormalLQ` and `PerturbNormalHQ`.
     
-    0 . Calculate world-space normal from RGB tangent-space map.  
-    1 . Calculate world-space normal from RG  compressed tangent-space map.  
-    2 . Calculate world-space normal from Grayscale bump map by `PerturbNormalLQ` (Low  Quality). It has no effect on small objects.  
-    3 . Calculate world-space normal from Grayscale bump map by `PerturbNormalHQ` (High Quality).  
-    4 . Calculate world-space normal from RGB world-space map.  
+    `0` . Calculate world-space normal from RGB tangent-space map.  
+    `1` . Calculate world-space normal from RG  compressed tangent-space map.  
+    `2` . Calculate world-space normal from Grayscale bump map by `PerturbNormalLQ` (Low  Quality). It has no effect on small objects.  
+    `3` . Calculate world-space normal from Grayscale bump map by `PerturbNormalHQ` (High Quality).  
+    `4` . Calculate world-space normal from RGB world-space map.  
 
 * ##### NORMAL_MAP_UV_FLIP
     see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
@@ -173,9 +173,9 @@ Smoothness
 * ##### SMOOTHNESS_MAP_TYPE
     Other parameter types for `Smoothness`
 
-    0 . `Smoothness` (from Frostbite / CE5 textures)  
-    1 . Calculate `Smoothness` from Roughness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)  
-    2 . Calculate `Smoothness` from Roughness by 1.0 - Roughness       (from UE4/GGX/SubstancePainter2 with roughness linear roughness)  
+    `0` . `Smoothness` (from Frostbite / CE5 textures)  
+    `1` . Calculate `Smoothness` from Roughness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)  
+    `2` . Calculate `Smoothness` from Roughness by 1.0 - Roughness       (from UE4/GGX/SubstancePainter2 with roughness linear roughness)  
 
 * ##### SMOOTHNESS_MAP_UV_FLIP
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -216,11 +216,11 @@ if you don't want model to reflect the specular color, you can set zero to `cons
 * ##### SPECULAR_MAP_TYPE
     Other parameter types for Specular
 
-    0 . Calculate reflection coefficient from specular color by `F(x) = 0.08*(x  )` (from UE4 textures)  
-    1 . Calculate reflection coefficient from specular color by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
-    2 . Calculate reflection coefficient from specular grays by `F(x) = 0.08*(x  )` (from UE4 textures)  
-    3 . Calculate reflection coefficient from specular grays by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
-    4 . Using reflection coefficient (`0.04`) instead of specular value (`0.5`), Available when `SPECULAR_MAP_FROM` at `0`  
+    `0` . Calculate reflection coefficient from specular color by `F(x) = 0.08*(x  )` (from UE4 textures)  
+    `1` . Calculate reflection coefficient from specular color by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
+    `2` . Calculate reflection coefficient from specular grays by `F(x) = 0.08*(x  )` (from UE4 textures)  
+    `3` . Calculate reflection coefficient from specular grays by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
+    `4` . Using reflection coefficient (`0.04`) instead of specular value (`0.5`), Available when `SPECULAR_MAP_FROM` at `0`  
 
 * ##### SPECULAR_MAP_UV_FLIP
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -254,10 +254,10 @@ and also you can set zero to the `const float occlusion = 1.0` if you don't want
 * ##### OCCLUSION_MAP_TYPE
     Other parameter types for `Occlusion`
 
-    0 . Fetch `ambient occlusion` from linear color-space  
-    1 . Fetch `ambient occlusion` from sRGB   color-space  
-    2 . Fetch `ambient occlusion` from linear color-space from second UV set  
-    3 . Fetch `ambient occlusion` from sRGB   color-space from second UV set  
+    `0` . Fetch `ambient occlusion` from linear color-space  
+    `1` . Fetch `ambient occlusion` from sRGB   color-space  
+    `2` . Fetch `ambient occlusion` from linear color-space from second UV set  
+    `3` . Fetch `ambient occlusion` from sRGB   color-space from second UV set  
 
 * ##### OCCLUSION_MAP_UV_FLIP
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -278,8 +278,8 @@ Parallax:
 * ##### PARALLAX_MAP_TYPE
     Other parameter types for `parallax`
 
-    0 . calculate without transparency  
-    1 . calculate parallax occlusion with transparency and best `SSDO`  
+    `0` . calculate without transparency  
+    `1` . calculate parallax occlusion with transparency and best `SSDO`  
 
 * ##### PARALLAX_MAP_UV_FLIP 
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -311,8 +311,8 @@ Emissive
 * ##### EMISSIVE_MAP_APPLY_BLINK
    You can set the blink using following `code`.
 
-   1 . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
-   2 . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
+   `1` . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
+   `2` . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
 
 * ##### EMISSIVE_MAP_FILE
   see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
