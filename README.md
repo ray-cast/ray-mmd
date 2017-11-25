@@ -35,11 +35,7 @@ Download :
 	- Material : Better Skin when used ao map [(preview)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ao.jpg)
 	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculate the sun shadow)
 	- Time of day : Add the SunPhase and SunTurbidity 
-	- FilmGrain : Added black borders around a video
-	- Fix issue : that caused a FilmGrain cannot be work with others MME
-	- Fix issue : that caused a LightBloom cannot be work with others MME
-	- Fix issue : that caused a FXAA cannot be work with others MME
-	- Fix issue : that caused a SMAA cannot be work with others MME
+	- Remove Vignette and ColorDispersion, Please use FilmGrain instead
 
 Requirement :
 ------------
