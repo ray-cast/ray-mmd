@@ -59,7 +59,7 @@ ALBEDO:
 * ##### const float3 albedo = 1.0;  
     If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you will need to set color to the `albedo`.
     
-    ##### For example :
+    ##### For example:
     ###### If the red is normalized value, it can be set to albedo like:
     * `const float3 albedo = float3(1.0, 0.0, 0.0);`
     ###### If the red is unnormalized value, it can be set to albedo like:
@@ -70,13 +70,18 @@ ALBEDO:
     * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);`
 
-* #### const float2 albedoMapLoopNum = 0.0 ~ inf;
+* #### albedoMapLoopNum
     You can `tile` your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
+    ##### For example:
+    ###### If X and Y are the same numbers:
+    * `const flaot2 albedoMapLoopNum = 2;`
+    ###### otherwise (2 is X-axis, 3 is Y-axis):
+    * `const flaot2 albedoMapLoopNum = float2(2, 3);`
 
 SubAlbedo:
 --------------
 * ##### ALBEDO_SUB_ENABLE
-    You can apply second value for `base color` change by set `ALBEDO_SUB_ENABLE`
+    You can apply second value for `base color` change by set the `code` to `ALBEDO_SUB_ENABLE`
 
     0 . None  
     1 . albedo * albedoSub  
@@ -86,26 +91,26 @@ SubAlbedo:
     5 . Alpha Blend  
 
 * ##### ALBEDO_SUB_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### ALBEDO_SUB_MAP_UV_FLIP
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### ALBEDO_SUB_MAP_APPLY_SCALE
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### ALBEDO_SUB_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float3 albedoSub = 0.0 ~ 1.0;
 * ##### const float2 albedoSubMapLoopNum = 0.0 ~ inf; 
-    see `albedoMapLoopNum`
+    see [albedoMapLoopNum](#albedoMapLoopNum)
 
 Alpha:
 ----------------
 　　It has no effect on opaque objects.
 
 * ##### ALPHA_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 
 * ##### ALPHA_MAP_UV_FLIP
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 
 * ##### ALPHA_MAP_SWIZZLE
     The ordering of the data fetched from a `texture` from the `code`.
@@ -116,7 +121,7 @@ Alpha:
     3 . A channel  
 
 * ##### ALPHA_MAP_FILE "alpha.png"
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 
 * ##### const float alpha = 0.0 ~ 1.0;
 * ##### const float2 alphaMapLoopNum = 0.0 ~ inf;
@@ -128,7 +133,7 @@ When you see some error that looks like some `white edges` on your actor's model
 And check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### NORMAL_MAP_TYPE
     Other parameter types for tangent normal, see UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html) for `PerturbNormalLQ` and `PerturbNormalHQ`.
     
@@ -139,22 +144,22 @@ And check the scene that all `normals` are not `zero-length` (XYZ are same equal
     4 . Calculate world-space normal from RGB world-space map.  
 
 * ##### NORMAL_MAP_UV_FLIP
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### NORMAL_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float normalMapScale = 0 ~ inf;
 * ##### const float normalMapLoopNum = 0 ~ inf;
 
 SubNormal
 -------------
 * ##### NORMAL_SUB_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### NORMAL_SUB_MAP_TYPE
-    see `NORMAL_MAP_TYPE`
+    see [NORMAL_MAP_TYPE](#NORMAL_MAP_TYPE)
 * ##### NORMAL_SUB_MAP_UV_FLIP
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### NORMAL_SUB_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float normalSubMapScale = 0.0 ~ inf;
 * ##### const float normalSubMapLoopNum = 0.0 ~ inf;
 
@@ -163,7 +168,7 @@ Smoothness
 　　Default data will fetched params from the `SpecularPower` and convert the `SpecularPower` to `Smoothness`.
 
 * ##### SMOOTHNESS_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 
 * ##### SMOOTHNESS_MAP_TYPE
     Other parameter types for `Smoothness`
@@ -173,32 +178,32 @@ Smoothness
     2 . Calculate `Smoothness` from `Roughness` by 1.0 - Roughness       (from UE4/GGX/SubstancePainter2 with roughness linear roughness)  
 
 * ##### SMOOTHNESS_MAP_UV_FLIP
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### SMOOTHNESS_MAP_SWIZZLE
-    see `ALPHA_MAP_SWIZZLE`
+    see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE)
 * ##### SMOOTHNESS_MAP_APPLY_SCALE
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### SMOOTHNESS_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float smoothness = 0.0 ~1.0;
 * ##### const float smoothnessMapLoopNum = 1.0; 
-    see `albedoMapLoopNum`
+    see [albedoMapLoopNum](#albedoMapLoopNum)
 
 Metalness:
 -------------
 * ##### METALNESS_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### METALNESS_MAP_UV_FLIP
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### METALNESS_MAP_SWIZZLE
-    see `ALPHA_MAP_SWIZZLE`
+    see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE)
 * ##### METALNESS_MAP_APPLY_SCALE
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### METALNESS_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float metalness = 0.0 ~ 1.0;
 * ##### const float metalnessMapLoopNum = 1.0;
-    see `albedoMapLoopNum`
+    see [albedoMapLoopNum](#albedoMapLoopNum)
 
 Specular:
 -------------
@@ -218,13 +223,13 @@ If you don't want model to reflect the specular color, you can set zero to `cons
     4 . Using reflection coefficient (0.04) instead of specular value (0.5), Available when `SPECULAR_MAP_FROM` at 0  
 
 * ##### SPECULAR_MAP_UV_FLIP
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### SPECULAR_MAP_SWIZZLE
-    see `ALPHA_MAP_SWIZZLE`
+    see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE)
 * ##### SPECULAR_MAP_APPLY_SCALE
-    see `ALBEDO_MAP_APPLY_SCALE`
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### SPECULAR_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 * ##### const float3 specular = 0.5;
     Anything less than `2%` is physically impossible and is instead considered to be shadowing  
     For example: The reflectance coefficient is equal to `F(x) = (x - 1)^2 / (x + 1)^2`  
@@ -244,7 +249,7 @@ A simply way able to replaced by using `occlusion map` and `SSAO`,
 and also you can set zero to the `const float occlusion = 1.0` if you don't want `diffuse` and `specular`.
 
 * ##### OCCLUSION_MAP_FROM
-    see `ALBEDO_MAP_FROM`
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 
 * ##### OCCLUSION_MAP_TYPE
     Other parameter types for `occlusion`
@@ -277,13 +282,13 @@ Parallax:
     1 . calculate parallax occlusion with transparency and best `SSDO`  
 
 * ##### PARALLAX_MAP_UV_FLIP 
-    see `ALBEDO_MAP_UV_FLIP`
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 
 * ##### PARALLAX_MAP_SWIZZLE 
-    see `ALPHA_MAP_SWIZZLE`
+    see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE)
 
 * ##### PARALLAX_MAP_FILE
-    see `ALBEDO_MAP_FILE`
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 
 * ##### const float parallaxMapScale = 0.0 ~ inf;
 * ##### const float parallaxMapLoopNum = 0.0 ~ inf;
@@ -293,13 +298,13 @@ Emissive
 　　You can add a light source in MMD (PointLight or others), And key it as part of emissive of the model, and same color set it to your light source and emissive color
 * ##### EMISSIVE_ENABLE
 * ##### EMISSIVE_MAP_FROM
-   see `ALBEDO_MAP_FROM`
+   see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### EMISSIVE_MAP_UV_FLIP
-   see `ALBEDO_MAP_UV_FLIP`
+   see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
 * ##### EMISSIVE_MAP_APPLY_SCALE
-   see `ALBEDO_MAP_APPLY_SCALE`
+   see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### EMISSIVE_MAP_APPLY_MORPH_COLOR
-   see `ALBEDO_MAP_APPLY_MORPH_COLOR`
+   see [ALBEDO_MAP_APPLY_MORPH_COLOR](#ALBEDO_MAP_APPLY_MORPH_COLOR)
 
 * ##### EMISSIVE_MAP_APPLY_MORPH_INTENSITY
    Texture colors to multiply with intensity from morph controller (Intensity+/-).
@@ -310,7 +315,7 @@ Emissive
    2 . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
 
 * ##### EMISSIVE_MAP_FILE
-  see `ALBEDO_MAP_FILE`
+  see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 
 * ##### const float3 emissive = 0.0 ~ 1.0;
 * ##### const float3 emissiveBlink = 0.0 ~ 10.0;
@@ -342,34 +347,40 @@ Shading Model ID
     8 . Cel Shading        customA = threshold,  customB = shadow color;
     9 . ToonBased Shading  customA = haredness,  customB = shadow color;
 
-* ##### CUSTOM_ENABLE 0
+* ##### CUSTOM_ENABLE
 
-* ##### CUSTOM_A_MAP_FROM 0 
-    see ALBEDO_MAP_FROM for more information.
-
-* ##### CUSTOM_A_MAP_UV_FLIP 0
-* ##### CUSTOM_A_MAP_COLOR_FLIP 0
-* ##### CUSTOM_A_MAP_SWIZZLE 0
-* ##### CUSTOM_A_MAP_APPLY_SCALE 0
+* ##### CUSTOM_A_MAP_FROM 
+    see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
+* ##### CUSTOM_A_MAP_UV_FLIP
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
+* ##### CUSTOM_A_MAP_COLOR_FLIP
+* ##### CUSTOM_A_MAP_SWIZZLE
+    see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE)
+* ##### CUSTOM_A_MAP_APPLY_SCALE
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### CUSTOM_A_MAP_FILE "custom.png"
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 
 * ##### const float customA = 0.0 ~ 1.0;
     linear-space
 
 * ##### const float customAMapLoopNum = 1.0;
-   see `albedoMapLoopNum`
+   see [albedoMapLoopNum](#albedoMapLoopNum)
 
-* ##### CUSTOM_B_MAP_FROM 0
-   see `ALBEDO_MAP_FROM`
-* ##### CUSTOM_B_MAP_UV_FLIP 0
-* ##### CUSTOM_B_MAP_COLOR_FLIP 0
-* ##### CUSTOM_B_MAP_APPLY_SCALE 0
+* ##### CUSTOM_B_MAP_FROM
+*   see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
+* ##### CUSTOM_B_MAP_UV_FLIP
+    see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
+* ##### CUSTOM_B_MAP_COLOR_FLIP
+* ##### CUSTOM_B_MAP_APPLY_SCALE
+    see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE)
 * ##### CUSTOM_B_MAP_FILE "custom.png"
+    see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE)
 
 * ##### const float3 customB = 0.0 ~ 1.0;
     sRGB color-space
 * ##### const float2 customBMapLoopNum = 1.0;
-    see albedoMapLoopNum
+    see [albedoMapLoopNum](#albedoMapLoopNum)
 
 FAQ:
 --------------------
