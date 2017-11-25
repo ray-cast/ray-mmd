@@ -60,17 +60,17 @@ ALBEDO:
     If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you will need to set color to the `albedo`.
     
     ##### For example :
-    ##### If the red is normalized value, it can be set to albedo like:
+    ###### If the red is normalized value, it can be set to albedo like:
     * `const float3 albedo = float3(1.0, 0.0, 0.0);`
-    ##### If the red is unnormalized value, it can be set to albedo like:
+    ###### If the red is unnormalized value, it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
-    ##### If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by color ^ gamma
+    ###### If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by color ^ gamma
     * Convert the `srgb color-space` from normalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
     * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);`
 
-* #### const float2 albedoMapLoopNum = 1.0;
+* #### const float2 albedoMapLoopNum = 0.0 ~ inf;
     You can `tile` your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
 
 SubAlbedo:
@@ -93,10 +93,8 @@ SubAlbedo:
     see `ALBEDO_MAP_APPLY_SCALE`
 * ##### ALBEDO_SUB_MAP_FILE
     see `ALBEDO_MAP_FILE`
-* ##### const float3 albedoSub = 1.0;
-    between 0 ~ 1
-
-* ##### const float2 albedoSubMapLoopNum = 1.0; 
+* ##### const float3 albedoSub = 0.0 ~ 1.0;
+* ##### const float2 albedoSubMapLoopNum = 0.0 ~ inf; 
     see `albedoMapLoopNum`
 
 Alpha:
