@@ -56,15 +56,15 @@ ALBEDO:
     * Using "../" instead of parent folder
     * Change all "\\" to "/".
 
-* ##### const float3 albedo = 1.0;  
-    If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you will need to set color to the `albedo`.
+* ##### const float3 albedo = 1.0;
+    If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you will need to set color to the `const float3 albedo = 1.0;`.
     
     ##### For example:
     ###### If the red is normalized value, it can be set to albedo like:
     * `const float3 albedo = float3(1.0, 0.0, 0.0);`
     ###### If the red is unnormalized value, it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
-    ###### If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by color ^ gamma
+    ###### If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by `color ^ gamma`
     * Convert the `srgb color-space` from normalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
     * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
@@ -128,14 +128,14 @@ Alpha:
 
 Normal:
 -------------
-　　`SSAO` only supports `non-empty normal` else will result a `white edge` issue, 
-when you see some `error` that looks like some `white edges` on your actor's model, you can put the scene in the `PMXEditor`
+　　`SSAO` only supports non-empty `normal` else will result a white edge issue, 
+when you see some `bugs` that looks like some white edges on your actor's model, you can put the scene in the `PMXEditor`
 and check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM
     see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM)
 * ##### NORMAL_MAP_TYPE
-    Other parameter types for tangent normal, see UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html) for `PerturbNormalLQ` and `PerturbNormalHQ`.
+    Other parameter types for `normal`, see UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/LightingAndShadows/BumpMappingWithoutTangentSpace/index.html) for `PerturbNormalLQ` and `PerturbNormalHQ`.
     
     0 . Calculate world-space normal from RGB tangent-space map.  
     1 . Calculate world-space normal from RG  compressed tangent-space map.  
@@ -174,8 +174,8 @@ Smoothness
     Other parameter types for `Smoothness`
 
     0 . `Smoothness` (from Frostbite / CE5 textures)  
-    1 . Calculate `Smoothness` from `Roughness` by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)  
-    2 . Calculate `Smoothness` from `Roughness` by 1.0 - Roughness       (from UE4/GGX/SubstancePainter2 with roughness linear roughness)  
+    1 . Calculate `Smoothness` from Roughness by 1.0 - Roughness ^ 0.5 (from UE4/GGX/SubstancePainter2 textures)  
+    2 . Calculate `Smoothness` from Roughness by 1.0 - Roughness       (from UE4/GGX/SubstancePainter2 with roughness linear roughness)  
 
 * ##### SMOOTHNESS_MAP_UV_FLIP
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -216,11 +216,11 @@ if you don't want model to reflect the specular color, you can set zero to `cons
 * ##### SPECULAR_MAP_TYPE
     Other parameter types for Specular
 
-    0 . Calculate reflection coefficient from specular color by F(x) = 0.08*(x  ) (from UE4 textures)  
-    1 . Calculate reflection coefficient from specular color by F(x) = 0.16*(x^2) (from Frostbite textures)  
-    2 . Calculate reflection coefficient from specular grays by F(x) = 0.08*(x  ) (from UE4 textures)  
-    3 . Calculate reflection coefficient from specular grays by F(x) = 0.16*(x^2) (from Frostbite textures)  
-    4 . Using reflection coefficient (0.04) instead of specular value (0.5), Available when `SPECULAR_MAP_FROM` at 0  
+    0 . Calculate reflection coefficient from specular color by `F(x) = 0.08*(x  )` (from UE4 textures)  
+    1 . Calculate reflection coefficient from specular color by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
+    2 . Calculate reflection coefficient from specular grays by `F(x) = 0.08*(x  )` (from UE4 textures)  
+    3 . Calculate reflection coefficient from specular grays by `F(x) = 0.16*(x^2)` (from Frostbite textures)  
+    4 . Using reflection coefficient (`0.04`) instead of specular value (`0.5`), Available when `SPECULAR_MAP_FROM` at `0`  
 
 * ##### SPECULAR_MAP_UV_FLIP
     see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP)
@@ -324,28 +324,25 @@ Emissive
 
 Shading Model ID
 -------------
-   The curvature also called "opacity", You can see the UE4 docs for more information
-   https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html
+##### Tips:  
+Subsurface : The curvature also called "opacity", see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
+Glass : In order to make refraction work, you must set alpha value of the pmx model to less then 0.999  
+Cloth : Sheen is difference between GGX and InvGGX, see [paper](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf) for cloth information  
+Cloth : Fuzz Color is f0 of fresnel params in sRGB color-space  
+Toon  : see [paper](https://zhuanlan.zhihu.com/p/26409746) for more information, but chinese  
 
-   0 . Default            customA = invalid,    customB = invalid  
-   1 . PreIntegrated Skin customA = curvature,  customB = transmittance color;  
-   2 . Unlit placeholder  customA = invalid,    customB = invalid  
-   3 . Anisotropy         customA = Anisotropic, customB = invalid  
-
- In order to make refraction work, you must set alpha value of the pmx model to less then 0.999
- 4 : Glass              customA = curvature   customB = transmittance color
-
- see paper for cloth information : http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf
- Sheen is difference between GGX and InvGGX
- Fuzz Color is f0 of fresnel params in sRGB color-space
-    5 . Cloth              customA = sheen,      customB = Fuzz Color  
-    6 . Clear Coat         customA = smoothness, customB = invalid;  
-    7 . Subsurface         customA = curvature,  customB = transmittance color;  
-
- see this paper for more information, but chinese
- https://zhuanlan.zhihu.com/p/26409746
-    8 . Cel Shading        customA = threshold,  customB = shadow color;
-    9 . ToonBased Shading  customA = haredness,  customB = shadow color;
+| ID | Material          | CustomA   | CustomB |
+| :- |:------------------|:----------|:--------|
+| 0  | Default           | Invalid    | Invalid |
+| 1  | PreIntegrated Skin| Curvature  | Transmittance color |
+| 2  | Unlit placeholder | Invalid    | Invalid |
+| 3  | Anisotropy        | Anisotropic| Invalid |
+| 4  | Glass             | Curvature  | Transmittance color |
+| 5  | Cloth             | Sheen      | Fuzz Color |
+| 6  | Clear Coat        | Smoothness | Invalid |
+| 7  | Subsurface        | Curvature  | Transmittance color |
+| 8  | Cel Shading       | Threshold  | Shadow color |
+| 9  | ToonBased Shading | Haredness  | Shadow color |
 
 * ##### CUSTOM_ENABLE
 
