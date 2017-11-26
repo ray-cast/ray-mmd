@@ -106,10 +106,10 @@ Alpha:
 * ##### ALPHA_MAP_SWIZZLE
     The ordering of the data fetched from a `texture` from the `code`.
 
-    `0` . `R` channel  
-    `1` . `G` channel  
-    `2` . `B` channel  
-    `3` . `A` channel  
+    `0` . Fetch data from `R` channel  
+    `1` . Fetch data from `G` channel  
+    `2` . Fetch data from `B` channel  
+    `3` . Fetch data from `A` channel  
 
 * ##### ALPHA_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 * ##### const float alpha = 0.0 ~ 1.0;
