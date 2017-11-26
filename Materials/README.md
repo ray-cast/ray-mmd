@@ -60,14 +60,14 @@ ALBEDO:
     If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you need to set color to the `const float3 albedo = 1.0;`.
     
     ##### For example:
-    ###### 1. If the red is normalized value, it can be set to albedo like:
+    ###### 1. If the red is [normalized value](https://en.wikipedia.org/wiki/Unit_vector), it can be set to albedo like:
     * `const float3 albedo = float3(1.0, 0.0, 0.0);`
-    ###### 2. If the red is unnormalized value, it can be set to albedo like:
+    ###### 2. If the red is [unnormalized value](https://en.wikipedia.org/wiki/Unit_vector), it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
-    ###### 3. If the color is fetched from your monitor, you need to convert the color from sRGB to linear color-space by `color ^ gamma`
-    * Convert the `srgb color-space` from normalized value to `linear color-space` like:
+    ###### 3. If the color is fetched from your monitor, you need to convert the color from [sRGB](https://en.wikipedia.org/wiki/SRGB) to [linear color-space](https://en.wikipedia.org/wiki/SRGB) by `color ^ gamma`
+    * Convert the `srgb color-space` from [normalized value](https://en.wikipedia.org/wiki/Unit_vector) to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
-    * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
+    * Convert the `srgb color-space` from [unnormalized value](https://en.wikipedia.org/wiki/Unit_vector) to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);`
 
 * #### albedoMapLoopNum
