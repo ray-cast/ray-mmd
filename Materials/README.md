@@ -65,17 +65,17 @@ ALBEDO:
     ###### 2. If the red is [unnormalized value](https://en.wikipedia.org/wiki/Unit_vector), it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
     ###### 3. If the color is fetched from your monitor, you need to convert the color from [sRGB](https://en.wikipedia.org/wiki/SRGB) to [linear color-space](https://en.wikipedia.org/wiki/SRGB) by `color ^ gamma`
-    * Convert the `srgb color-space` from [normalized value](https://en.wikipedia.org/wiki/Unit_vector) to `linear color-space` like:
+    * Convert the `srgb color-space` from normalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
-    * Convert the `srgb color-space` from [unnormalized value](https://en.wikipedia.org/wiki/Unit_vector) to `linear color-space` like:
+    * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);`
 
 * #### albedoMapLoopNum
-    You can `tile` your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
+    You can tile your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
     ##### For example:
-    ###### 1. If X and Y are the same numbers:
+    ###### 1. If `X` and `Y` are the same numbers:
     * `const flaot2 albedoMapLoopNum = 2;`
-    ###### 2. Otherwise (2 is X-axis, 3 is Y-axis):
+    ###### 2. Otherwise (2 is `X`-axis, 3 is `Y`-axis):
     * `const flaot2 albedoMapLoopNum = float2(2, 3);`
 
 SubAlbedo:
@@ -168,6 +168,7 @@ Smoothness
 
 Metalness:
 -------------
+　　Metalness is one method of determining reflectivity, used to instead of old pipeline such as specular highlight map
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
 * ##### METALNESS_MAP_SWIZZLE (see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE))
