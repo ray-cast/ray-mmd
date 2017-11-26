@@ -283,7 +283,7 @@ Shading Model ID
     | 0  | Default           | Invalid    | Invalid |
     | 1  | PreIntegrated Skin| Curvature  | Transmittance color |
     | 2  | Unlit placeholder | Invalid    | Invalid |
-    | 3  | Anisotropy        | Anisotropic| Invalid |
+    | 3  | Anisotropy        | Anisotropic| Shift tangent |
     | 4  | Glass             | Curvature  | Transmittance color |
     | 5  | Cloth             | Sheen      | Fuzz Color |
     | 6  | Clear Coat        | Smoothness | Invalid |
