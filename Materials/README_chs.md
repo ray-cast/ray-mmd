@@ -1,5 +1,7 @@
 材质
 ========
+###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; &nbsp; &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
+
 改文档主要用于快速说明材质作用以方便查询
 
 ALBEDO:
