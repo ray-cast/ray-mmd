@@ -1,5 +1,7 @@
 Material
 ========
+###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; &nbsp; &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md)
+
 This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`
 
 ALBEDO:
