@@ -2,7 +2,7 @@
 ========
 ###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; &nbsp; &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
 
-改文档主要用于快速说明材质作用以方便查询
+该文档主要用于快速说明材质作用以方便查询
 
 ALBEDO:
 ------
@@ -11,13 +11,13 @@ ALBEDO:
 * ##### ALBEDO_MAP_FROM  
     通过以下数值设置到`ALBEDO_MAP_FROM`,可以将一个 `线性的颜色` 或者 `纹理` 用于修改模型中的颜色.
 
-    `0` . 从`const float3 albedo = 1.0`提取颜色(线性颜色)用于模型. 
+    `0` . 从`const float3 albedo = 1.0`提取颜色(线性颜色)用于模型.  
     `1` . 模型的基本颜色将使用来至`ALBEDO_MAP_FILE`的相对或者绝对的(bmp, png, jpg, tga, dds, gif, apng)图片路径.  
     `2` . 模型的基本颜色将使用来至`ALBEDO_MAP_FILE`的相对或者绝对的GIF/APNG的路径.  
     `3` . 模型的基本颜色将使用来至`PMX`模型中的`纹理`插槽的图片.  
     `4` . 模型的基本颜色将使用来至`PMX`模型中的`镜面`插槽的图片.  
     `5` . 模型的基本颜色将使用来至`PMX`模型中的`Toon`插槽的图片.  
-    `6` . 可以将`AVI`视频或者渲染后的图像用于模型的贴图纹理，需要先放置Extension/DummyScreen/中的x文件.  
+    `6` . 模型的基本颜色将使用来至`AVI`视频或者渲染后的图像,需要先放置Extension/DummyScreen/中的x文件.  
     `7` . 将PMX中的`环境色`用于替换模型的颜色.  
     `8` . 将PMX中的`镜面色`用于替换模型的颜色.  
     `9` . 将PMX中的`光泽度`用于替换模型的颜色. // 该选择只能被光滑度使用  
@@ -25,15 +25,15 @@ ALBEDO:
 * ##### ALBEDO_MAP_UV_FLIP
     通过以下数值设置到`ALBEDO_MAP_UV_FLIP`可以`水平`或者`垂直`翻转纹理坐标
 
-    `1` . `X`轴水平翻转
-    `2` . `Y`轴垂直翻转
-    `3` . `X`和`Y`轴同时翻转
+    `1` . `X`轴水平翻转  
+    `2` . `Y`轴垂直翻转  
+    `3` . `X`和`Y`轴同时翻转  
 
 * ##### ALBEDO_MAP_APPLY_SCALE  
     如果`ALBEDO_MAP_FROM`使用的是纹理，并且想要修改纹理的颜色时可以设置以下数值
 
-    `1` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行相乘
-    `2` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行指数运算
+    `1` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行相乘  
+    `2` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行指数运算  
 
 * ##### ALBEDO_MAP_APPLY_DIFFUSE  
     从`PMX`模型中的扩散色乘算到贴图上.
@@ -45,14 +45,14 @@ ALBEDO:
     如果设置了1或者2到`ALBEDO_MAP_FROM`时,需要将一个相对或者绝对的图片的路径输入到这里
 
     ##### 例如 :
-    ###### 1. 如果xxx.png图片和material_2.0.fx是在同一个目录
-    * `可以将xxx.png输入到ALBEDO_MAP_FILE 例: #define ALBEDO_MAP_FILE "xxx.png"`
-    ###### 2. 如果xxx.png图片是在material_2.0.fx的上一级目录
-    * `需要添加一个"../"来描述图片是在material_2.0.fx的上一级目录 例: #define ALBEDO_MAP_FILE "../xxx.png"`
-    ###### 3. 如果xxx.png图片是在material_2.0.fx的上一级目录的其它目录中
-    * `需要添加一个"../其它目录名"来描述图片是在material_2.0.fx的上一级目录中的其他目录 例: #define ALBEDO_MAP_FILE "../其他目录名/xxx.png"`
-    ###### 4. 如果图片是来至其它的磁盘
-    * `需要将相对路径复制并替换所有的\为/  例: #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"`
+    ###### 1. 如果xxx.png图片和material_2.0.fx是在同一个目录,可以将`xxx.png`输入到`ALBEDO_MAP_FILE`
+    * `#define ALBEDO_MAP_FILE "xxx.png"`
+    ###### 2. 如果xxx.png图片是在material_2.0.fx的上一级目录,需要添加一个`../`来描述图片是在`material_2.0.fx`的上一级目录
+    * `#define ALBEDO_MAP_FILE "../xxx.png"`
+    ###### 3. 如果xxx.png图片是在material_2.0.fx的上一级目录的其它目录中,需要添加一个`../其它目录名`来描述图片是在`material_2.0.fx`的上一级目录中的其他目录
+    * `#define ALBEDO_MAP_FILE "../其他目录名/xxx.png"`
+    ###### 4. 如果图片是来至其它的磁盘,需要将相对路径复制并替换所有的`\`为`/`
+    * `#define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"`
 
     ##### Tips:
     * 可以使用 "../" 代替上一级目录
