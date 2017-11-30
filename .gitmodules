@@ -19,3 +19,6 @@
 [submodule "Extension/FilmGrain"]
 	path = Extension/FilmGrain
 	url = https://github.com/MikuMikuShaders/FilmGrain.git
+[submodule "Extension/Spectrum"]
+	path = Extension/Spectrum
+	url = https://github.com/MikuMikuShaders/Spectrum.git
