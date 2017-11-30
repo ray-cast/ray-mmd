@@ -25,6 +25,7 @@ ALBEDO:
 * ##### ALBEDO_MAP_UV_FLIP
     通过以下数值设置到`ALBEDO_MAP_UV_FLIP`可以`水平`或者`垂直`翻转纹理坐标
 
+	`0` . 无效  
     `1` . `X`轴水平翻转  
     `2` . `Y`轴垂直翻转  
     `3` . `X`和`Y`轴同时翻转  
@@ -32,6 +33,7 @@ ALBEDO:
 * ##### ALBEDO_MAP_APPLY_SCALE  
     如果`ALBEDO_MAP_FROM`使用的是纹理，并且想要修改纹理的颜色时可以设置以下数值
 
+	`0` . 无效  
     `1` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行相乘  
     `2` . 将const float3 albedo = 1.0;中的颜色和被使用中的贴图的的颜色进行指数运算  
 
@@ -76,6 +78,8 @@ ALBEDO:
     修改这里的数值可以将图片以瓷砖的形式增加纹理的迭代次数, 默认数值是 1 即 1x1 的瓷砖贴图
     ##### 例如:
     ###### 1. 如果 `X` 和 `Y` 时相同数值时则可以简单的设置同一个数值为:
+	* `const flaot albedoMapLoopNum = 2;`  
+    或者
     * `const flaot2 albedoMapLoopNum = 2;`
     ###### 2. 否者, 左边的数值2代表X轴，右边的数值3代表Y轴
     * `const flaot2 albedoMapLoopNum = float2(2, 3);`
@@ -85,7 +89,7 @@ SubAlbedo:
 * ##### ALBEDO_SUB_ENABLE
     通过将不同数值设置到`ALBEDO_SUB_ENABLE`，可以进一步修改模型的颜色
 
-    `0` . None  
+    `0` . 无效  
     `1` . albedo * albedoSub  
     `2` . albedo ^ albedoSub  
     `3` . albedo + albedoSub  
@@ -261,8 +265,9 @@ Emissive
 * ##### EMISSIVE_MAP_APPLY_BLINK
    设置以下的数值，可以使材质产生自发光闪烁的效果.
 
-   `1` . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
-   `2` . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
+   `0` . 无效  
+   `1` . 将`const float3 emissiveBlink`中的数值与自发光乘算. 例 : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
+   `2` . 将表情控制器中的`Blink`表情应用于自发光, 多光源的扩展
 
 * ##### EMISSIVE_MAP_FILE ([ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 

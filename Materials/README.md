@@ -25,6 +25,7 @@ ALBEDO:
 * ##### ALBEDO_MAP_UV_FLIP
     You can flip your texture for the `X` and `Y` axis mirror by set `code` to the `ALBEDO_MAP_UV_FLIP`
 
+    `0` . None  
     `1` . Flip axis `X`  
     `2` . Flip axis `Y`  
     `3` . Flip axis `X` and `Y`  
@@ -32,6 +33,7 @@ ALBEDO:
 * ##### ALBEDO_MAP_APPLY_SCALE  
     You can apply the color from `albedo` to change the colors in your texture by set `code` to the `ALBEDO_MAP_APPLY_SCALE`  
 
+    `0` . None  
     `1` . map values * albedo  
     `2` . map values ^ albedo (The `^` is exponential operations of `X` and `Y`)  
 
@@ -76,6 +78,8 @@ ALBEDO:
     You can tile your texture for the `X` and `Y` axis separately by change `albedoMapLoopNum = float2(x, y)`
     ##### For example:
     ###### 1. If `X` and `Y` are the same numbers:
+    * `const flaot albedoMapLoopNum = 2;`  
+    OR
     * `const flaot2 albedoMapLoopNum = 2;`
     ###### 2. Otherwise (2 is `X`-axis, 3 is `Y`-axis):
     * `const flaot2 albedoMapLoopNum = float2(2, 3);`
@@ -267,6 +271,7 @@ Emissive
 * ##### EMISSIVE_MAP_APPLY_BLINK
    You can set the blink using following `code`.
 
+   `0` . None  
    `1` . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
    `2` . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
 
