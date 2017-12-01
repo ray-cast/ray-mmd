@@ -94,11 +94,14 @@ Credits:
 -------------
 Financially supported on [Patreon](http://www.patreon.com/cubizer):  
 
+#### Platinum supporters:
+* Penti_mmd
+
 ##### Gold supporters:
 * Sarashina - 更科
 * Birdway
 
-`Thanks! and others support (If you would like to be added or remove from this list Please contact me)`
+`Thanks! and others support! (If you would like to be added or remove from this list Please contact me)`
 
 Contact:
 ------------
