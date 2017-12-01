@@ -35,7 +35,7 @@ Download
 	- [FXAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/FXAA/archive/v1.0.0.zip) (updated: 2. Dec 2017)
 	- [LightBloom - v1.1.1 (zip)](https://github.com/MikuMikuShaders/LightBloom/archive/v1.1.1.zip) (updated: 2. Dec 2017)
 	- [SMAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/SMAA/archive/v1.0.0.zip) (updated: 2. Dec 2017)
-	- [Spectrum - v1.0.0 (zip)](https://github.com/MikuMikuShaders/Spectrum/archive/v1.0.0.zip) (updated: 2. Dec 2017)
+	- [Spectrum - v1.1.0 (zip)](https://github.com/MikuMikuShaders/Spectrum/archive/v1.1.0.zip) (updated: 2. Dec 2017)
 	- [StereoImage - v1.0.0 (zip)](https://github.com/MikuMikuShaders/StereoImage/archive/v1.0.0.zip) (updated: 2. Dec 2017)
 - Latest changes - Major allocator changes:
 	- Support for Depth Of Field
