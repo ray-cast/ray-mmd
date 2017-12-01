@@ -102,6 +102,8 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 
 Contact:
 ------------
+　　If you are a developer using this as part of your love and considering contacting me, you can submit code by `Pull requests` or Feel free to contact me via `twitter` and `issues`, i'll add your profile to team members, Thanks.
+
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
 
 [License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
