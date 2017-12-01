@@ -2,7 +2,7 @@ Material
 ========
 ###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
 
-　　This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`
+　　This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`, you can create a new material by duplicate a `material_2.0.fx`
 
 ALBEDO:
 ------
@@ -41,7 +41,7 @@ ALBEDO:
     Texture colors to multiply with `diffuse` from the `PMX`.
 
 * ##### ALBEDO_MAP_APPLY_MORPH_COLOR  
-    Texture colors to multiply with color from the `morph` controller (`R+`/`G+`/`B+`).  
+    Texture colors to multiply with color from the (`R+`/`G+`/`B+`) morph controller. see `PointLight.pmx` for more information
 
 * ##### ALBEDO_MAP_FILE  
     If `ALBEDO_MAP_FROM` is `1` or `2`, you will need to enter the path to the texture resource.   
@@ -57,8 +57,8 @@ ALBEDO:
     * `You can set the xxx.png to the ALBEDO_MAP_FILE like : #define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"`
 
     ##### Tips:
-    * Using "../" instead of parent folder
-    * Change all "\\" to "/".
+    * Using `../` instead of parent folder
+    * Change all `\` to `/`.
 
 * ##### const float3 albedo = 1.0;
     If `ALBEDO_MAP_FROM` is `0` or `ALBEDO_MAP_APPLY_SCALE` is `1`, you need to set color to the `const float3 albedo = 1.0;`.
@@ -117,6 +117,12 @@ Alpha:
     `2` . Fetch data from `B` channel  
     `3` . Fetch data from `A` channel  
 
+    ##### For example:
+    ###### 1. If `Smoothness` map is inside `Red` channel, you can simply set it as:
+    * `#define SMOOTHNESS_MAP_SWIZZLE 0`
+    ###### 2. If `Smoothness` map is inside `Greed` channel, you can simply set it as:
+    * `#define SMOOTHNESS_MAP_SWIZZLE 1`
+
 * ##### ALPHA_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 * ##### const float alpha = 0.0 ~ 1.0;
 * ##### const float2 alphaMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
@@ -156,7 +162,6 @@ Smoothness
 　　Default data will fetched params from the `SpecularPower` and convert the `SpecularPower` to `Smoothness`.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
-
 * ##### SMOOTHNESS_MAP_TYPE
     Other parameter types for `Smoothness`
 
@@ -175,6 +180,7 @@ Smoothness
 Metalness:
 -------------
 　　Metalness is one method of determining reflectivity, used to instead of old pipeline such as specular highlight map
+
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
 * ##### METALNESS_MAP_SWIZZLE (see [ALPHA_MAP_SWIZZLE](#ALPHA_MAP_SWIZZLE))
@@ -273,7 +279,7 @@ Emissive
 
    `0` . None  
    `1` . colors to multiply with frequency from `emissiveBlink`. like : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
-   `2` . colors to multiply with frequency from `morph controller`, For PointLight.pmx...
+   `2` . colors to multiply with frequency from `Blink` morph controller, see `PointLight.pmx` for more information
 
 * ##### EMISSIVE_MAP_FILE ([ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 

@@ -57,8 +57,8 @@ ALBEDO:
     * `#define ALBEDO_MAP_FILE "C:/Users/User Name/Desktop/xxx.png"`
 
     ##### Tips:
-    * 可以使用 "../" 代替上一级目录
-    * 替换所有的 "\\" 为 "/".
+    * 可以使用 `../` 代替上一级目录
+    * 替换所有的 `\` 为 `/`.
 
 * ##### const float3 albedo = 1.0;
     当`ALBEDO_MAP_FROM`为`0`时，或者`ALBEDO_MAP_APPLY_SCALE`为`1`时, 你需要设置一个颜色到albedo，并且色彩范围是在0 ~ 1之间
@@ -117,6 +117,12 @@ Alpha:
     `2` . 从 `B` 通道中提取数据    
     `3` . 从 `A` 通道中提取数据    
 
+    ##### 例如:
+    ###### 1. 如果`光滑度贴图`在红色频道中, 你可以将它设置为:
+    * `#define SMOOTHNESS_MAP_SWIZZLE 0`
+    ###### 2. 如果`光滑度贴图`在绿色频道中, 你可以将它设置为:
+    * `#define SMOOTHNESS_MAP_SWIZZLE 1`
+
 * ##### ALPHA_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 * ##### const float alpha = 0.0 ~ 1.0;
 * ##### const float2 alphaMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
@@ -155,7 +161,6 @@ Smoothness
 　　默认时,将从`PMX`模型中的光泽度转换为光滑度来使用.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
-
 * ##### SMOOTHNESS_MAP_TYPE
     描述光滑度贴图是使用光滑度还是粗糙度，以及如何转换粗糙度为光滑度
 
@@ -215,7 +220,6 @@ Occlusion
 产生更真实的效果,并且如果你不希望某个物体反射天空中的漫反射以及镜面反射,你可以将该参数设置为0
 
 * ##### OCCLUSION_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
-
 * ##### OCCLUSION_MAP_TYPE
     用于描述烘培后的贴图是使用的sRGB色域还是线性的色彩空间
 
@@ -267,7 +271,7 @@ Emissive
 
    `0` . 无效  
    `1` . 将`const float3 emissiveBlink`中的数值与自发光乘算. 例 : const float3 emissiveBlink = float3(1.0, 2.0, 3.0);  
-   `2` . 将表情控制器中的`Blink`表情应用于自发光, 多光源的扩展
+   `2` . 将表情控制器中的`Blink`表情应用于自发光, 多光源的扩展功能
 
 * ##### EMISSIVE_MAP_FILE ([ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
