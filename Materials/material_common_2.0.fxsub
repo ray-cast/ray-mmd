@@ -893,19 +893,15 @@ float3 GetMainNormal(float3 N, float3 P, float2 coord)
 	#endif
 
 	#if NORMAL_MAP_FROM == 3
-		float3 tangentNormal = use_texture ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb : float3(0, 0, 1);
+		float3 tangentNormal = use_texture ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 	#elif NORMAL_MAP_FROM == 4
-		float3 tangentNormal = use_spheremap ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb : float3(0, 0, 1);
+		float3 tangentNormal = use_spheremap ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 	#elif NORMAL_MAP_FROM == 5
-		float3 tangentNormal = use_toon ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb : float3(0, 0, 1);
+		float3 tangentNormal = use_toon ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
 	#elif NORMAL_MAP_FROM == 7 || NORMAL_MAP_FROM == 8 || NORMAL_MAP_FROM == 9
 		#error Unsupported options 7, 8, 9.
 	#else
-		float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb;
-	#endif
-
-	#if NORMAL_MAP_TYPE != 4
-		tangentNormal = tangentNormal * 2 - 1;
+		float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
 	#endif
 
 	#if NORMAL_MAP_TYPE == 1
