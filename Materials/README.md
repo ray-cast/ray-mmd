@@ -305,10 +305,10 @@ Shading Model ID
     | 9  | ToonBased Shading | Haredness  | Shadow color |
 
     ##### Tips:  
-    `Subsurface` : The `curvature` also called `opacity`, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
+    `Subsurface` : The `curvature` also called `opacity`, defines the overall intensity of the blur, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
     `Glass` : In order to make refraction work, you must set alpha value of the pmx to less then `0.999`  
     `Cloth` : `Sheen` is interpolation between `GGX` and `InvGGX`, see [paper](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf) for cloth information  
-    `Cloth` : `Fuzz Color` is f0 of fresnel params in sRGB color-space  
+    `Cloth` : `Fuzz Color` is f0 of fresnel params in sRGB color-space, defines the overall color of the specular  
     `Toon`  : see [paper](https://zhuanlan.zhihu.com/p/26409746) for more information, but chinese  
 
 * ##### CUSTOM_A_MAP_FROM  (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))

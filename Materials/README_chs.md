@@ -297,11 +297,11 @@ Shading Model ID
     | 9  | ToonBased Shading | 阴影阈值  | 阴影色 |
 
     ##### Tips:  
-    `Subsurface` : The `curvature` also called `opacity`, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
-    `Glass` : In order to make refraction work, you must set alpha value of the pmx to less then `0.999`  
-    `Cloth` : `Sheen` is interpolation between `GGX` and `InvGGX`, see [paper](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf) for cloth information  
-    `Cloth` : `Fuzz Color` is f0 of fresnel params in sRGB color-space  
-    `Toon`  : see [paper](https://zhuanlan.zhihu.com/p/26409746) for more information, but chinese  
+    `Subsurface` : `曲率`也被称为`不透明度`,定义了材质的模糊强度,更多信息可以查看UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html)  
+    `Glass` : 为了使材质的折射能够工作，必须让`PMX`的透明度小于`0.999`  
+    `Cloth` : `光泽度`是一个在`GGX`和`InvGGX`的插值系数,更多信息可以查看[link](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf)  
+    `Cloth` : `毛绒色`是fresnel中f0的参数,定义了材质的基本反射色使用sRGB的色彩  
+    `Toon`  : 更多信息可以查看[link](https://zhuanlan.zhihu.com/p/26409746)  
 
 * ##### CUSTOM_A_MAP_FROM  (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### CUSTOM_A_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
