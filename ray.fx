@@ -129,8 +129,18 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if AA_QUALITY == 1
 #	include "shader/FXAA3.fxsub"
-#elif AA_QUALITY >= 2 && AA_QUALITY <= 5
+#endif
+
+#if AA_QUALITY >= 2 && AA_QUALITY <= 5
 #	include "shader/SMAA.fxsub"
+#endif
+
+#if AA_QUALITY == 6
+#	include "shader/CameraMotion.fxsub"
+#endif
+
+#if AA_QUALITY == 6
+#	include "shader/TAA.fxsub"
 #endif
 
 float4 ScreenSpaceQuadVS(
@@ -355,6 +365,16 @@ technique DeferredLighting<
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
 	"Pass=SMAANeighborhoodBlendingFinal;"
+#endif
+
+#if AA_QUALITY == 6
+	"RenderColorTarget=CameraMotionMap;   Pass=CameraMotion;"
+	"RenderColorTarget=CameraPositionMap; Pass=CameraPosition;"
+	"RenderColorTarget=HistoryMap;		  Pass=TAA;"
+
+	"RenderColorTarget=;"
+	"RenderDepthStencilTarget=;"
+	"Pass=TAAFinal;"
 #endif
 ;>
 {
@@ -889,6 +909,20 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 HDRTonemappingVS();
 		PixelShader  = compile ps_3_0 HDRTonemappingPS(ShadingMapPointSamp);
 	}
+#if AA_QUALITY == 6
+	pass CameraMotion<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 CameraMotionPS();
+	}
+	pass CameraPosition<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 CameraPositionPS();
+	}
+#endif
 #if AA_QUALITY == 1
 	pass FXAA<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -953,6 +987,20 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, true);
+	}
+#endif
+#if AA_QUALITY == 6
+	pass TAA<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 TAASolver(ShadingMapTempSamp, CameraMotionMapSamp, ViewportOffset2);
+	}
+	pass TAAFinal<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 TAAFinal(HistoryMapPointSamp);
 	}
 #endif
 }

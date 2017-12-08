@@ -1,0 +1,109 @@
+#define TAA_BLEND_STATIC 0.5f
+#define TAA_BLEND_DYNAMIC 0.5f
+
+texture HistoryMap : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+>;
+sampler HistoryMapSamp = sampler_state {
+	texture = <HistoryMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler HistoryMapPointSamp = sampler_state {
+	texture = <HistoryMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+
+float3 RGB2YCbCr(float3 rgb)
+{
+	float3 ycbcr;
+	ycbcr.r = dot(rgb, float3( 0.29900, 0.58700, 0.11400));
+	ycbcr.g = dot(rgb, float3(-0.16874, -0.33126, 0.50000));
+	ycbcr.b = dot(rgb, float3( 0.50000, -0.41869, -0.0813));
+	return ycbcr;
+}
+
+float3 YCbCr2RGB(float3 ycbcr)
+{
+	float3 rgb;
+	rgb.r = dot(ycbcr, float3(1.0, 0.00000, 1.40200));
+	rgb.g = dot(ycbcr, float3(1.0,-0.34414, -0.71414));
+	rgb.b = dot(ycbcr, float3(1.0, 1.77200, 1.40200));
+	return rgb;
+}
+
+float3 Tonemap(float3 c)
+{
+	return c / (max3(c.r, c.g, c.b) + 1.0); 
+}
+
+float4 Tonemap(float4 c)
+{
+	return float4(c.rgb / (max3(c.r, c.g, c.b) + 1.0), c.a);
+}
+
+float3 TonemapWithWeight(float3 c, float w)
+{
+	return c * (w / (max3(c.r, c.g, c.b) + 1.0)); 
+}
+    
+float3 TonemapInvert(float3 c)
+{
+	return c / (1.0 - max3(c.r, c.g, c.b)); 
+}
+
+float4 TonemapInvert(float4 c)
+{
+	return float4(c.rgb / (1.0 - max3(c.r, c.g, c.b)), c.a);
+}
+
+float4 ClipToAABB(float4 color, float motion, float3 aabb_min, float3 aabb_max)
+{
+	float3 p_clip = 0.5 * (aabb_max + aabb_min);
+	float3 e_clip = 0.5 * (aabb_max - aabb_min) + 1e-5;
+
+	float4 v_clip = color - float4(p_clip, motion);
+	float3 v_unit = v_clip.xyz / e_clip;
+	float3 a_unit = abs(v_unit);
+	float ma_unit = max(a_unit.x, max(a_unit.y, a_unit.z));
+
+	if (ma_unit > 1.0)
+		return float4(p_clip, motion) + v_clip / ma_unit;
+	else
+		return color;
+}
+
+float4 TAASolver(in float2 coord : TEXCOORD0, uniform sampler source, uniform sampler acc, uniform float2 offset) : SV_TARGET
+{
+	float2 offsets[4] = { float2(0, 1), float2( 0, -1), float2(1,  0), float2(-1,  0) };
+
+	float2 motion = tex2Dlod(acc, float4(coord, 0, 0)).xy;
+	
+	float4 center = tex2Dlod(source, float4(coord, 0, 0));
+	float4 topLeft = tex2Dlod(source, float4(coord - offset * 0.5f, 0, 0));
+	float4 bottomRight = tex2Dlod(source, float4(coord + offset * 0.5f, 0, 0));
+
+    float4 corners = 4.0 * (topLeft + bottomRight) - 2.0 * center;
+    float4 average = (center + corners) * (1.0 / 7.0);
+
+    float2 luma = float2(luminance(average.rgb), luminance(center.rgb));
+    float nudge = 4.0 * abs(luma.x - luma.y);
+
+    float4 minimum = min(bottomRight, topLeft) - nudge;
+    float4 maximum = max(topLeft, bottomRight) + nudge;
+
+	float4 history = tex2Dlod(HistoryMapSamp, float4(coord - motion, 0, 0));
+	history = ClipToAABB(history, history.a, minimum.xyz, maximum.xyz);
+
+	float weight = clamp(lerp(TAA_BLEND_STATIC, TAA_BLEND_DYNAMIC, length(motion)), TAA_BLEND_STATIC, TAA_BLEND_DYNAMIC);
+	center = lerp(center, history, weight);
+
+	return center;
+}
+
+float4 TAAFinal(in float2 coord : TEXCOORD0, uniform sampler source) : SV_TARGET
+{
+	return tex2Dlod(source, float4(coord, 0, 0));
+}

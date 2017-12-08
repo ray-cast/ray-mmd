@@ -1,0 +1,54 @@
+texture CameraPositionMap : RENDERCOLORTARGET<
+	int2 Dimensions = {4, 1};
+	string Format = "A32B32G32R32F";
+>;
+sampler CameraPositionMapPointSamp = sampler_state {
+	texture = <CameraPositionMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+texture CameraMotionMap : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+>;
+sampler CameraMotionMapSamp = sampler_state {
+	texture = <CameraMotionMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler CameraMotionMapPointSamp = sampler_state {
+	texture = <CameraMotionMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+float4 CameraPositionPS(in float2 coord : TEXCOORD0) : COLOR
+{
+	int index = floor(coord.x * 4);
+	if (index == 0)
+		return matViewProject[0];
+	else if (index == 1)
+		return matViewProject[1];
+	else if (index == 2)
+		return matViewProject[2];
+	else
+		return matViewProject[3];
+}
+
+float4 CameraMotionPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
+{
+	float4x4 vp;
+	vp[0] = tex2Dlod(CameraPositionMapPointSamp, float4(0.125, 0, 0, 0));
+	vp[1] = tex2Dlod(CameraPositionMapPointSamp, float4(0.375, 0, 0, 0));
+	vp[2] = tex2Dlod(CameraPositionMapPointSamp, float4(0.625, 0, 0, 0));
+	vp[3] = tex2Dlod(CameraPositionMapPointSamp, float4(1.0, 0, 0, 0));
+
+	float3 V = normalize(viewdir);
+	float3 P = mul(float4(V * tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r / V.z, 1), matViewInverse).rgb;
+
+	float4 proj = mul(float4(P, 1), vp);
+	proj /= proj.w;
+	proj.xy = PosToCoord(proj.xy);
+
+	return float4(coord - proj.xy, 0, 0);
+}
