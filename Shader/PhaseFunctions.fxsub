@@ -30,7 +30,7 @@ float ComputePhaseMie(float theta, float g)
 	float leftTop = 3.0 * (1.0 - g2);
 	float leftBottom = 2.0 * (2.0 + g2);
 	float rightTop = 1.0 + theta2;
-	float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * theta), 1.5);
+	float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * saturate(theta)), 1.5);
 
 	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4 * PI);
 }
