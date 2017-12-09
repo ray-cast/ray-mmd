@@ -366,16 +366,6 @@ technique DeferredLighting<
 	"RenderDepthStencilTarget=;"
 	"Pass=SMAANeighborhoodBlendingFinal;"
 #endif
-
-#if AA_QUALITY == 6
-	"RenderColorTarget=CameraMotionMap;   Pass=CameraMotion;"
-	"RenderColorTarget=CameraPositionMap; Pass=CameraPosition;"
-	"RenderColorTarget=HistoryMap;		  Pass=TAA;"
-
-	"RenderColorTarget=;"
-	"RenderDepthStencilTarget=;"
-	"Pass=TAAFinal;"
-#endif
 ;>
 {
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
@@ -909,20 +899,6 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 HDRTonemappingVS();
 		PixelShader  = compile ps_3_0 HDRTonemappingPS(ShadingMapPointSamp);
 	}
-#if AA_QUALITY == 6
-	pass CameraMotion<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 CameraMotionPS();
-	}
-	pass CameraPosition<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 CameraPositionPS();
-	}
-#endif
 #if AA_QUALITY == 1
 	pass FXAA<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -987,20 +963,6 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS();
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, true);
-	}
-#endif
-#if AA_QUALITY == 6
-	pass TAA<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 TAASolver(ShadingMapTempSamp, CameraMotionMapSamp, ViewportOffset2);
-	}
-	pass TAAFinal<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 TAAFinal(HistoryMapPointSamp);
 	}
 #endif
 }
