@@ -1,0 +1,90 @@
+#if CONTACT_QUALITY == 1
+#	define CONTACT_SAMPLER_COUNT 32
+#elif CONTACT_QUALITY == 2
+#	define CONTACT_SAMPLER_COUNT 64
+#elif CONTACT_QUALITY >= 3
+#	define CONTACT_SAMPLER_COUNT 128
+#else
+#	define CONTACT_SAMPLER_COUNT 32
+#endif
+
+texture ConstantShadowMap : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "L8";>;
+sampler ConstantShadowMapSamp = sampler_state 
+{ 
+	texture = <ConstantShadowMap>; 
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; 
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+bool TraceScreenSpaceShadow(float3 viewPosition, float3 L, float maxDistance, float jitter)
+{
+	float4 startPosition = float4(viewPosition, 1);
+	float4 startScreenPos = mul(startPosition, matProject);
+
+	float4 endPosition = float4(viewPosition + L * maxDistance, 1);
+	float4 endScreenPos = mul(endPosition, matProject);
+
+	startScreenPos.xy = startScreenPos.xy * float2(0.5, -0.5) + 0.5 * startScreenPos.w;
+	endScreenPos.xy = endScreenPos.xy * float2(0.5, -0.5) + 0.5 * endScreenPos.w;
+
+	float4 deltaScreenPos = endScreenPos - startScreenPos;
+
+	float stepSize = 1.0 / CONTACT_SAMPLER_COUNT;
+	float stepLength = jitter * stepSize + stepSize;
+
+	float bestLen = 0;
+	float bestIntervalSize = maxDistance / (CONTACT_SAMPLER_COUNT * 4);
+
+	for (int i = 0; i < CONTACT_SAMPLER_COUNT; i += 4)
+	{
+		float4 sampleLength = stepLength + stepSize * float4(0, 1, 2, 3);
+
+		float4 samplePos1 = startScreenPos + deltaScreenPos * sampleLength.x;
+		float4 samplePos2 = startScreenPos + deltaScreenPos * sampleLength.y;
+		float4 samplePos3 = startScreenPos + deltaScreenPos * sampleLength.z;
+		float4 samplePos4 = startScreenPos + deltaScreenPos * sampleLength.w;
+		float4 samplePosZ = float4(samplePos1.w, samplePos2.w, samplePos3.w, samplePos4.w);
+
+		float4 sampleDepth;
+		sampleDepth.r = tex2Dproj(Gbuffer8Map, samplePos1).r;
+		sampleDepth.g = tex2Dproj(Gbuffer8Map, samplePos2).r;
+		sampleDepth.b = tex2Dproj(Gbuffer8Map, samplePos3).r;
+		sampleDepth.a = tex2Dproj(Gbuffer8Map, samplePos4).r;
+
+		float4 depthDiff = samplePosZ - abs(sampleDepth);
+		depthDiff = abs(depthDiff);
+
+		bool4 hit = depthDiff > 0.01 && depthDiff < bestIntervalSize;
+		if (any(hit))
+		{
+			bestLen = 1;
+			break;
+		}
+
+		stepLength += stepSize * 4;
+	}
+
+	return bestLen > 0 ? 0 : 1;
+}
+
+float4 ConstantShadowPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
+{
+	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord.xy, 0, 0));
+	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord.xy, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord.xy, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord.xy, 0, 0));
+
+	MaterialParam material;
+	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+
+	clip(material.visibility - 1e-5);
+
+	float3 view = normalize(viewdir);
+	float3 viewPosition = view * material.linearDepth / view.z;
+	float3 L = mul(-SunDirection, (float3x3)matView);
+
+	float sampleDistance = 0.1;
+	sampleDistance *= material.linearDepth;
+
+	return TraceScreenSpaceShadow(viewPosition, L, sampleDistance, PseudoRandom(coord.zw));
+}
