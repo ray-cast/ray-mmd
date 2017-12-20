@@ -47,6 +47,56 @@
 	};
 #endif
 
+#if NORMAL_MAP_FROM >= 1 && NORMAL_MAP_FROM <= 6
+	#if NORMAL_MAP_FROM == 1
+		texture NormalMap<string ResourceName = NORMAL_MAP_FILE;>;
+	#elif NORMAL_MAP_FROM == 2
+		texture NormalMap : ANIMATEDTEXTURE<string ResourceName = NORMAL_MAP_FILE;>;
+	#endif
+	sampler NormalMapSamp = sampler_state
+	{
+#if NORMAL_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif NORMAL_MAP_FROM == 4
+		texture = SphereMap;
+#elif NORMAL_MAP_FROM == 5
+		texture = ToonMap;
+#elif NORMAL_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = NormalMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
+#if NORMAL_SUB_MAP_FROM >= 1 && NORMAL_SUB_MAP_FROM <= 6
+	#if NORMAL_SUB_MAP_FROM == 1
+		texture NormalSubMap<string ResourceName = NORMAL_SUB_MAP_FILE;>;
+	#elif NORMAL_SUB_MAP_FROM == 2
+		texture NormalSubMap : ANIMATEDTEXTURE<string ResourceName = NORMAL_SUB_MAP_FILE;>;
+	#endif
+	sampler NormalSubMapSamp = sampler_state
+	{
+#if NORMAL_SUB_MAP_FROM == 3
+		texture = DiffuseMap;
+#elif NORMAL_SUB_MAP_FROM == 4
+		texture = SphereMap;
+#elif NORMAL_SUB_MAP_FROM == 5
+		texture = ToonMap;
+#elif NORMAL_SUB_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = NormalSubMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
+#endif
+
 #if MATCAP_MAP_FROM >= 1 && MATCAP_MAP_FROM <= 6
 	#if MATCAP_MAP_FROM == 1
 		texture MatCapMap<string ResourceName = MATCAP_MAP_FILE;>;
@@ -70,6 +120,76 @@
 		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
 		ADDRESSU = WRAP; ADDRESSV = WRAP;
 	};
+#endif
+
+#if NORMAL_MAP_FROM || NORMAL_SUB_MAP_FROM
+float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tangentNormal)
+{
+	float3 dp1 = ddx(P);
+	float3 dp2 = ddy(P);
+	float2 duv1 = ddx(coord);
+	float2 duv2 = ddy(coord);
+
+	float3x3 M = float3x3(dp1, dp2, N);
+	float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+	float3 T = mul(float2(duv1.x, duv2.x), I);
+	float3 B = mul(float2(duv1.y, duv2.y), I);
+
+	float scaleT = 1.0f / (dot(T, T) + 1e-6);
+	float scaleB = 1.0f / (dot(B, B) + 1e-6);
+
+	float3x3 tbnTransform;
+	tbnTransform[0] = normalize(T * scaleT);
+	tbnTransform[1] = -normalize(B * scaleB);
+	tbnTransform[2] = N;
+
+	return normalize(mul(tangentNormal, tbnTransform));
+}
+
+float3 RNMBlendUnpacked(float3 n1, float3 n2)
+{
+	n1 += float3( 0,  0, 1);
+	n2 *= float3(-1, -1, 1);
+	return normalize(n1 * dot(n1, n2) / n1.z - n2);
+}
+
+#if NORMAL_MAP_TYPE == 2 || NORMAL_SUB_MAP_TYPE == 2
+float3 PerturbNormalLQ(float3 N, float3 P, float height)
+{
+	float3 dp1 = ddx(P);
+	float3 dp2 = ddy(P);
+
+	float3x3 M = float3x3(dp1, dp2, N);
+	float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+
+	float det = dot(dp1, I[0]);
+
+	float slope1 = ddx(height);
+	float slope2 = ddy(height);
+
+	float3 surf = sign(det) * mul(float2(slope1, slope2), I);
+	return normalize(abs(det) * N - surf);
+}
+#endif
+
+#if NORMAL_MAP_TYPE == 3 || NORMAL_SUB_MAP_TYPE == 3
+float3 PerturbNormalHQ(sampler source, float2 coord, float center)
+{
+	float2 duv1 = ddx (coord);
+	float2 duv2 = ddy (coord);
+
+	float2 uv1 = coord + duv1;
+	float2 uv2 = coord + duv2;
+
+	float right = tex2D(source, uv1).x;
+	float bottom = tex2D(source, uv2).x;
+
+	float slope1 = right - center;
+	float slope2 = center - bottom;
+
+	return normalize(float3(slope1, slope2, 10.0));
+}
+#endif
 #endif
 
 float GetAlpha(float2 coord)
@@ -115,7 +235,141 @@ float GetAlpha(float2 coord)
 #endif
 }
 
-float3 GetSpecular(float3 normal, float2 coord)
+float3 GetMainNormal(float3 N, float3 P, float2 coord)
+{
+#if NORMAL_MAP_FROM
+	#if NORMAL_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif NORMAL_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif NORMAL_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if NORMAL_MAP_FROM == 3
+		float3 tangentNormal = use_texture ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+	#elif NORMAL_MAP_FROM == 4
+		float3 tangentNormal = use_spheremap ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+	#elif NORMAL_MAP_FROM == 5
+		float3 tangentNormal = use_toon ? tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1 : float3(0, 0, 1);
+	#elif NORMAL_MAP_FROM == 7 || NORMAL_MAP_FROM == 8 || NORMAL_MAP_FROM == 9
+		#error Unsupported options 7, 8, 9.
+	#else
+		float3 tangentNormal = tex2D(NormalMapSamp, coord * normalMapLoopNum).rgb * 2 - 1;
+	#endif
+
+	#if NORMAL_MAP_TYPE == 1
+		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalMapSamp, coord * normalMapLoopNum, tangentNormal.x);
+	#elif NORMAL_MAP_TYPE == 2
+		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalMapScale);
+		#if NORMAL_SUB_MAP_FROM
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_SUB_MAP_FROM to 0.
+		#endif
+	#endif
+
+	#if NORMAL_MAP_TYPE != 2
+		tangentNormal.rg *= normalMapScale;
+		tangentNormal = normalize(tangentNormal);
+	#endif
+
+	return tangentNormal;
+#else
+	return float3(0, 0, 1);
+#endif
+}
+
+float3 GetSubNormal(float3 N, float3 P, float2 coord)
+{
+#if NORMAL_SUB_MAP_FROM
+	#if NORMAL_SUB_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif NORMAL_SUB_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif NORMAL_SUB_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if NORMAL_SUB_MAP_FROM == 3
+		float3 tangentNormal = use_texture ? tex2D(NormalSubMapSamp, coord * normalSubMapLoopNum).rgb : float3(0, 0, 1);
+	#elif NORMAL_SUB_MAP_FROM == 4
+		float3 tangentNormal = use_spheremap ? tex2D(NormalSubMapSamp, coord * normalSubMapLoopNum).rgb : float3(0, 0, 1);
+	#elif NORMAL_SUB_MAP_FROM == 5
+		float3 tangentNormal = use_toon ? tex2D(NormalSubMapSamp, coord * normalSubMapLoopNum).rgb : float3(0, 0, 1);
+	#elif NORMAL_SUB_MAP_FROM == 7 || NORMAL_SUB_MAP_FROM == 8 || NORMAL_SUB_MAP_FROM == 9
+		#error Unsupported options 7, 8, 9.
+	#else
+		float3 tangentNormal = tex2D(NormalSubMapSamp, coord * normalSubMapLoopNum).rgb;
+	#endif
+
+	#if NORMAL_SUB_MAP_TYPE != 4
+		tangentNormal = tangentNormal * 2 - 1;
+	#endif
+
+	#if NORMAL_SUB_MAP_TYPE == 1
+		tangentNormal.z = sqrt(1.0 - tangentNormal.x * tangentNormal.x - tangentNormal.y * tangentNormal.y);
+	#elif NORMAL_SUB_MAP_TYPE == 3
+		tangentNormal = PerturbNormalHQ(NormalSubMapSamp, coord * normalSubMapLoopNum, tangentNormal.x);
+	#elif NORMAL_SUB_MAP_TYPE == 2
+		tangentNormal = PerturbNormalLQ(N, P, tangentNormal.x * normalSubMapScale);
+		#if NORMAL_MAP_FROM
+			#error Unsupported bump map (Low Quality) with second normal map. Please set NORMAL_MAP_FROM to 0.
+		#endif
+	#endif
+
+	#if NORMAL_SUB_MAP_TYPE != 2
+		tangentNormal.rg *= normalSubMapScale;
+		tangentNormal = normalize(tangentNormal);
+	#endif
+
+	return tangentNormal;
+#else
+	return float3(0, 0, 1);
+#endif
+}
+
+float3 GetNormal(float3 N, float3 P, float2 coord)
+{
+#if NORMAL_MAP_FROM || NORMAL_SUB_MAP_FROM
+	#if NORMAL_MAP_FROM && NORMAL_SUB_MAP_FROM && (NORMAL_MAP_TYPE == 4 || NORMAL_SUB_MAP_TYPE == 4)
+		#error "Unsupported option"
+	#endif
+
+	#if NORMAL_MAP_FROM
+		float3 tangentNormal1 = GetMainNormal(N, P, coord);
+	#endif
+
+	#if NORMAL_SUB_MAP_FROM
+		float3 tangentNormal2 = GetSubNormal(N, P, coord);
+	#endif
+
+	#if NORMAL_MAP_FROM && NORMAL_SUB_MAP_FROM
+		float3 tangentNormal = RNMBlendUnpacked(tangentNormal1, tangentNormal2);
+	#elif NORMAL_MAP_FROM
+		float3 tangentNormal = tangentNormal1;
+	#else
+		float3 tangentNormal = tangentNormal2;
+	#endif
+
+	#if (NORMAL_MAP_FROM && (NORMAL_MAP_TYPE == 2 || NORMAL_MAP_TYPE == 4)) || (NORMAL_SUB_MAP_FROM && (NORMAL_SUB_MAP_TYPE == 2 || NORMAL_SUB_MAP_TYPE == 4))
+		return tangentNormal;
+	#else
+		#if NORMAL_MAP_UV_FLIP == 1
+			coord.x = 1 - coord.x;
+		#elif NORMAL_MAP_UV_FLIP == 2
+			coord.y = 1 - coord.y;
+		#elif NORMAL_MAP_UV_FLIP == 3
+			coord = 1 - coord;
+		#endif
+		return ComputeTangentBinormalNormal(N, P, coord, tangentNormal);
+	#endif
+#else
+	return N;
+#endif
+}
+
+float3 GetSpecularHighlight(float3 normal, float2 coord)
 {
 #if MATCAP_MAP_FROM
 	normal = normalize(normal);
@@ -153,25 +407,30 @@ float3 GetSpecular(float3 normal, float2 coord)
 #endif
 }
 
-void DrawObjectVS(
+void MainVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
 	in float3 Normal : NORMAL,
 	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1   : TEXCOORD1,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = Normal;
 	oPosition = mul(Position, matWorldViewProject);
+	oTexcoord2 = Position;
 }
 
-float4 DrawObjectPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1) : COLOR
+float4 MainPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1, in float4 worldPos : TEXCOORD2) : COLOR
 {
 	float alpha = GetAlpha(coord);
 	clip(alpha - alphaThreshold);
 
-	return float4(GetSpecular(normal, coord), 0);
+	normal = normalize(normal);
+	normal = GetNormal(normal, worldPos, coord);
+
+	return float4(GetSpecularHighlight(normal, coord), 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
@@ -179,8 +438,8 @@ float4 DrawObjectPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1) : COLOR
 	>{\
 		pass DrawObject {\
 			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
-			VertexShader = compile vs_3_0 DrawObjectVS();\
-			PixelShader = compile ps_3_0 DrawObjectPS();\
+			VertexShader = compile vs_3_0 MainVS();\
+			PixelShader = compile ps_3_0 MainPS();\
 		}\
 	}
 
