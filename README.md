@@ -1,5 +1,6 @@
 Ray-MMD
 ========
+###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/README_chs.md)
 ### Physically-Based Rendering ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
@@ -86,7 +87,6 @@ Features :
 * Post-Process Color Balance
 * Post-Process FXAA
 * Post-Process SMAA
-* Post-Process stereo rendering
 
 Resources :
 ------------
@@ -109,7 +109,11 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 * Sarashina - 更科
 * Birdway
 
-`Thanks! and others support! (If you would like to be added or remove from this list Please contact me)`
+##### Bronze supporters:
+* urara在処
+* rin kari
+
+`Thanks! and other supporters! (If you would like to be added or remove from this list Please contact me)`
 
 Contact:
 ------------
