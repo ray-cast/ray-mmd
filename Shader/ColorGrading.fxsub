@@ -15,6 +15,12 @@ float3 ColorDithering(float3 color, float2 uv)
 	return color;
 }
 
+float3 ColorVignette(float3 color, float2 coord)		
+{		
+	float L = length(coord * 2 - 1);		
+	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);		
+}
+
 float3 ColorTemperature(float3 color, float kelvin)
 {
 	float temp = kelvin / 100;

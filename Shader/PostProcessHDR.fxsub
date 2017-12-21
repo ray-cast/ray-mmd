@@ -1,3 +1,52 @@
+#if POST_DISPERSION_MODE == 2
+float3 SampleSpectrum(float x)
+{
+	float t = 3.0 * x - 1.5;
+	return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset)
+{
+	const int samples = 8;
+
+	float3 totalColor = 0.0;
+	float3 totalWeight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i <= samples; i++, coord += delta)
+	{
+		float3 w = SampleSpectrum(float(i) / samples);
+
+		totalWeight += w;
+		totalColor += w * tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	}
+
+	return totalColor / totalWeight;
+}
+#endif
+
+float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
+{
+	const float scale = ((ViewportSize.x * 0.5) / 512);
+#if POST_DISPERSION_MODE == 1
+	float L = length(coord * 2 - 1);
+	L = 1 - smoothstep(outer, inner, L);
+	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * scale;
+	float3 shift1 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
+	float3 shift2 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
+	return float3(shift1.r, shift2.g, shift3.b);
+#elif POST_DISPERSION_MODE == 2
+	float L = 1 - smoothstep(outer, inner, length(coord * 2 - 1));
+	float2 dist = ViewportOffset2 * L * (mDispersion * 16) * scale;
+	float2 offset = (coord * 2 - 1.0) * dist;
+	return ChromaticAberration(source, coord, offset);
+#else
+	return tex2Dlod(source, float4(coord, 0, 0)).rgb;
+#endif
+}
+
 float4 HDRTonemappingVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
@@ -18,23 +67,24 @@ float4 HDRTonemappingVS(
 
 float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : COLOR
 {
-	float3 color = tex2Dlod(source, float4(coord.xy, 0, 0)).rgb;
+	float3 color = ColorDispersion(source, coord.xy, mDispersionRadius, 1.0 + mDispersionRadius);
 
 	color *= coord.z;
 
-#if HDR_BLOOM_MODE
+#if HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(BloomSamp1st, float4(coord.xy, 0, 0)).rgb;
 	color += bloom;
 #endif
 
 	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mColorSaturation, mColorContrast, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorVignette(color, coord.xy);
 	color = ColorToneMapping(color);
 
 	color = linear2srgb(color);
 	color = ColorDithering(color, coord.xy);
 
-#if AA_QUALITY
+#if AA_QUALITY > 0
 	return float4(color, luminance(color));
 #else
 	return float4(color, 1);
