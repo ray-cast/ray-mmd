@@ -15,28 +15,12 @@ Extension/PaniniProjection
 Extension/BokehBlur
 Extension/OpticalLight
 Extension/SSAO
-Extension/SoundSpectrum
-Extension/OpticalFlares/Sun Flare Ghost Bokeh
-Extension/OpticalFlares/Sun Flare Hexagonal Bokeh 2
-Tools/AudiosFFT/_CommonRedist
 Skybox/Gradient Sky
 Fog/VolumetricFog.pmx
 Fog/VolumetricFog
-/Materials/Lowpoly
 /Skybox/Alexs Apartment
 /Skybox/HDR025
 /Skybox/HDR_Free_City_Night_Lights
 /Skybox/Helipad Night
-/Materials/Toon
-/Materials/_MaterialMap/Fabric02_A.png
-/Materials/_MaterialMap/Fabric02_A_high.png
-/Materials/_MaterialMap/Fabric02_N.bmp
-/Materials/guikai/AS2_brownmetal_01.jpg
-/Materials/guikai/ShadowShade_map.png
-/Materials/guikai/hatch_0.jpg
-/Materials/guikai/hatch_1.jpg
-/Materials/guikai/material_2.0.fx
-/Materials/guikai/material_common_2.0.fxsub
-/Materials/guikai/material_skin.fx
-/Skybox/Sky Hemisphere 2
+/Skybox/Willem_Kuyperstraat
 /Shader/screenshots/logo.psd
