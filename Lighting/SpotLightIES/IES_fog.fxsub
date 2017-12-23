@@ -108,9 +108,6 @@ struct FogParams
 	float FogAttenuationBulb;
 
 #if VOLUMETRIC_FOG_ENABLE
-	sampler shadowMap;
-	float2 shadowOffset;
-
 	float4x4 matLightView;
 	float4x4 matLightProject;
 #endif
@@ -218,7 +215,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 		float3 Lnormalized = normalize(L);
 
 #if VOLUMETRIC_FOG_ENABLE
-		density *= HitShadowTest(param, param.shadowMap, param.shadowOffset, param.matLightView, param.matLightProject, sampleStart);
+		density *= HitShadowTest(param, VolumetricMapSamp, ShadowmapOffset, param.matLightView, param.matLightProject, sampleStart);
 		density *= ComputeIESLightProfile1D(Lnormalized, param.FogDirection);
 #endif
 		if (density)
@@ -272,9 +269,6 @@ float4 VolumetricFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, 
 	param.FogDensity = FogDensity;
 
 #if VOLUMETRIC_FOG_ENABLE
-	param.shadowMap = VolumetricMapSamp;
-	param.shadowOffset = ShadowmapOffset;
-
 	param.matLightView = matLightView;
 	param.matLightProject = matLightViewProject;
 #endif

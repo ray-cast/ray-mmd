@@ -84,11 +84,6 @@ sampler IESTextureSamp = sampler_state
 	AddressU  = CLAMP; AddressV = CLAMP;
 };
 
-float ComputeIESLightProfile1D(float3 L, float3 Ld)
-{
-	return tex2Dlod(IESTextureSamp, float4(acos(dot(L, Ld)) / PI, 0, 0, 0)).r;
-}
-
 struct FogParams
 {
 	float3 FogPosition;
@@ -100,12 +95,12 @@ struct FogParams
 	float FogIntensity;
 	float FogMiePhase;
 	float FogAttenuationBulb;
-
-#if VOLUMETRIC_FOG_ENABLE
-	sampler shadowMap;
-	float shadowSize;
-#endif
 };
+
+float ComputeIESLightProfile1D(float3 L, float3 Ld)
+{
+	return tex2Dlod(IESTextureSamp, float4(acos(dot(L, Ld)) / PI, 0, 0, 0)).r;
+}
 
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
 {
@@ -175,7 +170,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 		float3 Lnormalized = normalize(L);
 
 #if VOLUMETRIC_FOG_ENABLE
-		density *= HitShadowTest(param, param.shadowMap, param.shadowSize, sampleStart);
+		density *= HitShadowTest(param, VolumetricMapSamp, VOLUMETRIC_FOG_HEIGHT, sampleStart);
 		density *= ComputeIESLightProfile1D(Lnormalized, param.FogDirection);
 #endif
 		if (density)
@@ -227,11 +222,6 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1, in f
 	param.FogMiePhase = FogMiePhase;
 	param.FogAttenuationBulb = FogAttenuationBulb;
 	param.FogDensity = FogDensity;
-
-#if VOLUMETRIC_FOG_ENABLE
-	param.shadowMap = VolumetricMapSamp;
-	param.shadowSize = VOLUMETRIC_FOG_HEIGHT;
-#endif
 
 	float3 V = normalize(viewdir);
 	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
