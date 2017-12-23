@@ -1,7 +1,7 @@
 #define ALBEDO_MAP_FROM 0
 #define ALBEDO_MAP_UV_FLIP 0
 #define ALBEDO_MAP_APPLY_SCALE 0
-#define ALBEDO_MAP_APPLY_DIFFUSE 1
+#define ALBEDO_MAP_APPLY_DIFFUSE 0
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
@@ -25,13 +25,13 @@ const float2 albedoSubMapLoopNum = 1.0;
 const float alpha = 1.0;
 const float alphaMapLoopNum = 1.0;
 
-#define NORMAL_MAP_FROM 0
+#define NORMAL_MAP_FROM 1
 #define NORMAL_MAP_TYPE 0
 #define NORMAL_MAP_UV_FLIP 0
-#define NORMAL_MAP_FILE "normal.png"
+#define NORMAL_MAP_FILE "../_MaterialMap/Fabric02_N by 2gou.bmp"
 
 const float normalMapScale = 1.0;
-const float normalMapLoopNum = 1.0;
+const float normalMapLoopNum = 5.0;
 
 #define NORMAL_SUB_MAP_FROM 0
 #define NORMAL_SUB_MAP_TYPE 0
@@ -67,7 +67,7 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.3;
+const float3 specular = 0.5;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
@@ -111,7 +111,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 1;
+const float customA = 1.0;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 0
