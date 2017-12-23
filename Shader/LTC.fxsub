@@ -2,6 +2,19 @@
 #define LUT_SCALE (LUT_SIZE - 1.0)/LUT_SIZE
 #define LUT_BIAS  0.5/LUT_SIZE
 
+texture LTC1<string ResourceName = "../../../shader/textures/ltc_1.dds"; int Miplevels = 1;>;
+sampler LTC1Samp = sampler_state {
+    texture = <LTC1>;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+    ADDRESSU = CLAMP; ADDRESSV = CLAMP; SRGBTexture = TRUE;
+};
+texture LTC2<string ResourceName = "../../../shader/textures/ltc_2.dds"; int Miplevels = 1;>;
+sampler LTC2Samp = sampler_state {
+    texture = <LTC2>;
+    MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
+    ADDRESSU = CLAMP; ADDRESSV = CLAMP; SRGBTexture = TRUE;
+};
+
 float3 IntegrateEdgeVec(float3 v1, float3 v2)
 {
     float x = dot(v1, v2);
@@ -132,7 +145,7 @@ void ClipQuadToHorizon(inout float3 L[5], out int n)
         L[4] = L[0];
 }
 
-float3 LTC_EvaluateRectangle(sampler ltc_2, float3 N, float3 V, float3 P, float3x3 Minv, float3 points[4], bool twoSided, bool clipless)
+float LTC_EvaluateRectangle(sampler ltc_2, float3 N, float3 V, float3 P, float3x3 Minv, float3 points[4], bool twoSided, bool clipless)
 {
     // construct orthonormal basis around N
     float3 T1, T2;
@@ -148,6 +161,7 @@ float3 LTC_EvaluateRectangle(sampler ltc_2, float3 N, float3 V, float3 P, float3
     L[1] = mul(Minv, points[1] - P);
     L[2] = mul(Minv, points[2] - P);
     L[3] = mul(Minv, points[3] - P);
+    L[4] = 0;
 
     // integrate
     float sum = 0.0;
@@ -191,7 +205,7 @@ float3 LTC_EvaluateRectangle(sampler ltc_2, float3 N, float3 V, float3 P, float3
         ClipQuadToHorizon(L, n);
         
         if (n == 0)
-            return float3(0, 0, 0);
+            return 0;
         // project onto sphere
         L[0] = normalize(L[0]);
         L[1] = normalize(L[1]);
@@ -211,6 +225,30 @@ float3 LTC_EvaluateRectangle(sampler ltc_2, float3 N, float3 V, float3 P, float3
         sum = twoSided ? abs(sum) : max(0.0, sum);
     }
 
-    float3 Lo_i = float3(sum, sum, sum);
-    return Lo_i;
+    return sum;
+}
+
+float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 points[4], float roughness, bool twoSided, bool clipless)
+{
+    float2 uv = float2(roughness, sqrt(1.0 - saturate(dot(N, V))));
+    uv = uv * LUT_SCALE + LUT_BIAS;
+
+    float4 t1 = tex2Dlod(LTC1Samp, float4(uv, 0, 0));
+    float4 t2 = tex2Dlod(LTC2Samp, float4(uv, 0, 0));
+
+#if 0
+    float3x3 M = float3x3(
+        float3(t1.x, 0, t1.y),
+        float3(  0,  1,    0),
+        float3(t1.z, 0, t1.w)
+    );
+#else
+    float3x3 M = float3x3(
+        float3(1, 0, 0),
+        float3(0, 1, 0),
+        float3(0, 0, 1)
+    );
+#endif
+
+    return LTC_EvaluateRectangle(LTC2Samp, N, V, P, M, points, twoSided, clipless);
 }
