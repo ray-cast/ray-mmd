@@ -160,3 +160,4 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 * Hexagonal Bokeh Blur Revisited \[[link](https://colinbarrebrisebois.com/2017/04/18/hexagonal-bokeh-blur-revisited/)\]
 * Practical Post-Process Depth of Field \[[link](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch28.html)\]
 * Approximation of the IBL’s DFG term for a cloth BRDF \[[link](https://gist.github.com/romainguy/52d0e7f070d9ed7b44a0327d735fe33e)\]
+* Real-Time Polygonal-Light Shading with Linearly Transformed Cosines\[[link](https://github.com/selfshadow/ltc_code)\]
