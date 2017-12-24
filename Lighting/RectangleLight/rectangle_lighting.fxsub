@@ -178,6 +178,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 L2 = normalize(Lw);
 
 	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
+	atten *= RectangleAttenuation(L2, viewLightDirection);
 	atten *= LightColor;
 
 	float roughness = SmoothnessToRoughness(material.smoothness);
