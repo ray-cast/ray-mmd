@@ -6,6 +6,7 @@
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/BRDF.fxsub"
 #include "../../../shader/arealight.fxsub"
+#include "../../../shader/LTC.fxsub"
 
 #if SHADOW_MAP_FROM > 0
 #	include "../../../shader/shadowcommon.fxsub"
@@ -16,6 +17,9 @@
 
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
+
+float3 mLeftTop : CONTROLOBJECT<string name = "(self)"; string item = "LeftTop";>;
+float3 mLeftBottom : CONTROLOBJECT<string name = "(self)"; string item = "LeftBottom";>;
 float3 mRightTop : CONTROLOBJECT<string name = "(self)"; string item = "RightTop";>;
 float3 mRightBottom : CONTROLOBJECT<string name = "(self)"; string item = "RightBottom";>;
 
@@ -174,15 +178,19 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 L2 = normalize(Lw);
 
 	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
-	atten *= RectangleAttenuation(Lw, viewLightDirection);
 	atten *= LightColor;
 
-	float4 energy = RectangleLightEnergy(material, material.normal, L, V, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord2);
-	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
+	float roughness = SmoothnessToRoughness(material.smoothness);
+
+	float3 points[4];
+	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
+
+	diffuse = SubsurfaceShadingFast(material, material.normal, L2, V);
+	diffuse += LTC_EvaluateRectangleDiffuse(material.normal, V, P, viewLightDirection, points, roughness);
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
-	specular = energy.gba;
+	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, material.specular / 0.04, roughness);
 	specular *= atten;
 #endif
 

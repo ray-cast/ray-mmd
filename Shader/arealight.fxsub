@@ -67,8 +67,7 @@ float3 RectangleLight(float3 R, float3 L, float3 Lt, float3 Lb, float3 Ln, float
 
 float RectangleAttenuation(float3 L, float3 lightDirection)
 {
-	float3 v = normalize(-L);
-	float rectangleAngle = max(0, dot(v, lightDirection));   
+	float rectangleAngle = saturate(dot(-L, lightDirection));
 	return rectangleAngle;
 }
 
