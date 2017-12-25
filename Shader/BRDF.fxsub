@@ -25,11 +25,18 @@ float ComputeAmbientMicroOcclusion(float nl, float ao)
 	return shadow;
 }
 
-float3 SubsurfaceShadingSkinRamp(MaterialParam material, float3 N, float3 L)
+float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)
 {
 	float nl = dot(N, L);
-	float t = saturate(nl * 0.5 + 0.5);
-	return pow(float3(0.8 + material.customDataA * 0.1, 0.35, 0.05), t * 12.0) * saturate(nl);
+
+	float pndl = saturate( nl);
+	float nndl = saturate(-nl);
+
+	float ir = material.customDataA;
+	float brdf = pndl;
+	float3 sss = float3(1.0,0.05,0.01) * pow2(1.0 - pndl) * pow(1.0-nndl,3.0 / (ir+0.001)) * saturate(ir-0.04) * 0.25;
+
+	return material.customDataB * (pndl + sss);
 }
 
 float3 SubsurfaceShadingPreIntegratedSkin(MaterialParam material, float3 N, float3 L)
@@ -250,18 +257,7 @@ float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	[branch]
 	if (material.lightModel == SHADINGMODELID_SKIN)
-		return SubsurfaceShadingPreIntegratedSkin(material, N, L);
-	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-		return SubsurfaceShadingScattering(material, N, L, V);
-	else
-		return 0;
-}
-
-float3 SubsurfaceShadingFast(MaterialParam material, float3 N, float3 L, float3 V)
-{
-	[branch]
-	if (material.lightModel == SHADINGMODELID_SKIN)
-		return SubsurfaceShadingSkinRamp(material, N, L);
+		return SubsurfaceShadingPennerSkin(material, N, L);
 	else if (material.lightModel == SHADINGMODELID_SUBSURFACE)
 		return SubsurfaceShadingScattering(material, N, L, V);
 	else

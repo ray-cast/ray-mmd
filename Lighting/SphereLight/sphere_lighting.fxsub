@@ -149,7 +149,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	atten *= LightColor;
 
 	float4 energy = SphereAreaLightEnergy(material, material.normal, L, V, LightRadius);
-	diffuse = energy.r + SubsurfaceShadingFast(material, material.normal, L2, V);
+	diffuse = energy.r + SubsurfaceShading(material, material.normal, L2, V);
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0

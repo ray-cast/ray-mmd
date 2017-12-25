@@ -123,7 +123,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, i
 	atten *= LightColor;
 
 	float2x3 energy = SurfaceEnergy(material, material.normal, L2, V, shadow);
-	diffuse = energy[0] + SubsurfaceShadingFast(material, material.normal, L2, V);
+	diffuse = energy[0] + SubsurfaceShading(material, material.normal, L2, V);
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
