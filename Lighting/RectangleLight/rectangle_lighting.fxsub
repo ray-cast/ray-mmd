@@ -177,8 +177,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
 	float3 L2 = normalize(Lw);
 
-	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
-	atten *= RectangleAttenuation(L, viewLightDirection);
+	float3 atten = RectangleAttenuation(L, viewLightDirection);
 	atten *= LightColor;
 
 	float roughness = SmoothnessToRoughness(material.smoothness);
@@ -191,7 +190,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
-	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, material.specular / 0.04, roughness);
+	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, material.specular, roughness);
 	specular *= atten;
 #endif
 

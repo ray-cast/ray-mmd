@@ -216,7 +216,8 @@ float3 LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 poin
 		float3(t1.y, 0, t1.w)
 	);
 
-	float3 fresnel = specular * t2.y + (1.0 - specular) * t2.z;
+	float3 f0 = 0.04;
+	float3 fresnel = f0 * t2.x + (1.0 - f0) * t2.y;
 
 	return LTC_EvaluateRectangle(N, V, P, L, invM, points, twoSided) * fresnel;
 }
