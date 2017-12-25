@@ -186,11 +186,11 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
 	diffuse = SubsurfaceShading(material, material.normal, L2, V);
-	diffuse += LTC_EvaluateRectangleDiffuse(material.normal, V, P, viewLightDirection, points, roughness);
+	diffuse += LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness);
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
-	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, material.specular, roughness);
+	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness, material.specular);
 	specular *= atten;
 #endif
 
