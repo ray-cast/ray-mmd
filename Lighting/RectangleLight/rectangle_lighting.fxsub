@@ -141,8 +141,8 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 #else
 		texture = DummyScreenTex;
 #endif
-		MINFILTER = LINEAR; MAGFILTER = LINEAR; MipFilter = LINEAR; 
-		ADDRESSU = WRAP; ADDRESSV = WRAP;
+		MINFILTER = LINEAR; MAGFILTER = LINEAR; MipFilter = LINEAR; SRGBTexture = TRUE;
+		ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 	};
 
 	float4 FastBlur(sampler source, float2 uv, float2 offset, float level)
@@ -172,13 +172,9 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 
 void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 diffuse, inout float3 specular)
 {
-	float2 coord1, coord2;
 	float3 L = viewLightPosition - P;
-	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect, coord1);
+	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect);
 	float3 L2 = normalize(Lw);
-
-	float3 atten = RectangleAttenuation(L, viewLightDirection);
-	atten *= LightColor;
 
 	float roughness = SmoothnessToRoughness(material.smoothness);
 
@@ -186,29 +182,22 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
 	diffuse = SubsurfaceShading(material, material.normal, L2, V);
+#if VIDEO_MAP_FROM
+	diffuse += LTC_EvaluateRectangle(VideoMapSamp, material.normal, V, P, viewLightDirection, points, roughness);
+#else
 	diffuse += LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness);
-	diffuse *= atten;
-
-#if LIGHT_PARAMS_TYPE == 0
-	specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness, material.specular);
-	specular *= atten;
 #endif
 
-#if VIDEO_MAP_FROM
-	#if VIDEO_MAP_UV_FLIP
-		coord1.x = 1 - coord1.x;
-		coord2.x = 1 - coord2.x;
+	diffuse *= LightColor;
+
+#if LIGHT_PARAMS_TYPE == 0
+	#if VIDEO_MAP_FROM
+		specular = LTC_EvaluateRectangle(VideoMapSamp, material.normal, V, P, viewLightDirection, points, roughness, material.specular);
+	#else
+		specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness, material.specular);
 	#endif
 
-	float mip = (1 - material.smoothness * material.smoothness) * 4;
-
-	float3 prefilterDiffuse = FastBlur(VideoMapSamp, coord1, ViewportOffset2, 2).rgb;
-	diffuse *= prefilterDiffuse;
-
-#if LIGHT_PARAMS_TYPE == 0
-	float3 prefilterSpecular = FastBlur(VideoMapSamp, coord2, ViewportOffset2, mip).rgb;
-	specular *= prefilterSpecular;
-#endif
+	specular *= LightColor;
 #endif
 }
 
