@@ -34,117 +34,6 @@ float IntegrateEdge(float3 v1, float3 v2)
 	return IntegrateEdgeVec(v1, v2).z;
 }
 
-void ClipQuadToHorizon(inout float3 L[5], out int n)
-{
-	// detect clipping config
-	int config = 0;
-	if (L[0].z > 0.0) config += 1;
-	if (L[1].z > 0.0) config += 2;
-	if (L[2].z > 0.0) config += 4;
-	if (L[3].z > 0.0) config += 8;
-
-	// clip
-	n = 0;
-
-	if (config == 0)
-	{
-		// clip all
-	}
-	else if (config == 1) // V1 clip V2 V3 V4
-	{
-		n = 3;
-		L[1] = -L[1].z * L[0] + L[0].z * L[1];
-		L[2] = -L[3].z * L[0] + L[0].z * L[3];
-	}
-	else if (config == 2) // V2 clip V1 V3 V4
-	{
-		n = 3;
-		L[0] = -L[0].z * L[1] + L[1].z * L[0];
-		L[2] = -L[2].z * L[1] + L[1].z * L[2];
-	}
-	else if (config == 3) // V1 V2 clip V3 V4
-	{
-		n = 4;
-		L[2] = -L[2].z * L[1] + L[1].z * L[2];
-		L[3] = -L[3].z * L[0] + L[0].z * L[3];
-	}
-	else if (config == 4) // V3 clip V1 V2 V4
-	{
-		n = 3;
-		L[0] = -L[3].z * L[2] + L[2].z * L[3];
-		L[1] = -L[1].z * L[2] + L[2].z * L[1];
-	}
-	else if (config == 5) // V1 V3 clip V2 V4) impossible
-	{
-		n = 0;
-	}
-	else if (config == 6) // V2 V3 clip V1 V4
-	{
-		n = 4;
-		L[0] = -L[0].z * L[1] + L[1].z * L[0];
-		L[3] = -L[3].z * L[2] + L[2].z * L[3];
-	}
-	else if (config == 7) // V1 V2 V3 clip V4
-	{
-		n = 5;
-		L[4] = -L[3].z * L[0] + L[0].z * L[3];
-		L[3] = -L[3].z * L[2] + L[2].z * L[3];
-	}
-	else if (config == 8) // V4 clip V1 V2 V3
-	{
-		n = 3;
-		L[0] = -L[0].z * L[3] + L[3].z * L[0];
-		L[1] = -L[2].z * L[3] + L[3].z * L[2];
-		L[2] =  L[3];
-	}
-	else if (config == 9) // V1 V4 clip V2 V3
-	{
-		n = 4;
-		L[1] = -L[1].z * L[0] + L[0].z * L[1];
-		L[2] = -L[2].z * L[3] + L[3].z * L[2];
-	}
-	else if (config == 10) // V2 V4 clip V1 V3) impossible
-	{
-		n = 0;
-	}
-	else if (config == 11) // V1 V2 V4 clip V3
-	{
-		n = 5;
-		L[4] = L[3];
-		L[3] = -L[2].z * L[3] + L[3].z * L[2];
-		L[2] = -L[2].z * L[1] + L[1].z * L[2];
-	}
-	else if (config == 12) // V3 V4 clip V1 V2
-	{
-		n = 4;
-		L[1] = -L[1].z * L[2] + L[2].z * L[1];
-		L[0] = -L[0].z * L[3] + L[3].z * L[0];
-	}
-	else if (config == 13) // V1 V3 V4 clip V2
-	{
-		n = 5;
-		L[4] = L[3];
-		L[3] = L[2];
-		L[2] = -L[1].z * L[2] + L[2].z * L[1];
-		L[1] = -L[1].z * L[0] + L[0].z * L[1];
-	}
-	else if (config == 14) // V2 V3 V4 clip V1
-	{
-		n = 5;
-		L[4] = -L[0].z * L[3] + L[3].z * L[0];
-		L[0] = -L[0].z * L[1] + L[1].z * L[0];
-	}
-	else if (config == 15) // V1 V2 V3 V4
-	{
-		n = 4;
-	}
-	
-	if (n == 3)
-		L[3] = L[0];
-	if (n == 4)
-		L[4] = L[0];
-}
-
 float3 LTC_FetchTexture(sampler2D source, float3 points[4])
 {
 	float3 V1 = points[1] - points[0];
@@ -171,25 +60,53 @@ float3 LTC_FetchTexture(sampler2D source, float3 points[4])
 	return tex2Dlod(source, float4(uv.yx, 0, lod)).rgb;
 }
 
-float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 lightDirection, float3x3 invM, inout float3 points[4], bool face)
+float determinant(float3x3 m)
+{
+	return + m[0][0]*(m[1][1]*m[2][2] - m[2][1]*m[1][2])
+		   - m[1][0]*(m[0][1]*m[2][2] - m[2][1]*m[0][2])
+		   + m[2][0]*(m[0][1]*m[1][2] - m[1][1]*m[0][2]);
+}
+
+float LTC_EvaluatePoint(float3 N, float3 V, float3 P, float3x3 invM, float3 lightPos)
 {
 	// construct orthonormal basis around N
 	float3 T1, T2;
-	T1 = normalize(V - N*dot(V, N));
+	T1 = normalize(V - N * dot(V, N));
+	T2 = cross(N, T1);
+
+	// rotate area light
+	float3 L = mul(float3x3(T1, T2, N), lightPos - P);
+
+	// project onto sphere
+	float3 P1 = normalize(L);
+
+	float3 wo = mul(invM, P1);
+	float lo = length(wo);
+	float res = max(0.0, wo.z / lo) * abs(determinant(invM)) / (lo * lo * lo);
+
+	return res / dot(L, L);
+}
+
+float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3x3 invM, float3 lightDirection, inout float3 points[4], bool face)
+{
+	// construct orthonormal basis around N
+	float3 T1, T2;
+	T1 = normalize(V - N * dot(V, N));
 	T2 = cross(N, T1);
 
 	// rotate area light in (T1, T2, N) basis
-	invM = mul(invM, float3x3(T1, T2, N));
+	float3x3 B = mul(invM, float3x3(T1, T2, N));
 
 	// polygon (allocate 4 vertices for clipping)
 	float3 L[4];
-	L[0] = mul(invM, points[0] - P);
-	L[1] = mul(invM, points[1] - P);
-	L[2] = mul(invM, points[2] - P);
-	L[3] = mul(invM, points[3] - P);
+	L[0] = mul(B, points[0] - P);
+	L[1] = mul(B, points[1] - P);
+	L[2] = mul(B, points[2] - P);
+	L[3] = mul(B, points[3] - P);
 
 	points = L;
 
+	// project onto sphere
 	L[0] = normalize(L[0]);
 	L[1] = normalize(L[1]);
 	L[2] = normalize(L[2]);
@@ -235,7 +152,7 @@ float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 point
 		float3(0, 0, 1)
 	);
 
-	return LTC_EvaluateRectangle(N, V, P, L, invM, points, face);
+	return LTC_EvaluateRectangle(N, V, P, invM, L, points, face);
 }
 
 float3 LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, float3 specular, bool twoSided = false)
@@ -259,7 +176,7 @@ float3 LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 poin
 	float3 f0 = specular;
 	float3 fresnel = f0 * t2.x + (1.0 - f0) * t2.y;
 
-	return LTC_EvaluateRectangle(N, V, P, L, invM, points, face) * fresnel;
+	return LTC_EvaluateRectangle(N, V, P, invM, L, points, face) * fresnel;
 }
 
 float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, bool twoSided = false)
@@ -274,7 +191,7 @@ float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float
 		float3(0, 0, 1)
 	);
 
-	float3 lighting = LTC_EvaluateRectangle(N, V, P, L, invM, points, face);
+	float3 lighting = LTC_EvaluateRectangle(N, V, P, invM, L, points, face);
 	return lighting * LTC_FetchTexture(source, points);
 }
 
@@ -299,6 +216,6 @@ float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float
 	float3 f0 = specular;
 	float3 fresnel = f0 * t2.x + (1.0 - f0) * t2.y;
 
-	float3 lighting = LTC_EvaluateRectangle(N, V, P, L, invM, points, face) * fresnel;
+	float3 lighting = LTC_EvaluateRectangle(N, V, P, invM, L, points, face) * fresnel;
 	return lighting * LTC_FetchTexture(source, points);
 }
