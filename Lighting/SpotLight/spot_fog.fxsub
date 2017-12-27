@@ -237,12 +237,7 @@ void VolumetricFogVS(
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	float dist = distance(Position.xyz, FogPosition);
-	float3 scale = Position.xyz + normalize(Position.xyz - mDirection) * (1.2 + FogAngle);
-
-	Position.xyz = dist < 0.1 ? Position.xyz : lerp(mDirection, scale, FogAngle);
-	Position.xyz = FogPosition + (Position.xyz - FogPosition) * FogRange / 2;
-
+	Position.xyz = FogPosition + Normal * FogRange;
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;

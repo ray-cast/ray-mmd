@@ -34,32 +34,6 @@ float IntegrateEdge(float3 v1, float3 v2)
 	return IntegrateEdgeVec(v1, v2).z;
 }
 
-float3 LTC_FetchTexture(sampler2D source, float3 points[4])
-{
-	float3 V1 = points[1] - points[0];
-	float3 V2 = points[3] - points[0];
-
-	float3 planeOrtho = (cross(V1, V2));
-
-	float planeAreaSquared = dot(planeOrtho, planeOrtho);
-	float planeDistxPlaneArea = dot(planeOrtho, points[0]);
-	float3 P = planeDistxPlaneArea * planeOrtho / planeAreaSquared - points[0];
-
-	float dot_V1_V2 = dot(V1,V2);
-	float inv_dot_V1_V1 = 1.0 / dot(V1, V1);
-	float3 V2_ = V2 - V1 * dot_V1_V2 * inv_dot_V1_V1;
-
-	float2 uv;
-	uv.y = dot(V2_, P) / dot(V2_, V2_);
-	uv.x = dot(V1, P) * inv_dot_V1_V1 - dot_V1_V2 * inv_dot_V1_V1 * uv.y;
-	uv = uv * 0.75 + 0.125;
-
-	float d = abs(planeDistxPlaneArea) / pow(planeAreaSquared, 0.75);
-	float lod = log(2048.0 * d) / log(3.0);
-
-	return tex2Dlod(source, float4(uv.yx, 0, lod)).rgb;
-}
-
 float determinant(float3x3 m)
 {
 	return + m[0][0]*(m[1][1]*m[2][2] - m[2][1]*m[1][2])
@@ -78,13 +52,23 @@ float LTC_EvaluatePoint(float3 N, float3 V, float3 P, float3x3 invM, float3 ligh
 	float3 L = mul(float3x3(T1, T2, N), lightPos - P);
 
 	// project onto sphere
-	float3 P1 = normalize(L);
+	float3 P1 = mul(invM, normalize(L));
 
-	float3 wo = mul(invM, P1);
-	float lo = length(wo);
-	float res = max(0.0, wo.z / lo) * abs(determinant(invM)) / (lo * lo * lo);
+	float len = length(P1);
+	float z = max(0.0, P1.z / len);
 
+#if 1
+	float res = abs(determinant(invM)) / (len * len * len) * z;
 	return res / dot(L, L);
+#else
+	float2 uv = float2(z * 0.5 + 0.5, len);
+	uv = uv * LUT_SCALE + LUT_BIAS;
+
+	float scale = tex2Dlod(LTC2Samp, float4(uv, 0, 0)).w;
+	float sum = len * scale;
+
+	return sum;
+#endif
 }
 
 float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3x3 invM, float3 lightDirection, inout float3 points[4], bool face)
@@ -138,6 +122,32 @@ void LTC_InitRectPoints(float3 P, float3 Right, float3 Up, float LightWidth, flo
 	points[1] = P - Right * LightWidth + Up * LightHeight;
 	points[2] = P + Right * LightWidth + Up * LightHeight;
 	points[3] = P + Right * LightWidth - Up * LightHeight;
+}
+
+float3 LTC_FetchTexture(sampler2D source, float3 points[4])
+{
+	float3 V1 = points[1] - points[0];
+	float3 V2 = points[3] - points[0];
+
+	float3 planeOrtho = (cross(V1, V2));
+
+	float planeAreaSquared = dot(planeOrtho, planeOrtho);
+	float planeDistxPlaneArea = dot(planeOrtho, points[0]);
+	float3 P = planeDistxPlaneArea * planeOrtho / planeAreaSquared - points[0];
+
+	float dot_V1_V2 = dot(V1, V2);
+	float inv_dot_V1_V1 = 1.0 / dot(V1, V1);
+	float3 V2_ = V2 - V1 * dot_V1_V2 * inv_dot_V1_V1;
+
+	float2 uv;
+	uv.y = dot(V2_, P) / dot(V2_, V2_);
+	uv.x = dot(V1, P) * inv_dot_V1_V1 - dot_V1_V2 * inv_dot_V1_V1 * uv.y;
+	uv = uv * 0.75 + 0.125;
+
+	float d = abs(planeDistxPlaneArea) / pow(planeAreaSquared, 0.75);
+	float lod = log(2048.0 * d) / log(3.0);
+
+	return tex2Dlod(source, float4(uv.yx, 0, lod)).rgb;
 }
 
 float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, bool twoSided = false)
