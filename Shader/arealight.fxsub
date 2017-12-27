@@ -44,12 +44,11 @@ float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 
 	return energy;
 }
 
-float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
 {
 	float3 I = dot(Ln, L) * Ln - L;
 	float2 lightPos2D = float2(dot(I, Lt), dot(I, Lb));
 	float2 lightClamp2D = clamp(lightPos2D, -Lwh, Lwh);
-	coord = saturate(lightClamp2D / Lwh * 0.5 + 0.5);
 	return L + Lt * lightClamp2D.x + (Lb * lightClamp2D.y);
 }
 
