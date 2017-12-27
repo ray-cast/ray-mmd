@@ -19,23 +19,20 @@ float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpe
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
 float mTopColorSP :  CONTROLOBJECT<string name="(self)"; string item = "TopS+";>;
 float mTopColorVP :  CONTROLOBJECT<string name="(self)"; string item = "TopV+";>;
-float mTopColorVM :  CONTROLOBJECT<string name="(self)"; string item = "TopV-";>;
 float mTopExponentP :  CONTROLOBJECT<string name="(self)"; string item = "TopExponent+";>;
 float mTopExponentM :  CONTROLOBJECT<string name="(self)"; string item = "TopExponent-";>;
 float mBottomColorHP :  CONTROLOBJECT<string name="(self)"; string item = "BottomH+";>;
 float mBottomColorSP :  CONTROLOBJECT<string name="(self)"; string item = "BottomS+";>;
 float mBottomColorVP :  CONTROLOBJECT<string name="(self)"; string item = "BottomV+";>;
-float mBottomColorVM :  CONTROLOBJECT<string name="(self)"; string item = "BottomV-";>;
 float mBottomExponentP :  CONTROLOBJECT<string name="(self)"; string item = "BottomExponent+";>;
 float mBottomExponentM :  CONTROLOBJECT<string name="(self)"; string item = "BottomExponent-";>;
 float mMediumColorHP :  CONTROLOBJECT<string name="(self)"; string item = "MediumH+";>;
 float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "MediumS+";>;
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
-float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
 
-static const float3 mTopColor = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))));
-static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))));
-static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))));
+static const float3 mTopColor = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, mTopColorVP * 2)));
+static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, mBottomColorVP * 2)));
+static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, mMediumColorVP * 2)));
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
