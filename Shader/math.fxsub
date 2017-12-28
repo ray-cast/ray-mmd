@@ -94,7 +94,17 @@ float3 hsv2rgb(float3 c)
 	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
 }
 
-float3 DecodeRGBM(float4 rgbm, float range)
+float4 EncodeRGBM(float3 color, float range = 6)
+{
+	color *= (1.0 / range);
+	float4 rgbm;
+	rgbm.a = saturate(max(max(color.r, color.g), max(color.b, 1e-6)));
+	rgbm.a = ceil(rgbm.a * 255.0) / 255.0;
+	rgbm.rgb = color / rgbm.a;
+	return rgbm;
+}
+
+float3 DecodeRGBM(float4 rgbm, float range = 6)
 {
 	return rgbm.rgb * rgbm.a * range;
 }

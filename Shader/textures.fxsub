@@ -56,6 +56,7 @@ texture LightMap: OFFSCREENRENDERTARGET<
 		"PointLightIES.pmx =./Lighting/PointLightIES/Default/IES_lighting.fx;"
 		"SpotLight.pmx =./Lighting/SpotLight/Default/spot_lighting.fx;"
 		"SpotLightIES.pmx =./Lighting/SpotLightIES/Default/IES_lighting.fx;"
+		"DiskLight.pmx =./Lighting/DiskLight/Default/disk_lighting.fx;"
 		"SphereLight.pmx =./Lighting/SphereLight/Default/sphere_lighting.fx;"
 		"TubeLight.pmx =./Lighting/TubeLight/Default/tube_lighting.fx;"
 		"LED.pmx =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
