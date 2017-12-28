@@ -89,12 +89,12 @@ texture ShadowMap: OFFSCREENRENDERTARGET <
 >;
 sampler ShadowMapSamp = sampler_state {
 	texture = <ShadowMap>;
-	MinFilter = POINT; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static const float2 ShadowMapOffset  = 0.5 / SHADOW_MAP_SIZE;
-static const float2 ShadowMapOffset2 = 1.0 / SHADOW_MAP_SIZE;
+static const float ShadowMapOffset  = 0.5 / SHADOW_MAP_SIZE;
+static const float ShadowMapOffset2 = 1.0 / SHADOW_MAP_SIZE;
 
 static const float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
