@@ -65,7 +65,7 @@ Features :
 * Approximation subsurface scattering materials
 * Cook-Torrance microfacet specular BRDF (GGX) and burley diffuse BRDF
 * Physical light units
-* Multiple light sources (Point, spot, sun, area, ies)
+* Multiple light sources (Point, spot, sun, reactangle, disk, sphere, tube, ies)
 * IES light profiles (point and spot light support)
 * Soft shadow (PCF, VSM, PSSM)
 * Omni light shadow support based on dual-paraboloid project
