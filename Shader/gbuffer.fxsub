@@ -123,7 +123,7 @@ int DecodeLightModel(float4 buffer4)
 
 float DecodeEmissiveIntensity(float4 buffer4)
 {
-	return floor(buffer4.y);
+	return buffer4.y;
 }
 
 float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
