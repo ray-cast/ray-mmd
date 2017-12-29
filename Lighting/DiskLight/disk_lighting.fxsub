@@ -50,8 +50,8 @@ static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightInte
 
 static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
 static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
-static const float3 viewLightRight = mul(normalize(cross(float3(0.0f, 1.0f, 0.0f), LightDirection)), (float3x3)matView);
-static const float3 viewLightUp = normalize(cross(viewLightDirection, viewLightRight));
+static const float3 viewLightRight = normalize(cross(float3(0.0f, 1.0f, 0.0f), viewLightDirection));
+static const float3 viewLightUp = cross(viewLightDirection, viewLightRight);
 
 #if SHADOW_MAP_FROM > 0
 #if SHADOW_MAP_QUALITY == 0
@@ -132,7 +132,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, i
 	atten *= shadow;
 
 	float3 points[4];
-	LTC_InitDiskPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
+	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
 	diffuse = SubsurfaceShading(material, material.normal, L, V);
 	diffuse += LTC_EvaluateDisk(material.normal, V, P, viewLightDirection, points);
