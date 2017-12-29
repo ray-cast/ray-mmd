@@ -11,9 +11,6 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float shadow = 1;
 #if SUN_SHADOW_QUALITY
 	shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).r;
-#if !TOON_ENABLE
-	shadow = min(shadow, saturate(dot(material.normal, L) * 3));
-#endif
 #endif
 
 #if SSDO_QUALITY
