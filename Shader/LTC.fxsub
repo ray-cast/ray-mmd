@@ -305,15 +305,14 @@ float LTC_EvaluateDisk(float3 N, float3 V, float3 P, float3x3 invM, float3 point
 	return spec;
 }
 
-void LTC_InitDiskPoints(float3 P, float3 Right, float3 Up, float LightWidth, float LightHeight, out float3 points[4])
+void LTC_InitTrianglePoints(float3 P, float3 Right, float3 Up, float LightWidth, float LightHeight, out float3 points[3])
 {
 	float3 ex = Right * LightWidth;
 	float3 ey = Up * LightHeight;
 
 	points[0] = P - ex - ey;
-	points[1] = P + ex - ey;
-	points[2] = P + ex + ey;
-	points[3] = P - ex + ey;
+	points[1] = P + ey;
+	points[2] = P + ex - ey;
 }
 
 void LTC_InitRectPoints(float3 P, float3 Right, float3 Up, float LightWidth, float LightHeight, out float3 points[4])
@@ -327,12 +326,29 @@ void LTC_InitRectPoints(float3 P, float3 Right, float3 Up, float LightWidth, flo
 	points[3] = P + ex - ey;
 }
 
+void LTC_InitPentagonPoints(float3 P, float3 Right, float3 Up, float LightWidth, float LightHeight, out float3 points[5])
+{
+	float3 ex = Right;
+	float3 ey = Up;
+	float3 ez = cross(ex, ey);
+
+	float3x3 tbn = float3x3(ex * LightWidth, ey * LightHeight, ez);
+
+	float3 polygon[5];
+
+	for (int i = 0; i < 5; i++)
+		polygon[i] = float3(float2(cos((90 + i * 72) * PI / 180), -sin((90 + i * 72) * PI / 180)), 0);
+
+	for (int j = 0; j < 5; j++)
+		points[j] = P + mul(polygon[j], tbn);
+}
+
 float3 LTC_FetchTexture(sampler2D source, float3 points[4])
 {
 	float3 V1 = points[1] - points[0];
 	float3 V2 = points[3] - points[0];
 
-	float3 planeOrtho = (cross(V1, V2));
+	float3 planeOrtho = cross(V1, V2);
 
 	float planeAreaSquared = dot(planeOrtho, planeOrtho);
 	float planeDistxPlaneArea = dot(planeOrtho, points[0]);
@@ -370,14 +386,14 @@ float LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 point
 	}
 }
 
-float3 LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, float3 specular, bool twoSided = false)
+float3 LTC_EvaluateRectangle(float3 N, float3 V, float3 P, float3 L, float3 points[4], float smoothness, float3 specular, bool twoSided = false)
 {
 	bool face = step(0, dot(points[0] - P, L));
 	if (face && !twoSided)
 		return 0;
 	else
 	{
-		float2 uv = float2(max(roughness, 0.01), sqrt(1.0 - saturate(dot(N, V))));
+		float2 uv = float2(1 - smoothness, sqrt(1.0 - saturate(dot(N, V))));
 		uv = uv * LUT_SCALE + LUT_BIAS;
 
 		float4 t1 = tex2Dlod(LTC1Samp, float4(uv, 0, 0));
@@ -414,14 +430,14 @@ float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float
 	}
 }
 
-float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, float3 specular, bool twoSided = false)
+float3 LTC_EvaluateRectangle(sampler source, float3 N, float3 V, float3 P, float3 L, float3 points[4], float smoothness, float3 specular, bool twoSided = false)
 {
 	bool face = step(0, dot(points[0] - P, L));
 	if (face && !twoSided)
 		return 0;
 	else
 	{
-		float2 uv = float2(max(roughness, 0.01), sqrt(1.0 - saturate(dot(N, V))));
+		float2 uv = float2(1 - smoothness, sqrt(1.0 - saturate(dot(N, V))));
 		uv = uv * LUT_SCALE + LUT_BIAS;
 
 		float4 t1 = tex2Dlod(LTC1Samp, float4(uv, 0, 0));
@@ -458,14 +474,14 @@ float LTC_EvaluateDisk(float3 N, float3 V, float3 P, float3 L, float3 points[4],
 	}
 }
 
-float3 LTC_EvaluateDisk(float3 N, float3 V, float3 P, float3 L, float3 points[4], float roughness, float3 specular, bool twoSided = false)
+float3 LTC_EvaluateDisk(float3 N, float3 V, float3 P, float3 L, float3 points[4], float smoothness, float3 specular, bool twoSided = false)
 {
 	bool face = step(0, dot(points[0] - P, L));
 	if (face && !twoSided)
 		return 0;
 	else
 	{
-		float2 uv = float2(roughness, sqrt(1.0 - saturate(dot(N, V))));
+		float2 uv = float2(1 - smoothness, sqrt(1.0 - saturate(dot(N, V))));
 		uv = uv * LUT_SCALE + LUT_BIAS;
 
 		float4 t1 = tex2Dlod(LTC1Samp, float4(uv, 0, 0));

@@ -47,7 +47,7 @@ static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensi
 static const float3 LightPosition = mPosition;
 static const float3 LightLeft = mLeft - (mLeft - LightPosition) * LightWidth;
 static const float3 LightRight = mRight + (mLeft - LightPosition) * LightWidth;
-static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
+static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink * LightWidth;
 
 static const float3 viewLightLeft = mul(float4(LightLeft, 1), matView).xyz;
 static const float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;

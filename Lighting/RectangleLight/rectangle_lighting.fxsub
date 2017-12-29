@@ -176,8 +176,6 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 	float3 Lw = RectangleDirection(L, viewLightRight, viewLightUp, viewLightDirection, LightRect);
 	float3 L2 = normalize(Lw);
 
-	float roughness = SmoothnessToRoughness(material.smoothness);
-
 	float3 points[4];
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
@@ -192,9 +190,9 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, inout float3 di
 
 #if LIGHT_PARAMS_TYPE == 0
 	#if VIDEO_MAP_FROM
-		specular = LTC_EvaluateRectangle(VideoMapSamp, material.normal, V, P, viewLightDirection, points, roughness, material.specular);
+		specular = LTC_EvaluateRectangle(VideoMapSamp, material.normal, V, P, viewLightDirection, points, material.smoothness, material.specular);
 	#else
-		specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, roughness, material.specular);
+		specular = LTC_EvaluateRectangle(material.normal, V, P, viewLightDirection, points, material.smoothness, material.specular);
 	#endif
 
 	specular *= LightColor;

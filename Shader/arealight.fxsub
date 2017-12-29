@@ -112,7 +112,7 @@ float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, flo
 	float3 Ls = normalize(Lw);
 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
-	float normFactor = SphereNormalization(Lw, length(float2(LightWidth, LightRadius)), roughness);
+	float normFactor = SphereNormalization(Lw, LightWidth * LightWidth * LightRadius, roughness);
 
 	float4 energy = SurfaceEnergy(material, N, L, Ls, V, normFactor);
 	return energy;

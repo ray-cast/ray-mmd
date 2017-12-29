@@ -48,7 +48,7 @@ static const float2 LightRect = float2(LightWidth, LightHeight);
 static const float3 LightDirection = normalize(mDirection - mPosition);
 static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
 
-static const float3 viewLightPosition = mul(float4(mDirection, 1), matView).xyz;
+static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 static const float3 viewLightRight = normalize(cross(float3(0.0f, 1.0f, 0.0f), viewLightDirection));
 static const float3 viewLightUp = cross(viewLightDirection, viewLightRight);
@@ -125,8 +125,6 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, i
 {
 	float3 L = normalize(viewLightPosition - P);
 
-	float roughness = SmoothnessToRoughness(material.smoothness);
-
 	float3 atten = GetSpotLightAttenuation(-L, viewLightDirection, LightAngle);
 	atten *= LightColor;
 	atten *= shadow;
@@ -139,7 +137,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, i
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
-	specular = LTC_EvaluateDisk(material.normal, V, P, viewLightDirection, points, roughness, material.specular);
+	specular = LTC_EvaluateDisk(material.normal, V, P, viewLightDirection, points, material.smoothness, material.specular);
 	specular *= atten;
 #endif
 }
