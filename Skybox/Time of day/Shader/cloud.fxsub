@@ -120,5 +120,12 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 	float3 scattering = lerp(cloud, sky, exp(-0.00002 * cloudsOpticalLength * insctrMie));
 	scattering = lerp(sky, scattering, V.y);
 
-	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
+	float angle = (1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius;
+	float cosAngle = 1 - cos(angle * PI * 0.5);
+
+	float4 limaDarkening = 0;
+	limaDarkening.rgb = Transmittance(setting, -L, V);
+	limaDarkening.a = pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.76) ? smoothstep(0.76, 1.0, angle) : 0.0)) * intersectionTest;
+
+	return float4(scattering * setting.sunRadiance + limaDarkening.rgb * limaDarkening.a, phaseNight * intersectionTest);
 }

@@ -7,55 +7,14 @@
 #include "shader/common.fxsub"
 #include "shader/atmospheric.fxsub"
 
-static const float3 sunTranslate = 80000;
-
-texture SunMap<string ResourceName = "Shader/Textures/realsun.jpg";>;
-sampler SunMapSamp = sampler_state
-{
-	texture = <SunMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = WRAP; ADDRESSV = WRAP;
-};
-
-void SunVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD0,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1,
-	out float4 oTexcoord2 : TEXCOORD2,
-	out float4 oPosition : POSITION,
-	uniform float3 translate)
-{
-	float3 sunDirection = normalize(-SunDirection);
-
-	oTexcoord0 = Texcoord;
-	oTexcoord1 = float4(normalize(Position.xyz), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * mUnitDistance * mSunRadius + sunDirection * translate, 1);
-	oPosition = mul(oTexcoord2, matViewProject);
-}
-
-float4 SunPS(
-	in float2 coord : TEXCOORD0,
-	in float3 normal : TEXCOORD1,
-	in float3 viewdir : TEXCOORD2,
-	uniform sampler source) : COLOR
-{
-	float3 V = normalize(viewdir - CameraPosition);
-	float4 diffuse = tex2D(source, coord);
-	diffuse *= diffuse;
-	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;
-	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 100));
-	return diffuse;
-}
-
 void ScatteringVS(
 	in float4 Position   : POSITION,
-	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord0 : TEXCOORD0,
 	out float3 oTexcoord1 : TEXCOORD1,
 	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = normalize(Position);
+	oTexcoord0 = normalize(Position.xyz);
 	oTexcoord1 = ComputeWaveLengthMie(mWaveLength, mMieColor, mSunTurbidity);
 	oTexcoord2 = ComputeWaveLengthRayleigh(mWaveLength) * mRayleighColor;
 	oPosition = mul(Position + float4(CameraPosition, 0), matViewProject);
@@ -69,6 +28,7 @@ float4 ScatteringPS(
 	float3 V = normalize(viewdir);
 
 	ScatteringParams setting;
+	setting.sunRadius = mSunRadius;
 	setting.sunRadiance = mSunRadiance;
 	setting.mieG = mSunPhase;
 	setting.mieHeight = mMieHeight * mUnitDistance;
@@ -92,16 +52,8 @@ technique MainTech<string MMDPass = "object";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawSun {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate);
-		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
-	}
 	pass DrawScattering {
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -115,16 +67,8 @@ technique MainTechSS<string MMDPass = "object_ss";
 	"RenderColorTarget=;"
 	"ClearSetColor=BackColor;"
 	"Clear=Color;"
-	"Pass=DrawSun;"
 	"Pass=DrawScattering;";
 >{
-	pass DrawSun {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 SunVS(sunTranslate);
-		PixelShader  = compile ps_3_0 SunPS(SunMapSamp);
-	}
 	pass DrawScattering {
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
