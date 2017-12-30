@@ -80,6 +80,7 @@ float4 ScatteringPS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 
 	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection);
@@ -105,6 +106,7 @@ float4 ScatteringWithCloudsPS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.cloud = mCloudDensity;
 	setting.cloudTop = 5.2 * mUnitDistance;

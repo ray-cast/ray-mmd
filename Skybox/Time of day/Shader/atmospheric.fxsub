@@ -9,8 +9,8 @@ struct ScatteringParams
 
 	float rayleighHeight;
 
-	float3 waveLambda;
 	float3 waveLambdaMie;
+	float3 waveLambdaOzone;
 	float3 waveLambdaRayleigh;
 
 	float earthRadius;
@@ -69,11 +69,11 @@ float GetOpticalDepthSchueler(float h, float H, float earthRadius, float cosZeni
 	return H * ChapmanApproximation(earthRadius / H, h / H, cosZenith);
 }
 
-float3 Transmittance(ScatteringParams setting, float3 r, float3 V)
+float3 Transmittance(ScatteringParams setting, float3 R, float3 V)
 {
-	float rl = length(r);
+	float rl = length(R);
 	float h = (rl - setting.earthRadius) / setting.rayleighHeight;
-	float cosZenith = dot(r / rl, V);
+	float cosZenith = dot(R / rl, V);
 	float ch = GetOpticalDepthSchueler(h, setting.rayleighHeight, setting.earthRadius, cosZenith);
 	return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
 }
@@ -99,7 +99,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 	float3 sampleStep = (end - start) / NUMS_SAMPLES_SUN;
 	float3 samplePoint = end - sampleStep;
-	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh;
+	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh + setting.waveLambdaOzone;
 
 	float sampleLength = length(sampleStep);
 
@@ -110,10 +110,10 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 	{
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
-		float3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x) * 0.5f);
+		float3 segment_s = exp(-sampleLambda * (opticalDepth.x + lastOpticalDepth.x));
 		float3 segment_t = exp(-sampleLambda * (opticalDepth.y - lastOpticalDepth.y));
 		
-		transmittance = transmittance * segment_t;
+		transmittance *= segment_t;
 		
 		scattering = scattering * segment_t;
 		scattering += exp(-(length(samplePoint) - setting.earthRadius) / setting.rayleighHeight) * segment_s;

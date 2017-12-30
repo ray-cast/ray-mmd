@@ -58,6 +58,7 @@ float4 AtmosphericFogPS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	
@@ -106,6 +107,7 @@ float4 AtmosphericFogMiePS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 
@@ -188,6 +190,7 @@ float4 AtmosphericScatteringPS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 	

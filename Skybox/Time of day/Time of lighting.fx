@@ -126,6 +126,7 @@ float4 GenSpecularMapPS(
 	setting.earthAtmTopRadius = mEarthAtmoRadius * mUnitDistance;
 	setting.earthCenter = float3(0, -setting.earthRadius, 0);
 	setting.waveLambdaMie = mieLambda;
+	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.w);

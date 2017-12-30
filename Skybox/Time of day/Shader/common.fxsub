@@ -14,6 +14,9 @@ float mMieHeightM : CONTROLOBJECT<string name="(self)"; string item = "MieHeight
 float mMieTurbidityP : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity+";>;
 float mMieTurbidityM : CONTROLOBJECT<string name="(self)"; string item = "MieTurbidity-";>;
 
+float mOzoneMassP : CONTROLOBJECT<string name="(self)"; string item = "OzoneMass+";>;
+float mOzoneMassM : CONTROLOBJECT<string name="(self)"; string item = "OzoneMass-";>;
+
 float mCloudP : CONTROLOBJECT<string name="(self)"; string item = "Cloud+";>;
 float mCloudM : CONTROLOBJECT<string name="(self)"; string item = "Cloud-";>;
 float mCloudSpeedP : CONTROLOBJECT<string name="(self)"; string item = "CloudSpeed+";>;
@@ -46,9 +49,10 @@ static float mFogIntensity   = lerp(lerp(mFogIntensityParams.x, mFogIntensityPar
 static float mFogDensity     = lerp(lerp(mFogDensityParams.x, mFogDensityParams.z, mFogDensityP), mFogDensityParams.y, mFogDensityM);
 static float mFogDensityFar  = lerp(lerp(mFogDensityFarParams.x, mFogDensityFarParams.z, mFogDensityFarP), mFogDensityFarParams.y, mFogDensityFarM);
 static float mMiePhase       = lerp(lerp(mMiePhaseParams.x, mMiePhaseParams.z, mMiePhaseP), mMiePhaseParams.y, mMiePhaseM);
-static float mMieHeight      = lerp(lerp(mMieHeightTopParams.x, mMieHeightTopParams.z, mMieHeightP), mMieHeightTopParams.y, mMieHeightM);
+static float mMieHeight      = lerp(lerp(mMieHeightParams.x, mMieHeightParams.z, mMieHeightP), mMieHeightParams.y, mMieHeightM);
 static float mMieTurbidity   = lerp(lerp(mMieTurbidityParams.x, mMieTurbidityParams.z, mMieTurbidityP), mMieTurbidityParams.y, mMieTurbidityM);
-static float mRayleighHeight = lerp(lerp(mRayleighHeightTopParams.x, mRayleighHeightTopParams.z, mRayleighHeightP), mRayleighHeightTopParams.y, mRayleighHeightM);
+static float mOzoneMass      = lerp(lerp(mOzoneMassParams.x, mOzoneMassParams.z, mOzoneMassP), mOzoneMassParams.y, mOzoneMassM);
+static float mRayleighHeight = lerp(lerp(mRayleighHeightParams.x, mRayleighHeightParams.z, mRayleighHeightP), mRayleighHeightParams.y, mRayleighHeightM);
 static float mCloudDensity   = lerp(lerp(mCloudDensityParams.x, mCloudDensityParams.z, mCloudP), mCloudDensityParams.y, mCloudM);
 static float mCloudSpeed     = lerp(lerp(mCloudSpeedParams.x, mCloudSpeedParams.z, mCloudSpeedP), mCloudSpeedParams.y, mCloudSpeedM) * time;
 static float mCloudTurbidity = lerp(lerp(mCloudTurbidityParams.x, mCloudTurbidityParams.z, mCloudTurbidityP), mCloudTurbidityParams.y, mCloudTurbidityM);

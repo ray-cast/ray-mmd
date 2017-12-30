@@ -9,8 +9,8 @@ struct ScatteringParams
 
 	float rayleighHeight;
 
-	float3 waveLambda;
 	float3 waveLambdaMie;
+	float3 waveLambdaOzone;
 	float3 waveLambdaRayleigh;
 
 	float earthRadius;
@@ -83,7 +83,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 	float3 sampleStep = (end - start) / NUMS_SAMPLES_SUN;
 	float3 samplePoint = end - sampleStep;
-	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh;
+	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh + setting.waveLambdaOzone;
 
 	float sampleLength = length(sampleStep);
 
