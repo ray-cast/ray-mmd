@@ -269,9 +269,6 @@ float LTC_EvaluateDisk(float3 N, float3 V, float3 P, float3x3 invM, float3 point
 	float x0 = dot(V1, C) / L;
 	float y0 = dot(V2, C) / L;
 
-	float E1 = rsqrt(a);
-	float E2 = rsqrt(b);
-
 	a *= L * L;
 	b *= L * L;
 
