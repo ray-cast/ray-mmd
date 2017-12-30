@@ -27,6 +27,58 @@ float ShadowPCF(sampler source, float2 coord, float receiverDepth, int samples =
 	return saturate(shadow / (samples * samples));
 }
 
+float ShadingShadow(MaterialParam material, float3 viewPosition)
+{
+	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
+
+	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
+	float4 lightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy) + float4(lightCropParams[2].zw, lightCropParams[3].zw);
+
+	float4 lightCoord01 = PosToCoord(lightPPos01);
+	float4 lightCoord23 = PosToCoord(lightPPos23);
+
+	float4 lightPPos0 = float4(lightCoord01.xy, min2(float2(1, 1) - abs(lightPPos01.xy)), 0);
+	float4 lightPPos1 = float4(lightCoord01.zw, min2(float2(1, 1) - abs(lightPPos01.zw)), 1);
+	float4 lightPPos2 = float4(lightCoord23.xy, min2(float2(1, 1) - abs(lightPPos23.xy)), 2);
+	float4 lightPPos3 = float4(lightCoord23.zw, min2(float2(1, 1) - abs(lightPPos23.zw)), 3);
+
+	float4 coord = lightPPos3;
+	if (lightPPos2.z > 0) { coord = lightPPos2; }
+	if (lightPPos1.z > 0) { coord = lightPPos1; }
+	if (lightPPos0.z > 0) { coord = lightPPos0; }
+	clip(coord.z);
+
+	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
+	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
+	receiverDepth -= (material.linearDepth + depthSlope) * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
+
+	coord.xy += 0.5 / float(SHADOW_MAP_SIZE);
+
+	[branch]
+	if (coord.w == 0)
+		clip(tex2Dlod(PSSM1Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+	else if (coord.w == 1)
+		clip(tex2Dlod(PSSM2Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+	else if (coord.w == 2)
+		clip(tex2Dlod(PSSM3Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+	else
+		clip(tex2Dlod(PSSM4Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+
+	float shadow = 0;
+
+	[branch]
+	if (coord.w == 0)
+		shadow = ShadowPCF(PSSM1Samp, coord.xy, receiverDepth);
+	else if (coord.w == 1)
+		shadow = ShadowPCF(PSSM2Samp, coord.xy, receiverDepth);
+	else if (coord.w == 2)
+		shadow = ShadowPCF(PSSM3Samp, coord.xy, receiverDepth);
+	else
+		shadow = ShadowPCF(PSSM4Samp, coord.xy, receiverDepth);
+
+	return shadow;
+}
+
 float4 ShadowMapGenPS(
 	in float2 coord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1) : COLOR
@@ -43,56 +95,8 @@ float4 ShadowMapGenPS(
 
 	float3 view = normalize(viewdir);
 	float3 viewPosition = view * material.linearDepth / view.z;
-	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
-	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
-	float4 lightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy) + float4(lightCropParams[2].zw, lightCropParams[3].zw);
-
-	float4 lightCoord01 = PosToCoord(lightPPos01);
-	float4 lightCoord23 = PosToCoord(lightPPos23);
-
-	float4 lightPPos0 = float4(lightCoord01.xy, min2(float2(1, 1) - abs(lightPPos01.xy)), 0);
-	float4 lightPPos1 = float4(lightCoord01.zw, min2(float2(1, 1) - abs(lightPPos01.zw)), 1);
-	float4 lightPPos2 = float4(lightCoord23.xy, min2(float2(1, 1) - abs(lightPPos23.xy)), 2);
-	float4 lightPPos3 = float4(lightCoord23.zw, min2(float2(1, 1) - abs(lightPPos23.zw)), 3);
-
-	float4 coord0 = lightPPos3;
-	float4 coord1 = 0;
-	if (lightPPos2.z > 0.0) { coord1 = coord0; coord0 = lightPPos2; }
-	if (lightPPos1.z > 0.0) { coord1 = coord0; coord0 = lightPPos1; }
-	if (lightPPos0.z > 0.0) { coord1 = coord0; coord0 = lightPPos0; }
-	clip(coord0.z);
-
-	coord0.xy += 0.5 / float(SHADOW_MAP_SIZE);
-	coord1.xy += 0.5 / float(SHADOW_MAP_SIZE);
-
-	float receiverDepth = proj.z;
-	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
-	receiverDepth -= (material.linearDepth + depthSlope) * 0.004 + max(0, material.linearDepth - 100) * 0.007;
-
-	[branch]
-	if (coord0.w == 0)
-		clip(tex2Dlod(PSSM1Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
-	else if (coord0.w == 1)
-		clip(tex2Dlod(PSSM2Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
-	else if (coord0.w == 2)
-		clip(tex2Dlod(PSSM3Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
-	else
-		clip(tex2Dlod(PSSM4Samp, float4(coord0.xy, 0, 0)).r - 1e-5);
-
-	float shadow = 0;
-
-	[branch]
-	if (coord0.w == 0)
-		shadow = ShadowPCF(PSSM1Samp, coord0.xy, receiverDepth);
-	else if (coord0.w == 1)
-		shadow = ShadowPCF(PSSM2Samp, coord0.xy, receiverDepth);
-	else if (coord0.w == 2)
-		shadow = ShadowPCF(PSSM3Samp, coord0.xy, receiverDepth);
-	else
-		shadow = ShadowPCF(PSSM4Samp, coord0.xy, receiverDepth);
-
-	return shadow;
+	return ShadingShadow(material, viewPosition);
 }
 
 #if SHADOW_BLUR_COUNT

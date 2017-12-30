@@ -129,8 +129,6 @@ float ShadowPCF(sampler source, float2 coord, float receiverDepth)
 {
 	float2 shadow = 0.0;
 
-	coord.xy += ShadowMapOffset;
-
 	[unroll]
 	for (int x = -sampleRadius; x <= sampleRadius; x++) 
 	{
@@ -147,7 +145,6 @@ float ShadowPCF(sampler source, float2 coord, float receiverDepth)
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
 {
-	float3 view = normalize(viewPosition);
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
 	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
@@ -167,9 +164,11 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	if (lightPPos0.z > 0) { coord = lightPPos0; }
 	clip(coord.z);
 
-	float receiverDepth = proj.z;
+	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
 	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
 	receiverDepth -= (material.linearDepth + depthSlope) * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
+
+	coord.xy += ShadowMapOffset;
 
 	float shadow = 0;
 
