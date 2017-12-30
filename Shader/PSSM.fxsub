@@ -58,7 +58,7 @@ float4 CascadeShadowMapPS(
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return coord1.z;
+	return ComputeMoments(coord1.z).xyxy;
 }
 
 technique DepthTech<string MMDPass = "object_ss";

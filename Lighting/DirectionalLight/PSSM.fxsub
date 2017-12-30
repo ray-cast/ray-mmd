@@ -15,8 +15,6 @@
 #	define SHADOW_MAP_SIZE 2048
 #endif
 
-#define SHADOW_MAP_OFFSET (1.0 / SHADOW_MAP_SIZE)
-
 float mRangeP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range-";>;
 
@@ -46,7 +44,6 @@ sampler DiffuseSamp = sampler_state
 
 void CascadeShadowMapVS(
 	in float4 Position : POSITION,
-	in float3 Normal   : NORMAL,
 	in float2 Texcoord : TEXCOORD0,
 	out float2 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
