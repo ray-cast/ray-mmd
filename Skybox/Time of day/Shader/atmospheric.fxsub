@@ -1,8 +1,12 @@
-#define NUMS_SAMPLES_SUN 16
+#ifndef ATM_SAMPLES_NUMS
+#	define ATM_SAMPLES_NUMS 16
+#endif
 
 struct ScatteringParams
 {
+#if ATM_LIMADARKENING_ENABLE
 	float sunRadius;
+#endif
 	float sunRadiance;
 
 	float mieG;
@@ -18,12 +22,14 @@ struct ScatteringParams
 	float earthAtmTopRadius;
 	float3 earthCenter;
 
+#if ATM_CLOUD_ENABLE
 	float cloud;
 	float cloudBias;
 	float cloudTop;
 	float cloudBottom;
 	float3 clouddir;
 	float3 cloudLambda;
+#endif
 };
 
 float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
@@ -95,7 +101,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 {
 	float inf_neg = infinite ? 1 : -1;
 
-	float3 sampleStep = (end - start) / NUMS_SAMPLES_SUN;
+	float3 sampleStep = (end - start) / ATM_SAMPLES_NUMS;
 	float3 samplePoint = end - sampleStep;
 	float3 sampleLambda = setting.waveLambdaMie + setting.waveLambdaRayleigh + setting.waveLambdaOzone;
 
@@ -104,7 +110,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 	float3 scattering = 0;
 	float2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);
 
-	for (int i = 1; i < NUMS_SAMPLES_SUN; i++, samplePoint -= sampleStep)
+	for (int i = 1; i < ATM_SAMPLES_NUMS; i++, samplePoint -= sampleStep)
 	{
 		float2 opticalDepth = ComputeOpticalDepth(setting, samplePoint, V, L, inf_neg);
 
@@ -163,15 +169,17 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float3 insctrTotalMie = insctrMie * phaseMie;
 	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh;
 
+	float3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
+
+#if ATM_LIMADARKENING_ENABLE
 	float angle = (1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius;
 	float cosAngle = 1 - cos(angle * PI * 0.5);
 
-	float4 limaDarkening = 0;
-	limaDarkening.rgb = Transmittance(setting, -L, V);
-	limaDarkening.a = pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.76) ? smoothstep(0.76, 1.0, angle) : 0.0)) * intersectionTest;
+	float3 limaDarkening = Transmittance(setting, -L, V);
+	limaDarkening *= pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0)) * intersectionTest;
 
-	float3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
-	sky += limaDarkening.rgb * limaDarkening.a;
+	sky += limaDarkening;
+#endif
 
 	return float4(sky, phaseNight * intersectionTest);
 }

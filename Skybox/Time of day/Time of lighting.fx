@@ -1,3 +1,7 @@
+#define ATM_SAMPLES_NUMS 12
+#define ATM_CLOUD_ENABLE 0
+#define ATM_LIMADARKENING_ENABLE 0
+
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"
@@ -8,7 +12,8 @@
 #include "../../shader/ibl.fxsub"
 
 #include "shader/common.fxsub"
-#include "shader/skylighting.fxsub"
+#include "shader/atmospheric.fxsub"
+#include "shader/SH.fxsub"
 
 float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight+";>;
 float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
@@ -22,6 +27,7 @@ static float mEnvIntensitySpec = lerp(lerp(1, PI_2, mEnvSpecLightP), 0, mEnvSpec
 static float mEnvIntensityDiff = lerp(lerp(1, PI_2, mEnvDiffLightP), 0, mEnvDiffLightM);
 
 #define IBL_MIPMAP_LEVEL 7
+#define MIDPOINT_8_BIT (127.0f / 255.0f)
 
 texture SpecularMap : RENDERCOLORTARGET<int2 Dimensions={ 512, 256 }; int Miplevels=0;>;
 sampler SpecularMapSamp = sampler_state {
@@ -45,15 +51,15 @@ float4 ImageBasedLightClearCost(MaterialParam material, float nv, float3 prefilt
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
 	float3 dependentSplit = 0.5 + (1 - material.visibility) * 5;
-	float3 scattering = prefilteredDiffuse + DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
+	float3 scattering = prefilteredDiffuse + DecodeRGBM(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(-N), 0, 0)));
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
 	return scattering * mEnvIntensitySSS;
 }
 
 float3 GetSpecularColor(float2 coord, float mipLayer, float3 fresnel, float roughness)
 {
-	float3 prefilteredSpeculr0 = DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(coord, 0, mipLayer)));
-	float3 prefilteredSpeculr1 = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(coord, 0, 0)));
+	float3 prefilteredSpeculr0 = DecodeRGBM(tex2Dlod(SpecularMapSamp, float4(coord, 0, mipLayer)));
+	float3 prefilteredSpeculr1 = DecodeRGBM(tex2Dlod(DiffuseMapSamp, float4(coord, 0, 0)));
 	float3 prefilteredSpeculr = 0;
 	prefilteredSpeculr = lerp(prefilteredSpeculr0, prefilteredSpeculr1, roughness);
 	prefilteredSpeculr = lerp(prefilteredSpeculr, prefilteredSpeculr1, pow2(1 - fresnel) * roughness);
@@ -77,7 +83,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, pow2(material.smoothness));
 	float3 fresnel = EnvironmentSpecularUnreal4(nv, material.smoothness, material.specular);
 
-	float3 prefilteredDiffuse = DecodeRGBT(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
+	float3 prefilteredDiffuse = DecodeRGBM(tex2Dlod(DiffuseMapSamp, float4(ComputeSphereCoord(N), 0, 0)));
 	float3 prefilteredSpeculr = GetSpecularColor(ComputeSphereCoord(R), mipLayer, fresnel, roughness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff * saturate(1 - fresnel);
@@ -132,7 +138,7 @@ float4 GenSpecularMapPS(
 	float3 V = ComputeSphereNormal(coord.xy / coord.w);
 	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection).rgb;
 
-	return EncodeRGBT(insctrColor);
+	return EncodeRGBM(insctrColor);
 }
 
 void GenDiffuseMapVS(
@@ -170,7 +176,7 @@ float4 GenDiffuseMapPS(
 	float3 normal = ComputeSphereNormal(coord.xy / coord.z);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
 
-	return EncodeRGBT(irradiance / PI);
+	return EncodeRGBM(irradiance / PI);
 }
 
 void EnvLightingVS(
@@ -227,7 +233,7 @@ void EnvLightingPS(
 }
 
 const float4 BackColor = float4(0,0,0,0);
-const float4 IBLColor  = float4(0,0.5,0,0.5);
+const float4 IBLColor  = float4(0,MIDPOINT_8_BIT,0,MIDPOINT_8_BIT);
 
 shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 

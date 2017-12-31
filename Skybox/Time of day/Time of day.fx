@@ -1,3 +1,7 @@
+#define ATM_SAMPLES_NUMS 16
+#define ATM_CLOUD_ENABLE 1
+#define ATM_LIMADARKENING_ENABLE 1
+
 #include "Time of day.conf"
 
 #include "../../shader/math.fxsub"

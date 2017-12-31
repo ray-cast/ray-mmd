@@ -7,6 +7,7 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 
 #include "shader/common.fxsub"
+#include "shader/atmospheric.fxsub"
 #include "shader/fog.fxsub"
 
 void AtmosphericFogVS(
@@ -60,9 +61,8 @@ float4 AtmosphericFogPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
-	setting.fogRange = mFogRange;
 	
-	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth, mFogDensityFar);
+	float3 fog = ComputeFogChapman(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth, mFogRange, mFogDensityFar);
 	return float4(fog, 0);
 }
 
@@ -109,11 +109,10 @@ float4 AtmosphericFogMiePS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
-	setting.fogRange = mFogRange;
 
-	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth);
+	float3 fog = ComputeFogChapmanMie(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, materialAlpha.linearDepth, mFogRange);
 
-#if FOG_WITH_CLOUD_CAST
+#if ATM_CLOUD_ENABLE
 	setting.cloud = mCloudDensity;
 	setting.cloudTop = 5.2 * mUnitDistance;
 	setting.cloudBottom = 5 * mUnitDistance;
@@ -192,9 +191,8 @@ float4 AtmosphericScatteringPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
-	setting.fogRange = mFogRange;
 	
-	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, material.linearDepth, mFogDensityFar);
+	float3 fogAmount = ComputeFogChapmanRayleigh(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection, material.linearDepth, mFogRange, mFogDensityFar);
 	fogAmount *= mFogIntensity;
 
 	float visibility = 1;
