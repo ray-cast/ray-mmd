@@ -40,7 +40,7 @@ float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "FogDensi
 float mFogDensityFarP : CONTROLOBJECT<string name="(self)"; string item = "FogDensityFar+";>;
 float mFogDensityFarM : CONTROLOBJECT<string name="(self)"; string item = "FogDensityFar-";>;
 
-static float mSunRadius      = lerp(lerp(mSunRadiusParams.x, mSunRadiusParams.y, mSunRadiusP), mSunRadiusParams.z, mSunRadiusM);
+static float mSunRadius      = lerp(lerp(mSunRadiusParams.x, mSunRadiusParams.z, mSunRadiusP), mSunRadiusParams.y, mSunRadiusM);
 static float mSunRadiance    = lerp(lerp(mSunRadianceParams.x, mSunRadianceParams.z, mSunRadianceP), mSunRadianceParams.y, mSunRadianceM);
 static float mSunPhase       = lerp(lerp(mSunPhaseParams.x, mSunPhaseParams.z, mSunPhaseP), mSunPhaseParams.y, mSunPhaseM);
 static float mSunTurbidity   = lerp(lerp(mSunTurbidityParams.x, mSunTurbidityParams.z, mSunTurbidityP), mSunTurbidityParams.y, mSunTurbidityM);
