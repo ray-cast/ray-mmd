@@ -2,6 +2,18 @@
 #	define ATM_SAMPLES_NUMS 16
 #endif
 
+#ifndef ATM_CLOUD_ENABLE
+#	define ATM_CLOUD_ENABLE 0
+#endif
+
+#ifndef ATM_LIMADARKENING_ENABLE
+#	define ATM_LIMADARKENING_ENABLE 0
+#endif
+
+#ifndef ATM_FOG_ENABLE
+#	define ATM_FOG_ENABLE 0
+#endif
+
 struct ScatteringParams
 {
 #if ATM_LIMADARKENING_ENABLE
@@ -76,7 +88,7 @@ float GetOpticalDepthSchueler(float h, float H, float earthRadius, float cosZeni
 	return H * ChapmanApproximation(earthRadius / H, h / H, cosZenith);
 }
 
-float3 Transmittance(ScatteringParams setting, float3 L, float3 V)
+float3 GetTransmittance(ScatteringParams setting, float3 L, float3 V)
 {
 	float ch = GetOpticalDepthSchueler(L.y, setting.rayleighHeight, setting.earthRadius, V.y);
 	return exp(-(setting.waveLambdaMie + setting.waveLambdaRayleigh) * ch);
@@ -175,7 +187,7 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float angle = (1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius;
 	float cosAngle = 1 - cos(angle * PI * 0.5);
 
-	float3 limaDarkening = Transmittance(setting, -L, V);
+	float3 limaDarkening = GetTransmittance(setting, -L, V);
 	limaDarkening *= pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0)) * intersectionTest;
 
 	sky += limaDarkening;
@@ -183,3 +195,63 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 
 	return float4(sky, phaseNight * intersectionTest);
 }
+
+#if ATM_FOG_ENABLE
+float3 ComputeFogChapmanMie(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance, float density)
+{
+	float3 start = eye - setting.earthCenter;
+	float3 end = start + V * distance * density;
+
+	float3 insctrMie = 0.0;
+	float3 insctrRayleigh = 0.0;
+	float3 insctrOpticalLength = 1;
+	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
+
+	float3 insctrTotalMie = insctrMie * phaseMie;
+
+	return insctrTotalMie * setting.sunRadiance;
+}
+
+float3 ComputeFogChapmanRayleigh(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance, float density, float densityFar)
+{
+	float3 start = eye - setting.earthCenter;
+	float3 end = start + V * distance * density;
+
+	float3 insctrMie = 0.0;
+	float3 insctrRayleigh = 0.0;
+	float3 insctrOpticalLength = 1;
+	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+
+	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh * distance * densityFar;
+
+	return insctrTotalRayleigh * setting.sunRadiance;
+}
+
+float3 ComputeFogChapman(ScatteringParams setting, float3 eye, float3 V, float3 L, float distance, float density, float densityFar)
+{
+	float3 start = eye - setting.earthCenter;
+	float3 end = start + V * distance * density;
+
+	float3 insctrMie = 0.0;
+	float3 insctrRayleigh = 0.0;
+	float3 insctrOpticalLength = 1;
+	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
+
+	float phaseTheta = dot(V, -L);
+	float phaseMie = ComputePhaseMie(phaseTheta, setting.mieG);
+	float phaseRayleigh = ComputePhaseRayleigh(phaseTheta);
+
+	float3 insctrTotalMie = insctrMie * phaseMie;
+	float3 insctrTotalRayleigh = insctrRayleigh * phaseRayleigh * distance * densityFar;
+
+	float3 scattering = insctrTotalMie + insctrTotalRayleigh;
+
+	return scattering * setting.sunRadiance;
+}
+#endif

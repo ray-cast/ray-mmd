@@ -49,38 +49,18 @@ float4 ScatteringPS(
 	return linear2srgb(insctrColor);
 }
 
-const float4 BackColor = 0.0;
+#define OBJECT_TEC(name, mmdpass)\
+	technique name<string MMDPass = mmdpass;\
+	>{\
+		pass DrawObject {\
+			AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
+			VertexShader = compile vs_3_0 ScatteringVS();\
+			PixelShader = compile ps_3_0 ScatteringPS();\
+		}\
+	}
 
-technique MainTech<string MMDPass = "object";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawScattering;";
->{
-	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
-		VertexShader = compile vs_3_0 ScatteringVS();
-		PixelShader  = compile ps_3_0 ScatteringPS();
-	}
-}
-technique MainTechSS<string MMDPass = "object_ss";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawScattering;";
->{
-	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
-		VertexShader = compile vs_3_0 ScatteringVS();
-		PixelShader  = compile ps_3_0 ScatteringPS();
-	}
-}
+OBJECT_TEC(MainTec0, "object")
+OBJECT_TEC(MainTecBS0, "object_ss")
 
 technique EdgeTec<string MMDPass = "edge";>{}
 technique ShadowTec<string MMDPass = "shadow";>{}

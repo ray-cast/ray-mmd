@@ -5,6 +5,7 @@
 
 #define ATM_SAMPLES_NUMS 4
 #define ATM_CLOUD_ENABLE 0
+#define ATM_FOG_ENABLE 1
 #define ATM_LIMADARKENING_ENABLE 0
 
 static float FogSampleLength = 0.9;

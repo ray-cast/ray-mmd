@@ -36,6 +36,20 @@ float ComputeClound(ScatteringParams setting, float3 P)
 	return cloud;
 }
 
+float HitCloudsTest(ScatteringParams setting, float3 eye, float3 V, float3 L)
+{
+	float2 cloudsOuterIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudTop);
+	float2 cloudsInnerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius + setting.cloudBottom);
+
+	if (cloudsInnerIntersections.y > 0)
+		cloudsOuterIntersections.x = cloudsInnerIntersections.y;
+
+	float3 cloudsStart = eye + V * max(0, cloudsOuterIntersections.x);
+	float3 cloudsEnd = eye + V * cloudsOuterIntersections.y;
+
+	return exp(-0.002 * ComputeClound(setting, cloudsStart));
+}
+
 float ComputeCloudInsctrIntegral(ScatteringParams setting, float3 start, float3 end)
 {
 	float3 sampleStep = (end - start) / float(NUMS_SAMPLES_CLOUD2);
@@ -120,12 +134,5 @@ float4 ComputeCloudsInscattering(ScatteringParams setting, float3 eye, float3 V,
 	float3 scattering = lerp(cloud, sky, exp(-0.00002 * cloudsOpticalLength * insctrMie));
 	scattering = lerp(sky, scattering, V.y);
 
-	float angle = (1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius;
-	float cosAngle = 1 - cos(angle * PI * 0.5);
-
-	float4 limaDarkening = 0;
-	limaDarkening.rgb = Transmittance(setting, -L, V);
-	limaDarkening.a = pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.76) ? smoothstep(0.76, 1.0, angle) : 0.0)) * intersectionTest;
-
-	return float4(scattering * setting.sunRadiance + limaDarkening.rgb * limaDarkening.a, phaseNight * intersectionTest);
+	return float4(scattering * setting.sunRadiance, phaseNight * intersectionTest);
 }

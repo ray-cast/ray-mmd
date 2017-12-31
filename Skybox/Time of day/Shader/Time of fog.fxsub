@@ -8,7 +8,10 @@
 
 #include "shader/common.fxsub"
 #include "shader/atmospheric.fxsub"
-#include "shader/fog.fxsub"
+
+#if ATM_CLOUD_ENABLE
+#	include "shader/cloud.fxsub"
+#endif
 
 void AtmosphericFogVS(
 	in float4 Position : POSITION,

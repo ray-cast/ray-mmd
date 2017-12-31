@@ -87,31 +87,17 @@ float4 ScatteringWithCloudsPS(
 const float4 BackColor = 0.0;
 
 technique MainTech<string MMDPass = "object";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawScattering;";
 >{
 	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
+		AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
 		VertexShader = compile vs_3_0 ScatteringVS();
 		PixelShader  = compile ps_3_0 ScatteringPS();
 	}
 }
 technique MainTechSS<string MMDPass = "object_ss";
-	string Script =
-	"RenderColorTarget=;"
-	"ClearSetColor=BackColor;"
-	"Clear=Color;"
-	"Pass=DrawScattering;";
 >{
 	pass DrawScattering {
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
+		AlphaTestEnable = FALSE; AlphaBlendEnable = FALSE;\
 		VertexShader = compile vs_3_0 ScatteringVS();
 		PixelShader  = compile ps_3_0 ScatteringWithCloudsPS();
 	}
