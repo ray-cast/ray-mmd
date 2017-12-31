@@ -70,16 +70,16 @@ float ChapmanApproximation(float X, float h, float cosZenith)
 	float c = sqrt(X + h);
 	float c_exp_h = c * exp(-h);
 
-	if (cosZenith >= 0)
+	if (cosZenith >= 0.0)
 	{
-		return c_exp_h / (c * cosZenith + 1);
+		return c_exp_h / (c * cosZenith + 1.0);
 	}
 	else
 	{
 		float x0 = sqrt(1 - cosZenith * cosZenith) * (X + h);
 		float c0 = sqrt(x0);
 
-		return 2 * c0 * exp(X - x0) - c_exp_h / (1 - c * cosZenith);
+		return 2.0 * c0 * exp(X - x0) - c_exp_h / (1.0 - c * cosZenith);
 	}
 }
 
@@ -111,7 +111,7 @@ float2 ComputeOpticalDepth(ScatteringParams setting, float3 samplePoint, float3 
 
 void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float3 V, float3 L, bool infinite, out float3 transmittance, out float3 insctrMie, out float3 insctrRayleigh)
 {
-	float inf_neg = infinite ? 1 : -1;
+	float inf_neg = infinite ? 1.0 : -1.0;
 
 	float3 sampleStep = (end - start) / ATM_SAMPLES_NUMS;
 	float3 samplePoint = end - sampleStep;
@@ -119,7 +119,7 @@ void AerialPerspective(ScatteringParams setting, float3 start, float3 end, float
 
 	float sampleLength = length(sampleStep);
 
-	float3 scattering = 0;
+	float3 scattering = 0.0;
 	float2 lastOpticalDepth = ComputeOpticalDepth(setting, end, V, L, inf_neg);
 
 	for (int i = 1; i < ATM_SAMPLES_NUMS; i++, samplePoint -= sampleStep)
@@ -149,7 +149,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 	clip(outerIntersections.y);
 
 	float2 innerIntersections = ComputeRaySphereIntersection(eye, V, setting.earthCenter, setting.earthRadius);
-	if (innerIntersections.x > 0)
+	if (innerIntersections.x > 0.0)
 	{
 		neg = false;
 		outerIntersections.y = innerIntersections.x;
@@ -157,7 +157,7 @@ bool ComputeSkyboxChapman(ScatteringParams setting, float3 eye, float3 V, float3
 
 	eye -= setting.earthCenter;
 
-	float3 start = eye + V * max(0, outerIntersections.x);
+	float3 start = eye + V * max(0.0, outerIntersections.x);
 	float3 end = eye + V * outerIntersections.y;
 
 	AerialPerspective(setting, start, end, V, L, neg, transmittance, insctrMie, insctrRayleigh);
@@ -170,7 +170,7 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 {
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
-	float3 insctrOpticalLength = 1;
+	float3 insctrOpticalLength = 1.0;
 	bool intersectionTest = ComputeSkyboxChapman(setting, eye, V, L, insctrOpticalLength, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);
@@ -184,11 +184,11 @@ float4 ComputeSkyInscattering(ScatteringParams setting, float3 eye, float3 V, fl
 	float3 sky = (insctrTotalMie + insctrTotalRayleigh) * setting.sunRadiance;
 
 #if ATM_LIMADARKENING_ENABLE
-	float angle = (1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius;
-	float cosAngle = 1 - cos(angle * PI * 0.5);
+	float angle = saturate((1 - phaseTheta) * sqrt(abs(L.y)) * setting.sunRadius);
+	float cosAngle = cos(angle * PI * 0.5);
 
 	float3 limaDarkening = GetTransmittance(setting, -L, V);
-	limaDarkening *= pow((1.0 - 1.0 * cosAngle), float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0)) * intersectionTest;
+	limaDarkening *= pow(cosAngle, float3(0.420, 0.503, 0.652)) * (1.0 - ((angle >= 0.9) ? smoothstep(0.9, 1.0, angle) : 0.0)) * intersectionTest;
 
 	sky += limaDarkening;
 #endif
@@ -204,7 +204,7 @@ float3 ComputeFogChapmanMie(ScatteringParams setting, float3 eye, float3 V, floa
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
-	float3 insctrOpticalLength = 1;
+	float3 insctrOpticalLength = 1.0;
 	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);
@@ -222,7 +222,7 @@ float3 ComputeFogChapmanRayleigh(ScatteringParams setting, float3 eye, float3 V,
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
-	float3 insctrOpticalLength = 1;
+	float3 insctrOpticalLength = 1.0;
 	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);
@@ -240,7 +240,7 @@ float3 ComputeFogChapman(ScatteringParams setting, float3 eye, float3 V, float3 
 
 	float3 insctrMie = 0.0;
 	float3 insctrRayleigh = 0.0;
-	float3 insctrOpticalLength = 1;
+	float3 insctrOpticalLength = 1.0;
 	AerialPerspective(setting, start, end, V, L, V.y > 0 ? true : false, insctrOpticalLength, insctrMie, insctrRayleigh);
 
 	float phaseTheta = dot(V, -L);

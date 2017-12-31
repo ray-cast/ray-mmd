@@ -7,7 +7,7 @@ float3 ComputeWaveLengthMie(float3 lambda, float3 K, float T, float U = 4)
 {
 	float c_pi = (0.6544 * T - 0.6510) * 1e-16 * PI;
 	float mieConst = 0.434 * c_pi * pow(PI_2, U - 2.0);
-	return mieConst * K / pow(lambda, U - 2);
+	return mieConst * K / pow(lambda, U - 2.0);
 }
 
 float3 ComputeWaveLengthRayleigh(float3 lambda)
@@ -17,7 +17,7 @@ float3 ComputeWaveLengthRayleigh(float3 lambda)
 	static const float pn = 0.035;
 	static const float n2 = n * n;
 	static const float pi3 = PI * PI * PI;
-	static const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3 * N) * ((6 + 3 * pn) / (6 - 7 * pn));
+	static const float rayleighConst = (8.0 * pi3 * pow2(n2 - 1.0)) / (3.0 * N) * ((6.0 + 3.0 * pn) / (6.0 - 7.0 * pn));
 	return rayleighConst / (lambda * lambda * lambda * lambda);
 }
 
@@ -32,17 +32,17 @@ float ComputePhaseMie(float theta, float g)
 	float rightTop = 1.0 + theta2;
 	float rightBottom = pow(max(1e-5, 1.0 + g2 - 2.0 * g * saturate(theta)), 1.5);
 
-	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4 * PI);
+	return ((leftTop / leftBottom) * (rightTop / rightBottom)) / (4.0 * PI);
 }
 
 float ComputePhaseMieHG(float theta, float g)
 {
 	float g2 = g * g;
-	return (1 - g2) / pow(1 + g2 - 2 * g * saturate(theta), 1.5) / (4 * PI);
+	return (1.0 - g2) / pow(1.0 + g2 - 2.0 * g * saturate(theta), 1.5) / (4.0 * PI);
 }
 
 float ComputePhaseRayleigh(float theta)
 {
 	float theta2 = theta * theta;
-	return (theta2 * 0.75 + 0.75) / (4 * PI);
+	return (theta2 * 0.75 + 0.75) / (4.0 * PI);
 }
