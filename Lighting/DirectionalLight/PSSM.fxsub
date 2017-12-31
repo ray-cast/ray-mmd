@@ -30,11 +30,11 @@ static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin,
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-static const float4x4 lightParam = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
-sampler DiffuseSamp = sampler_state
+sampler DiffuseMapSamp = sampler_state
 {
 	texture = <DiffuseMap>;
 	MINFILTER = POINT; MAGFILTER = POINT; MIPFILTER = POINT;
@@ -52,7 +52,7 @@ void CascadeShadowMapVS(
 	oTexcoord0 = Texcoord;
 
 	oTexcoord1 = mul(Position, matLightViewProject);
-	oTexcoord1.xy = oTexcoord1.xy * lightParam[PSSM_LAYERED_NUM].xy + lightParam[PSSM_LAYERED_NUM].zw;
+	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
 
 	oPosition = oTexcoord1;
 	oPosition.z /= mPSSMDepthZMax;
@@ -65,7 +65,7 @@ float4 CascadeShadowMapPS(
 #if CASTER_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-	if (use_texture) alpha *= tex2D(DiffuseSamp, coord0.xy).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord0.xy).a;
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif

@@ -125,7 +125,7 @@ static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightV
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
-float ShadowPCF(sampler source, float2 coord, float receiverDepth) 
+float2 ShadowPCF(sampler source, float2 coord, float receiverDepth) 
 {
 	float2 shadow = 0.0;
 
@@ -140,7 +140,7 @@ float ShadowPCF(sampler source, float2 coord, float receiverDepth)
 		}
 	}
 
-	return ChebyshevUpperBound(shadow, receiverDepth, 0.01, LightHardness);
+	return shadow;
 }
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
@@ -170,7 +170,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 
 	coord.xy += ShadowMapOffset;
 
-	float shadow = 0;
+	float2 shadow = 0;
 
 	[branch]
 	if (coord.w == 0)
@@ -182,7 +182,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	else
 		shadow = ShadowPCF(PSSM4Samp, coord.xy, receiverDepth);
 
-	return shadow;
+	return ChebyshevUpperBound(shadow, receiverDepth, 0.01, LightHardness);
 }
 #endif
 
