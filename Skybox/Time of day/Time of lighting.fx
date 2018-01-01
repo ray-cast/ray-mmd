@@ -159,9 +159,8 @@ void GenDiffuseMapVS(
 	oTexcoord4 = SHSamples(SpecularMapSamp, 4);
 	oTexcoord5 = SHSamples(SpecularMapSamp, 5);
 	oTexcoord6 = oPosition = mul(Position * float4(2, 2, 2, 1), matViewProject);
-	oTexcoord6.xy = (oTexcoord6.xy / oTexcoord6.w) * 0.5 + 0.5;
+	oTexcoord6.xy = PosToCoord(oTexcoord6.xy / oTexcoord6.w);
 	oTexcoord6.xy = oTexcoord6.xy * oTexcoord6.w;
-	oTexcoord6.z = oTexcoord6.w;
 }
 
 float4 GenDiffuseMapPS(
@@ -173,7 +172,7 @@ float4 GenDiffuseMapPS(
 	in float3 SH5 : TEXCOORD5,
 	in float4 coord : TEXCOORD6) : COLOR0
 {
-	float3 normal = ComputeSphereNormal(coord.xy / coord.z);
+	float3 normal = ComputeSphereNormal(coord.xy / coord.w);
 	float3 irradiance = SHCreateIrradiance(normal, SH0, SH1, SH2, SH3, SH4, SH5);
 
 	return EncodeRGBM(irradiance / PI);
