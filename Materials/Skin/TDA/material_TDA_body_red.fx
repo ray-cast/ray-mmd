@@ -109,10 +109,10 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_UV_FLIP 2
 #define CUSTOM_A_MAP_COLOR_FLIP 0
 #define CUSTOM_A_MAP_SWIZZLE 0
-#define CUSTOM_A_MAP_APPLY_SCALE 0
+#define CUSTOM_A_MAP_APPLY_SCALE 1
 #define CUSTOM_A_MAP_FILE "textures/curvature_body.png"
 
-const float customA = 0.6;
+const float customA = 0.5;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 1
@@ -120,9 +120,8 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 1
 #define CUSTOM_B_MAP_APPLY_SCALE 1
 #define CUSTOM_B_MAP_FILE "textures/thickness_body.png"
-#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 customB = float3(1.0,0.0,0.0) * 1.5;
+const float3 customB = float3(1.0,0.0,0.0);
 const float customBMapLoopNum = 1.0;
 
 #include "../../material_common_2.0.fxsub"

@@ -112,7 +112,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 1
 #define CUSTOM_A_MAP_FILE "textures/curvature_face.png"
 
-const float customA = 1.2;
+const float customA = 0.5;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 1
