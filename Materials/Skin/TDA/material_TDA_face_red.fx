@@ -41,14 +41,14 @@ const float normalMapLoopNum = 1.0;
 const float normalSubMapScale = 1.5;
 const float normalSubMapLoopNum = 25.0;
 
-#define SMOOTHNESS_MAP_FROM 9
+#define SMOOTHNESS_MAP_FROM 0
 #define SMOOTHNESS_MAP_TYPE 0
 #define SMOOTHNESS_MAP_UV_FLIP 0
 #define SMOOTHNESS_MAP_SWIZZLE 0
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.0;
+const float smoothness = 0.2;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -67,7 +67,7 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.25;
+const float3 specular = 0.35;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
