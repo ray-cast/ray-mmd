@@ -193,7 +193,7 @@ float4 ShadingTransparentPS(
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = material.customDataB * material.customDataA * any(material.lightModel == SHADINGMODELID_EMISSIVE);
 
-	lighting += lerp(emissive0, emissive1, MRT8.a);
+	lighting += lerp(emissive0, emissive1, MRT8.a) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
 #if OUTLINE_QUALITY
 	#if OUTLINE_QUALITY == 1
