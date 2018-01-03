@@ -112,6 +112,7 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 ##### Bronze supporters:
 * urara在処
 * rin kari
+* MMD-Seraph
 
 `Thanks! and other supporters! (If you would like to be added or remove from this list Please contact me)`
 

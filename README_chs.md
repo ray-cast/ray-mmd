@@ -102,6 +102,7 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 ##### Bronze supporters:
 * urara在処
 * rin kari
+* MMD-Seraph
 
 `感谢所有对我的支持! (如果你想要在这里添加或者移除请通过下面的方式来联系我)`
 
