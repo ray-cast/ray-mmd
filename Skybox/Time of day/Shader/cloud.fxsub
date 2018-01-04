@@ -1,7 +1,7 @@
 #define NUMS_SAMPLES_CLOUD 8
 #define NUMS_SAMPLES_CLOUD2 8
 
-texture NoiseMap<string ResourceName = "shader/textures/cloud.dds";>; 
+texture NoiseMap<string ResourceName = "shader/textures/cloud.tga";>; 
 sampler NoiseMapSamp = sampler_state {
 	texture = <NoiseMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
@@ -31,9 +31,9 @@ float ComputeClound(ScatteringParams setting, float3 P)
 	float3 P2 = P + setting.clouddir * 0.5;
 
 	float cloud = 0.0;
-	cloud += tex2Dlod(NoiseMapSamp, float4(P1.xz * 0.00009, 0, 0)).a;
-	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00006, 0, 0)).a;
-	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * 0.00003, 0, 0)).a;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P1.xz * float2(0.00009 * 2.0, 0.00009), 0, 0)).r;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * float2(0.00006 * 2.0, 0.00006), 0, 0)).r;
+	cloud += tex2Dlod(NoiseMapSamp, float4(P2.xz * float2(0.00003 * 2.0, 0.00003), 0, 0)).r;
 	cloud *= smoothstep(0.0, 0.5, cloudHeight) * smoothstep(1.0, 0.5, cloudHeight);
 	cloud *= setting.cloud;
 
