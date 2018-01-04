@@ -78,8 +78,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
-static float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static float2 ShadowMapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static float2 ShadowMapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
 {
@@ -98,7 +98,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 		[unroll]
 		for (int y = -sampleRadius; y <= sampleRadius; y++)
 		{
-			float2 pos = coord + float2(x, y) * ShadowmapOffset2;
+			float2 pos = coord + float2(x, y) * ShadowMapOffset2;
 			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * sampleKernel[sampleRadius + x] * sampleKernel[sampleRadius + y];
 		}
 	}

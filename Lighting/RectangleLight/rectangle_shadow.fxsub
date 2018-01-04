@@ -27,16 +27,12 @@ sampler DiffuseMapSamp = sampler_state
 void ShadowMapVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	in float3 Normal   : NORMAL,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
-	float distanceSqr = sqrt(distance(Position.xyz, CameraPosition));
-	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
+	oTexcoord1 = oPosition = mul(Position, matLightViewProject);
 }
 
 float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR

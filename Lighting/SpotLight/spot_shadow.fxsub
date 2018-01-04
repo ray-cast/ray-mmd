@@ -10,7 +10,7 @@ float mAngleM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Ang
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float LightAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30, mAngleM));
+static float LightAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30.0f, mAngleM));
 
 static float3 LightPosition = mPosition;
 static float3 LightDirection = normalize(mDirection - mPosition);
@@ -32,17 +32,13 @@ sampler DiffuseMapSamp = sampler_state
 void ShadowMapVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	in float3 Normal   : NORMAL,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float cosAngle = 1 - saturate(dot(Normal, -LightDirection));
-	float distanceSqr = sqrt(distance(Position.xyz, CameraPosition));
-	float distanceBias = cosAngle * distanceSqr * 0.00001;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = mul(Position + float4(Normal * distanceBias, 0), matLightView);
-	oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
+	oTexcoord1 = mul(Position, matLightView);
+	oPosition = mul(Position, matLightViewProject);
 }
 
 float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
