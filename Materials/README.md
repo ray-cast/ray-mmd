@@ -100,6 +100,7 @@ SubAlbedo:
 * ##### ALBEDO_SUB_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
 * ##### ALBEDO_SUB_MAP_APPLY_SCALE (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
 * ##### ALBEDO_SUB_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
+
 * ##### const float3 albedoSub = 0.0 ~ 1.0;
 * ##### const float2 albedoSubMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
@@ -124,6 +125,7 @@ Alpha:
     * `#define SMOOTHNESS_MAP_SWIZZLE 1`
 
 * ##### ALPHA_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
+
 * ##### const float alpha = 0.0 ~ 1.0;
 * ##### const float2 alphaMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
@@ -145,6 +147,7 @@ and check the scene that all `normals` are not `zero-length` (XYZ are same equal
 
 * ##### NORMAL_MAP_UV_FLIP (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
 * ##### NORMAL_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
+
 * ##### const float normalMapScale = 0 ~ inf;
 * ##### const float normalMapLoopNum = 0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
@@ -154,12 +157,13 @@ SubNormal
 * ##### NORMAL_SUB_MAP_TYPE (see [NORMAL_MAP_TYPE](#NORMAL_MAP_TYPE))
 * ##### NORMAL_SUB_MAP_UV_FLIP (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
 * ##### NORMAL_SUB_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
+
 * ##### const float normalSubMapScale = 0.0 ~ inf;
 * ##### const float normalSubMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Smoothness
 -------------
-　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
+　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SMOOTHNESS_MAP_TYPE
@@ -179,7 +183,7 @@ Smoothness
 
 Metalness:
 -------------
-　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel
+　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
