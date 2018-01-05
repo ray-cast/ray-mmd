@@ -163,7 +163,7 @@ SubNormal
 
 Smoothness
 -------------
-　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
+　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for the default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SMOOTHNESS_MAP_TYPE
@@ -183,7 +183,7 @@ Smoothness
 
 Metalness:
 -------------
-　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `METALNESS_MAP_SWIZZLE`
+　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for the default channel by set `code` to the `METALNESS_MAP_SWIZZLE`
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
@@ -196,9 +196,7 @@ Metalness:
 
 Specular:
 -------------
-　　It has no effect when `Metalness > 0` and `CUSTOM_ENABLE > 0`, specular maps are not `environment` and `sphere` maps,
-only modifies the `reflection index` of the model, used to change the colors of the environment reflect.
-if you don't want model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
+　　Specular maps aren't `environment` and `sphere` maps, only modifies the `reflection index` for the model, that is used for control over the colors of the reflection, and there have two type of specular map that are `RGB` and `grayscale`, but they have no effect when the `metalness` is greater than zero, and that RGB type of specular map will not work with when `CUSTOM_ENABLE` is not equal to zero, so you can use the grayscale map instead of `RGB` by sets `code` to the `SPECULAR_MAP_TYPE`, and if you don't feel like the model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
 
 * ##### SPECULAR_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SPECULAR_MAP_TYPE
@@ -227,7 +225,7 @@ if you don't want model to reflect the specular color, you can set zero to `cons
 Occlusion
 -------------
 　　The ambient occlusion (AO) is an effect that approximates the attenuation of environment light due to occlusion.
-Bacause `sky lighting` from many directions, cannot simply to calculating shadows in the real-time.
+Bacause `Sky lighting` from many directions, cannot simply to calculating shadows in the real-time.
 A simply way able to replaced by using `occlusion map` and `SSAO`,
 and also you can set zero to the `const float occlusion = 1.0` if you don't want `diffuse` and `specular`.
 
