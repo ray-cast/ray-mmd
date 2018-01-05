@@ -183,7 +183,7 @@ Smoothness
 
 Metalness:
 -------------
-　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`
+　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for default channel by set `code` to the `METALNESS_MAP_SWIZZLE`
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
