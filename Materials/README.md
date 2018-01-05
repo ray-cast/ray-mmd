@@ -6,10 +6,10 @@ Material
 
 ALBEDO:
 ------
-　　`Albedo` is also called `base color`, defines the overall color of the material and clamped between `0.0` and `1.0`
+　　`Albedo` is also called `base color`, defines the overall color of the material, thus uses all 3 color channels, the albedo maps are [normalized value](https://en.wikipedia.org/wiki/Unit_vector) in the [sRGB](https://en.wikipedia.org/wiki/SRGB) color-space and clamped between `0.0` and `1.0`
 
 * ##### ALBEDO_MAP_FROM  
-    You can use a `linear-color` and `texture` to change the colors in your model by set the `code` to the `ALBEDO_MAP_FROM`.
+    You can use a `linear-color` and `sRGB-texture` to change the colors in your model by set the following `code` to the `ALBEDO_MAP_FROM`.
 
     `0` . Parameter fetch from `linear-color` from the `const float3 albedo = 1.0`.  
     `1` . You can use a `srgb-image` (bmp, png, jpg, tga, dds) by enter a relative and absolutely path to the `ALBEDO_MAP_FILE`.  
@@ -159,7 +159,7 @@ SubNormal
 
 Smoothness
 -------------
-　　Default data will fetched params from the `SpecularPower` and convert the `SpecularPower` to `Smoothness`.
+　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SMOOTHNESS_MAP_TYPE
@@ -179,7 +179,7 @@ Smoothness
 
 Metalness:
 -------------
-　　Metalness is one method of determining reflectivity, used to instead of old pipeline such as specular highlight map
+　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
@@ -192,7 +192,7 @@ Metalness:
 
 Specular:
 -------------
-　　It has no effect on `Metalness > 0` and `CUSTOM_ENABLE > 0`, specular maps are not `environment` and `sphere` maps,
+　　It has no effect when `Metalness > 0` and `CUSTOM_ENABLE > 0`, specular maps are not `environment` and `sphere` maps,
 only modifies the `reflection index` of the model, used to change the colors of the environment reflect.
 if you don't want model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
 
