@@ -156,6 +156,8 @@ check the scene that all `normals` are not `zero-length` (XYZ are the same equal
 
 SubNormal
 -------------
+　　this entry is designed to add detail to a base normal map in a consistent way, that pack two normal map into a normal map
+
 * ##### NORMAL_SUB_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_SUB_MAP_TYPE (see [NORMAL_MAP_TYPE](#NORMAL_MAP_TYPE))
 * ##### NORMAL_SUB_MAP_UV_FLIP (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
