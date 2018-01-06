@@ -131,9 +131,12 @@ Alpha:
 
 Normal:
 -------------
-　　`SSAO` only supports non-empty `normal` else will result a white edge issue, 
-when you see some `bugs` that looks like some white edges on your actor's model, you can put the scene in the `PMXEditor`
-and check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
+　　The normal maps alters the topography of the mesh and alters the angle of the light to add shadows to it in the details, 
+this map is almost always uses tangent-space map with three channels in the most time, but the influences of some other factors such as old pipeline and bandwidth,
+this allows you to use different type to access the different texture of the normal map, see the `NORMAL_MAP_TYPE` for more information, 
+in order to calculate the light in the real-time, All input models must have the normals else will result a white edge issue, 
+that looks like some white edges on your model, you can put the scene in the `PMXEditor` and 
+check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_MAP_TYPE
@@ -149,7 +152,7 @@ and check the scene that all `normals` are not `zero-length` (XYZ are same equal
 * ##### NORMAL_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
 * ##### const float normalMapScale = 0 ~ inf;
-* ##### const float normalMapLoopNum = 0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 normalMapLoopNum = 0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 SubNormal
 -------------
@@ -163,7 +166,11 @@ SubNormal
 
 Smoothness
 -------------
-　　Smoothness maps determines the unevenness of surface, this is always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for the default channel by set `code` to the `SMOOTHNESS_MAP_SWIZZLE`, it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file and convert the `SpecularPower` to `Smoothness` as default value.
+　　Smoothness maps determines the unevenness of surface, this is always a grayscale map with mono channel, 
+but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, 
+also, you can specify what channel will happen for the default channel by sets `code` to the `SMOOTHNESS_MAP_SWIZZLE`, and 
+it's almost a time when a material_2.0.fx is used, it'll fetched data from a `SpecularPower` from the `PMX` file 
+and convert the `SpecularPower` to `Smoothness` as default value.
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SMOOTHNESS_MAP_TYPE
@@ -179,11 +186,14 @@ Smoothness
 * ##### SMOOTHNESS_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
 * ##### const float smoothness = 0.0 ~1.0;
-* ##### const float smoothnessMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 smoothnessMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Metalness:
 -------------
-　　Metalness is one method of determining reflectivity and what part of the texture is a metal, used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map, but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, you can also specify what channel will happen for the default channel by set `code` to the `METALNESS_MAP_SWIZZLE`
+　　Metalness is one method of determining reflectivity and what part of the texture is a metal, 
+used to instead of old pipeline such as specular highlight map, the metalness maps are always a grayscale map with mono channel, 
+but there is almost never grayscale map used, and as such only uses the `R` channel in the `RGBA` map as default channel, 
+also, you can specify what channel will happen for the default channel by sets `code` to the `METALNESS_MAP_SWIZZLE`
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
@@ -192,11 +202,15 @@ Metalness:
 * ##### METALNESS_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
 * ##### const float metalness = 0.0 ~ 1.0;
-* ##### const float metalnessMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 metalnessMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Specular:
 -------------
-　　Specular maps aren't `environment` and `sphere` maps, only modifies the `reflection index` for the model, that is used for control over the colors of the reflection, and there have two type of specular map that are `RGB` and `grayscale`, but they have no effect when the `metalness` is greater than zero, and that RGB type of specular map will not work with when `CUSTOM_ENABLE` is not equal to zero, so you can use the grayscale map instead of `RGB` by sets `code` to the `SPECULAR_MAP_TYPE`, and if you don't feel like the model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
+　　Specular maps aren't environment and sphere maps, only modifies the `reflection index` for the model, 
+that is used for control over the colors of the reflection, and there have two type of specular map that are `RGB` and `grayscale`, 
+but they have no effect when the `metalness` is greater than zero, and that RGB type of specular map will not work with when `CUSTOM_ENABLE` is not equal to zero, 
+so you can use the grayscale map instead of `RGB` by sets `code` to the `SPECULAR_MAP_TYPE`, 
+and if you don't feel like the model to reflect the specular color, you can set zero to `const float3 specular = 0.0;`
 
 * ##### SPECULAR_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SPECULAR_MAP_TYPE
@@ -216,18 +230,18 @@ Specular:
     Anything less than `2%` is physically impossible and is instead considered to be shadowing  
     For example: The reflectance coefficient is equal to `F(x) = (x - 1)^2 / (x + 1)^2`  
     Consider light that is incident upon a transparent medium with a refractive index of `1.5`  
-    That result will be equal `to (1.5 - 1)^2 / (1.5 + 1)^2` = `0.04` (or `4%`).  
+    That result will be equal to `(1.5 - 1)^2 / (1.5 + 1)^2` = `0.04` (or `4%`).  
     Specular to reflection coefficient is equal to `F(x) = 0.08*x`, if the `x` is equal to `0.5` the result will be `0.04`.  
-    So default value is `0.5` for `0.04` coeff and clamped value between `0.0` ~ `1.0`  
+    So default value is `0.5` for `0.04` coefficient and clamped value between `0.0` ~ `1.0`  
 
 * ##### const float2 specularMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Occlusion
 -------------
 　　The ambient occlusion (AO) is an effect that approximates the attenuation of environment light due to occlusion.
-Bacause `Sky lighting` from many directions, cannot simply to calculating shadows in the real-time.
+Bacause sky lighting from many directions, cannot simply to calculating shadows in the real-time.
 A simply way able to replaced by using `occlusion map` and `SSAO`,
-and also you can set zero to the `const float occlusion = 1.0` if you don't want `diffuse` and `specular`.
+and if you don't want `diffuse` and `specular`, you can set zero to the `const float occlusion = 1.0`.
 
 * ##### OCCLUSION_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 
@@ -244,7 +258,7 @@ and also you can set zero to the `const float occlusion = 1.0` if you don't want
 * ##### OCCLUSION_MAP_APPLY_SCALE (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
 
 * ##### const float occlusion = 0.0 ~ 1.0;
-* ##### const float occlusionMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 occlusionMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Parallax:
 -------------
@@ -263,7 +277,7 @@ Parallax:
 * ##### PARALLAX_MAP_FILE (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
 * ##### const float parallaxMapScale = 0.0 ~ inf;
-* ##### const float parallaxMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 parallaxMapLoopNum = 0.0 ~ inf; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 Emissive
 -------------
@@ -322,7 +336,7 @@ Shading Model ID
 * ##### CUSTOM_A_MAP_FILE "custom.png" (see [ALBEDO_MAP_FILE](#ALBEDO_MAP_FILE))
 
 * ##### const float customA = 0.0 ~ 1.0; (linear-space)
-* ##### const float customAMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
+* ##### const float2 customAMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
 
 * ##### CUSTOM_B_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### CUSTOM_B_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
