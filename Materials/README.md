@@ -156,7 +156,8 @@ check the scene that all `normals` are not `zero-length` (XYZ are the same equal
 
 SubNormal
 -------------
-　　this entry is designed to add detail to a base normal map in a consistent way, that pack two normal map into a normal map by using [Reoriented Normal Mapping](https://www.shadertoy.com/view/4t2SzR)
+　　this entry is designed to add detail to a base normal map in a consistent way, 
+that pack two normal map into a normal map by using [Reoriented Normal Mapping](https://www.shadertoy.com/view/4t2SzR), 
 also, you can see the [docs](http://blog.selfshadow.com/publications/blending-in-detail/) for more information.
 
 * ##### NORMAL_SUB_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
