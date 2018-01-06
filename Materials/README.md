@@ -136,7 +136,7 @@ this map is almost always uses tangent-space map with three channels in the most
 this allows you to use different type to access the different texture of the normal map, see the `NORMAL_MAP_TYPE` for more information, 
 in order to calculate the light in the real-time, All input models must have the normals else will result a problem with the white edge, 
 that looks like some white edges on your model, so you can put the scene in the `PMXEditor` and 
-check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
+check the scene that all `normals` are not `zero-length` (XYZ are the same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_MAP_TYPE
