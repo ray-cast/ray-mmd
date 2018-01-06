@@ -134,8 +134,8 @@ Normal:
 　　The normal maps alters the topography of the mesh and alters the angle of the light to add shadows to it in the details, 
 this map is almost always uses tangent-space map with three channels in the most time, but the influences of some other factors such as old pipeline and bandwidth,
 this allows you to use different type to access the different texture of the normal map, see the `NORMAL_MAP_TYPE` for more information, 
-in order to calculate the light in the real-time, All input models must have the normals else will result a white edge issue, 
-that looks like some white edges on your model, you can put the scene in the `PMXEditor` and 
+in order to calculate the light in the real-time, All input models must have the normals else will result a problem with the white edge, 
+that looks like some white edges on your model, so you can put the scene in the `PMXEditor` and 
 check the scene that all `normals` are not `zero-length` (XYZ are same equal to zero) to be used for model.
 
 * ##### NORMAL_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
