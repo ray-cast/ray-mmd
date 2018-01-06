@@ -129,8 +129,9 @@ Alpha:
 
 Normal:
 -------------
-　　法线贴图，以及环境光遮蔽等需要模型都具有非空的法线坐标否则人物模型或者场景模型上会产生一些奇怪的白边问题
-所以如果一些镜头产生了一些白边效果，可以试着将场景模型放入PMXEditor，并且检查是否所有的法线的XYZ数值是否都不为0
+　　法线贴图用于修改模型表面的凹凸以改变光照从而添加更多的阴影细节，默认时将总是使用带有三个通道的切线空间的法帖,同时还能够支持其它的一些类型的贴图,
+你可以修改`NORMAL_MAP_TYPE`来改变默认行为，由于计算光源时必须模型具有法线信息，所以所有被渲染的模型都必须具有法线否则模型或者场景边缘上会产生一些白边的现象,
+你可以尝试将场景模型放入PMXEditor，然后检查是否所有的法线的XYZ数值是否都不为0
 
 * ##### NORMAL_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_MAP_TYPE
@@ -149,6 +150,9 @@ Normal:
 
 SubNormal
 -------------
+　　子法线主要用于在原始的基本法线上添加而外的细节,将两个法线贴图组合成为一个法线贴图,从而不需要修改原始贴图,
+该方法主要通过[Reoriented Normal Mapping](https://www.shadertoy.com/view/4t2SzR)来完成的,如果你想要了解更多关于该技术的内容，可以看单击此[文档](http://blog.selfshadow.com/publications/blending-in-detail/)
+
 * ##### NORMAL_SUB_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_SUB_MAP_TYPE (see [NORMAL_MAP_TYPE](#NORMAL_MAP_TYPE))
 * ##### NORMAL_SUB_MAP_UV_FLIP (see [ALBEDO_MAP_APPLY_SCALE](#ALBEDO_MAP_APPLY_SCALE))
@@ -158,7 +162,9 @@ SubNormal
 
 Smoothness
 -------------
-　　默认时,将从`PMX`模型中的光泽度转换为光滑度来使用.
+　　光滑度用于描述模型表面的不均匀性,数值越大时模型反射周围越清晰,并且该帖图总是一个灰度贴图,
+如果输入的贴图是彩色,将会从`R`通道中提取数据,或者可以通过修改`SMOOTHNESS_MAP_SWIZZLE`来指定其它通道,
+默认时光滑度的计算是将PMX模型的高光转换成光滑度来使用的，因此你需要先修改`SMOOTHNESS_MAP_FROM`
 
 * ##### SMOOTHNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SMOOTHNESS_MAP_TYPE
@@ -178,7 +184,8 @@ Smoothness
 
 Metalness:
 -------------
-　　金属性仅仅只是修改模型的反射率，用于替代老式的渲染管线
+　　金属性仅仅只是修改模型的反射率，用于替代老式的渲染管线,是一个在绝缘体和导体的插值过程,数值越大时其反射色依赖`Albedo`贴图色,并且该帖图总是一个灰度贴图,
+如果输入的贴图是彩色,将会从`R`通道中提取数据,或者可以通过修改`METALNESS_MAP_SWIZZLE`来指定其它通道,
 
 * ##### METALNESS_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### METALNESS_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
@@ -191,8 +198,8 @@ Metalness:
 
 Specular:
 -------------
-　　该选项对CUSTOM_ENABLE和Metalness大于零时无效, 并且该选项不是MMD的高光贴图, 只是用于修改模型基本反射率
-用于改变环境反射的颜色,所以如果你不想渲染镜面反色射可以设置数值0.0到`const float3 specular = 0.0;`
+　　该选项是对metalness不大于0时提供一个基本反射率, 因此该选项不是MMD的高光贴图, 贴图允许支持彩色和灰色，但彩色的RGB贴图不允许和CUSTOM_ENABLE一起使用
+不过你可以修改SPECULAR_MAP_TYPE,将其设置成灰度图, 如果你不希望模型反射镜面色，则可以设置数值0到`const float3 specular = 0.0;`
 
 * ##### SPECULAR_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### SPECULAR_MAP_TYPE
@@ -215,9 +222,9 @@ Specular:
 
 Occlusion
 -------------
-　　由于天顶光源是由无数方向发射的光线,无法实时的计算出环境光的遮蔽，取而带至的则是使用`SSAO`或者`环境光遮蔽贴图`
-因为`SSAO`只能模拟小范围的闭塞，所以可以离线烘培出`环境光遮蔽贴图`，并且使用此贴图是一种非常近视的手法用于模拟环境光的大范围闭塞
-产生更真实的效果,并且如果你不希望某个物体反射天空中的漫反射以及镜面反射,你可以将该参数设置为0
+　　由于天顶光源是由无数方向发射的光线,因此无法实时的计算出环境光的遮蔽,一种简单的方式则是使用`SSAO`或者`环境光遮蔽贴图`来代替
+而实时中的`SSAO`只能模拟小范围的闭塞，所以可能需要离线烘培出`环境光遮蔽贴图`，此贴图是一种非常近视的手法用于模拟环境光的大范围闭塞
+所以能够产生更真实的效果,如果你不希望某个物体反射天空中的漫反射以及镜面反射,你可以将该参数设置为0
 
 * ##### OCCLUSION_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### OCCLUSION_MAP_TYPE

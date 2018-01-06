@@ -158,7 +158,7 @@ SubNormal
 -------------
 　　this entry is designed to add detail to a base normal map in a consistent way, 
 that pack two normal map into a normal map by using [Reoriented Normal Mapping](https://www.shadertoy.com/view/4t2SzR), 
-also, you can see the [docs](http://blog.selfshadow.com/publications/blending-in-detail/) for more information.
+and also, you can see the [docs](http://blog.selfshadow.com/publications/blending-in-detail/) for more information.
 
 * ##### NORMAL_SUB_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### NORMAL_SUB_MAP_TYPE (see [NORMAL_MAP_TYPE](#NORMAL_MAP_TYPE))
@@ -210,7 +210,7 @@ also, you can specify what channel will happen for the default channel by sets `
 
 Specular:
 -------------
-　　Specular maps aren't environment and sphere maps, only modifies the `reflection index` for the model, 
+　　Specular maps aren't environment and sphere maps, only modifies the `base reflectivity` for the model, 
 that is used for control over the colors of the reflection, and there have two type of specular map that are `RGB` and `grayscale`, 
 but they have no effect when the `metalness` is greater than zero, and that RGB type of specular map will not work with when `CUSTOM_ENABLE` is not equal to zero, 
 so you can use the grayscale map instead of `RGB` by sets `code` to the `SPECULAR_MAP_TYPE`, 
@@ -286,6 +286,7 @@ Parallax:
 Emissive
 -------------
 　　You can add a light source in MMD (PointLight or others), And key it as part of emissive of the model, and the same color set it to your light source and emissive color
+
 * ##### EMISSIVE_ENABLE
 * ##### EMISSIVE_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### EMISSIVE_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
