@@ -262,7 +262,7 @@ float4 ScreenSpaceDirOccPassPS(
 	sampleBias += mSSDOBiasFar * linearDepth;
 	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth / mSSDOBiasFalloffNear));
 
-	float maxRadius = 1.0;
+	float maxRadius = mSSAORadius;
 	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
 	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
