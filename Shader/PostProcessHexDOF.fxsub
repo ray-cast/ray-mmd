@@ -120,6 +120,7 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 
 	float minDepth = 65535;
 
+	[loop]
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[i] * sampleRadius, 0, 0)).r;
@@ -128,6 +129,7 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 
 	float2 avgDepth = 0;
 
+	[loop]
 	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
 	{
 		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[j] * sampleRadius, 0, 0)).r;
@@ -163,11 +165,13 @@ float4 ComputeDepthBokehPS(in float2 coord : TEXCOORD0, in float4 focalCameraPar
 
 float4 ComputeDepthBokeh4XPS(in float2 coord : TEXCOORD0, in float4 focalCameraParams : TEXCOORD1, uniform sampler source) : COLOR
 {
+	float4 offset = ViewportOffset2.xyxy * float4(-1.0, -1.0, 1.0, 1.0);
+
 	float4 coords[4];
-	coords[0] = float4(coord, 0, 0);
-	coords[1] = float4(coord + float2(ViewportOffset2.x, 0), 0, 0);
-	coords[2] = float4(coord + float2(0, ViewportOffset2.y), 0, 0);
-	coords[3] = float4(coord + float2(ViewportOffset2.x, ViewportOffset2.y), 0, 0);
+	coords[0] = float4(coord + offset.xy, 0, 0);
+	coords[1] = float4(coord + offset.zy, 0, 0);
+	coords[2] = float4(coord + offset.xw, 0, 0);
+	coords[3] = float4(coord + offset.zw, 0, 0);
 
 	float4 linearDepths;
 	linearDepths.x = tex2Dlod(Gbuffer8Map, coords[0]).r;
@@ -186,6 +190,12 @@ float4 ComputeDepthBokeh4XPS(in float2 coord : TEXCOORD0, in float4 focalCameraP
 	CoC.y = ComputeDepthCoC(linearDepths.y, focalCameraParams, mFocalRegion);
 	CoC.z = ComputeDepthCoC(linearDepths.z, focalCameraParams, mFocalRegion);
 	CoC.w = ComputeDepthCoC(linearDepths.w, focalCameraParams, mFocalRegion);
+
+	// anti-flicker
+ 	CoC.x /= (max3(colors[0]) + 1.0);
+ 	CoC.y /= (max3(colors[1]) + 1.0);
+ 	CoC.z /= (max3(colors[2]) + 1.0);
+ 	CoC.w /= (max3(colors[3]) + 1.0);
 
 	float4 color = 0;
 	color.rgb += colors[0] * abs(CoC.x);
@@ -215,7 +225,7 @@ float4 ComputeHexagonalFarBlur(sampler source, float2 coord, float2 offset)
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		float4 color = tex2Dlod(source, float4(coord, 0, 0));
-		color.a = pow2(max(0, DecodeCoC(color.a)));
+		color.a = (max(0, DecodeCoC(color.a)));
 		color.rgb *= color.a;
 
 		colors += color;
