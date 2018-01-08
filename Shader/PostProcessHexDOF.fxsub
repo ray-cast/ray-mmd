@@ -185,24 +185,25 @@ float4 ComputeDepthBokeh4XPS(in float2 coord : TEXCOORD0, in float4 focalCameraP
 	colors[2] = tex2Dlod(source, coords[2]).rgb;
 	colors[3] = tex2Dlod(source, coords[3]).rgb;
 
+	// anti-flicker
+	float4 weights = 0;
+ 	weights.x = 1.0 / (max3(colors[0]) + 1.0);
+ 	weights.y = 1.0 / (max3(colors[1]) + 1.0);
+ 	weights.z = 1.0 / (max3(colors[2]) + 1.0);
+ 	weights.w = 1.0 / (max3(colors[3]) + 1.0);
+
+	float4 color = 0;
+	color.rgb += colors[0] * weights.x;
+	color.rgb += colors[1] * weights.y;
+	color.rgb += colors[2] * weights.z;
+	color.rgb += colors[3] * weights.w;
+	color.rgb /= dot(weights, 1.0f);
+
 	float4 CoC;
 	CoC.x = ComputeDepthCoC(linearDepths.x, focalCameraParams, mFocalRegion);
 	CoC.y = ComputeDepthCoC(linearDepths.y, focalCameraParams, mFocalRegion);
 	CoC.z = ComputeDepthCoC(linearDepths.z, focalCameraParams, mFocalRegion);
 	CoC.w = ComputeDepthCoC(linearDepths.w, focalCameraParams, mFocalRegion);
-
-	// anti-flicker
- 	CoC.x /= (max3(colors[0]) + 1.0);
- 	CoC.y /= (max3(colors[1]) + 1.0);
- 	CoC.z /= (max3(colors[2]) + 1.0);
- 	CoC.w /= (max3(colors[3]) + 1.0);
-
-	float4 color = 0;
-	color.rgb += colors[0] * abs(CoC.x);
-	color.rgb += colors[1] * abs(CoC.y);
-	color.rgb += colors[2] * abs(CoC.z);
-	color.rgb += colors[3] * abs(CoC.w);
-	color.rgb /= dot(abs(CoC), 1.0f);
 
 #if 1
 	color.a = CoC.x;
