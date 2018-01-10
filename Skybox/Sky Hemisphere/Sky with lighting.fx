@@ -60,11 +60,11 @@ static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLig
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-texture BRDF<string ResourceName = "Textures/BRDF.tga"; int Miplevels = 1;>;
+texture BRDF<string ResourceName = "Textures/BRDF.hdr"; int Miplevels = 1;>;
 sampler BRDFSamp = sampler_state {
 	texture = <BRDF>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
-	ADDRESSU = CLAMP; ADDRESSV = CLAMP; SRGBTexture = TRUE;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
 float3 SampleSky(float3 N, float smoothness)
