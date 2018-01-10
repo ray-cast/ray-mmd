@@ -18,7 +18,7 @@ float FresnelSchlickClearCoat(float nv, float smoothness, float specular)
 	return specular + (max(smoothness, specular) - specular) * pow5(1 - nv);
 }
 
-float3 EnvironmentSpecularCloth(float nv, float roughness, float3 specular)
+float3 EnvironmentSpecularCloth(float nv, float smoothness, float3 specular)
 {
 	const float4 c0 = float4(0.24,  0.93, 0.01, 0.20);
 	const float4 c1 = float4(2.00, -1.30, 0.40, 0.03);
@@ -26,7 +26,7 @@ float3 EnvironmentSpecularCloth(float nv, float roughness, float3 specular)
 	float s = 1.0 - nv;
 	float e = s - c0.y;
 	float g = c0.x * exp2(-(e * e) / (2.0 * c0.z)) + s * c0.w;
-	float n = roughness * c1.x + c1.y;
+	float n = (1.0 - smoothness) * c1.x + c1.y;
 	float r = max(1.0 - n * n, c1.z) * g;
 
 	return specular * r + r * c1.w;
@@ -42,7 +42,7 @@ float3 EnvironmentSpecularUnreal4(float nv, float smoothness, float3 specular)
 {
 	float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
 	float4 c1 = float4(1, 0.0425, 1.04, -0.04);
-	float4 r = SmoothnessToRoughness(smoothness) * c0 + c1;
+	float4 r = (1.0 - smoothness) * c0 + c1;
 	float a004 = min(r.x * r.x, exp2(-9.28 * nv)) * r.x + r.y;
 	float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
 	return specular * AB.x + AB.y;
@@ -52,7 +52,7 @@ float EnvironmentSpecularUnreal4(float nv, float smoothness)
 {
 	const float2 c0 = float2(-1, -0.0275);
 	const float2 c1 = float2(1, 0.0425);
-	float2 r = SmoothnessToRoughness(smoothness) * c0 + c1;
+	float2 r = (1.0 - smoothness) * c0 + c1;
 	return min(r.x * r.x, exp2(-9.28 * nv)) * r.x + r.y;
 }
 
