@@ -11,7 +11,6 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float shadow = 1;
 #if SUN_SHADOW_QUALITY
 	shadow = tex2Dlod(ShadowMapSamp, float4(coord, 0, 0)).r;
-	shadow = min(shadow, saturate(dot(material.normal, L) * 4));
 #endif
 
 #if SSDO_QUALITY
@@ -25,7 +24,11 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
  	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
 #endif
 
+#if TOON_ENABLE
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
+#else
+	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, min(shadow, saturate(dot(material.normal, L) * 4)));
+#endif
 	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
 
 	diffuse = (energy[0] + subsurface * shadow) * lightColor;

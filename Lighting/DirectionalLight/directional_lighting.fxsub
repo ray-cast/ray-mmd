@@ -229,7 +229,7 @@ void LightSourceVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
-	Position.xyz = LightPosition + Normal * LightRange;
+	Position.xyz = LightPosition + Normal * 2000;
 	oTexcoord1 = -mul(Position, matView);
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
