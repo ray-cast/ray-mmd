@@ -56,20 +56,6 @@ float EnvironmentSpecularUnreal4(float nv, float smoothness)
 	return min(r.x * r.x, exp2(-9.28 * nv)) * r.x + r.y;
 }
 
-float3 ComputeDiffuseDominantDir(float3 N, float3 V, float roughness)
-{
-	float a = 1.02341f * roughness - 1.51174f;
-	float b = -0.511705f * roughness + 0.755868f;
-	return normalize(lerp(N, V, saturate((abs(dot(N, V)) * a + b) * roughness)));
-}
-
-float3 ComputeSpecularDominantDir(float3 N, float3 R, float roughness) 
-{
-	float smoothness = saturate(1 - roughness);
-	float lerpFactor = smoothness * (sqrt(smoothness) + roughness);
-	return normalize(lerp(N, R, lerpFactor));
-}
-
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
 {
 	return saturate(pow(nv + ao, smoothness) - 1 + ao);
