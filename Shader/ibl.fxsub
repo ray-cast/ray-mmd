@@ -32,9 +32,9 @@ float3 EnvironmentSpecularCloth(float nv, float roughness, float3 specular)
 	return specular * r + r * c1.w;
 }
 
-float3 EnvironmentSpecularLUT(sampler lut, float nv, float roughness, float3 specular)
+float3 EnvironmentSpecularLUT(sampler lut, float nv, float smoothness, float3 specular)
 {
-	float2 brdf = tex2Dlod(lut, float4(nv, roughness, 0, 0)).rg;
+	float2 brdf = tex2Dlod(lut, float4(nv, smoothness, 0, 0)).rg;
 	return specular * brdf.r + brdf.g;	
 }
 
