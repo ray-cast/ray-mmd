@@ -212,7 +212,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 			scattering *= sampleOpticalDepth;
 			scattering *= sactteringDepth;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
-			scattering *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
+			scattering *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase) * PI;
 #endif
 
 			scatteringMie += scattering;
@@ -223,7 +223,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	scattering *= param.FogIntensity;
 
 #if VOLUMETRIC_FOG_ANISOTROPY == 1
-	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase);
+	scattering *= ComputePhaseMieHG(dot(-V, param.FogDirection), param.FogMiePhase) * PI;
 #endif
 
 	return float4(param.FogColor * scattering + scattering * jitter / 255.0f, scattering * param.FogIntensity);

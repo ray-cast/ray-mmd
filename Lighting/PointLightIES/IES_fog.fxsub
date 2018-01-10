@@ -180,7 +180,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 			scattering *= sampleOpticalDepth;
 			scattering *= scatteringDepth;
 #if VOLUMETRIC_FOG_ANISOTROPY == 2
-			scattering *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase);
+			scattering *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase) * PI;
 #endif
 
 			scatteringMie += scattering;
