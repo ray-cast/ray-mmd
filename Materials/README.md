@@ -4,9 +4,9 @@ Material
 
 　　This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`, 
 the physically-based-rendering is a rendering pipeline around the physics that has rapidly gained popularity, 
-there are three forms of PBR's material (physically-based material), we'll be present the albedo/smoothness/metalness pipeline, 
-and not the albedo/roughness/metalness, because of the roughness does not be easy to understand and to use,
-and not the diffuse/specular/gloss pipeline, because it's not PBR's term,
+there are three forms of PBR's material (physically-based material), we'll be present the **albedo/smoothness/metalness** pipeline, 
+and not the **albedo/roughness/metalness**, because of the **roughness** does not be easy to understand and to use,
+and not the **diffuse/specular/gloss** pipeline, because it's not PBR's term,
 so i'll go over all of the entries commonly used in `Ray-MMD` and also attach links to the wiki for more details,
 you can create a new material by duplicate a `material_2.0.fx`
 
