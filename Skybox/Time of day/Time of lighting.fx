@@ -185,14 +185,14 @@ float4 GenDiffuseMapPS(
 void EnvLightingVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float4 oTexcoord : TEXCOORD0,
-	out float3 oViewdir  : TEXCOORD1,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oViewdir = normalize(CameraPosition - Position.xyz);
-	oTexcoord = oPosition = mul(Position, matViewProject);
-	oTexcoord.xy = PosToCoord(oTexcoord.xy / oTexcoord.w) + ViewportOffset;
-	oTexcoord.xy = oTexcoord.xy * oTexcoord.w;
+	oTexcoord1 = normalize(CameraPosition - Position.xyz);
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
 void EnvLightingPS(
