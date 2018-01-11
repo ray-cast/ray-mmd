@@ -38,16 +38,6 @@ Download
 	- [SMAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/SMAA/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/SMAA)\])
 	- [Spectrum - v1.2.2 (zip)](https://github.com/MikuMikuShaders/Spectrum/archive/v1.2.2.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/Spectrum)\])
 	- [StereoImage - v1.0.0 (zip)](https://github.com/MikuMikuShaders/StereoImage/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/StereoImage)\])
-- Latest changes - Major allocator changes:
-	- Support for Depth Of Field
-	- Support for Toon material
-	- Support for edge line shading
-	- Material : Optimize and improve the gbuffer
-	- Material : Better Cloth
-	- Material : Better Skin when used ao map [(preview)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ao.jpg)
-	- Shadow : Optimize and improve the quality (It now has 4 tabs (PSSM1 - PSSM4) to calculating the sun shadow)
-	- Time of day : Add SunPhase and SunTurbidity 
-	- Remove Vignette and ColorDispersion, Please use FilmGrain instead
 
 Requirement :
 ------------

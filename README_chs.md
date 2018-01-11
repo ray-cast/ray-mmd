@@ -38,16 +38,6 @@ Ray-MMD
 	- [SMAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/SMAA/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/SMAA)\])
 	- [Spectrum - v1.2.2 (zip)](https://github.com/MikuMikuShaders/Spectrum/archive/v1.2.2.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/Spectrum)\])
 	- [StereoImage - v1.0.0 (zip)](https://github.com/MikuMikuShaders/StereoImage/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/StereoImage)\])
-- 改动 - 主要的修改:
-	- 对景深的支持
-	- 对卡通材质的支持
-	- 对边缘线的支持
-	- 材质 : 优化并且改进了存储方式
-	- 材质 : 更好的布料光照
-	- 材质 : 当时用烘培的环境光遮蔽贴图有更好的光照效果 [(预览)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ao.jpg)
-	- 阴影 : 优化并且改进了太阳光阴影质量 (将以前的目前分割成 (PSSM1 - PSSM4) to calculating the sun shadow)
-	- Time of day : 添加了 SunPhase 和 SunTurbidity 表情
-	- 移除了 Vignette 和 ColorDispersion, 请使用FilmGrain来代替
 
 需求:
 ------------
