@@ -140,6 +140,7 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 ;> {\
 	pass DrawObject {\
 		AlphaBlendEnable = false; AlphaTestEnable = false;\
+		ZEnable = false; ZWriteEnable = false;\
 		CullMode = CCW;\
 		VertexShader = compile vs_3_0 EnvLightingVS();\
 		PixelShader  = compile ps_3_0 EnvLightingPS();\
