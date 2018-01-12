@@ -2,11 +2,11 @@ Material
 ========
 ###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
 
-　　This document is designed to help those who wanted to quickly get up to speed in Ray-MMD, the PBR (physically-based-rendering) is a rendering pipeline around the physics that has rapidly gained popularity, so the first thing you need to know what is the PBR term.
+　　This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`, the PBR (physically-based-rendering) is a rendering pipeline around the physics that has rapidly gained popularity, so the first thing you need to know what is the PBR term.
 
-　　There are three forms of PBR's material (physically-based material), we'll be present the albedo/smoothness/metalness pipeline, and not the albedo/roughness/metalness, because of the roughness does not be easy to understand and to use, and not the diffuse/specular/gloss pipeline, because it's not PBR's term, and then i'll go over all of the entries commonly used in Ray-MMD and also attach links to the wiki for more details.
+　　There are three forms of PBR's material (physically-based material), we'll be present the **albedo**/**smoothness**/**metalness** pipeline, and not the **albedo**/**roughness**/**metalness**, because of the **roughness** does not be easy to understand and to use, and not the **diffuse**/**specular**/**gloss** pipeline, because it's not PBR's term, and then i'll go over all of the entries commonly used in `Ray-MMD` and also attach links to the wiki for more details.
 
-　　Currently, you can create a new material by duplicate a material_2.0.fx and if you want to create a variety of textures, current software such as dDO, nDO, Substance Designer, Substance Painter, Photoshop, etc, that will do much to create these conditions make the process a bit easier and help you create your own materials.
+　　Currently, you can create a new material by duplicate a `material_2.0.fx` and if you want to create a variety of textures, current software such as dDO, nDO, Substance Designer, Substance Painter, Photoshop, etc, that will do much to create these conditions make the process a bit easier and help you create your own materials.
 
 ALBEDO:
 ------
