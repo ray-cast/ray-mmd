@@ -29,14 +29,14 @@ texture SSRLightX2MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5};
 texture SSRLightX3MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
 texture SSRLightX4MapTemp : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
 
-sampler SSRLightX1Samp = sampler_state { texture = <SSRLightX1Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX2Samp = sampler_state { texture = <SSRLightX2Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX3Samp = sampler_state { texture = <SSRLightX3Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX4Samp = sampler_state { texture = <SSRLightX4Map>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX1SampTemp = sampler_state { texture = <SSRLightX1MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX2SampTemp = sampler_state { texture = <SSRLightX2MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX3SampTemp = sampler_state { texture = <SSRLightX3MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
-sampler SSRLightX4SampTemp = sampler_state { texture = <SSRLightX4MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
+sampler SSRLightX1Samp = sampler_state { texture = <SSRLightX1Map>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX2Samp = sampler_state { texture = <SSRLightX2Map>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX3Samp = sampler_state { texture = <SSRLightX3Map>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX4Samp = sampler_state { texture = <SSRLightX4Map>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX1SampTemp = sampler_state { texture = <SSRLightX1MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX2SampTemp = sampler_state { texture = <SSRLightX2MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX3SampTemp = sampler_state { texture = <SSRLightX3MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+sampler SSRLightX4SampTemp = sampler_state { texture = <SSRLightX4MapTemp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 
 bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float jitter, out float2 hitPixel)
 {
@@ -122,7 +122,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float atten = dot(viewReflect, -view);
 	clip(atten - 1e-5);
 
-	float sampleJitter = GetJitterOffset(coord.zw);
+	float sampleJitter = PseudoRandom(coord.zw);
 	float sampleDistance = mSSRRangeScale;
 	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth) +  material.linearDepth;
 	sampleDistance *= pow(1 - saturate(dot(view, material.normal)) * (1 - SSR_QUALITY * 0.1), 5 - SSR_QUALITY);
@@ -142,7 +142,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
 
 	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel, 0, 0));
-	return float4(totalColor.rgb, 1) * fadeOnTotal * hitTest;
+	return float4(totalColor.rgb, 1) * fadeOnTotal;
 }
 
 float4 SSRGaussionBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
@@ -197,7 +197,7 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
-	float3 f0 = min(0.02, material.specular);	
+	float3 f0 = material.specular;
 	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, f0);
 
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
