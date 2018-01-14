@@ -1,6 +1,6 @@
 Ray-MMD
 ========
-###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/README_chs.md)
+###### [English](https://github.com/ray-cast/ray-mmd/blob/master/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/master/README_chs.md)
 ### 基于物理的渲染 ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
@@ -102,7 +102,7 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 
 * Twitter: [@Rui](https://twitter.com/Rui_cg).
 
-[协议 (MIT)](https://raw.githubusercontent.com/MikuMikuShaders/FilmGrain/master/LICENSE.txt)
+[协议 (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/LICENSE.txt)
 -------------------------------------------------------------------------------
 	Copyright (C) 2016-2018 Rui. 保留所有版权.
 

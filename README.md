@@ -1,6 +1,6 @@
 Ray-MMD
 ========
-###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/README_chs.md)
+###### [English](https://github.com/ray-cast/ray-mmd/blob/master/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/master/README_chs.md)
 ### Physically-Based Rendering ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
@@ -112,7 +112,7 @@ Contact:
 
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
 
-[License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
+[License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/LICENSE.txt)
 -------------------------------------------------------------------------------
 	Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
 
