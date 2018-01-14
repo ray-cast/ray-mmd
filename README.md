@@ -1,6 +1,6 @@
 Ray-MMD
 ========
-###### [English](https://github.com/ray-cast/ray-mmd/blob/developing/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/README_chs.md)
+###### [English](https://github.com/ray-cast/ray-mmd/blob/master/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/master/README_chs.md)
 ### Physically-Based Rendering ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
@@ -12,14 +12,14 @@ Ray-MMD
 <br>　　[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/cubizer)
 
 　　支付宝:
-<br>　　![Alt](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/ali.png)
+<br>　　![Alt](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/ali.png)
 
 Screenshots:
 ------------
-[![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen1.jpg)
-[![link text](./Shader/screenshots/screen2_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen2.png)
-[![link text](./Shader/screenshots/screen3_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen3.png)
-[![link text](./Shader/screenshots/screen4_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/screen4.png)
+[![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)
+[![link text](./Shader/screenshots/screen2_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen2.png)
+[![link text](./Shader/screenshots/screen3_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen3.png)
+[![link text](./Shader/screenshots/screen4_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen4.png)
 
 Download:
 ------------
@@ -112,7 +112,7 @@ Contact:
 
 * Reach me via Twitter: [@Rui](https://twitter.com/Rui_cg).
 
-[License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/LICENSE.txt)
+[License (MIT)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/LICENSE.txt)
 -------------------------------------------------------------------------------
 	Copyright (C) 2016-2017 Ray-MMD Developers. All rights reserved.
 
