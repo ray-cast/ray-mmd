@@ -1,14 +1,14 @@
-#define ALPHA_MAP_FROM 0
+#define ALPHA_MAP_FROM 3
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"
 
-const float alpha = 65535.0;
-const float alphaThreshold = 0.01;
+const float alpha = 1.0;
+const float alphaThreshold = 0.999;
 const float alphaMapLoopNum = 1.0;
 
 // it has no effect on transparent objects, only used for matcap right now
-#define ALBEDO_MAP_FROM 0
+#define ALBEDO_MAP_FROM 3
 #define ALBEDO_MAP_UV_FLIP 0
 #define ALBEDO_MAP_APPLY_SCALE 0
 #define ALBEDO_MAP_APPLY_DIFFUSE 0
@@ -37,7 +37,7 @@ const float normalSubMapScale = 1.0;
 const float normalSubMapLoopNum = 1.0;
 
 // it has no effect on transparent objects
-#define MATCAP_MAP_FROM 0
+#define MATCAP_MAP_FROM 4
 #define MATCAP_MAP_UV_FLIP 2 // for DX9
 #define MATCAP_MAP_FILE "matcap.png"
 

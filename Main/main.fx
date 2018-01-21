@@ -1,5 +1,5 @@
 // it has no effect on transparent objects
-#define ALPHA_MAP_FROM 3
+#define ALPHA_MAP_FROM 0
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"
@@ -7,6 +7,17 @@
 const float alpha = 1.0;
 const float alphaThreshold = 0.999;
 const float alphaMapLoopNum = 1.0;
+
+// it has no effect on transparent objects, only used for matcap right now
+#define ALBEDO_MAP_FROM 0
+#define ALBEDO_MAP_UV_FLIP 0
+#define ALBEDO_MAP_APPLY_SCALE 0
+#define ALBEDO_MAP_APPLY_DIFFUSE 0
+#define ALBEDO_MAP_APPLY_MORPH_COLOR 0
+#define ALBEDO_MAP_FILE "albedo.png"
+
+const float3 albedo = 1.0;
+const float2 albedoMapLoopNum = 1.0;
 
 // it has no effect on transparent objects, only used for matcap right now
 #define NORMAL_MAP_FROM 0

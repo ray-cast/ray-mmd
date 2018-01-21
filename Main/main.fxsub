@@ -6,20 +6,45 @@
 #define TEXTURE_MIP_FILTER LINEAR
 #define TEXTURE_ANISOTROPY_LEVEL 0
 
-#if ALPHA_MAP_FROM == 3 || MATCAP_MAP_FROM == 3
-	texture DiffuseMap: MATERIALTEXTURE;
+#if ALBEDO_MAP_FROM == 3 || ALPHA_MAP_FROM == 3 || MATCAP_MAP_FROM == 3
+	texture DiffuseMap : MATERIALTEXTURE;
 #endif
 
-#if  ALPHA_MAP_FROM == 4 || MATCAP_MAP_FROM == 4
+#if ALBEDO_MAP_FROM == 4 || ALPHA_MAP_FROM == 4 || MATCAP_MAP_FROM == 4
 	texture SphereMap : MATERIALSPHEREMAP;
 #endif
 
-#if ALPHA_MAP_FROM == 5 || MATCAP_MAP_FROM == 5
+#if ALBEDO_MAP_FROM == 5 || ALPHA_MAP_FROM == 5 || MATCAP_MAP_FROM == 5
 	texture ToonMap : MATERIALTOONTEXTURE;
 #endif
 
-#if ALPHA_MAP_FROM == 6 || MATCAP_MAP_FROM == 6
+#if ALBEDO_MAP_FROM == 6 || ALPHA_MAP_FROM == 6 || MATCAP_MAP_FROM == 6
 	shared texture2D DummyScreenTex : RENDERCOLORTARGET;
+#endif
+
+#if ALBEDO_MAP_FROM >= 1 && ALBEDO_MAP_FROM <= 8
+	#if ALBEDO_MAP_FROM == 1
+		texture AlbedoMap<string ResourceName = ALBEDO_MAP_FILE;>;
+	#elif ALBEDO_MAP_FROM == 2
+		texture AlbedoMap : ANIMATEDTEXTURE<string ResourceName = ALBEDO_MAP_FILE;>;
+	#endif
+	sampler AlbedoMapSamp = sampler_state
+	{
+#if ALBEDO_MAP_FROM == 3 || ALBEDO_MAP_FROM == 7 || ALBEDO_MAP_FROM == 8
+		texture = DiffuseMap;
+#elif ALBEDO_MAP_FROM == 4
+		texture = SphereMap;
+#elif ALBEDO_MAP_FROM == 5
+		texture = ToonMap;
+#elif ALBEDO_MAP_FROM == 6
+		texture = DummyScreenTex;
+#else
+		texture = AlbedoMap;
+#endif
+		MAXANISOTROPY = TEXTURE_ANISOTROPY_LEVEL;
+		MINFILTER = TEXTURE_FILTER; MAGFILTER = TEXTURE_FILTER; MIPFILTER = TEXTURE_MIP_FILTER;
+		ADDRESSU = WRAP; ADDRESSV = WRAP;
+	};
 #endif
 
 #if ALPHA_MAP_FROM >= 1 && ALPHA_MAP_FROM <= 6
@@ -191,6 +216,70 @@ float3 PerturbNormalHQ(sampler source, float2 coord, float center)
 }
 #endif
 #endif
+
+float3 GetAlbedo(float2 coord)
+{
+#if ALBEDO_MAP_FROM
+	#if ALBEDO_MAP_UV_FLIP == 1
+		coord.x = 1 - coord.x;
+	#elif ALBEDO_MAP_UV_FLIP == 2
+		coord.y = 1 - coord.y;
+	#elif ALBEDO_MAP_UV_FLIP == 3
+		coord = 1 - coord;
+	#endif
+
+	#if ALBEDO_MAP_FROM == 3
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+	#elif ALBEDO_MAP_FROM == 4
+		float3 albedoColor = use_spheremap ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+	#elif ALBEDO_MAP_FROM == 5
+		float3 albedoColor = use_toon ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialDiffuse.rgb;
+	#elif ALBEDO_MAP_FROM == 7
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialAmbient.rgb;
+	#elif ALBEDO_MAP_FROM == 8
+		float3 albedoColor = use_texture ? tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb : MaterialSpecular.rgb;
+	#elif ALBEDO_MAP_FROM == 9
+		#error Unsupported options 9.
+	#else
+		float3 albedoColor = tex2D(AlbedoMapSamp, coord * albedoMapLoopNum).rgb;
+	#endif
+
+	#if ALBEDO_MAP_APPLY_DIFFUSE
+		#if ALBEDO_MAP_FROM == 3
+			albedoColor *= use_texture ? MaterialDiffuse.rgb : 1.0;
+		#elif ALBEDO_MAP_FROM == 4
+			albedoColor *= use_spheremap ? MaterialDiffuse.rgb : 1.0;
+		#elif ALBEDO_MAP_FROM == 5
+			albedoColor *= use_toon ? MaterialDiffuse.rgb : 1.0;
+		#else
+			albedoColor *= MaterialDiffuse.rgb;
+		#endif
+	#endif
+
+	albedoColor = srgb2linear(albedoColor);
+
+	#if ALBEDO_MAP_APPLY_SCALE == 1
+		albedoColor *= albedo;
+	#elif ALBEDO_MAP_APPLY_SCALE == 2
+		albedoColor = pow(albedoColor, albedo);
+	#endif
+
+	#if ALBEDO_MAP_APPLY_MORPH_COLOR
+		albedoColor *= MorphColor;
+	#endif
+
+	return albedoColor;
+#else
+	float3 albedoColor = albedo;
+	#if ALBEDO_MAP_APPLY_DIFFUSE
+		albedoColor *= srgb2linear(MaterialDiffuse.rgb);
+	#endif
+	#if ALBEDO_MAP_APPLY_MORPH_COLOR
+		albedoColor *= MorphColor;
+	#endif
+	return albedoColor;
+#endif
+}
 
 float GetAlpha(float2 coord)
 {
@@ -430,7 +519,7 @@ float4 MainPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1, in float4 wor
 	normal = normalize(normal);
 	normal = GetNormal(normal, worldPos, coord);
 
-	return float4(GetSpecularHighlight(normal, coord), 0);
+	return float4(GetSpecularHighlight(normal, coord) * GetAlbedo(coord), 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
