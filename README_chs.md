@@ -84,6 +84,7 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 
 #### Platinum supporters:
 * Penti_mmd
+* Robert Shawarden
 
 ##### Gold supporters:
 * Sarashina - 更科
