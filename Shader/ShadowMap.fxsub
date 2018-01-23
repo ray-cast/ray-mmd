@@ -1,4 +1,5 @@
 #define SHADOW_BLUR_COUNT 6
+#define SHADOW_POISSON_COUNT 25
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(SunDirection, -SunDirection, mLightDistance);
@@ -7,24 +8,52 @@ static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
-float ShadowPCF(sampler source, float2 coord, float receiverDepth, int samples = 2)
+static const float2 Poisson[SHADOW_POISSON_COUNT] =
+{
+	float2(-0.978698, -0.0884121),
+	float2(-0.841121, 0.521165),
+	float2(-0.71746, -0.50322),
+	float2(-0.702933, 0.903134),
+	float2(-0.663198, 0.15482),
+	float2(-0.495102, -0.232887),
+	float2(-0.364238, -0.961791),
+	float2(-0.345866, -0.564379),
+	float2(-0.325663, 0.64037),
+	float2(-0.182714, 0.321329),
+	float2(-0.142613, -0.0227363),
+	float2(-0.0564287, -0.36729),
+	float2(-0.0185858, 0.918882),
+	float2(0.0381787, -0.728996),
+	float2(0.16599, 0.093112),
+	float2(0.253639, 0.719535),
+	float2(0.369549, -0.655019),
+	float2(0.423627, 0.429975),
+	float2(0.530747, -0.364971),
+	float2(0.566027, -0.940489),
+	float2(0.639332, 0.0284127),
+	float2(0.652089, 0.669668),
+	float2(0.773797, 0.345012),
+	float2(0.968871, 0.840449),
+	float2(0.991882, -0.657338)
+};
+
+float2 Rotate(float2 pos, float2 rotation)
+{
+	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
+}
+
+float ShadowPCF(sampler source, float2 coord, float radius, float receiverDepth, float2 rotation)
 {
 	float shadow = 0.0;
 
 	[unroll]
-	for (int x = -samples; x <= samples; x++) 
+	for (int i = 0; i < SHADOW_POISSON_COUNT; i++) 
 	{
-		[unroll]
-		for (int y = -samples; y <= samples; y++)
-		{
-			float2 pos = coord + float2(x, y) * (1.0 / SHADOW_MAP_SIZE);
-			shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(source, float4(pos, 0, 0)).r)));
-		}
+		float2 pos = coord + Rotate(Poisson[i] * radius, rotation);
+		shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(source, float4(pos, 0, 0)).r)));
 	}
 
-	samples = samples * 2 + 1;
-
-	return saturate(shadow / (samples * samples));
+	return shadow / SHADOW_POISSON_COUNT;
 }
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
@@ -49,8 +78,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	clip(coord.z);
 
 	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
-	float depthSlope = ShadowSlopeScaledBias(proj.z / mPSSMDepthZMax) * mPSSMDepthZMax;
-	receiverDepth -= (material.linearDepth + depthSlope) * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
+	receiverDepth -= material.linearDepth * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
 
 	coord.xy += 0.5 / float(SHADOW_MAP_SIZE);
 
@@ -65,16 +93,20 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 		clip(tex2Dlod(PSSM4Samp, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
+	float radius = 2.0 / SHADOW_MAP_SIZE;
+
+	float angle = PseudoRandom(coord.xy * SHADOW_MAP_SIZE) * PI_2;
+	float2 rotation = float2(cos(angle), sin(angle));
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(PSSM1Samp, coord.xy, receiverDepth);
+		shadow = ShadowPCF(PSSM1Samp, coord.xy, radius, receiverDepth, rotation);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(PSSM2Samp, coord.xy, receiverDepth);
+		shadow = ShadowPCF(PSSM2Samp, coord.xy, radius, receiverDepth, rotation);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(PSSM3Samp, coord.xy, receiverDepth);
+		shadow = ShadowPCF(PSSM3Samp, coord.xy, radius, receiverDepth, rotation);
 	else
-		shadow = ShadowPCF(PSSM4Samp, coord.xy, receiverDepth);
+		shadow = ShadowPCF(PSSM4Samp, coord.xy, radius, receiverDepth, rotation);
 
 	return shadow;
 }
