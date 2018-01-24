@@ -458,20 +458,18 @@ float3 GetNormal(float3 N, float3 P, float2 coord)
 #endif
 }
 
-float3 GetSpecularHighlight(float3 V, float3 normal, float2 coord)
+float3 GetSpecularHighlight(float3 N, float3 V, float2 coord)
 {
 #if MATCAP_MAP_FROM
-	normal = normalize(normal);
-
 	#if MATCAP_MAP_TYPE == 0
-	   	coord = mul(normal, (float3x3)matWorldView).xy;
+	   	coord = mul(N, (float3x3)matWorldView).xy;
 		coord = coord * 0.5 + 0.5;
 	#elif MATCAP_MAP_TYPE == 1
-		float3 r = reflect(V, normal);
+		float3 r = reflect(V, N);
 		float m = 2.0 * sqrt(pow(r.x, 2.0) + pow(r.y, 2.0) + pow(r.z + 1.0, 2.0));
 		coord = r.xy / m + 0.5;
 	#else
-		float3 r = reflect(V, normal);
+		float3 r = reflect(V, N);
 		coord = ComputeSphereCoord(r);
 	#endif
 
@@ -516,8 +514,8 @@ void MainVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = Normal;
-	oPosition = mul(Position, matWorldViewProject);
 	oTexcoord2 = Position;
+	oPosition = mul(Position, matWorldViewProject);
 }
 
 float4 MainPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1, in float4 worldPos : TEXCOORD2) : COLOR
@@ -525,12 +523,10 @@ float4 MainPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1, in float4 wor
 	float alpha = GetAlpha(coord);
 	clip(alpha - alphaThreshold);
 
-	normal = normalize(normal);
-	normal = GetNormal(normal, worldPos, coord);
-
 	float3 V = normalize(worldPos - CameraPosition);
+	float3 N = GetNormal(normalize(normal), worldPos, coord);
 
-	return float4(GetSpecularHighlight(V, normal, coord) * GetAlbedo(coord), 0);
+	return float4(GetSpecularHighlight(N, V, coord) * GetAlbedo(coord), 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
