@@ -154,3 +154,4 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 * Real-Time Polygonal-Light Shading with Linearly Transformed Cosines\[[link](https://eheitzresearch.wordpress.com/415-2/)\]
 * Limb Darkening model \[[link](http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf)\]
 * Percentage-Closer Soft Shadows \[[link](http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf)\]
+* Creating a Spherical Reflection/Environment Mapping shader \[[link](https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader/)\]
