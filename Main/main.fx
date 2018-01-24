@@ -39,6 +39,7 @@ const float normalSubMapLoopNum = 1.0;
 
 // it has no effect on transparent objects
 #define MATCAP_MAP_FROM 0
+#define MATCAP_MAP_TYPE 0    // 0 matcap, 1 fish eye, 2 env map hdr
 #define MATCAP_MAP_UV_FLIP 2 // for DX9
 #define MATCAP_MAP_FILE "matcap.jpg"
 

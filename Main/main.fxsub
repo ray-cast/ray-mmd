@@ -458,13 +458,22 @@ float3 GetNormal(float3 N, float3 P, float2 coord)
 #endif
 }
 
-float3 GetSpecularHighlight(float3 normal, float2 coord)
+float3 GetSpecularHighlight(float3 V, float3 normal, float2 coord)
 {
 #if MATCAP_MAP_FROM
 	normal = normalize(normal);
 
-   	coord = mul(normal, (float3x3)matWorldView).xy;
-	coord = coord * 0.5 + 0.5;
+	#if MATCAP_MAP_TYPE == 0
+	   	coord = mul(normal, (float3x3)matWorldView).xy;
+		coord = coord * 0.5 + 0.5;
+	#elif MATCAP_MAP_TYPE == 1
+		float3 r = reflect(V, normal);
+		float m = 2.0 * sqrt(pow(r.x, 2.0) + pow(r.y, 2.0) + pow(r.z + 1.0, 2.0));
+		coord = r.xy / m + 0.5;
+	#else
+		float3 r = reflect(V, normal);
+		coord = ComputeSphereCoord(r);
+	#endif
 
 	#if MATCAP_MAP_UV_FLIP == 1
 		coord.x = 1 - coord.x;
@@ -519,7 +528,9 @@ float4 MainPS(float2 coord : TEXCOORD0, float3 normal : TEXCOORD1, in float4 wor
 	normal = normalize(normal);
 	normal = GetNormal(normal, worldPos, coord);
 
-	return float4(GetSpecularHighlight(normal, coord) * GetAlbedo(coord), 0);
+	float3 V = normalize(worldPos - CameraPosition);
+
+	return float4(GetSpecularHighlight(V, normal, coord) * GetAlbedo(coord), 0);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
