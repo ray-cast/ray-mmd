@@ -1491,10 +1491,14 @@ GbufferParam MaterialPS(
 	clip(-1);
 #endif
 
+	float3 dnx = ddx(normal);
+	float3 dny = ddy(normal);
+	float geometricSmoothness = 1 - pow(max(dot(dnx, dnx), dot(dny, dny)), 0.333);
+
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
 	material.normal = GetNormal(normal, worldPos.xyz, coord0);
-	material.smoothness = GetSmoothness(coord0);
+	material.smoothness = min(geometricSmoothness, GetSmoothness(coord0));
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
 	material.customDataA = GetCustomDataA(coord0);
@@ -1540,10 +1544,14 @@ GbufferParam Material2PS(
 	float alpha = GetAlpha(coord0);
 	clip(alpha - 0.01);
 
+	float3 dnx = ddx(normal);
+	float3 dny = ddy(normal);
+	float geometricSmoothness = 1 - pow(max(dot(dnx, dnx), dot(dny, dny)), 0.333);
+
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
 	material.normal = GetNormal(normal, worldPos.xyz, coord0);
-	material.smoothness = GetSmoothness(coord0);
+	material.smoothness = min(geometricSmoothness, GetSmoothness(coord0));
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
 	material.customDataA = GetCustomDataA(coord0);
