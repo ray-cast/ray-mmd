@@ -155,3 +155,4 @@ Financially supported on [Patreon](http://www.patreon.com/cubizer):
 * Limb Darkening model \[[link](http://www.physics.hmc.edu/faculty/esin/a101/limbdarkening.pdf)\]
 * Percentage-Closer Soft Shadows \[[link](http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf)\]
 * Creating a Spherical Reflection/Environment Mapping shader \[[link](https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader/)\]
+* Geometric Specular Aliasing \[[link](http://media.steampowered.com/apps/valve/2015/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf)\]
