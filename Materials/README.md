@@ -8,6 +8,8 @@ Material
 
 　　Currently, you can create a new material by duplicate a `material_2.0.fx` and if you want to create a variety of textures, current software such as dDO, nDO, Substance Designer, Substance Painter, Photoshop, etc, that will do much to create these conditions make the process a bit easier and help you create your own materials.
 
+[![link text](../Shader/screenshots/material.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/material.jpg)
+
 ALBEDO:
 ------
 　　`Albedo` is also called `base color`, defines the overall color of the material, thus uses all 3 color channels, the albedo maps are [normalized value](https://en.wikipedia.org/wiki/Unit_vector) in the [sRGB](https://en.wikipedia.org/wiki/SRGB) color-space and clamped between `0.0` and `1.0`
