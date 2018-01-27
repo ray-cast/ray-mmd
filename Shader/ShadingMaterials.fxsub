@@ -1,5 +1,5 @@
 #if SUN_LIGHT_ENABLE
-float3 ComputeSunIntensity(float zenithAngleCos, float EE = 10)
+float3 ComputeSunIntensity(float zenithAngleCos, float EE = 8)
 {
 	float steepness = 1.5;
 	float cutoffAngle = PI / 1.95;
@@ -19,7 +19,16 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	shadow *= ssdo;
 #endif
 
-	float3 lightColor = SunColor * mSunIntensity * any(material.visibility);
+	float3 R = reflect(-V, material.normal);
+	float e = 0.0092501131168;	// sin(radians(0.53));
+	float d = 0.99995721678846;	// cos(radians(0.53));
+	float dr = dot(L, R);
+	float3 s = R - dr * L;
+	L = dr < d ? normalize(d * L + normalize(s) * e) : R;
+
+	float3 lightColor = ColorTemperature(SunColor, mSunTemperature);
+	lightColor *= mSunIntensity;
+	lightColor *= any(material.visibility);
 #if SUN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
 #endif
