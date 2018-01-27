@@ -165,7 +165,7 @@ float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, f
 	float ay = aspect / roughness;
 
 	float spec = pow2(dot(X, H) * ax) + pow2(dot(Y, H) * ay) + nh * nh;
-	spec = (ax * ay) / (spec * spec * NormalizationFactor);
+	spec = (ax * ay) / (spec * spec) * NormalizationFactor;
 
 	float Gv = nl * (nv * (1 - roughness) + roughness);
 	float Gl = nv * (nl * (1 - roughness) + roughness);
