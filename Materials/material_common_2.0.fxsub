@@ -1388,7 +1388,7 @@ float3 GetCustomDataB(float2 coord)
 		#endif
 
 		#if CUSTOM_B_MAP_FROM == 3
-			customData = use_texture ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0;
+			customData = use_texture ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : MaterialDiffuse.rgb;
 		#elif CUSTOM_B_MAP_FROM == 4
 			customData = use_spheremap ? tex2D(CustomBMapSamp, coord * customBMapLoopNum).rgb : 0;
 		#elif CUSTOM_B_MAP_FROM == 5
