@@ -19,7 +19,9 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	shadow *= ssdo;
 #endif
 
-	float3 lightColor = SunColor * mSunIntensity * any(material.visibility);
+	float3 lightColor = ColorTemperature(SunColor, mSunTemperature);
+	lightColor *= mSunIntensity;
+	lightColor *= any(material.visibility);
 #if SUN_LIGHT_ENABLE == 2
  	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
 #endif
