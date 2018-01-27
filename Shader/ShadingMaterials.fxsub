@@ -173,7 +173,7 @@ float4 ShadingTransparentPS(
 
 	if (material.lightModel == SHADINGMODELID_GLASS)
 	{
-		float3 dielectricColor = max(0.02, material.albedo);
+		float3 dielectricColor = max(0.02, material.customDataB);
 		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
 		float3 fresnel = FresnelSchlickGlass(material.normal, V, material.smoothness, material.specular);
 
