@@ -4,6 +4,8 @@
 
 　　该文档主要用于快速说明材质作用以方便查询
 
+[![link text](../Shader/screenshots/material.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/material.jpg)
+
 ALBEDO:
 ------
 　　`Albedo` 也被称为 `基本色`, 定义了材质的整体颜色并且取值范围在`0.0` ~ `1.0`
