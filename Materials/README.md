@@ -112,7 +112,7 @@ SubAlbedo:
 
 Alpha:
 ----------------
-　　It has no effect on opaque objects.
+　　It has no effect on opaque objects, because of each tabs is independent of others, it won't affects all of the other tabs, and if you modified this entry you should also edit the `main.fx` at the the time.
 
 * ##### ALPHA_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### ALPHA_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
