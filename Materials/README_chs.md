@@ -1,6 +1,6 @@
 材质
 ========
-###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
+###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/dev/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/dev/Materials/README_chs.md)
 
 　　该文档主要用于快速说明材质作用以方便查询，基于物理的渲染(PBR)是近几年迅速流行起来的一套渲染管线，因此你需要先了解一些关于物理渲染的知识，以帮助更快的了解基于物理的渲染
 
