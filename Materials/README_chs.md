@@ -2,7 +2,11 @@
 ========
 ###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
 
-　　该文档主要用于快速说明材质作用以方便查询
+　　该文档主要用于快速说明材质作用以方便查询，基于物理的渲染(PBR)是近几年迅速流行起来的一套渲染管线，因此你需要先了解一些关于物理渲染的知识，以帮助更快的了解基于物理的渲染
+
+　　通常来说有三种不同的材质描述，该渲染主要使用**albedo/smoothness/metalness**材质，而不是**albedo/roughness/metalness**和**diffuse/specular/gloss**，
+因为粗糙度(roughness)不容易被人理解和使用，而后者并不属于基于物理的范畴，本文会介绍所有在Ray-MMD中常用的条目，并且添加一些详细的wiki链接，
+同时你可以通过复制粘贴 `material_2.0.fx` 来创建一个新的材质用于渲染你的模型.
 
 [![link text](../Shader/screenshots/material.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/material.jpg)
 
