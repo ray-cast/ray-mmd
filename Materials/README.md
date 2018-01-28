@@ -359,7 +359,7 @@ The `curvature` is also called `opacity`, defines the overall scattering intensi
 
 Shading Model ID — Glass
 -------------
-In order to make refraction work, you must set alpha value of the pmx to less then `0.999`  
+In order to make refraction work, you must set alpha value to less then `0.999` in the pmx model 
 [![link text](../Shader/screenshots/glass.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/dev/Shader/screenshots/glass.jpg)
 
 Shading Model ID — Cloth
