@@ -137,10 +137,12 @@ Alpha:
 
 Normal:
 -------------
-　　The normal maps alters the topography of the mesh and alters the angle of the light to add shadows to it in the details, 
-this map is almost always uses tangent-space map with three channels in the most time, but the influences of some other factors such as old pipeline and bandwidth,
-this allows you to use different type to access the different texture of the normal map, see the `NORMAL_MAP_TYPE` for more information, 
-in order to calculate the light in the real-time, All input models must have the normals else will result a problem with the white edge, 
+　　The normal maps alters the topography of the mesh and alters the angle of the light to add shadows to surface in the details, 
+this map is almost always uses tangent-space map with three channels in the most time,
+but the influences of some other factors such as old pipeline and bandwidth,
+this allows you to use different type to access the different texture of the normal map, see the `NORMAL_MAP_TYPE` for more information.
+
+　　In order to calculate the lighting in the real-time, All input models must have the vertex normals else will result a problem with the white edge, 
 that looks like some white edges on your model, so you can put the scene in the `PMXEditor` and 
 check the scene that all `normals` are not `zero-length` (XYZ are the same equal to zero) to be used for model.
 
@@ -331,14 +333,6 @@ Shading Model ID
     | 8  | Cel Shading       | Threshold  | Shadow color |
     | 9  | ToonBased Shading | Haredness  | Shadow color |
 
-    ##### Tips:  
-    `Subsurface` : The `curvature` also called `opacity`, defines the overall scattering intensity affects all the surface, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
-	[![link text](../Shader/screenshots/curvature_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/developing/Shader/screenshots/curvature.png)
-    `Glass` : In order to make refraction work, you must set alpha value of the pmx to less then `0.999`  
-    `Cloth` : `Sheen` is interpolation between `GGX` and `InvGGX`, see [paper](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf) for cloth information  
-    `Cloth` : `Fuzz Color` is f0 of fresnel params in sRGB color-space, defines the overall color of the specular  
-    `Toon`  : see [paper](https://zhuanlan.zhihu.com/p/26409746) for more information, but chinese  
-
 * ##### CUSTOM_A_MAP_FROM  (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### CUSTOM_A_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
 * ##### CUSTOM_A_MAP_COLOR_FLIP
@@ -357,6 +351,24 @@ Shading Model ID
 
 * ##### const float3 customB = 0.0 ~ 1.0; (sRGB color-space)
 * ##### const float2 customBMapLoopNum = 1.0; (see [albedoMapLoopNum](#albedoMapLoopNum))
+
+Shading Model ID — PreIntegrated Skin
+-------------
+The `curvature` is also called `opacity`, defines the overall scattering intensity affects all the surface, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
+[![link text](../Shader/screenshots/curvature_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/dev/Shader/screenshots/curvature.png)
+
+Shading Model ID — Glass
+-------------
+In order to make refraction work, you must set alpha value of the pmx to less then `0.999`  
+[![link text](../Shader/screenshots/glass.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/dev/Shader/screenshots/glass.png)
+
+Shading Model ID — Cloth
+-------------
+`Sheen` is interpolation between `GGX` and `InvGGX`, and `Fuzz Color` is f0 of fresnel params in sRGB color-space, defines the overall color of the specular  see [paper](http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf) for cloth information,
+
+Shading Model ID — Toon
+-------------
+see [paper](https://zhuanlan.zhihu.com/p/26409746) for more information, but chinese  
 
 FAQ:
 --------------------
