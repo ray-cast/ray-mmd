@@ -112,7 +112,7 @@ SubAlbedo:
 
 Alpha:
 ----------------
-　　It has no effect on opaque objects, each tab is independent of other tab, it won't affects all of the other tabs, and other tab will fetched alpha value from .PMX model rather than this entry, so you should also edit the `main.fx` at the same time if you modified this entry.
+　　It has no effect on opaque objects, each tab is independent of other tab, it won't affects all of the other tabs, and other tab will fetched alpha value from .PMX model rather than this entry, so if you modified this entry you should also edit the `main.fx` at the same time.
 
 * ##### ALPHA_MAP_FROM (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### ALPHA_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))
