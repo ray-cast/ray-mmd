@@ -1,6 +1,6 @@
 Material
 ========
-###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/developing/Materials/README_chs.md)
+###### 　　[English](https://github.com/ray-cast/ray-mmd/blob/dev/Materials/README.md) &nbsp; [中文文档](https://github.com/ray-cast/ray-mmd/blob/dev/Materials/README_chs.md)
 
 　　This document is designed to help those who wanted to quickly get up to speed in `Ray-MMD`, the PBR (physically-based-rendering) is a rendering pipeline around the physics that has rapidly gained popularity, so the first thing you need to know what is the PBR term.
 
