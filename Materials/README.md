@@ -357,6 +357,10 @@ Shading Model ID — PreIntegrated Skin
 The `curvature` is also called `opacity`, defines the overall scattering intensity affects all the surface, see the UE4 [docs](https://docs.unrealengine.com/latest/INT/Engine/Rendering/Materials/LightingModels/SubSurfaceProfile/index.html) for more information  
 [![link text](../Shader/screenshots/curvature_small.png)](https://raw.githubusercontent.com/ray-cast/ray-mmd/dev/Shader/screenshots/curvature.png)
 
+Shading Model ID — Anisotropy
+-------------
+[![link text](../Shader/screenshots/anisotropy.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/dev/Shader/screenshots/anisotropy.jpg)
+
 Shading Model ID — Glass
 -------------
 In order to make refraction work, you must set alpha value to less then `0.999` in the pmx model 
