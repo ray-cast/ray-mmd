@@ -157,8 +157,8 @@ float3 SpecularBRDF_GGX(float nh, float nl, float vh, float nv, float roughness,
 
 float3 SpecularBRDF_GGXAniso(float3 N, float3 H, float nh, float nl, float vh, float nv, float3 specular, float roughness, float anisotropic, float3 shift, float NormalizationFactor)
 {
-	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift.r);
-	float3 Y = normalize(cross(N, X) + N * shift.r);
+	float3 X = normalize(cross(N, mul(float3(0,1,0), (float3x3)matView)) + N * shift.r);
+	float3 Y = normalize(cross(X, N) - N * shift.r);
 
 	float aspect = rsqrt(1.0 - anisotropic * 0.9);
 	float ax = 1.0 / (roughness * aspect);

@@ -82,12 +82,12 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float shift)
 {
 	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
-	float3 Y = normalize(cross(N, X) + N * shift);
+	float3 Y = normalize(cross(X, N) - N * shift);
 
-	float3 ax = cross(-V, Y);
-	float3 ay = cross(ax, Y);
+	float3 B = cross(Y, V);
+	float3 T = cross(B, Y);
 
-	float3 bentNormal = normalize(lerp(N, ay, anisotropy * anisotropy));
+	float3 bentNormal = normalize(lerp(N, T, anisotropy));
 
 	return reflect(-V, bentNormal);
 }
