@@ -1,6 +1,6 @@
 float ComputeSpecularMicroOcclusion(float f0)
 {
-	return saturate(dot(f0, 0.33333h) * 50);
+	return saturate(dot(f0, 0.33333h) * 50 * 3);
 }
 
 float ComputeSpecularMicroOcclusion(float3 f0)
