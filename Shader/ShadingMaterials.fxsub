@@ -6,7 +6,26 @@ float3 ComputeSunIntensity(float zenithAngleCos, float EE = 8)
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness))) / PI;
 }
 
-void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, out float3 diffuse, out float3 specular)
+float4 ShadingMaterialVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
+	oTexcoord2 = ColorTemperature(SunColor, mSunTemperature) * mSunIntensity;
+#if SUN_LIGHT_ENABLE == 2
+ 	oTexcoord2 *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
+#endif
+
+	return Position;
+}
+
+void ShadingMaterial(MaterialParam material, float3 V, float3 L, float3 lightColor, float2 coord, out float3 diffuse, out float3 specular)
 {
 	float shadow = 1;
 #if SUN_SHADOW_QUALITY
@@ -26,19 +45,14 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float2 coord, o
 	float3 s = R - dr * L;
 	L = dr < d ? normalize(d * L + normalize(s) * e) : R;
 
-	float3 lightColor = ColorTemperature(SunColor, mSunTemperature);
-	lightColor *= mSunIntensity;
-	lightColor *= any(material.visibility);
-#if SUN_LIGHT_ENABLE == 2
- 	lightColor *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
-#endif
-
 #if TOON_ENABLE
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
 #else
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, min(shadow, saturate(dot(material.normal, L) * 4)));
 #endif
 	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
+
+	lightColor *= any(material.visibility);
 
 	diffuse = (energy[0] + subsurface * shadow) * lightColor;
 	specular = energy[1] * lightColor;
@@ -82,6 +96,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 void ShadingOpacityPS(
 	in float2 coord: TEXCOORD0, 
 	in float3 viewdir: TEXCOORD1, 
+	in float3 lightColor: TEXCOORD2,
 	in float4 screenPosition : SV_Position,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1)
@@ -106,7 +121,7 @@ void ShadingOpacityPS(
 
 #if SUN_LIGHT_ENABLE
 	float3 sunDiffuse, sunSpecular;
-	ShadingMaterial(material, V, L, coord, sunDiffuse, sunSpecular);
+	ShadingMaterial(material, V, L, lightColor, coord, sunDiffuse, sunSpecular);
 	diffuse += sunDiffuse;
 	specular += sunSpecular;
 #endif
@@ -130,21 +145,10 @@ void ShadingOpacityPS(
 #endif
 }
 
-float4 ShadingOpacityAlbedoPS(in float2 coord: TEXCOORD0) : COLOR
-{
-	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
-	return float4(DecodeGBufferAlbedo(MRT1), 0);
-}
-
-float4 ShadingOpacitySpecularPS(in float2 coord: TEXCOORD0) : COLOR
-{
-	float3 specular = tex2Dlod(ShadingMapTempSpecularSamp, float4(coord, 0, 0)).rgb;
-	return float4(specular, 0);
-}
-
 float4 ShadingTransparentPS(
 	in float2 coord: TEXCOORD0, 
 	in float3 viewdir: TEXCOORD1, 
+	in float3 lightColor: TEXCOORD2, 
 	in float4 screenPosition : SV_Position) : COLOR
 {
 	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
@@ -166,7 +170,7 @@ float4 ShadingTransparentPS(
 
 #if SUN_LIGHT_ENABLE
 	float3 diffuse, specular;
-	ShadingMaterial(material, V, L, coord, diffuse, specular);
+	ShadingMaterial(material, V, L, lightColor, coord, diffuse, specular);
 	lighting += diffuse * material.albedo + specular;
 #endif
 
@@ -226,4 +230,16 @@ float4 ShadingTransparentPS(
 #endif
 
 	return float4(lighting, material.linearDepth);
+}
+
+float4 ShadingOpacityAlbedoPS(in float2 coord: TEXCOORD0) : COLOR
+{
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	return float4(DecodeGBufferAlbedo(MRT1), 0);
+}
+
+float4 ShadingOpacitySpecularPS(in float2 coord: TEXCOORD0) : COLOR
+{
+	float3 specular = tex2Dlod(ShadingMapTempSpecularSamp, float4(coord, 0, 0)).rgb;
+	return float4(specular, 0);
 }

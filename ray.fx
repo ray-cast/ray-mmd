@@ -419,13 +419,13 @@ technique DeferredLighting<
 	pass ShadingOpacity<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ShadingMaterialVS();
 		PixelShader  = compile ps_3_0 ShadingOpacityPS();
 	}
 	pass ShadingTransparent<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ShadingMaterialVS();
 		PixelShader  = compile ps_3_0 ShadingTransparentPS();
 	}
 #if SSSS_QUALITY
