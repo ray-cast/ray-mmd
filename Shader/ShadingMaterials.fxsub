@@ -6,25 +6,6 @@ float3 ComputeSunIntensity(float zenithAngleCos, float EE = 8)
 	return EE * saturate(1.0f - exp(-((cutoffAngle - acos(zenithAngleCos)) / steepness))) / PI;
 }
 
-float4 ShadingMaterialVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
-	out float3 oTexcoord2 : TEXCOORD2) : POSITION
-{
-	oTexcoord0 = Texcoord;
-	oTexcoord0.xy += ViewportOffset;
-	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
-	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
-	oTexcoord2 = ColorTemperature(SunColor, mSunTemperature) * mSunIntensity;
-#if SUN_LIGHT_ENABLE == 2
- 	oTexcoord2 *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
-#endif
-
-	return Position;
-}
-
 void ShadingMaterial(MaterialParam material, float3 V, float3 L, float3 lightColor, float2 coord, out float3 diffuse, out float3 specular)
 {
 	float shadow = 1;
@@ -91,6 +72,25 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	diffuse *= shadow;
 	specular *= shadow * shadow * shadow;
 #endif
+}
+
+float4 ShadingMaterialVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
+	oTexcoord2 = ColorTemperature(SunColor, mSunTemperature) * mSunIntensity;
+#if SUN_LIGHT_ENABLE == 2
+ 	oTexcoord2 *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
+#endif
+
+	return Position;
 }
 
 void ShadingOpacityPS(
