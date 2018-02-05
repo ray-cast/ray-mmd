@@ -35,7 +35,7 @@ static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightT
 
 static const float3 LightPosition = mPosition;
 static const float3 LightDirection = normalize(mDirection - mPosition);
-static const float3 LightColor = float3(mHP, mSP, LightIntensity) * LightBlink;
+static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensity2 * LightBlink);
 
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
