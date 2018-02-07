@@ -130,7 +130,7 @@ float3 ComputeIESLightProfile1D(float3 L, float3 Ld)
 	return tex2Dlod(IESTextureSamp, float4(angle, 0, 0, 0)).rgb;
 }
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, inout float3 diffuse, inout float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightColor, float shadow, inout float3 diffuse, inout float3 specular)
 {
 	float3 L = viewLightPosition - P;
 	float3 L2 = normalize(L);
@@ -138,7 +138,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, i
 	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb);
 	atten *= GetSpotLightAttenuation(L2, viewLightDirection, LightAngle);
 	atten *= ComputeIESLightProfile1D(L2, LightDirection);
-	atten *= LightColor;
+	atten *= lightColor;
 
 	float2x3 energy = SurfaceEnergy(material, material.normal, L2, V, shadow);
 	diffuse = energy[0] + SubsurfaceShading(material, material.normal, L2, V);
@@ -190,8 +190,9 @@ void LightSourceVS(
 }
 
 void LightSourcePS(
-	float4 texcoord : TEXCOORD0, 
-	float3 viewdir : TEXCOORD1,
+	in float4 texcoord : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	in float3 lightColor : TEXCOORD2,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
@@ -212,10 +213,10 @@ void LightSourcePS(
 #endif
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, shadow, diffuse, specular);
+	ShadingMaterial(material, P1, V, lightColor, shadow, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, shadow, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, lightColor, shadow, diffuseAlpha, specularAlpha);
 
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
@@ -223,8 +224,9 @@ void LightSourcePS(
 }
 
 void LightSourceShadowlessPS(
-	float4 texcoord : TEXCOORD0, 
-	float3 viewdir : TEXCOORD1,
+	in float4 texcoord : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	in float3 lightColor : TEXCOORD2,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
@@ -239,10 +241,10 @@ void LightSourceShadowlessPS(
 	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, 1, diffuse, specular);
+	ShadingMaterial(material, P1, V, lightColor, 1, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, 1, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, lightColor, 1, diffuseAlpha, specularAlpha);
 
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
