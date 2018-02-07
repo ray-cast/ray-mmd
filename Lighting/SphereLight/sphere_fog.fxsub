@@ -182,6 +182,7 @@ void SphereFogVS(
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = FogPosition + Normal * FogRange;
