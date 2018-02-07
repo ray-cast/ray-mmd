@@ -3,6 +3,7 @@
 static const float3 lightRangeParams = float3(100.0, 0.0, 200.0);
 static const float3 lightIntensityParams = float3(100.0, 0.0, 2000.0);
 static const float3 lightAttenuationBulbParams = float3(1.0, 0.0, 5.0);
+static const float3 lightTemperatureLimits = float3(6600, 1000, 12500);
 
 #define SHADOW_MAP_FROM 1
 #define SHADOW_MAP_QUALITY 1
