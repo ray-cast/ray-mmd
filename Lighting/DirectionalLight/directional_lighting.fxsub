@@ -29,7 +29,7 @@ float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Directi
 static const float LightRange = lerp(lerp(1000, 2000, mRangeP), 0, mRangeM);
 static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHardnessP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
-static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.y, mVP), 0, mVM);
+static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.z, mVP), lightIntensityLimits.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
 static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.z, mTemperatureP), lightTemperatureLimits.y, mTemperatureM);
 
