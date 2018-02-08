@@ -16,11 +16,26 @@ bool use_spheremap;
 bool use_toon;
 
 #if EMISSIVE_MAP_APPLY_MORPH_COLOR || ALBEDO_MAP_APPLY_MORPH_COLOR
-float MorphRed   : CONTROLOBJECT<string name="(self)"; string item = "R+";>;
-float MorphGreen : CONTROLOBJECT<string name="(self)"; string item = "G+";>;
-float MorphBlue  : CONTROLOBJECT<string name="(self)"; string item = "B+";>;
+float MorphHP : CONTROLOBJECT<string name="(self)"; string item = "H+";>;
+float MorphSP : CONTROLOBJECT<string name="(self)"; string item = "S+";>;
 
-static float3 MorphColor = float3(MorphRed, MorphGreen, MorphBlue);
+float3 hsv2rgb(float3 c)
+{
+	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+}
+
+static float3 MorphColor = hsv2rgb(float3(MorphHP, MorphSP, 1));
+#endif
+
+#if EMISSIVE_MAP_APPLY_MORPH_INTENSITY
+float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "V+";>;
+float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "V-";>;
+
+static float emissiveIntensityMin = log(50);
+static float emissiveIntensityMax = log(2100);
+static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
 
 #if EMISSIVE_MAP_APPLY_BLINK
@@ -45,15 +60,6 @@ float3 SmoothTriangleWave(float3 x)
 #else
 	static float3 LightBlink = saturate(1 - SmoothTriangleWave(time * emissiveBlink));
 #endif
-#endif
-
-#if EMISSIVE_MAP_APPLY_MORPH_INTENSITY
-float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "Intensity+";>;
-float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "Intensity-";>;
-
-static float emissiveIntensityMin = log(50);
-static float emissiveIntensityMax = log(2100);
-static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
 
 #define TEXTURE_FILTER ANISOTROPIC
