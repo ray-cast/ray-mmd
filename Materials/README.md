@@ -75,9 +75,9 @@ ALBEDO:
     ###### 2. If the red is [unnormalized value](https://en.wikipedia.org/wiki/Unit_vector), it can be set to albedo like:
     * `const float3 albedo = float3(255, 0.0, 0.0) / 255.0;`
     ###### 3. If the color is fetched from your monitor, you need to convert the color from [sRGB](https://en.wikipedia.org/wiki/SRGB) to [linear color-space](https://en.wikipedia.org/wiki/SRGB) by `color ^ gamma`
-    * Convert the `srgb color-space` from normalized value to `linear color-space` like:
+    * Convert the normalized value from `srgb color-space` to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b), 2.2);`
-    * Convert the `srgb color-space` from unnormalized value to `linear color-space` like:
+    * Convert the unnormalized value from `srgb color-space` to `linear color-space` like:
       * `const float3 albedo = pow(float3(r, g, b) / 255.0, 2.2);`
 
 * #### albedoMapLoopNum
