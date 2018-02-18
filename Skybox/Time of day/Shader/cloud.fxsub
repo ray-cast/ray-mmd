@@ -11,10 +11,15 @@ sampler NoiseMapSamp = sampler_state {
 float ComputeRayPlaneIntersection(float3 position, float3 viewdir, float3 n, float dist)
 {
 	float a = dot(n, viewdir);
-	if (a > 0.0) return -1;
-
-	float t = -(dot(position, n) + dist) / a;
-	return t;
+	if (a > 0.0)
+	{
+		return -1;
+	}
+	else
+	{
+		float t = -(dot(position, n) + dist) / a;
+		return t;
+	}
 }
 
 float3 ComputeDensity(ScatteringParams setting, float depth)
