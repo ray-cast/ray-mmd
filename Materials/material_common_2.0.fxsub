@@ -62,6 +62,24 @@ float3 SmoothTriangleWave(float3 x)
 #endif
 #endif
 
+#if EMISSIVE_MAP_APPLY_MORPH_TEMPERATURE
+float3 ColorTemperature(float kelvin)
+{
+	float temp = kelvin / 100;
+	float temp60 = max(0, temp - 60);
+	float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
+	float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
+	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
+	float3 balance = saturate(pow(max(abs(float3(red, green, blue) / 255), 1e-5), 2.2));
+	return balance;
+}
+
+float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
+float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
+
+static float3 MorphTemperature = ColorTemperature(lerp(lerp(6600, 12500, mTemperatureP), 1000, mTemperatureM));
+#endif
+
 #define TEXTURE_FILTER ANISOTROPIC
 #define TEXTURE_MIP_FILTER ANISOTROPIC
 #define TEXTURE_ANISOTROPY_LEVEL 16
@@ -1289,6 +1307,10 @@ float3 GetEmissiveColor(float2 coord)
 
 	#if EMISSIVE_MAP_APPLY_MORPH_COLOR
 		emissiveColor *= MorphColor;
+	#endif
+
+	#if EMISSIVE_MAP_APPLY_MORPH_TEMPERATURE
+		emissiveColor *= MorphTemperature;
 	#endif
 
 	#if EMISSIVE_MAP_APPLY_BLINK
