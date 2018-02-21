@@ -15,9 +15,12 @@
 #define DISK_MAX_WIDTH 25
 #define DISK_MAX_HEIGHT 25
 
-float mR : CONTROLOBJECT<string name = "(self)"; string item = "R+";>;
-float mG : CONTROLOBJECT<string name = "(self)"; string item = "G+";>;
-float mB : CONTROLOBJECT<string name = "(self)"; string item = "B+";>;
+float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
+float mSP : CONTROLOBJECT<string name = "(self)"; string item = "S+";>;
+float mVP : CONTROLOBJECT<string name = "(self)"; string item = "V+";>;
+float mVM : CONTROLOBJECT<string name = "(self)"; string item = "V-";>;
+float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
+float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 float mBlink : CONTROLOBJECT<string name = "(self)"; string item = "Blink";>;
 float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name = "(self)"; string item = "Range-";>;
@@ -26,8 +29,6 @@ float mAngleM : CONTROLOBJECT<string name = "(self)"; string item = "Angle-";>;
 float mWidthP : CONTROLOBJECT<string name = "(self)"; string item = "Width+";>;
 float mHeightP : CONTROLOBJECT<string name = "(self)"; string item = "Height+";>;
 float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
-float mIntensityP : CONTROLOBJECT<string name = "(self)"; string item = "Intensity+";>;
-float mIntensityM : CONTROLOBJECT<string name = "(self)"; string item = "Intensity-";>;
 float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
 float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
 
@@ -40,13 +41,14 @@ static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHar
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float LightAngle = radians(lerp(lerp(60.0f, 80.0f, mAngleP), 20.0f, mAngleM));
 static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
-static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mIntensityP), lightIntensityParams.y, mIntensityM);
+static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
+static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.z, mTemperatureP), lightTemperatureLimits.y, mTemperatureM);
 
 static const float3 LightPosition = mPosition;
 static const float2 LightRect = float2(LightWidth, LightHeight);
 static const float3 LightDirection = normalize(mDirection - mPosition);
-static const float3 LightColor = float3(mR, mG, mB) * LightIntensity * LightIntensity2 * LightBlink;
+static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensity2 * LightBlink);
 
 static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
 static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
@@ -121,12 +123,12 @@ float ShadingShadow(MaterialParam material, float3 P)
 }
 #endif
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 V, float shadow, inout float3 diffuse, inout float3 specular)
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightColor, float shadow, inout float3 diffuse, inout float3 specular)
 {
 	float3 L = normalize(viewLightPosition - P);
 
 	float3 atten = GetSpotLightAttenuation(-L, viewLightDirection, LightAngle);
-	atten *= LightColor;
+	atten *= lightColor;
 	atten *= shadow;
 
 	float3 points[4];
@@ -169,6 +171,7 @@ void LightSourceVS(
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition  : POSITION)
 {
 	Position.xyz = LightPosition + Normal * LightRange;
@@ -176,11 +179,14 @@ void LightSourceVS(
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+	oTexcoord2 = hsv2rgb(LightColor);
+	oTexcoord2 = ColorTemperature(oTexcoord2, LightTemperature);
 }
 
 void LightSourcePS(
-	float4 texcoord : TEXCOORD0, 
-	float3 viewdir : TEXCOORD1,
+	in float4 texcoord : TEXCOORD0, 
+	in float3 viewdir : TEXCOORD1,
+	in float3 lightColor : TEXCOORD2,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
@@ -201,10 +207,10 @@ void LightSourcePS(
 #endif
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, shadow, diffuse, specular);
+	ShadingMaterial(material, P1, V, lightColor, shadow, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, shadow, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, lightColor, shadow, diffuseAlpha, specularAlpha);
 
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
@@ -212,8 +218,9 @@ void LightSourcePS(
 }
 
 void LightSourceShadowlessPS(
-	float4 texcoord : TEXCOORD0, 
-	float3 viewdir : TEXCOORD1,
+	in float4 texcoord : TEXCOORD0, 
+	in float3 viewdir : TEXCOORD1,
+	in float3 lightColor : TEXCOORD2,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
@@ -228,10 +235,10 @@ void LightSourceShadowlessPS(
 	float3 P2 = V * materialAlpha.linearDepth / V.z;
 
 	float3 diffuse, specular = 0;
-	ShadingMaterial(material, P1, V, 1, diffuse, specular);
+	ShadingMaterial(material, P1, V, lightColor, 1, diffuse, specular);
 
 	float3 diffuseAlpha, specularAlpha = 0;
-	ShadingMaterial(materialAlpha, P2, V, 1, diffuseAlpha, specularAlpha);
+	ShadingMaterial(materialAlpha, P2, V, lightColor, 1, diffuseAlpha, specularAlpha);
 
 	oColor0 = float4(diffuse, 0);
 	oColor1 = float4(specular, 0);
