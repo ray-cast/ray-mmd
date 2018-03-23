@@ -6,14 +6,6 @@ Ray-MMD
 
 　　Ray-MMD是一个自由的,功能强大的[mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm)扩展包, 提倡以一种易于使用的方式来添加基于物理的渲染和高自由度操作. 使用hlsl语言编写, 一个基于在[mikumikueffect](https://bowlroll.net/file/35012)的DX9环境中的渲染库. 
 
-　　目前还有许多新的功能和更好的效果需要去做，只有你们的支持，Ray-MMD能走的更远，如果你喜欢我的渲染,你可以通过以下的方式来赞助，你的帮助将是非常有用的,谢谢!
-
-　　Patreon:
-<br>　　[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/cubizer)
-
-　　支付宝:
-<br>　　![Alt](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/ali.png)
-
 截图:
 ------------
 [![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)

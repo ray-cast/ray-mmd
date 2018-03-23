@@ -8,12 +8,6 @@ Ray-MMD
 
 　　There are lots of new features and better effect TODO, but now i don't have the more time to do it at the same pace, only with your support, Ray-MMD can go further, so if you like my shader or have the means to do so, please consider financial support.Your help is very useful for me. Thanks! 
 
-　　Patreon:
-<br>　　[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/cubizer)
-
-　　支付宝:
-<br>　　![Alt](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/ali.png)
-
 Screenshots:
 ------------
 [![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)
