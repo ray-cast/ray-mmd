@@ -6,8 +6,6 @@ Ray-MMD
 
 　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
 
-　　There are lots of new features and better effect TODO, but now i don't have the more time to do it at the same pace, only with your support, Ray-MMD can go further, so if you like my shader or have the means to do so, please consider financial support.Your help is very useful for me. Thanks! 
-
 Screenshots:
 ------------
 [![link text](./Shader/screenshots/screen1_small.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)
