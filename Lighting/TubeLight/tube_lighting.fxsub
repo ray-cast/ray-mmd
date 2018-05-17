@@ -44,7 +44,7 @@ static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
-static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.z, mTemperatureP), lightTemperatureLimits.y, mTemperatureM);
+static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.y, mTemperatureP), lightTemperatureLimits.z, mTemperatureM);
 
 static const float3 LightPosition = mPosition;
 static const float3 LightLeft = mLeft - (mLeft - LightPosition) * LightWidth;
