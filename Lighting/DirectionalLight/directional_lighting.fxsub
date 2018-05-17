@@ -31,7 +31,7 @@ static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHar
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float LightIntensity = lerp(lerp(lightIntensityLimits.x, lightIntensityLimits.z, mVP), lightIntensityLimits.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
-static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.z, mTemperatureP), lightTemperatureLimits.y, mTemperatureM);
+static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.y, mTemperatureP), lightTemperatureLimits.z, mTemperatureM);
 
 static const float3 LightPosition = mPosition;
 static const float3 LightDirection = normalize(mDirection - mPosition);
