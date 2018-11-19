@@ -4,7 +4,7 @@ Ray-MMD
 ### Physically-Based Rendering ###
 　　<img style="vertical-align: top;" src="./Shader/screenshots/logo.png" alt="logo" height="48px">
 
-　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](http://www.geocities.jp/higuchuu4/index_e.htm), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
+　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](https://sites.google.com/view/vpvp/), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
 
 Screenshots:
 ------------
@@ -33,7 +33,7 @@ Download:
 
 Requirement:
 ------------
-* [MikuMikuDance](http://www.geocities.jp/higuchuu4/index_e.htm) - 926ver (x64) (Without Anti-Aliasing)
+* [MikuMikuDance](https://sites.google.com/view/vpvp/) - 926ver (x64) (Without Anti-Aliasing)
 * [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
 * Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
