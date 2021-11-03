@@ -95,7 +95,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, MIDPOINT_8_BIT, 0, MIDPOINT_8_BIT };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"sky*box*.* =./Skybox/skylighting_none.fx;"
+		"sky*box*.* =./Skybox/Image Based Lighting - Disable.fx;"
 		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
