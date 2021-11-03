@@ -125,4 +125,9 @@ const float customAMapLoopNum = 1.0;
 const float3 customB = 0.0;
 const float2 customBMapLoopNum = 1.0;
 
+#define SPECULAR_ANTIALIASING_ENABLE 1
+
+const float specularAntiAliasingVariance = 0.15;
+const float specularAntiAliasingThreshold = 0.2;
+
 #include "material_common_2.0.fxsub"

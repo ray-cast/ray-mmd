@@ -558,7 +558,7 @@ float3 ComputeTangentBinormalNormal(float3 N, float3 P, float2 coord, float3 tan
 	tbnTransform[1] = -normalize(B * scaleB);
 	tbnTransform[2] = N;
 
-	return normalize(mul(tangentNormal, tbnTransform));
+	return mul(tangentNormal, tbnTransform);
 }
 
 float3 RNMBlendUnpacked(float3 n1, float3 n2)
@@ -695,19 +695,61 @@ float2 ParallaxOcclusionMap(sampler heightMap, float2 coord, float3 V, int numSt
 }
 #endif
 
-float SmoothnessToRoughness(float smoothness)
+float SmoothnessToPerceptualRoughness(float smoothness)
 {
-	return (1.0f - smoothness) * (1.0f - smoothness);
+	return 1.0 - smoothness;
 }
 
-float RoughnessToSmoothness(float roughness)
+float PerceptualRoughnessToSmoothness(float perceptualRoughness)
 {
-	return 1.0f - sqrt(roughness);
+	return 1.0 - perceptualRoughness;
+}
+
+float PerceptualRoughnessToRoughness(float perceptualRoughness)
+{
+	return perceptualRoughness * perceptualRoughness;
+}
+
+float RoughnessToPerceptualRoughness(float roughness)
+{
+	return sqrt(roughness);
+}
+
+float PerceptualSmoothnessToRoughness(float perceptualSmoothness)
+{
+	return (1.0 - perceptualSmoothness) * (1.0 - perceptualSmoothness);
+}
+
+float RoughnessToPerceptualSmoothness(float roughness)
+{
+	return 1.0 - sqrt(roughness);
 }
 
 float ShininessToSmoothness(float spec)
 {
 	return 1.0f - pow(max(0, 2.0 / (spec + 2)), 0.125);
+}
+
+float NormalFiltering(float perceptualSmoothness, float variance, float threshold)
+{
+	float roughness = PerceptualSmoothnessToRoughness(perceptualSmoothness);
+	float squaredRoughness = saturate(roughness * roughness + min(2.0 * variance, threshold * threshold));
+
+	return RoughnessToPerceptualSmoothness(sqrt(squaredRoughness));
+}
+
+float GeometricNormalVariance(float3 geometricNormalWS, float screenSpaceVariance)
+{
+	float3 deltaU = ddx(geometricNormalWS);
+	float3 deltaV = ddy(geometricNormalWS);
+
+	return screenSpaceVariance * (dot(deltaU, deltaU) + dot(deltaV, deltaV));
+}
+
+float GeometricNormalFiltering(float perceptualSmoothness, float3 geometricNormalWS, float screenSpaceVariance, float threshold)
+{
+	float variance = GeometricNormalVariance(geometricNormalWS, screenSpaceVariance);
+	return NormalFiltering(perceptualSmoothness, variance, threshold);
 }
 
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
@@ -716,10 +758,7 @@ GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 	gbuffer.buffer1.xyz = material.albedo * (1 - material.metalness);
 	gbuffer.buffer1.w = material.smoothness;
 
-	material.normal = mul(material.normal, (float3x3)matWorldView);
-	material.normal = normalize(material.normal);
-
-	gbuffer.buffer2.xyz = EncodeNormal(material.normal);
+	gbuffer.buffer2.xyz = EncodeNormal(normalize(mul(material.normal, (float3x3)matWorldView)));
 	gbuffer.buffer2.w = material.customDataA;
 
 	gbuffer.buffer3.xyz = lerp(material.specular, max(0.02, material.albedo), material.metalness);
@@ -941,7 +980,6 @@ float3 GetMainNormal(float3 N, float3 P, float2 coord)
 
 	#if NORMAL_MAP_TYPE != 2
 		tangentNormal.rg *= normalMapScale;
-		tangentNormal = normalize(tangentNormal);
 	#endif
 
 	return tangentNormal;
@@ -1526,7 +1564,11 @@ GbufferParam MaterialPS(
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
 	material.normal = GetNormal(normal, worldPos.xyz, coord0);
-	material.smoothness = min(geometricSmoothness, GetSmoothness(coord0));
+#if SPECULAR_ANTIALIASING_ENABLE
+	material.smoothness = GeometricNormalFiltering(GetSmoothness(coord0), material.normal, specularAntiAliasingVariance, specularAntiAliasingThreshold);
+#else
+	material.smoothness = GetSmoothness(coord0);
+#endif
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
 	material.customDataA = GetCustomDataA(coord0);
