@@ -13,4 +13,4 @@
 #define SKYBOX_BLUR_COLOR_RANGE 1024
 #define SKYBOX_BLUR_MAP_FILE "texture/skyspec_hdr.dds"
 
-#include "../../shader/skybox.fxsub"
+#include "../../shader/Image Based Sky.fxsub"
