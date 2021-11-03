@@ -39,7 +39,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 	return scattering * mEnvIntensitySSS;
 }
 
-void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
+void ImageBasedLighting(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
@@ -66,7 +66,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	}
 }
 
-void EnvLightingVS(
+void ImageBasedLightingVertex(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -79,7 +79,7 @@ void EnvLightingVS(
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
-void EnvLightingPS(
+void ImageBasedLightingFragment(
 	in float4 texcoord : TEXCOORD0,
 	in float3 viewdir  : TEXCOORD1,
 	in float4 screenPosition : SV_Position,
@@ -111,10 +111,10 @@ void EnvLightingPS(
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, V, diffuse, specular);
+	ImageBasedLighting(material, V, diffuse, specular);
 
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, V, diffuse2, specular2);
+	ImageBasedLighting(materialAlpha, V, diffuse2, specular2);
 
 	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
@@ -142,8 +142,8 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		AlphaBlendEnable = false; AlphaTestEnable = false;\
 		ZEnable = false; ZWriteEnable = false;\
 		CullMode = CCW;\
-		VertexShader = compile vs_3_0 EnvLightingVS();\
-		PixelShader  = compile ps_3_0 EnvLightingPS();\
+		VertexShader = compile vs_3_0 ImageBasedLightingVertex();\
+		PixelShader  = compile ps_3_0 ImageBasedLightingFragment();\
 	}\
 }
 

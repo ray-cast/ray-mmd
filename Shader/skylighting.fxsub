@@ -63,6 +63,19 @@ sampler SpecularMapSamp = sampler_state {
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
+float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float shift)
+{
+	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
+	float3 Y = normalize(cross(X, N) - N * shift);
+
+	float3 B = cross(Y, V);
+	float3 T = cross(B, Y);
+
+	float3 bentNormal = normalize(lerp(N, T, anisotropy));
+
+	return reflect(-V, bentNormal);
+}
+
 float4 ImageBasedLightClearCost(MaterialParam material, float nv, float2 coord)
 {
 	float level = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.customDataA);
@@ -79,20 +92,7 @@ float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefil
 	return scattering * mEnvIntensitySSS;
 }
 
-float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float shift)
-{
-	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
-	float3 Y = normalize(cross(X, N) - N * shift);
-
-	float3 B = cross(Y, V);
-	float3 T = cross(B, Y);
-
-	float3 bentNormal = normalize(lerp(N, T, anisotropy));
-
-	return reflect(-V, bentNormal);
-}
-
-void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
+void ImageBasedLighting(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
@@ -150,7 +150,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	specular *= mEnvIntensitySpec;
 }
 
-void EnvLightingVS(
+void ImageBasedLightingVertex(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -163,7 +163,7 @@ void EnvLightingVS(
 	oTexcoord1 = CameraPosition - Position.xyz;
 }
 
-void EnvLightingPS(
+void ImageBasedLightingFragment(
 	in float4 texcoord : TEXCOORD0,
 	in float3 viewdir  : TEXCOORD1,
 	in float4 screenPosition : SV_Position,
@@ -195,10 +195,10 @@ void EnvLightingPS(
 	float3 V = normalize(viewdir);
 
 	float3 diffuse, specular;
-	ShadingMaterial(material, V, diffuse, specular);
+	ImageBasedLighting(material, V, diffuse, specular);
 
 	float3 diffuse2, specular2;
-	ShadingMaterial(materialAlpha, V, diffuse2, specular2);
+	ImageBasedLighting(materialAlpha, V, diffuse2, specular2);
 
 	oColor0 = EncodeYcbcr(screenPosition, diffuse, specular);
 	oColor1 = EncodeYcbcr(screenPosition, diffuse2, specular2);
@@ -226,8 +226,8 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 			AlphaBlendEnable = false; AlphaTestEnable = false;\
 			ZEnable = false; ZWriteEnable = false;\
 			CullMode = CCW;\
-			VertexShader = compile vs_3_0 EnvLightingVS();\
-			PixelShader  = compile ps_3_0 EnvLightingPS();\
+			VertexShader = compile vs_3_0 ImageBasedLightingVertex();\
+			PixelShader  = compile ps_3_0 ImageBasedLightingFragment();\
 		}\
 	}
 
