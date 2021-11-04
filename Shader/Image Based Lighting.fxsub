@@ -65,7 +65,7 @@ sampler SpecularMapSamp = sampler_state {
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
-float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float shift)
+float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float roughness, float anisotropy, float shift)
 {
 	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
 	float3 Y = normalize(cross(X, N) - N * shift);
@@ -73,7 +73,7 @@ float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float anisotropy, float 
 	float3 B = cross(Y, V);
 	float3 T = cross(B, Y);
 
-	float3 bentNormal = normalize(lerp(N, T, anisotropy));
+	float3 bentNormal = normalize(lerp(N, lerp(N, T, anisotropy), roughness));
 
 	return reflect(-V, bentNormal);
 }
@@ -121,7 +121,7 @@ void ImageBasedLighting(MaterialParam material, float3 worldView, out float3 dif
 
 	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
 	{
-		R = ComputeAnisotropyDominantDir(N, V, material.customDataA, material.customDataB.r);
+		R = ComputeAnisotropyDominantDir(N, V, SmoothnessToRoughness(material.smoothness), material.customDataA, material.customDataB.r);
 	}
 
 	float2 coord1 = ComputeSphereCoord(N);
