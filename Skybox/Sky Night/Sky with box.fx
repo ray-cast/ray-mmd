@@ -83,7 +83,7 @@ void MoonVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(mul(normalize(Position).xyz, matTransformMoon), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * 1 - SunDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * 1 - MainLightDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -95,7 +95,7 @@ float4 MoonPS(
 {
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord + float2(0.4, 0.0));
-	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;	
+	diffuse *= saturate(dot(normalize(normal), -MainLightDirection) + 0.1) * 1.5;	
 	return diffuse;
 }
 
@@ -124,7 +124,7 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float3 viewdir : TEXCOORD0) : C
 	float starBrightness = 0.3;
   	float3 stars1 = CreateStars(viewdir, starDistance, starDencity, starBrightness, starBlink * time + PI);
 
-  	float kelvin = clamp(dot(viewdir, SunDirection) * viewdir.y, 0.05, 1) * 50000;
+  	float kelvin = clamp(dot(viewdir, MainLightDirection) * viewdir.y, 0.05, 1) * 50000;
   	color += stars1 * ColorTemperature(float3(1.0, 1.0, 1.0), kelvin)*5;
   	
 	return float4(linear2srgb(color), 1);

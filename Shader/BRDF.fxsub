@@ -28,6 +28,16 @@ float RoughnessToPerceptualSmoothness(float roughness)
 	return 1.0 - sqrt(roughness);
 }
 
+float SmoothnessToRoughness(float smoothness)
+{
+	return (1.0f - smoothness) * (1.0f - smoothness);
+}
+
+float RoughnessToSmoothness(float roughness)
+{
+	return 1.0f - sqrt(roughness);
+}
+
 float fresnelSchlick(float f0, float f9, float vh)
 {
 	return lerp(f0, f9, pow5(1 - vh));

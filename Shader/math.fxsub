@@ -156,13 +156,3 @@ float3 SmoothTriangleWave(float3 x)
 {
 	return SmoothCurve(TriangleWave(x));
 }
-
-float SmoothnessToRoughness(float smoothness)
-{
-	return (1.0f - smoothness) * (1.0f - smoothness);
-}
-
-float RoughnessToSmoothness(float roughness)
-{
-	return 1.0f - sqrt(roughness);
-}
