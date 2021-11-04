@@ -206,7 +206,7 @@ float4 AtmosphericScatteringPS(
 #endif
 
 	float3 fogBlur = tex2Dlod(FogBlurMapSamp, float4(coord + ViewportOffset, 0, 0)).rgb;
-	return float4(fogAmount * visibility + fogBlur, luminance(mWaveLength) * material.linearDepth * mFogDensity * visibility);
+	return float4(fogAmount * visibility + fogBlur, exp(-luminance(mWaveLength) * material.linearDepth * mFogDensity * visibility));
 }
 
 #endif

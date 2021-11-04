@@ -61,7 +61,7 @@ float4 ScatteringFogPS(
 
 	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, SunDirection);
 
-	return float4(fog * SunColor, luminance(mWaveLength) * material.linearDepth * mFogDensity);
+	return float4(fog * SunColor, exp(-luminance(mWaveLength) * material.linearDepth * mFogDensity));
 }
 
 #define OBJECT_TEC(name, mmdpass) \
