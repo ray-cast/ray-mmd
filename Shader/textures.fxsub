@@ -96,6 +96,7 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	float ClearDepth = 1.0;
 	string DefaultEffect =
 		"sky*box*.* =./Skybox/Image Based Lighting - Disable.fx;"
+		"Image Based Sky.pmx =./Skybox/Image Based Lighting - Disable.fx;"
 		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
@@ -126,6 +127,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*editor*.pmx=hide;"
 		"Volumetric*.pmx=hide;"
 		"sky*box*.* = ./materials/material_skybox.fx;"
+		"Image Based Sky.pmx = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
 		"*Light*.pmx =./materials/Emissive/material_lighting.fx;"
 		"*.pmd = ./materials/material_2.0.fx;"
@@ -151,6 +153,7 @@ shared texture OutlineMap : OFFSCREENRENDERTARGET<
 		"*editor*.pmx=hide;"
 		"Volumetric*.pmx=hide;"
 		"sky*box*.* =hide;"
+		"Image Based Sky.pmx = hide;"
 		"*.pmd = ./outline/Fixed Color/outline.fx;"
 		"*.pmx = ./outline/Fixed Color/outline.fx;"
 		"*.x = hide;"

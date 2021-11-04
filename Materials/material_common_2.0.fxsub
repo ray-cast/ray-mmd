@@ -1557,10 +1557,6 @@ GbufferParam MaterialPS(
 	clip(-1);
 #endif
 
-	float3 dnx = ddx(normal);
-	float3 dny = ddy(normal);
-	float geometricSmoothness = 1 - pow(max(dot(dnx, dnx), dot(dny, dny)), 0.333);
-
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
 	material.normal = GetNormal(normal, worldPos.xyz, coord0);

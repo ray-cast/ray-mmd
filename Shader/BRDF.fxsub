@@ -1,3 +1,33 @@
+float SmoothnessToPerceptualRoughness(float smoothness)
+{
+	return 1.0 - smoothness;
+}
+
+float PerceptualRoughnessToSmoothness(float perceptualRoughness)
+{
+	return 1.0 - perceptualRoughness;
+}
+
+float PerceptualRoughnessToRoughness(float perceptualRoughness)
+{
+	return perceptualRoughness * perceptualRoughness;
+}
+
+float RoughnessToPerceptualRoughness(float roughness)
+{
+	return sqrt(roughness);
+}
+
+float PerceptualSmoothnessToRoughness(float perceptualSmoothness)
+{
+	return (1.0 - perceptualSmoothness) * (1.0 - perceptualSmoothness);
+}
+
+float RoughnessToPerceptualSmoothness(float roughness)
+{
+	return 1.0 - sqrt(roughness);
+}
+
 float ComputeSpecularMicroOcclusion(float f0)
 {
 	return saturate(dot(f0, 0.33333h) * 50 * 3);
@@ -256,7 +286,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 	float nv = abs(dot(N, V)) + 1e-5h;
 	float lv = saturate(dot(L, V));
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float roughness = max(PerceptualRoughnessToRoughness(SmoothnessToPerceptualRoughness(material.smoothness)), 0.001);
 	float occlusion = ComputeAmbientMicroOcclusion(nl, material.visibility) * shadow;
 
 #if TOON_ENABLE
@@ -300,7 +330,7 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	float vh  = saturate(dot(V, H));
 	float nv  = abs(dot(N, V)) + 1e-5h;
 
-	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
+	float roughness = max(PerceptualRoughnessToRoughness(SmoothnessToPerceptualRoughness(material.smoothness)), 0.001);
 	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
 	float shadow = ComputeAmbientMicroOcclusion(nl2, material.visibility);
 
