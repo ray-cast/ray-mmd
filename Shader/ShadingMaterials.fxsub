@@ -85,9 +85,9 @@ float4 ShadingMaterialVS(
 	oTexcoord0.xy += ViewportOffset;
 	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
 	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
-	oTexcoord2 = ColorTemperature(SunColor, mSunTemperature) * mSunIntensity;
+	oTexcoord2 = ColorTemperature(MainLightColor, mSunTemperature) * mSunIntensity;
 #if SUN_LIGHT_ENABLE == 2
- 	oTexcoord2 *= ComputeSunIntensity(dot(float3(0,1,0), -SunDirection));
+ 	oTexcoord2 *= ComputeSunIntensity(dot(float3(0,1,0), -MainLightDirection));
 #endif
 
 	return Position;
@@ -110,7 +110,7 @@ void ShadingOpacityPS(
 	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
 
 	float3 V = normalize(viewdir);
-	float3 L = mul(-SunDirection, (float3x3)matView);
+	float3 L = mul(-MainLightDirection, (float3x3)matView);
 
 	float3 diffuse = 0, specular = 0;
 
@@ -160,7 +160,7 @@ float4 ShadingTransparentPS(
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
 	float3 V = normalize(viewdir);
-	float3 L = mul(-SunDirection, (float3x3)matView);
+	float3 L = mul(-MainLightDirection, (float3x3)matView);
 
 	float3 lighting = 0;
 
