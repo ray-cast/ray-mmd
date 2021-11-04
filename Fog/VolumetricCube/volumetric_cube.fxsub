@@ -124,7 +124,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 L, float3 start, float3 e
 	scattering *= ComputePhaseMieHG(dot(V, L), param.FogMiePhase);
 #endif
 
-	return float4(scattering, sampleLength * param.FogIntensity * stepNum * param.FogDensity);
+	return float4(scattering, exp(-sampleLength * param.FogIntensity * stepNum * param.FogDensity));
 }
 
 void VolumetricCubeVS(

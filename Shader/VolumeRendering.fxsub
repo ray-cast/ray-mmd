@@ -1,0 +1,106 @@
+float TransmittanceFromOpticalDepth(float opticalDepth)
+{
+    return exp(-opticalDepth);
+}
+
+float3 TransmittanceFromOpticalDepth(float3 opticalDepth)
+{
+    return exp(-opticalDepth);
+}
+
+float OpacityFromOpticalDepth(float opticalDepth)
+{
+    return 1 - TransmittanceFromOpticalDepth(opticalDepth);
+}
+
+float3 OpacityFromOpticalDepth(float3 opticalDepth)
+{
+    return 1 - TransmittanceFromOpticalDepth(opticalDepth);
+}
+
+float OpticalDepthFromOpacity(float opacity)
+{
+    return -log(1 - opacity);
+}
+
+float3 OpticalDepthFromOpacity(float3 opacity)
+{
+    return -log(1 - opacity);
+}
+
+float ComputeHeightFogMultiplier(float height, float baseHeight, float2 heightExponents)
+{
+    float h    = max(height - baseHeight, 0);
+    float rcpH = heightExponents.x;
+
+    return exp(-h * rcpH);
+}
+
+float OpticalDepthHeightFog(float baseExtinction, float baseHeight, float2 heightExponents, float cosZenith, float startHeight, float intervalLength)
+{
+    float H          = heightExponents.y;
+    float rcpH       = heightExponents.x;
+    float Z          = cosZenith;
+    float absZ       = max(abs(cosZenith), 1e-5);
+    float rcpAbsZ    = rcp(absZ);
+
+    float endHeight  = startHeight + intervalLength * Z;
+    float minHeight  = min(startHeight, endHeight);
+    float h          = max(minHeight - baseHeight, 0);
+
+    float homFogDist = clamp((baseHeight - minHeight) * rcpAbsZ, 0, intervalLength);
+    float expFogDist = intervalLength - homFogDist;
+    float expFogMult = exp(-h * rcpH) * (1 - exp(-expFogDist * absZ * rcpH)) * (rcpAbsZ * H);
+
+    return baseExtinction * (homFogDist + expFogMult);
+}
+
+float OpticalDepthHeightFog(float baseExtinction, float baseHeight, float2 heightExponents, float heightDensities, float cosZenith, float startHeight, float intervalLength)
+{
+    float H          = heightExponents.y;
+    float rcpH       = heightExponents.x;
+
+    float Z          = cosZenith;
+    float absZ       = max(abs(cosZenith), 1e-5);
+    float rcpAbsZ    = rcp(absZ);
+
+    float endHeight  = startHeight + intervalLength * Z;
+    float minHeight  = min(startHeight, endHeight);
+    float h          = max(minHeight - baseHeight, 0);
+
+    float homFogDist = clamp((baseHeight - minHeight) * rcpAbsZ, 0, intervalLength);
+    float expFogDist = intervalLength - homFogDist;
+    float expFogMult = exp(-h * rcpH) * (1 - exp(-expFogDist * absZ * rcpH)) * (rcpAbsZ * H);
+    float deepFogDist = max(0, baseHeight - minHeight);
+
+    return baseExtinction * (homFogDist + expFogMult + deepFogDist * deepFogDist * heightDensities);
+}
+
+float OpticalDepthHeightFog(float baseExtinction, float baseHeight, float2 heightExponents, float cosZenith, float startHeight)
+{
+    float H          = heightExponents.y;
+    float rcpH       = heightExponents.x;
+    float Z          = cosZenith;
+    float absZ       = max(abs(cosZenith), 1e-5);
+    float rcpAbsZ    = rcp(absZ);
+
+    float minHeight  = (Z >= 0) ? startHeight : -rcp(1e-5);
+    float h          = max(minHeight - baseHeight, 0);
+
+    float homFogDist = max((baseHeight - minHeight) * rcpAbsZ, 0);
+    float expFogMult = exp(-h * rcpH) * (rcpAbsZ * H);
+
+    return baseExtinction * (homFogDist + expFogMult);
+}
+
+float TransmittanceHeightFog(float baseExtinction, float baseHeight, float2 heightExponents, float cosZenith, float startHeight, float intervalLength)
+{
+    float od = OpticalDepthHeightFog(baseExtinction, baseHeight, heightExponents, cosZenith, startHeight, intervalLength);
+    return TransmittanceFromOpticalDepth(od);
+}
+
+float TransmittanceHeightFog(float baseExtinction, float baseHeight, float2 heightExponents, float cosZenith, float startHeight)
+{
+    float od = OpticalDepthHeightFog(baseExtinction, baseHeight, heightExponents, cosZenith, startHeight);
+    return TransmittanceFromOpticalDepth(od);
+}

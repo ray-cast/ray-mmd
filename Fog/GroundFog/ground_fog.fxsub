@@ -20,7 +20,7 @@ float4 ApplyGroundFog(float distance, float3 V)
 	float fog = 1.0 - exp(-distance * P.y * (mFogHeight / 5000));
 	float fogAmount = saturate(mFogDensity * exp(-CameraPosition.y * (mFogHeight / 5000)) * fog / P.y);
 	fogAmount = pow(fogAmount, max(1 - mFogRange, 0.01));
-	return float4(FogColor * fogAmount, fogAmount);
+	return float4(FogColor * fogAmount, exp(-fogAmount));
 }
 
 void GroundFogVS(
