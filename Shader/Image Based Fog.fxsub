@@ -133,7 +133,7 @@ float4 ImageBasedFogFragment(
 #if SKYBOX_FOG_ENABLE
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 	float3 normal = mul(matTransform, lerp(normalize(-V), worldNormal, step(0, sum(material.albedo + material.specular) - 1e-5)));
-	float mipLevel = ComputeFogMip(0.01, 30000, material.linearDepth, SKYBOX_FOG_MIPMAP_LEVEL);
+	float mipLevel = ComputeFogMip(0.01, 30000, material.linearDepth, SKYBOX_FOG_MIPMAP_LEVEL - 1);
 	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(ComputeSphereCoord(-normal), 0, mipLevel)));
 #endif
 
