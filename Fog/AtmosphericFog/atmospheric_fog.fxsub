@@ -2,6 +2,8 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/PhaseFunctions.fxsub"
@@ -82,7 +84,7 @@ float4 AtmosphericFogPS(
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
 	float3 V = normalize(viewdir);
-	float3 L = mul(SunDirection, (float3x3)matView);
+	float3 L = mul(MainLightDirection, (float3x3)matView);
 
 #if FOG_WITH_GODRAY
 	float3 fogAmount = ComputeSkyFogMie(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
@@ -104,7 +106,7 @@ void AtmosphericFogMieBlurVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float4 illuminationPosition = mul(float4(-SunDirection * 80000, 1), matViewProject);
+	float4 illuminationPosition = mul(float4(-MainLightDirection * 80000, 1), matViewProject);
 
 	oPosition = float4(CoordToPos(Texcoord) * step(0, illuminationPosition.w), 0, 1);
 	oTexcoord0.xy = Texcoord + ViewportOffset2 * 2;
@@ -155,7 +157,7 @@ float4 AtmosphericScatteringPS(
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
 	float3 V = normalize(viewdir);
-	float3 L = mul(SunDirection, (float3x3)matView);
+	float3 L = mul(MainLightDirection, (float3x3)matView);
 	float3 fogAmount = ComputeSkyFogRayleigh(V, L, mieLambda, rayleight, mFogMiePhase, mFogRange, mFogDensity, material.linearDepth) * mFogIntensity;
 
 #if FOG_DISCARD_SKY

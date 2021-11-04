@@ -57,6 +57,6 @@ static float mCloudDensity   = lerp(lerp(mCloudDensityParams.x, mCloudDensityPar
 static float mCloudSpeed     = lerp(lerp(mCloudSpeedParams.x, mCloudSpeedParams.z, mCloudSpeedP), mCloudSpeedParams.y, mCloudSpeedM) * time;
 static float mCloudTurbidity = lerp(lerp(mCloudTurbidityParams.x, mCloudTurbidityParams.z, mCloudTurbidityP), mCloudTurbidityParams.y, mCloudTurbidityM);
 
-static float3 mMieColor = SunColor;
-static float3 mCloudColor = SunColor;
+static float3 mMieColor = MainLightColor;
+static float3 mCloudColor = MainLightColor;
 static float3 mRayleighColor = hsv2rgb(float3(mRayleighColorHP, mRayleighColorSP, lerp(lerp(1, 2, mRayleighColorVP), 0, mRayleighColorVM)));

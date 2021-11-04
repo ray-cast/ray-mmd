@@ -2,6 +2,7 @@
 
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
 #include "shader/common.fxsub"
@@ -60,13 +61,13 @@ float4 StarsPS(
 	float3 stars1 = CreateStars(normal, starDistance, starDencity, starBrightness, starBlink * time + PI);
 	float3 stars2 = CreateStars(normal, starDistance * 0.5, starDencity * 0.5, starBrightness, starBlink * time + PI);
 
-	stars1 *= hsv2rgb(float3(dot(normal, SunDirection), mStarSaturation, mStarBrightness));
+	stars1 *= hsv2rgb(float3(dot(normal, MainLightDirection), mStarSaturation, mStarBrightness));
 	stars2 *= hsv2rgb(float3(dot(normal, -V), mStarSaturation, mStarBrightness));
 
-	float fadeSun = pow(saturate(dot(V, SunDirection)), 15);
+	float fadeSun = pow(saturate(dot(V, MainLightDirection)), 15);
 	float fadeStars = saturate(pow(saturate(normal.y), 1.0 / 1.5)) * step(0, normal.y);
 
-	float meteor = CreateMeteor(V, float3(SunDirection.x, -1, SunDirection.z) + float3(0.5,0,0.0), time / PI);
+	float meteor = CreateMeteor(V, float3(MainLightDirection.x, -1, MainLightDirection.z) + float3(0.5,0,0.0), time / PI);
 
 	float3 stars = lerp((stars1 + stars2) * fadeStars + meteor * mMeteor, 0, fadeSun);
 
@@ -100,7 +101,7 @@ float4 SpherePS(
 	uniform sampler source) : COLOR
 {
 	float4 diffuse = pow(tex2D(source, coord + float2(time / 200, 0)), 2.2);
-	diffuse.rgb *= saturate(dot(normal, -SunDirection) + 0.15);
+	diffuse.rgb *= saturate(dot(normal, -MainLightDirection) + 0.15);
 	return diffuse;
 }
 
@@ -115,7 +116,7 @@ void MoonVS(
 {
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = float4(mul(normalize(Position).xyz, matTransformMoon), 1);
-	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius - SunDirection * translate, 1);
+	oTexcoord2 = float4(oTexcoord1.xyz * scale * mSunRadius - MainLightDirection * translate, 1);
 	oPosition = mul(oTexcoord2, matViewProject);
 }
 
@@ -127,7 +128,7 @@ float4 MoonPS(
 {
 	float3 V = normalize(viewdir - CameraPosition);
 	float4 diffuse = tex2D(source, coord + float2(0.4, 0.0));
-	diffuse *= saturate(dot(normalize(normal), -SunDirection) + 0.1) * 1.5;	
+	diffuse *= saturate(dot(normalize(normal), -MainLightDirection) + 0.1) * 1.5;	
 	diffuse *= (1 - mSunRadianceM) * (step(0, V.y) + exp2(-abs(V.y) * 500));
 	return diffuse;
 }
@@ -163,7 +164,7 @@ float4 ScatteringPS(
 	setting.waveLambdaMie = mieLambda;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyScattering(setting, V, SunDirection);
+	float4 insctrColor = ComputeSkyScattering(setting, V, MainLightDirection);
 
 	return linear2srgb(insctrColor);
 }

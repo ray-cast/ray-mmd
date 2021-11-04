@@ -35,47 +35,6 @@ struct GbufferParam
 	float4 buffer4 : COLOR3;
 };
 
-float3 EncodeNormal(float3 normal)
-{
-	float p = sqrt(-normal.z * 8 + 8);
-	float2 enc = normal.xy / p + 0.5f;
-	float2 enc255 = enc * 255;
-	float2 residual = floor(frac(enc255) * 16);
-	return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
-}
-
-float3 DecodeNormal(float3 enc)
-{
-	float nz = floor(enc.z * 255) / 16;
-	enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
-	float2 fenc = enc.xy * 4 - 2;
-	float f = dot(fenc, fenc);
-	float g = sqrt(1 - f / 4);
-	float3 normal;
-	normal.xy = fenc * g;
-	normal.z = f / 2 - 1;
-	return normalize(normal);
-}
-
-float3 EncodeYcbcr(float3 col)
-{
-	col = sqrt(col);
-	float3 encode;
-	encode.x = dot(col.rgb, float3(0.299, 0.587, 0.114));
-	encode.y = dot(col.rgb, float3(-0.1687, -0.3312, 0.5) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
-	encode.z = dot(col.rgb, float3(0.5, -0.4186, -0.0813) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
-	return encode;
-}
-
-float3 DecodeYcbcr(float3 YCbCr)
-{
-	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
-	float R = YCbCr.x + 1.402 * YCbCr.z;
-	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
-	float B = YCbCr.x + 1.772 * YCbCr.y;
-	return pow2(float3(R, G, B));
-}
-
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
 	material.albedo = buffer1.xyz;

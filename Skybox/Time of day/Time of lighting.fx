@@ -6,6 +6,8 @@
 
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
@@ -140,7 +142,7 @@ float4 GenSpecularMapPS(
 	setting.waveLambdaRayleigh = rayleight;
 
 	float3 V = ComputeSphereNormal(coord.xy / coord.w);
-	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection).rgb;
+	float3 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, MainLightDirection).rgb;
 
 	return EncodeRGBM(insctrColor);
 }

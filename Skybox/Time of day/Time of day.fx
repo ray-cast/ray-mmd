@@ -6,6 +6,7 @@
 
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
 #include "shader/common.fxsub"
@@ -47,7 +48,7 @@ float4 ScatteringPS(
 	setting.waveLambdaOzone = mOzoneScatteringCoeff * mOzoneMass;
 	setting.waveLambdaRayleigh = rayleight;
 
-	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection);
+	float4 insctrColor = ComputeSkyInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, MainLightDirection);
 
 	return linear2srgb(insctrColor);
 }
@@ -78,7 +79,7 @@ float4 ScatteringWithCloudsPS(
 	setting.clouddir = float3(1315.7, 0, -3000) * mCloudSpeed;
 	setting.cloudLambda = cloud;
 
-	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, SunDirection);
+	float4 insctrColor = ComputeCloudsInscattering(setting, CameraPosition + float3(0, mEarthPeopleHeight * mUnitDistance, 0), V, MainLightDirection);
 	return linear2srgb(insctrColor);
 }
 

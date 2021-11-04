@@ -2,6 +2,8 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
@@ -150,7 +152,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 	float3 start = CameraPosition + V * max(0, intersections.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
 
-	return VolumetricFog(param, V, -SunDirection, start, end, PseudoRandom(texcoord.xy * ViewportSize * (time + PI)));
+	return VolumetricFog(param, V, -MainLightDirection, start, end, PseudoRandom(texcoord.xy * ViewportSize * (time + PI)));
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"

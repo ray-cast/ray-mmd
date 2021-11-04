@@ -1,6 +1,8 @@
 #include "../../ray.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 
 float mColBalanceRP : CONTROLOBJECT<string name="(self)"; string item = "BalanceR+";>;
 float mColBalanceGP : CONTROLOBJECT<string name="(self)"; string item = "BalanceG+";>;

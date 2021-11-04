@@ -1,6 +1,8 @@
 #include "../../ray.conf"
 #include "../../shader/common.fxsub"
 #include "../../shader/math.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 

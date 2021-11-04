@@ -2,6 +2,8 @@
 #include "../../../ray_advanced.conf"
 #include "../../../shader/math.fxsub"
 #include "../../../shader/common.fxsub"
+#include "../../../shader/Color.fxsub"
+#include "../../../shader/Packing.fxsub"
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
 #include "../../../shader/BRDF.fxsub"

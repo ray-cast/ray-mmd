@@ -2,6 +2,8 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/shadowcommon.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
@@ -164,7 +166,7 @@ float4 VolumetricCubePS(float4 texcoord : TEXCOORD0, float4 viewdir : TEXCOORD1)
 	float3 start = CameraPosition + V * max(0, intersections.x);
 	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
 
-	return VolumetricFog(param, V, normalize(-SunDirection), start, end, GetJitterOffset(texcoord.xy * ViewportSize + time));
+	return VolumetricFog(param, V, normalize(-MainLightDirection), start, end, GetJitterOffset(texcoord.xy * ViewportSize + time));
 }
 
 technique MainTechBS0<string MMDPass = "object_ss"

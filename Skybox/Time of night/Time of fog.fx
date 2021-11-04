@@ -2,6 +2,8 @@
 
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/phasefunctions.fxsub"
@@ -59,9 +61,9 @@ float4 ScatteringFogPS(
 	setting.waveLambdaRayleigh = rayleight;
 	setting.fogRange = mFogRange;
 
-	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, SunDirection);
+	float3 fog = ComputeSkyFog(setting, material.linearDepth, V, MainLightDirection);
 
-	return float4(fog * SunColor, exp(-luminance(mWaveLength) * material.linearDepth * mFogDensity));
+	return float4(fog * MainLightColor, exp(-luminance(mWaveLength) * material.linearDepth * mFogDensity));
 }
 
 #define OBJECT_TEC(name, mmdpass) \

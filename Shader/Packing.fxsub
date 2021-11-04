@@ -1,0 +1,127 @@
+float3 EncodeNormal(float3 normal)
+{
+	float p = sqrt(-normal.z * 8 + 8);
+	float2 enc = normal.xy / p + 0.5f;
+	float2 enc255 = enc * 255;
+	float2 residual = floor(frac(enc255) * 16);
+	return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
+}
+
+float3 DecodeNormal(float3 enc)
+{
+	float nz = floor(enc.z * 255) / 16;
+	enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
+	float2 fenc = enc.xy * 4 - 2;
+	float f = dot(fenc, fenc);
+	float g = sqrt(1 - f / 4);
+	float3 normal;
+	normal.xy = fenc * g;
+	normal.z = f / 2 - 1;
+	return normalize(normal);
+}
+
+float4 EncodeRGBM(float3 color, float range = 6)
+{
+	color *= (1.0 / range);
+	float4 rgbm;
+	rgbm.a = saturate(max(max(color.r, color.g), max(color.b, 1e-6)));
+	rgbm.a = ceil(rgbm.a * 255.0) / 255.0;
+	rgbm.rgb = color / rgbm.a;
+	return rgbm;
+}
+
+float3 DecodeRGBM(float4 rgbm, float range = 6)
+{
+	return rgbm.rgb * rgbm.a * range;
+}
+
+float4 EncodeRGBT(float3 rgb, float range = 1024)
+{
+	float limits = 0;
+	limits = max(max(rgb.r, rgb.g), max(rgb.b, 1e-6f));
+	limits = min(limits, range);
+
+	float4 encode;
+	encode[3] = (range + 1) / range *  limits / (1 + limits);
+	encode[3] = ceil(encode[3] * 255.0) / 255.0;
+
+	float rcp = 1.0 / (encode[3] / (1.0 + 1.0 / range - encode[3]));
+
+	encode[0] = rgb.r * rcp;
+	encode[1] = rgb.g * rcp;
+	encode[2] = rgb.b * rcp;
+
+	return encode;
+}
+
+float3 DecodeRGBT(float4 rgbt, float range = 1024)
+{
+	rgbt.a = rgbt.a / (1 + 1 / range - rgbt.a);
+	return rgbt.rgb * rgbt.a;
+}
+
+float3 EncodeYcbcr(float3 col)
+{
+	col = sqrt(col);
+	float3 encode;
+	encode.x = dot(col.rgb, float3(0.299, 0.587, 0.114));
+	encode.y = dot(col.rgb, float3(-0.1687, -0.3312, 0.5) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
+	encode.z = dot(col.rgb, float3(0.5, -0.4186, -0.0813) * MIDPOINT_8_BIT) + MIDPOINT_8_BIT;
+	return encode;
+}
+
+float3 DecodeYcbcr(float3 YCbCr)
+{
+	YCbCr = float3(YCbCr.x, YCbCr.y / MIDPOINT_8_BIT - 1, YCbCr.z / MIDPOINT_8_BIT - 1);
+	float R = YCbCr.x + 1.402 * YCbCr.z;
+	float G = dot(float3( 1, -0.3441, -0.7141 ), YCbCr.xyz);
+	float B = YCbCr.x + 1.772 * YCbCr.y;
+	return pow2(float3(R, G, B));
+}
+
+float EdgeFilter(float2 center, float2 a0, float2 a1, float2 a2, float2 a3)
+{
+	const float THRESH = 30./255.;
+	float4 lum = float4(a0.x, a1.x , a2.x, a3.x);
+	float4 w = 1.0 - step(THRESH, abs(lum - center.x));
+	float W = w.x + w.y + w.z + w.w;
+	w.x = (W == 0.0) ? 1.0 : w.x;
+	W   = (W == 0.0) ? 1.0 : W;
+	return (w.x * a0.y + w.y * a1.y + w.z * a2.y + w.w * a3.y) / W;
+}
+
+float4 EncodeYcbcr(float4 screenPosition, float3 color1, float3 color2)
+{
+	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+
+	color1 = EncodeYcbcr(color1);
+	color2 = EncodeYcbcr(color2);
+
+	float4 result = 0.0f;
+	result.r = color1.r;
+	result.g = (pattern) ? color1.g: color1.b;
+	result.b = color2.r;
+	result.a = (pattern) ? color2.g: color2.b;
+	return result;  
+}
+
+void DecodeYcbcr(sampler source, float2 coord, float4 screenPosition, float2 offset, out float3 color1, out float3 color2)
+{
+	float4 packed = tex2Dlod(source, float4(coord, 0, 0));
+
+	float4 env2 = tex2Dlod(source, float4(coord + float2(offset.x, 0.0), 0, 0));
+	float4 env3 = tex2Dlod(source, float4(coord - float2(offset.x, 0.0), 0, 0));
+	float4 env4 = tex2Dlod(source, float4(coord + float2(0.0, offset.y), 0, 0));
+	float4 env5 = tex2Dlod(source, float4(coord - float2(0.0, offset.y), 0, 0));
+
+	env2.rg = EdgeFilter(packed.rg, env2.rg, env3.rg, env4.rg, env5.rg);
+	env2.ba = EdgeFilter(packed.ba, env2.ba, env3.ba, env4.ba, env5.ba);
+
+	bool pattern = (fmod(screenPosition.x, 2.0) == fmod(screenPosition.y, 2.0));
+
+	color1 = (pattern) ? float3(packed.rg, env2.g) : float3(packed.r, env2.g, packed.g);
+	color2 = (pattern) ? float3(packed.ba, env2.a) : float3(packed.b, env2.a, packed.a);
+
+	color1 = DecodeYcbcr(color1);
+	color2 = DecodeYcbcr(color2);
+}

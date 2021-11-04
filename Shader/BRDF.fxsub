@@ -28,16 +28,6 @@ float RoughnessToPerceptualSmoothness(float roughness)
 	return 1.0 - sqrt(roughness);
 }
 
-float ComputeSpecularMicroOcclusion(float f0)
-{
-	return saturate(dot(f0, 0.33333h) * 50 * 3);
-}
-
-float ComputeSpecularMicroOcclusion(float3 f0)
-{
-	return saturate(dot(f0, 0.33333h) * 50);
-}
-
 float fresnelSchlick(float f0, float f9, float vh)
 {
 	return lerp(f0, f9, pow5(1 - vh));
@@ -48,11 +38,79 @@ float3 fresnelSchlick(float3 f0, float3 f9, float vh)
 	return lerp(f0, f9, pow5(1 - vh));
 }
 
+float EnvironmentMip(int miplevel, float smoothness)
+{
+	return lerp(miplevel, 0, smoothness * smoothness);
+}
+
+float3 EnvironmentReflect(float3 normal, float3 view)
+{
+	return reflect(-view, normal);
+}
+
+float3 FresnelSchlickGlass(float3 N, float3 V, float smoothness, float3 specular)
+{
+	return lerp(specular, 1.0, pow5(1 - saturate(dot(N, V))) / (40 - 39 * smoothness));
+}
+
+float FresnelSchlickClearCoat(float nv, float smoothness, float specular)
+{
+	return specular + (max(smoothness, specular) - specular) * pow5(1 - nv);
+}
+
+float3 EnvironmentSpecularCloth(float nv, float smoothness, float3 specular)
+{
+	const float4 c0 = float4(0.24,  0.93, 0.01, 0.20);
+	const float4 c1 = float4(2.00, -1.30, 0.40, 0.03);
+
+	float s = 1.0 - nv;
+	float e = s - c0.y;
+	float g = c0.x * exp2(-(e * e) / (2.0 * c0.z)) + s * c0.w;
+	float n = (1.0 - smoothness) * c1.x + c1.y;
+	float r = max(1.0 - n * n, c1.z) * g;
+
+	return specular * r + r * c1.w;
+}
+
+float3 EnvironmentSpecularLUT(sampler lut, float nv, float smoothness, float3 specular)
+{
+	float2 brdf = tex2Dlod(lut, float4(nv, smoothness, 0, 0)).rg;
+	return specular * brdf.r + brdf.g;	
+}
+
+float3 EnvironmentSpecularUnreal4(float nv, float smoothness, float3 specular)
+{
+	float4 c0 = float4(-1, -0.0275, -0.572, 0.022);
+	float4 c1 = float4(1, 0.0425, 1.04, -0.04);
+	float4 r = (1.0 - smoothness) * c0 + c1;
+	float a004 = min(r.x * r.x, exp2(-9.28 * nv)) * r.x + r.y;
+	float2 AB = float2(-1.04, 1.04) * a004 + r.zw;
+	return specular * AB.x + AB.y;
+}
+
+float EnvironmentSpecularUnreal4(float nv, float smoothness)
+{
+	const float2 c0 = float2(-1, -0.0275);
+	const float2 c1 = float2(1, 0.0425);
+	float2 r = (1.0 - smoothness) * c0 + c1;
+	return min(r.x * r.x, exp2(-9.28 * nv)) * r.x + r.y;
+}
+
 float ComputeAmbientMicroOcclusion(float nl, float ao)
 {
 	float aperture = 2.0 * ao;
 	float shadow = saturate(abs(nl) + aperture - 1.0);
 	return shadow;
+}
+
+float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
+{
+	return saturate(pow(nv + ao, smoothness) - 1 + ao);
+}
+
+float ComputeSpecularMicroOcclusion(float3 f0)
+{
+	return saturate(dot(f0, 0.33333h) * 50);
 }
 
 float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)

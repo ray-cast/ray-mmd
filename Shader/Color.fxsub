@@ -1,0 +1,73 @@
+float luminance(float3 rgb)
+{
+	return dot(rgb, float3(0.299f, 0.587f, 0.114f));
+}
+
+float3 srgb2linear(float3 rgb)
+{
+	const float ALPHA = 0.055f;
+	return rgb < 0.04045f ? rgb / 12.92f : pow((max(rgb,1e-5) + ALPHA) / (1 + ALPHA), 2.4f);
+}
+
+float4 srgb2linear(float4 c)
+{
+	return float4(srgb2linear(c.rgb), c.a);
+}
+
+float3 srgb2linear_fast(float3 rgb)
+{
+	return pow(max(rgb, 1e-5f), 2.2);
+}
+
+float4 srgb2linear_fast(float4 c)
+{
+	return float4(srgb2linear_fast(c.rgb), c.a);
+}
+
+float3 linear2srgb(float3 srgb)
+{
+	srgb = max(6.10352e-5, srgb);
+	return min(srgb * 12.92, pow(max(srgb, 0.00313067), 1.0/2.4) * 1.055 - 0.055);
+}
+
+float4 linear2srgb(float4 c)
+{
+	return float4(linear2srgb(c.rgb), c.a);
+}
+
+float3 rgb2hsv(float3 c)
+{
+	float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+	float4 p = lerp(float4(c.bg, K.wz), float4(c.gb, K.xy), step(c.b, c.g));
+	float4 q = lerp(float4(p.xyw, c.r), float4(c.r, p.yzx), step(p.x, c.r));
+
+	float d = q.x - min(q.w, q.y);
+	float e = 1.0e-10;
+	return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+float3 hsv2rgb(float3 c)
+{
+	float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	float3 p = abs(frac(c.xxx + K.xyz) * 6.0 - K.www);
+	return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+}
+
+float3 ColorTemperature(float3 color, float kelvin)
+{
+	float temp = kelvin / 100;
+	float temp60 = max(0, temp - 60);
+	float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
+	float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
+	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
+	float3 balance = saturate(srgb2linear(float3(red, green, blue) / 255));
+	return color * balance;
+}
+
+float3 ColorBalance(float3 color, float4 balance)
+{
+	float3 lum = luminance(color);
+	color = lerp(color, lum, balance.a);
+	color *= float3(1 + balance.rgb);
+	return color;
+}

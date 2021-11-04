@@ -45,5 +45,5 @@ static float mStarSaturation = lerp(lerp(mStarSaturationParams.x, mStarSaturatio
 static float mStarBrightness = lerp(lerp(mStarBrightnessParams.x, mStarBrightnessParams.z, mStarBrightnessP), mStarBrightnessParams.y, mStarBrightnessM);
 static float mMeteor 		 = lerp(lerp(mMeteorParams.x, mMeteorParams.z, mMeteorP), mMeteorParams.y, mMeteorM);
 
-static float3 mMieColor = float3(0.686, 0.678, 0.666) * SunColor;
+static float3 mMieColor = float3(0.686, 0.678, 0.666) * MainLightColor;
 static float3 mRayleighColor = hsv2rgb(float3(mRayleighColorHP, mRayleighColorSP, lerp(lerp(1, 2, mRayleighColorVP), 0, mRayleighColorVM)));
