@@ -29,34 +29,59 @@ static const float3 FogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(ler
 static const float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
 #if SKYBOX_FOG_ENABLE
-texture SkyboxBlurMap<string ResourceName = SKYBOX_FOG_MAP_FILE;>;
-sampler SkyboxBlurMapSamp = sampler_state {
-	texture = <SkyboxBlurMap>;
+texture MipFogMap<string ResourceName = SKYBOX_FOG_MAP_FILE;>;
+sampler MipFogMapSamp = sampler_state {
+	texture = <MipFogMap>;
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
-
-float ComputeFogMip(float near, float far, float depth, float mipLevel)
-{
-	return (1 - saturate((depth - near) / (far - near))) * mipLevel;
-}
 #endif
 
-void SkyboxVS(
+float ComputeFogMip(float near, float far, float linearDepth, float mipLevel)
+{
+	return (1 - saturate((linearDepth - near) / (far - near))) * mipLevel;
+}
+
+float ComputeMipFogFactor(float z)
+{
+#if SKYBOX_FOG_TYPE == 0 || SKYBOX_FOG_TYPE == 1
+    // factor = exp(-(density*z)^2)
+    // -density * z computed at vertex
+    return float(z * FogDensity);
+#elif SKYBOX_FOG_TYPE == 2
+    // factor = (end-z)/(end-start) = z * (-1/(end-start)) + (end/(end-start))
+    float fogFactor = saturate(z * _MipFogFactorParams.z + _MipFogFactorParams.w);
+    return float(fogFactor);
+#else
+    return 0.0;
+#endif
+}
+
+float ComputeMipFogIntensity(float fogFactor)
+{
+    float fogIntensity = 0.0;
+#if SKYBOX_FOG_TYPE == 0
+    fogIntensity = saturate(exp2(-fogFactor));
+#elif SKYBOX_FOG_TYPE == 1
+    fogIntensity = saturate(exp2(-fogFactor * fogFactor));
+#elif SKYBOX_FOG_TYPE == 2
+    fogIntensity = fogFactor;
+#endif
+    return fogIntensity;
+}
+
+void ImageBasedFogVertex(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
-	out float3 oTexcoord1 : TEXCOORD1,
-	out float3 oTexcoord2 : TEXCOORD2,
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
 	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
-	oTexcoord1 = normalize(Position.xyz);
 }
 
-float4 SkyboxPS(in float4 texcoord : TEXCOORD0,	in float3 normal : TEXCOORD1) : COLOR0
+float4 ImageBasedFogFragment(in float4 texcoord : TEXCOORD0) : COLOR0
 {
 	float2 coord = texcoord.xy / texcoord.w;
 
@@ -68,25 +93,24 @@ float4 SkyboxPS(in float4 texcoord : TEXCOORD0,	in float3 normal : TEXCOORD1) : 
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
 
-#if SKYBOX_FOG_ENABLE
-	float mipLevel = SKYBOX_FOG_MIPMAP_BASE;
-	mipLevel += ComputeFogMip(FogMipNear, FogMipFar, material.linearDepth, SKYBOX_FOG_MIPMAP_LEVEL);
+	float fogFactor = ComputeMipFogFactor(material.linearDepth);
+	float fogIntensity = ComputeMipFogIntensity(fogFactor);
 
-	float3 N = normalize(mul(matTransform, normalize(normal)));
-
-	float3 color = DecodeRGBT(tex2Dlod(SkyboxBlurMapSamp, float4(ComputeSphereCoord(N), 0, mipLevel)));
-#else
-	float3 color = 1;
-#endif
-
-	color *= FogColor;
-	color *= pow((1 - exp(-material.linearDepth / FogDensity)), FogRange);
-
+	float mipFogFactor = 1.0h - fogIntensity;
 #if SKYBOX_FOG_DISCARD_SKY
-	color *= step(0, sum(material.albedo + material.specular) - 1e-5);
+	mipFogFactor *= step(0, sum(material.albedo + material.specular) - 1e-5);
 #endif
 
-	return float4(color, 0.0);
+	float3 mipFogColor = FogColor;
+
+#if SKYBOX_FOG_ENABLE
+	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
+	float3 normal = normalize(mul(matTransform, normalize(worldNormal)));
+	float mipLevel = ComputeFogMip(FogMipNear, FogMipFar, material.linearDepth, SKYBOX_FOG_MIPMAP_LEVEL);
+	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(ComputeSphereCoord(-normal), 0, mipLevel)));
+#endif
+
+	return float4(mipFogColor, mipFogFactor);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
@@ -96,8 +120,8 @@ float4 SkyboxPS(in float4 texcoord : TEXCOORD0,	in float3 normal : TEXCOORD1) : 
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			VertexShader = compile vs_3_0 SkyboxVS();\
-			PixelShader  = compile ps_3_0 SkyboxPS();\
+			VertexShader = compile vs_3_0 ImageBasedFogVertex();\
+			PixelShader  = compile ps_3_0 ImageBasedFogFragment();\
 		}\
 	}
 
