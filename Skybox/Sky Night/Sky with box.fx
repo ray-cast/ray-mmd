@@ -56,17 +56,6 @@ sampler MoonMapSamp = sampler_state
 	ADDRESSU = WRAP; ADDRESSV = WRAP;
 };
 
-float3 ColorTemperature(float3 color, float kelvin)
-{
-	float temp = kelvin / 100;
-	float temp60 = max(0, temp - 60);
-	float red = temp <= 66 ? 255 : 329.698727446 * pow(temp60, -0.1332047592);
-	float green = temp <= 66 ? 99.4708025861 * log(temp) - 161.1195681661 : 288.1221695283 * pow(temp60, -0.0755148492);
-	float blue = temp >= 66 ? 255 : (temp <= 19 ? 0 : 138.5177312231 * log(temp - 10) - 305.0447927307);
-	float3 balance = saturate(float3(red, green, blue) / 255);
-	return color * balance;
-}
-
 float ComputeStarNoise(float3 p3)
 {
     p3 = frac(p3 * float3(0.1031,0.11369,0.13787));
