@@ -43,7 +43,7 @@ float2 Hammersley(uint i, uint samplesCount)
 float2 HammersleyNoBitOps(uint i, uint samplesCount)
 {
 	float E1 = (float)i / samplesCount;
-	return float2(E, VanDerCorpus(i, 2u));
+	return float2(E1, VanDerCorpus(i, 2u));
 }
 
 float2 Hammersley(uint i, uint samplesCount, int2 random)
@@ -134,15 +134,15 @@ float3 ImportanceSampleDiffuseIBL(sampler source, float3 N, float3 V, float roug
 	return lighting / NumSamples;
 }
 
-real DistributionGGX(real3 N, real3 H, real roughness)
+float DistributionGGX(float3 N, float3 H, float roughness)
 {
-    real a = roughness * roughness;
-    real a2 = a*a;
-    real NdotH = max(dot(N, H), 0.0);
-    real NdotH2 = NdotH*NdotH;
+    float a = roughness * roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
 
-    real nom   = a2;
-    real denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
     return nom / denom;
