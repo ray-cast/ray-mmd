@@ -59,7 +59,7 @@ static const float3 viewLightRight = mul(float4(LightRight, 1), matView).xyz;
 #elif SHADOW_MAP_QUALITY == 1
 #   define SHADOW_MAP_WIDTH 512
 #   define SHADOW_MAP_HEIGHT 1024
-#elif SHADOW_MAP_QUALITY >= 2
+#elif SHADOW_MAP_QUALITY == 2
 #   define SHADOW_MAP_WIDTH 1024
 #   define SHADOW_MAP_HEIGHT 2048
 #elif SHADOW_MAP_QUALITY >= 3
