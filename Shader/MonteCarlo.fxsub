@@ -3,17 +3,17 @@
 // Hammersley Points on the Hemisphere
 // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
 
-float VanDerCorpus(uint n, uint base)
+float VanDerCorpus(int n, uint base)
 {
 	float invBase = 1.0 / float(base);
 	float denom   = 1.0;
 	float result  = 0.0;
 
-	for (uint i = 0u; i < 32u; ++i)
+	for (int i = 0; i < 32; i++)
 	{
-		if (n > 0u)
+		if (n > 0)
 		{
-			denom   = mod(float(n), 2.0);
+			denom   = float(n) % 2.0;
 			result += denom * invBase;
 			invBase = invBase / 2.0;
 			n = uint(float(n) / 2.0);
@@ -23,34 +23,10 @@ float VanDerCorpus(uint n, uint base)
 	return result;
 }
 
-uint ReverseBits32(uint bits)
-{
-	bits = (bits << 16) | ( bits >> 16);
-	bits = ((bits & 0x00ff00ff) << 8) | ((bits & 0xff00ff00) >> 8);
-	bits = ((bits & 0x0f0f0f0f) << 4) | ((bits & 0xf0f0f0f0) >> 4);
-	bits = ((bits & 0x33333333) << 2) | ((bits & 0xcccccccc) >> 2);
-	bits = ((bits & 0x55555555) << 1) | ((bits & 0xaaaaaaaa) >> 1);
-	return bits;
-}
-
-float2 Hammersley(uint i, uint samplesCount)
-{
-	float E1 = (float)i / samplesCount;
-	float E2 = ReverseBits32(i) * 2.3283064365386963e-10;
-	return float2(E1, E2);
-}
-
 float2 HammersleyNoBitOps(uint i, uint samplesCount)
 {
 	float E1 = (float)i / samplesCount;
 	return float2(E1, VanDerCorpus(i, 2u));
-}
-
-float2 Hammersley(uint i, uint samplesCount, int2 random)
-{
-	float E1 = frac((float)i / samplesCount + float(random.x & 0xffff) / (1 << 16));
-	float E2 = float(ReverseBits32(i) ^ random.y) * 2.3283064365386963e-10;
-	return float2(E1, E2);
 }
 
 float3 HammersleySampleCos(float2 Xi)
@@ -106,9 +82,9 @@ float3 ImportanceSampleDiffuseIBL(sampler source, float3 N, float3 V, float roug
 
 	float3 lighting = 0;
 
-	for (int i = 0; i < NumSamples; i++)
+	for (uint i = 0; i < NumSamples; i++)
 	{
-		float2 E = Hammersley(i, NumSamples, random);
+		float2 E = HammersleyNoBitOps(i, NumSamples);
 		float3 L = TangentToWorld(N, HammersleySampleCos(E));
 		float3 H = normalize(V + L);
 
@@ -136,49 +112,48 @@ float3 ImportanceSampleDiffuseIBL(sampler source, float3 N, float3 V, float roug
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
-    float a = roughness * roughness;
-    float a2 = a*a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
+	float a = roughness * roughness;
+	float a2 = a*a;
+	float NdotH = max(dot(N, H), 0.0);
+	float NdotH2 = NdotH*NdotH;
 
-    float nom   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
+	float nom   = a2;
+	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+	denom = PI * denom * denom;
 
-    return nom / denom;
+	return nom / denom;
 }
 
-float3 ImportanceSampleSpecularIBL(sampler source, float3 N, float3 V, float3 f0, float roughness, int2 random)
+float3 ImportanceSampleSpecularIBL(sampler source, float3 N, float3 V, float3 f0, float roughness, float resolution)
 {
 	const uint NumSamples = 32;
 
 	float3 lighting = 0;
+	float weight = 0;
 
 	for (uint i = 0; i < NumSamples; i++)
 	{
-		float2 E = Hammersley(i, NumSamples, random);
+		float2 E = HammersleyNoBitOps(i, NumSamples);
 		float3 H = TangentToWorld(N, HammersleySampleGGX(E, roughness));
 		float3 L = 2 * dot(V, H) * H - V;
 
-		float nv = saturate(dot(N, V));
 		float nl = saturate(dot(N, L));
-		float nh = saturate(dot(N, H));
-		float vh = saturate(dot(V, H));
-
 		if (nl > 0)
 		{
-			float3 radiance = tex2Dlod(source, float4(ComputeSphereCoord(L), 0, 0)).rgb;
+			float nh = saturate(dot(N, H));
+			float vh = saturate(dot(V, H));
 
-			float m2 = roughness * roughness;
-			float Gv = nl * (nv * (1 - m2) + m2);
-			float Gl = nv * (nl * (1 - m2) + m2);
-			float G = 0.5 / (Gv + Gl);
+			float D = DistributionGGX(N, H, roughness);
+			float pdf = D * nh / (4.0 * vh) + 0.0001;
 
-			float3 F = lerp(f0, 1, pow(1 - vh, 5));
+			float saTexel = 4.0f * PI / (6.0f * resolution * resolution);
+			float saSample = 1.0f / (NumSamples * pdf + 0.00001f);
+			float mipLevel = roughness == 0.0f ? 0.0f : 0.5f * log2(saSample / saTexel);
 
-			lighting += radiance * F * G * nl * (4 * vh / nh);
+			lighting += tex2Dlod(source, float4(SampleLatlong(L), 0, mipLevel)).rgb * nl;
+			weight += nl;
 		}
 	}
 
-	return lighting / NumSamples;
+	return lighting / max(0.001f, weight);
 }

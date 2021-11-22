@@ -1,9 +1,12 @@
 #include "Sky with box.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/ibl.fxsub"
+#include "../../shader/BRDF.fxsub"
+#include "../../shader/MonteCarlo.fxsub"
 
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
@@ -67,20 +70,81 @@ sampler BRDFSamp = sampler_state {
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
 
-float3 SampleSky(float3 N, float smoothness)
+float3 SampleSky(float3 N)
 {
 	float3 color = 0;
-	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), lerp(mTopExponent * 2, mTopExponent, smoothness)));
-	color = lerp(color, mBottomColor, pow(max(0, -N.y), lerp(mBottomExponent * 4, mBottomExponent, smoothness)));
-	return color / PI;
+	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), mTopExponent));
+	color = lerp(color, mBottomColor, pow(max(0, -N.y), mBottomExponent));	
+	return color;
 }
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
 	float3 dependentSplit = 0.5 + (1 - material.visibility) * 5;
-	float3 scattering = prefilteredDiffuse + SampleSky(-N, 0);
+	float3 scattering = prefilteredDiffuse + SampleSky(-N);
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
 	return scattering * mEnvIntensitySSS;
+}
+
+float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float roughness, float anisotropy, float shift)
+{
+	float3 X = normalize(cross(N, float3(0,1,0)) + N * shift);
+	float3 Y = normalize(cross(X, N) - N * shift);
+
+	float3 B = cross(Y, V);
+	float3 T = cross(B, Y);
+
+	float3 bentNormal = normalize(lerp(N, lerp(N, T, anisotropy), roughness));
+
+	return reflect(-V, bentNormal);
+}
+
+float3 ImportanceSampleDiffuseSky(float3 N, float3 V, float roughness)
+{
+	const uint NumSamples = 32;
+
+	float3 lighting = 0;
+	float weight = 0;
+
+	for (uint i = 0; i < NumSamples; i++)
+	{
+		float2 E = HammersleyNoBitOps(i, NumSamples);
+		float3 L = TangentToWorld(N, HammersleySampleCos(E));
+		float3 H = normalize(V + L);
+
+		float nl = saturate(dot(N, L));
+		if (nl > 0.0)
+		{
+			lighting += SampleSky(L) * nl;
+			weight += nl;
+		}
+	}
+
+	return lighting / max(0.001f, weight);
+}
+
+float3 ImportanceSampleSpecularSky(float3 N, float3 V, float roughness)
+{
+	const uint NumSamples = 32;
+
+	float3 lighting = 0;
+	float weight = 0;
+
+	for (uint i = 0; i < NumSamples; i++)
+	{
+		float2 E = HammersleyNoBitOps(i, NumSamples);
+		float3 H = TangentToWorld(N, HammersleySampleGGX(E, roughness));
+		float3 L = 2 * dot(V, H) * H - V;
+
+		float nl = saturate(dot(N, L));
+		if (nl > 0)
+		{
+			lighting += SampleSky(L) * nl;
+			weight += nl;
+		}
+	}
+
+	return lighting / max(0.001f, weight);
 }
 
 void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffuse, out float3 specular)
@@ -92,6 +156,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	float3 R = EnvironmentReflect(N, V);
 
 	float nv = abs(dot(worldNormal, worldView));
+	float roughness = SmoothnessToRoughness(material.smoothness);
 
 	float3 fresnel = 0;
 
@@ -101,8 +166,13 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	else
 		fresnel = EnvironmentSpecularLUT(BRDFSamp, nv, material.smoothness, material.specular);
 
-	float3 prefilteredDiffuse = SampleSky(N, 0);
-	float3 prefilteredSpeculr = SampleSky(R, pow2(material.smoothness));
+	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
+	{
+		R = ComputeAnisotropyDominantDir(N, V, SmoothnessToRoughness(material.smoothness), material.customDataA, material.customDataB.r);
+	}
+
+	float3 prefilteredDiffuse = ImportanceSampleDiffuseSky(N, N, roughness);
+	float3 prefilteredSpeculr = ImportanceSampleSpecularSky(R, R, roughness);
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
@@ -115,7 +185,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	}
 }
 
-void EnvLightingVS(
+void GradientLightingVertex(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -128,7 +198,7 @@ void EnvLightingVS(
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 }
 
-void EnvLightingPS(
+void GradientLightingFragment(
 	in float4 texcoord : TEXCOORD0,
 	in float3 viewdir  : TEXCOORD1,
 	in float4 screenPosition : SV_Position,
@@ -181,18 +251,17 @@ shared texture EnvLightAlphaMap : RENDERCOLORTARGET;
 		"ClearSetColor=BackColor;"\
 		"RenderColorTarget0=LightAlphaMap; Clear=Color;"\
 		"RenderColorTarget0=LightSpecMap;  Clear=Color;"\
-		"RenderColorTarget0=; RenderColorTarget1=EnvLightAlphaMap;"\
-		"ClearSetColor=IBLColor;"\
-		"Clear=Color;"\
+		"RenderColorTarget0=; RenderColorTarget1=EnvLightAlphaMap; ClearSetColor=IBLColor; Clear=Color;"\
 		"Pass=DrawObject;"\
-;>{\
-	pass DrawObject {\
-		AlphaBlendEnable = false; AlphaTestEnable = false;\
-		CullMode = CCW;\
-		VertexShader = compile vs_3_0 EnvLightingVS();\
-		PixelShader  = compile ps_3_0 EnvLightingPS();\
-	}\
-}
+	;>{\
+		pass DrawObject {\
+			AlphaBlendEnable = false; AlphaTestEnable = false;\
+			ZEnable = false; ZWriteEnable = false;\
+			CullMode = CCW;\
+			VertexShader = compile vs_3_0 GradientLightingVertex();\
+			PixelShader  = compile ps_3_0 GradientLightingFragment();\
+		}\
+	}
 
 OBJECT_TEC(MainTec0, "object")
 OBJECT_TEC(MainTecBS0, "object_ss")

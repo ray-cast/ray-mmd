@@ -99,6 +99,18 @@ float2 ComputeSphereCoord(float3 normal)
 	return coord;
 }
 
+float2 SampleLatlong(float3 normal)
+{
+#if IBL_QUALITY > 1
+	normal = clamp(normal, -1.0, 1.0);
+	float2 coord = float2((atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+#else
+	normal = clamp(normal, -1.0, 1.0);
+	float2 coord = float2(1 - (atan2(normal.x, normal.z) * InvPIE * 0.5f + 0.5f), acos(normal.y) * InvPIE);
+#endif
+	return coord;
+}
+
 float3 ComputeSphereNormal(float2 coord, float phiStart = 0.0, float phiLength = PI_2, float thetaStart = 0, float thetaLength = PI)
 {
 	float3 normal;
