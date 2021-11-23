@@ -2,38 +2,36 @@ float4x4 matView : VIEW;
 float4x4 matWorld : WORLD;
 float4x4 matWorldView : WORLDVIEW;
 float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
+float4x4 matProject            : PROJECTION;
+
+float2 ViewportSize : VIEWPORTPIXELSIZE;
+
+float GetCameraFOV()
+{
+    float t = matProject._m11;
+    float Rad2Deg = 180 / 3.1415;
+    float fov = atan(t) * 2.0 * Rad2Deg;
+    return fov;
+}
 
 void MaterialVS(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
+	out float4 oWorldPos  : TEXCOORD0,
 	out float4 oPosition  : POSITION)
 {
-	oPosition = mul(float4(Position.xyz - normalize(Normal) * edgeLinePadding / 100, 1), matWorldViewProject);
+	float3 viewNormal = mul(Normal, (float3x3)matWorldView);
+	float3 ndcNormal = normalize(mul(float4(viewNormal, 1), matProject)).xyz;
+
+	oPosition = mul(Position , matWorldViewProject);
+	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00005 * GetCameraFOV() * edgeLinePadding;
+
+	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
-float4 MaterialPS() : COLOR
+float4 MaterialPS(in float4 worldPos : TEXCOORD0) : COLOR
 {
-	return float4(pow(edgeLineColor, 2.2), 0.0);
-}
-
-void EdgeLineVS(
-	in float4 Position : POSITION,
-	out float4 oPosition  : POSITION)
-{
-	oPosition = mul(Position, matWorldViewProject);
-}
-
-float4 EdgeLinePS() : COLOR
-{
-	return float4(pow(edgeLineColor, 2.2), 1.0);
-}
-
-technique EdgeTec<string MMDPass = "edge";>{
-	pass DrawEdgeLine {
-		AlphaTestEnable = false; AlphaBlendEnable = false;
-		VertexShader = compile vs_3_0 EdgeLineVS();
-		PixelShader  = compile ps_3_0 EdgeLinePS();
-	}
+	return float4(pow(edgeLineColor, 2.2), worldPos.w);
 }
 
 technique MainTecSS<string MMDPass = "object_ss";>{
@@ -41,6 +39,7 @@ technique MainTecSS<string MMDPass = "object_ss";>{
 		AlphaTestEnable = false; AlphaBlendEnable = false;
 		DepthBias = edgeLineDepthBias;
 		SlopeScaleDepthBias = edgeLineDepthSlopeScaleBias;
+		CullMode = CW;\
 		VertexShader = compile vs_3_0 MaterialVS();
 		PixelShader  = compile ps_3_0 MaterialPS();
 	}

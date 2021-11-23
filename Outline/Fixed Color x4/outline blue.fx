@@ -1,4 +1,4 @@
-static float edgeLinePadding = 0;
+static float edgeLinePadding = 4;
 static float edgeLineDepthBias = 0;
 static float edgeLineDepthSlopeScaleBias = 1;
 

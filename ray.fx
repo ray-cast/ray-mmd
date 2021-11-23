@@ -100,10 +100,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessScattering.fxsub"
 #endif
 
-#if OUTLINE_QUALITY == 2
-#	include "shader/EdgeLineAA.fxsub"
-#endif
-
 #if TOON_ENABLE == 2
 #	include "shader/PostProcessDiffusion.fxsub"
 #endif
@@ -208,12 +204,6 @@ technique DeferredLighting<
 	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
 	"RenderColorTarget=SSDOMap;	    Pass=SSDOBlurY;"
 #endif
-#endif
-
-#if OUTLINE_QUALITY == 2
-	"RenderColorTarget=EdgeEdgeMap;  Clear=Color; Pass=EdgeEdgeDetection;"
-	"RenderColorTarget=EdgeBlendMap; Clear=Color; Pass=EdgeBlendingWeightCalculation;"
-	"RenderColorTarget=OutlineTempMap; Pass=EdgeNeighborhoodBlending;"
 #endif
 
 #if SSSS_QUALITY
@@ -471,26 +461,6 @@ technique DeferredLighting<
 		SrcBlend = ONE; DestBlend = ONE;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
-	}
-#endif
-#if OUTLINE_QUALITY == 2
-	pass EdgeEdgeDetection<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 EdgeEdgeDetectionVS();
-		PixelShader  = compile ps_3_0 EdgeLumaEdgeDetectionPS(OutlineMapSamp);
-	}
-	pass EdgeBlendingWeightCalculation<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 EdgeBlendingWeightCalculationVS();
-		PixelShader  = compile ps_3_0 EdgeBlendingWeightCalculationPS(0.0);
-	}
-	pass EdgeNeighborhoodBlending<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 EdgeNeighborhoodBlendingVS();
-		PixelShader  = compile ps_3_0 EdgeNeighborhoodBlendingPS(OutlineMapSamp, ViewportOffset2);
 	}
 #endif
 #if TOON_ENABLE == 2

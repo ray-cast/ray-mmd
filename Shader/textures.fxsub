@@ -138,14 +138,14 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 #if OUTLINE_QUALITY
 shared texture OutlineMap : OFFSCREENRENDERTARGET<
 	string Description = "Outline shading for ray";
-#if OUTLINE_QUALITY == 1 || OUTLINE_QUALITY == 2
+#if OUTLINE_QUALITY == 1
 	float2 ViewportRatio = {1.0, 1.0};
-#elif OUTLINE_QUALITY == 3
+#elif OUTLINE_QUALITY == 2
 	float2 ViewportRatio = {2.0, 2.0};
 #endif
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
-	string Format = "A8R8G8B8";
+	string Format = "A32B32G32R32F";
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -164,18 +164,6 @@ sampler OutlineMapSamp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-#if OUTLINE_QUALITY == 2
-texture OutlineTempMap : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-sampler OutlineTempMapSamp = sampler_state {
-	texture = <OutlineTempMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-#endif
 #endif
 #if SSDO_QUALITY
 texture SSAOMap : OFFSCREENRENDERTARGET<

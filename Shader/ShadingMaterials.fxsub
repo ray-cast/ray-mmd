@@ -212,20 +212,8 @@ float4 ShadingTransparentPS(
 	lighting += lerp(emissive0, emissive1, MRT8.a) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
 #if OUTLINE_QUALITY
-	#if OUTLINE_QUALITY == 1
-		float4 edge = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
-	#elif OUTLINE_QUALITY == 2
-		float4 edge = tex2Dlod(OutlineTempMapSamp, float4(coord, 0, 0));
-	#elif OUTLINE_QUALITY == 3
-		float2 offset = 1.0 / (ViewportSize * 2.0);
-		coord -= ViewportOffset;
-		float4 edge1 = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
-		float4 edge2 = tex2Dlod(OutlineMapSamp, float4(coord + float2(offset.x, 0), 0, 0));
-		float4 edge3 = tex2Dlod(OutlineMapSamp, float4(coord + float2(0, offset.y), 0, 0));
-		float4 edge4 = tex2Dlod(OutlineMapSamp, float4(coord + offset, 0, 0));
-		float4 edge = (edge1 + edge2 + edge3 + edge4) * 0.25;
-	#endif
-	lighting = lerp(lighting, edge.rgb, edge.a);
+	float4 outline = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
 #endif
 
 	return float4(lighting, material.linearDepth);
