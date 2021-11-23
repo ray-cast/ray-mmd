@@ -154,8 +154,8 @@ shared texture OutlineMap : OFFSCREENRENDERTARGET<
 		"Volumetric*.pmx=hide;"
 		"sky*box*.* =hide;"
 		"Image Based Sky.pmx = hide;"
-		"*.pmd = ./outline/Fixed Color x1/outline.fx;"
-		"*.pmx = ./outline/Fixed Color x1/outline.fx;"
+		"*.pmd = hide;"
+		"*.pmx = hide;"
 		"*.x = hide;"
 		"* = hide;";
 >;
