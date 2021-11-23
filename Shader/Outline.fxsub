@@ -1,10 +1,4 @@
-float4x4 matView : VIEW;
-float4x4 matWorld : WORLD;
-float4x4 matWorldView : WORLDVIEW;
-float4x4 matWorldViewProject : WORLDVIEWPROJECTION;
-float4x4 matProject            : PROJECTION;
-
-float2 ViewportSize : VIEWPORTPIXELSIZE;
+#include "../../shader/Common.fxsub"
 
 float GetCameraFOV()
 {
@@ -24,21 +18,21 @@ void MaterialVS(
 	float3 ndcNormal = normalize(mul(float4(viewNormal, 1), matProject)).xyz;
 
 	oPosition = mul(Position , matWorldViewProject);
-	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00005 * GetCameraFOV() * edgeLinePadding;
+	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00005 * GetCameraFOV() * outlinePadding;
 
 	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
 float4 MaterialPS(in float4 worldPos : TEXCOORD0) : COLOR
 {
-	return float4(pow(edgeLineColor, 2.2), worldPos.w);
+	return float4(pow(outlineColor, 2.2), worldPos.w);
 }
 
 technique MainTecSS<string MMDPass = "object_ss";>{
 	pass DrawObject {
 		AlphaTestEnable = false; AlphaBlendEnable = false;
-		DepthBias = edgeLineDepthBias;
-		SlopeScaleDepthBias = edgeLineDepthSlopeScaleBias;
+		DepthBias = outlineDepthBias;
+		SlopeScaleDepthBias = outlineDepthSlopeScaleBias;
 		CullMode = CW;\
 		VertexShader = compile vs_3_0 MaterialVS();
 		PixelShader  = compile ps_3_0 MaterialPS();

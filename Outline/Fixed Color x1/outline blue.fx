@@ -1,7 +1,7 @@
-static float edgeLinePadding = 1;
-static float edgeLineDepthBias = 0;
-static float edgeLineDepthSlopeScaleBias = 1;
+static float outlinePadding = 1;
+static float outlineDepthBias = 0;
+static float outlineDepthSlopeScaleBias = 1;
 
-static float3 edgeLineColor = float3(0.0, 0.1, 0.4);
+static float3 outlineColor = float3(0.0, 0.1, 0.4);
 
-#include "../../shader/edgeline.fxsub"
+#include "../../shader/Outline.fxsub"
