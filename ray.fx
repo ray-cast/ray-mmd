@@ -37,7 +37,8 @@ float mTestMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = 
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
 float mDispersion : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Dispersion";>;
 float mDispersionRadius : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "DispersionRadius";>;
-float mBloomThresholdP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold";>;
+float mBloomThresholdP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold+";>;
+float mBloomThresholdM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomThreshold-";>;
 float mBloomRadiusP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius+";>;
 float mBloomRadiusM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomRadius-";>;
 float mBloomColorAllHP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BloomColorAllH+";>;
@@ -65,10 +66,10 @@ static float mSSAORadius = lerp(lerp(1.0, 2.0, mSSAORadiusP), 0.5, mSSAORadiusM)
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
-static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 12500, mSunTemperatureM);
+static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 40000, mSunTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
 static float mBloomRadius = lerp(lerp(2.2, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
-static float mBloomThreshold = (1.0 - mBloomThresholdP) / (mBloomThresholdP + 1e-5);
+static float mBloomThreshold = lerp(lerp(mBloomThresholdMin, mBloomThresholdMax, mBloomThresholdP), 0, mBloomThresholdM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
 static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
