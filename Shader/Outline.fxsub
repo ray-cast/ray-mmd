@@ -8,7 +8,7 @@ float GetCameraFOV()
     return fov;
 }
 
-void MaterialVS(
+void OutlineVertex(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
 	out float4 oWorldPos  : TEXCOORD0,
@@ -23,7 +23,7 @@ void MaterialVS(
 	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
-float4 MaterialPS(in float4 worldPos : TEXCOORD0) : COLOR
+float4 OutlineFragment(in float4 worldPos : TEXCOORD0) : COLOR
 {
 	return float4(pow(outlineColor, 2.2), worldPos.w);
 }
@@ -34,8 +34,8 @@ technique MainTecSS<string MMDPass = "object_ss";>{
 		DepthBias = outlineDepthBias;
 		SlopeScaleDepthBias = outlineDepthSlopeScaleBias;
 		CullMode = CW;\
-		VertexShader = compile vs_3_0 MaterialVS();
-		PixelShader  = compile ps_3_0 MaterialPS();
+		VertexShader = compile vs_3_0 OutlineVertex();
+		PixelShader  = compile ps_3_0 OutlineFragment();
 	}
 }
 
