@@ -106,7 +106,7 @@ float4 ImageBasedFogFragment(
 
 #if SKYBOX_FOG_ENABLE
 	float mipLevel = ComputeFogMip(0.01, 5000, material.linearDepth, 4, SKYBOX_FOG_MIPMAP_LEVEL - 1);
-	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(SampleLatlong(V), 0, 7)));
+	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(SampleLatlong(V), 0, mipLevel)));
 #endif
 
 	return float4(mipFogColor, mipFogFactor);
