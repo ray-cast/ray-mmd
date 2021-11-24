@@ -8,13 +8,16 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/VolumeRendering.fxsub"
 
+float mColBalanceRP : CONTROLOBJECT<string name="(self)"; string item = "BalanceR+";>;
+float mColBalanceGP : CONTROLOBJECT<string name="(self)"; string item = "BalanceG+";>;
+float mColBalanceBP : CONTROLOBJECT<string name="(self)"; string item = "BalanceB+";>;
+float mColBalanceRM : CONTROLOBJECT<string name="(self)"; string item = "BalanceR-";>;
+float mColBalanceGM : CONTROLOBJECT<string name="(self)"; string item = "BalanceG-";>;
+float mColBalanceBM : CONTROLOBJECT<string name="(self)"; string item = "BalanceB-";>;
+float mColBalance  :  CONTROLOBJECT<string name="(self)"; string item = "BalanceGray+";>;
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
 float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
-float mFogColorHP :  CONTROLOBJECT<string name="(self)"; string item = "FogColorH+";>;
-float mFogColorSP :  CONTROLOBJECT<string name="(self)"; string item = "FogColorS+";>;
-float mFogColorVP :  CONTROLOBJECT<string name="(self)"; string item = "FogColorV+";>;
-float mFogColorVM :  CONTROLOBJECT<string name="(self)"; string item = "FogColorV-";>;
 float mFogDensityP : CONTROLOBJECT<string name="(self)"; string item = "FogDensity+";>;
 float mFogDensityM : CONTROLOBJECT<string name="(self)"; string item = "FogDensity-";>;
 float mFogBaseHeightP : CONTROLOBJECT<string name="(self)"; string item = "FogBaseHeight+";>;
@@ -29,7 +32,6 @@ static const float FogBaseHeight = lerp(lerp(mFogBaseHeightLimit.x, mFogBaseHeig
 static const float FogMaxHeight = lerp(lerp(mFogMaximumHeightLimit.x, mFogMaximumHeightLimit.y, mFogMaxHeightP), mFogMaximumHeightLimit.z, mFogMaxHeightM);
 static const float FogAttenDistance = lerp(lerp(mFogAttenuationDistanceLimit.x, mFogAttenuationDistanceLimit.y, mFogAttenDistanceP), mFogAttenuationDistanceLimit.z, mFogAttenDistanceM);
 
-static const float3 FogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(lerp(1, 2, mFogColorVP), 0, mFogColorVM)));
 static const float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
 #if SKYBOX_FOG_ENABLE
@@ -54,6 +56,14 @@ float ComputeMipFogFactor(float z)
 #else
     return 0.0;
 #endif
+}
+
+float3 ApplyColorBalance(float3 color)
+{
+	float3 lum = luminance(color);
+	color = lerp(lum, color, 1 - mColBalance);
+	color *= float3(1 + float3(mColBalanceRP, mColBalanceGP, mColBalanceBP) - float3(mColBalanceRM, mColBalanceGM, mColBalanceBM));
+	return color;
 }
 
 void ImageBasedFogVertex(
@@ -102,12 +112,14 @@ float4 ImageBasedFogFragment(
 	mipFogFactor *= step(0, sum(material.albedo + material.specular) - 1e-5);
 #endif
 
-	float3 mipFogColor = FogColor;
+	float3 mipFogColor = 1;
 
 #if SKYBOX_FOG_ENABLE
 	float mipLevel = ComputeFogMip(0.01, 5000, material.linearDepth, 4, SKYBOX_FOG_MIPMAP_LEVEL - 1);
 	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(SampleLatlong(mul(matTransform, V)), 0, mipLevel)));
 #endif
+
+	mipFogColor = ApplyColorBalance(mipFogColor);
 
 	return float4(mipFogColor, mipFogFactor);
 }
