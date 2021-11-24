@@ -12,13 +12,11 @@ float mColBalanceGM : CONTROLOBJECT<string name="(self)"; string item = "Balance
 float mColBalanceBM : CONTROLOBJECT<string name="(self)"; string item = "BalanceB-";>;
 float mColBalance  :  CONTROLOBJECT<string name="(self)"; string item = "BalanceGray+";>;
 
-#if SKYBOX_WITHOUT_ENV_ROTATION == 0
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
 float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
-#endif
 
 #if SKYBOX_BLUR_ENABLE
 	texture SkyboxMap<string ResourceName = SKYBOX_BLUR_MAP_FILE; int Miplevels = SKYBOX_BLUR_MIPMAP_LEVEL + 1;>;
@@ -65,12 +63,7 @@ void SkyboxVS(
 
 float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Position) : COLOR
 {
-#if SKYBOX_WITHOUT_ENV_ROTATION
-	float3 N = normalize(normal);
-#else
 	float3 N = normalize(mul(matTransform, normal));
-#endif
-
 	float2 uv = ComputeSphereCoord(N);
 
 #if SKYBOX_BLUR_ENABLE

@@ -41,9 +41,7 @@ static float mEnvIntensitySSS  = lerp(lerp(mEnvLightIntensityMin, mEnvLightInten
 static float mEnvIntensitySpec = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvSpecLightP), 0, mEnvSpecLightM);
 static float mEnvIntensityDiff = lerp(lerp(mEnvLightIntensityMin, mEnvLightIntensityMax, mEnvDiffLightP), 0, mEnvDiffLightM);
 
-#if IBL_WITHOUT_ENV_ROTATION == 0
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
-#endif
 
 texture BRDF<string ResourceName = "../../shader/textures/BRDF.tga"; int Miplevels = 1;>;
 sampler BRDFSamp = sampler_state {
@@ -98,15 +96,9 @@ void ImageBasedLighting(MaterialParam material, float3 worldView, out float3 dif
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
-#if IBL_WITHOUT_ENV_ROTATION
-	float3 V = worldView;
-	float3 N = worldNormal;
-	float3 R = EnvironmentReflect(N, V);
-#else
 	float3 V = mul(matTransform, worldView);
 	float3 N = mul(matTransform, worldNormal);
 	float3 R = EnvironmentReflect(N, V);
-#endif
 
 	float nv = abs(dot(worldNormal, worldView));
 	float mipLayer = EnvironmentMip(IBL_MIPMAP_LEVEL - 1, material.smoothness);
