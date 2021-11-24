@@ -200,7 +200,7 @@ float4 ShadingTransparentPS(
 
 #if FOG_ENABLE
 	float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
-	lighting = lerp(lighting, fog.rgb, fog.a);
+	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
 #endif
 
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));

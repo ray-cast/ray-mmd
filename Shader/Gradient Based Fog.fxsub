@@ -7,6 +7,7 @@
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/VolumeRendering.fxsub"
+#include "../../shader/MonteCarlo.fxsub"
 
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
@@ -24,6 +25,45 @@ float mFogMaxHeightM : CONTROLOBJECT<string name="(self)"; string item = "FogMax
 float mFogAttenDistanceP : CONTROLOBJECT<string name="(self)"; string item = "FogAttenDistance+";>;
 float mFogAttenDistanceM : CONTROLOBJECT<string name="(self)"; string item = "FogAttenDistance-";>;
 
+#if USE_CUSTOM_PARAMS == 0
+float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
+float mTopColorSP :  CONTROLOBJECT<string name="(self)"; string item = "TopS+";>;
+float mTopColorVP :  CONTROLOBJECT<string name="(self)"; string item = "TopV+";>;
+float mTopColorVM :  CONTROLOBJECT<string name="(self)"; string item = "TopV-";>;
+float mTopExponentP :  CONTROLOBJECT<string name="(self)"; string item = "TopExponent+";>;
+float mTopExponentM :  CONTROLOBJECT<string name="(self)"; string item = "TopExponent-";>;
+float mBottomColorHP :  CONTROLOBJECT<string name="(self)"; string item = "BottomH+";>;
+float mBottomColorSP :  CONTROLOBJECT<string name="(self)"; string item = "BottomS+";>;
+float mBottomColorVP :  CONTROLOBJECT<string name="(self)"; string item = "BottomV+";>;
+float mBottomColorVM :  CONTROLOBJECT<string name="(self)"; string item = "BottomV-";>;
+float mBottomExponentP :  CONTROLOBJECT<string name="(self)"; string item = "BottomExponent+";>;
+float mBottomExponentM :  CONTROLOBJECT<string name="(self)"; string item = "BottomExponent-";>;
+float mMediumColorHP :  CONTROLOBJECT<string name="(self)"; string item = "MediumH+";>;
+float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "MediumS+";>;
+float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
+float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
+
+static const float3 mTopColor = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))));
+static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))));
+static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))));
+
+static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
+static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
+#else
+#if USE_RGB_COLORSPACE
+	static const float3 mTopColor = srgb2linear_fast(TopColor);
+	static const float3 mBottomColor = srgb2linear_fast(BottomColor);
+	static const float3 mMediumColor = srgb2linear_fast(MediumColor);
+#else
+	static const float3 mTopColor = srgb2linear_fast(hsv2rgb(TopColor));
+	static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(BottomColor));
+	static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(MediumColor));
+#endif
+
+static const float mTopExponent = TopExponent;
+static const float mBottomExponent = BottomExponent;
+#endif
+
 static const float FogDensity = lerp(lerp(mFogDensityLimit.x, mFogDensityLimit.y, mFogDensityP), mFogDensityLimit.z, mFogDensityM);
 static const float FogBaseHeight = lerp(lerp(mFogBaseHeightLimit.x, mFogBaseHeightLimit.y, mFogBaseHeightP), mFogBaseHeightLimit.z, mFogBaseHeightM);
 static const float FogMaxHeight = lerp(lerp(mFogMaximumHeightLimit.x, mFogMaximumHeightLimit.y, mFogMaxHeightP), mFogMaximumHeightLimit.z, mFogMaxHeightM);
@@ -32,14 +72,37 @@ static const float FogAttenDistance = lerp(lerp(mFogAttenuationDistanceLimit.x, 
 static const float3 FogColor = hsv2rgb(float3(mFogColorHP, mFogColorSP, lerp(lerp(1, 2, mFogColorVP), 0, mFogColorVM)));
 static const float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-#if SKYBOX_FOG_ENABLE
-texture MipFogMap<string ResourceName = SKYBOX_FOG_MAP_FILE;>;
-sampler MipFogMapSamp = sampler_state {
-	texture = <MipFogMap>;
-	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
-	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
-};
-#endif
+float3 SampleSky(float3 N)
+{
+	float3 color = 0;
+	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), mTopExponent));
+	color = lerp(color, mBottomColor, pow(max(0, -N.y), mBottomExponent));	
+	return color;
+}
+
+float3 ImportanceSampleSky(float3 N, float3 V, float roughness)
+{
+	const uint NumSamples = 32;
+
+	float3 lighting = 0;
+	float weight = 0;
+
+	for (uint i = 0; i < NumSamples; i++)
+	{
+		float2 E = HammersleyNoBitOps(i, NumSamples);
+		float3 H = TangentToWorld(N, HammersleySampleGGX(E, roughness));
+		float3 L = 2 * dot(V, H) * H - V;
+
+		float nl = saturate(dot(N, L));
+		if (nl > 0)
+		{
+			lighting += SampleSky(L) * nl;
+			weight += nl;
+		}
+	}
+
+	return lighting / max(0.001f, weight);
+}
 
 float ComputeMipFogFactor(float z)
 {
@@ -56,7 +119,7 @@ float ComputeMipFogFactor(float z)
 #endif
 }
 
-void ImageBasedFogVertex(
+void GradientBasedFogVertex(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -69,7 +132,7 @@ void ImageBasedFogVertex(
 	oTexcoord1 = Position.xyz;
 }
 
-float4 ImageBasedFogFragment(
+float4 GradientBasedFogFragment(
 	in float4 texcoord : TEXCOORD0,
 	in float3 worldPosition  : TEXCOORD1) : COLOR0
 {
@@ -85,6 +148,7 @@ float4 ImageBasedFogFragment(
 
 	float3 V = -normalize(CameraPosition - worldPosition);
 	float3 P = CameraPosition + V * material.linearDepth;
+	float3 N = mul(matTransform, V);
 
 #if SKYBOX_FOG_TYPE == 0
 	float fogFactor = ComputeMipFogFactor(material.linearDepth);
@@ -97,19 +161,10 @@ float4 ImageBasedFogFragment(
 	float fogFactor = OpticalDepthHeightFog(extinction, FogBaseHeight, heightFogExponents, FogDensity, V.y, P.y, material.linearDepth);
 #endif
 
-	float mipFogFactor = fogFactor;
-#if SKYBOX_FOG_DISCARD_SKY
-	mipFogFactor *= step(0, sum(material.albedo + material.specular) - 1e-5);
-#endif
-
 	float3 mipFogColor = FogColor;
+	mipFogColor *= ImportanceSampleSky(N, N, ComputeFogMip(0.01, 5000, material.linearDepth, 0.7, 1.0));
 
-#if SKYBOX_FOG_ENABLE
-	float mipLevel = ComputeFogMip(0.01, 5000, material.linearDepth, 4, SKYBOX_FOG_MIPMAP_LEVEL - 1);
-	mipFogColor *= DecodeRGBT(tex2Dlod(MipFogMapSamp, float4(SampleLatlong(V), 0, 7)));
-#endif
-
-	return float4(mipFogColor, mipFogFactor);
+	return float4(mipFogColor, fogFactor);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
@@ -119,8 +174,8 @@ float4 ImageBasedFogFragment(
 			ZEnable = false; ZWriteEnable = false;\
 			AlphaBlendEnable = true; AlphaTestEnable = FALSE;\
 			SrcBlend = ONE; DestBlend = ONE;\
-			VertexShader = compile vs_3_0 ImageBasedFogVertex();\
-			PixelShader  = compile ps_3_0 ImageBasedFogFragment();\
+			VertexShader = compile vs_3_0 GradientBasedFogVertex();\
+			PixelShader  = compile ps_3_0 GradientBasedFogFragment();\
 		}\
 	}
 

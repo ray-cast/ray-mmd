@@ -104,3 +104,16 @@ float TransmittanceHeightFog(float baseExtinction, float baseHeight, float2 heig
     float od = OpticalDepthHeightFog(baseExtinction, baseHeight, heightExponents, cosZenith, startHeight);
     return TransmittanceFromOpticalDepth(od);
 }
+
+float ComputeFogMip(float near, float far, float linearDepth, float baseLevel, float mipLevel)
+{
+    return lerp(baseLevel, mipLevel, 1 - saturate((linearDepth - near) / (far - near)));
+}
+
+float ScaleHeightFromLayerDepth(float d)
+{
+    // Exp[-d / H] = 0.001
+    // -d / H = Log[0.001]
+    // H = d / -Log[0.001]
+    return d * 0.144765f;
+}
