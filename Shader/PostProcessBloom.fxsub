@@ -33,102 +33,102 @@ static float2 _BloomMap9_TexelSize = 1024 / ViewportSize;
 sampler _BloomDownMap0_LinearSampler = sampler_state {
 	texture = <BloomDownMap0>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap0_LinearSampler = sampler_state {
 	texture = <BloomUpMap0>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap1_LinearSampler = sampler_state {
 	texture = <BloomDownMap1>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap1_LinearSampler = sampler_state {
 	texture = <BloomUpMap1>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap2_LinearSampler = sampler_state {
 	texture = <BloomDownMap2>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap2_LinearSampler = sampler_state {
 	texture = <BloomUpMap2>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap3_LinearSampler = sampler_state {
 	texture = <BloomDownMap3>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap3_LinearSampler = sampler_state {
 	texture = <BloomUpMap3>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap4_LinearSampler = sampler_state {
 	texture = <BloomDownMap4>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap4_LinearSampler = sampler_state {
 	texture = <BloomUpMap4>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap5_LinearSampler = sampler_state {
 	texture = <BloomDownMap5>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap5_LinearSampler = sampler_state {
 	texture = <BloomUpMap5>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap6_LinearSampler = sampler_state {
 	texture = <BloomDownMap6>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap6_LinearSampler = sampler_state {
 	texture = <BloomUpMap6>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap7_LinearSampler = sampler_state {
 	texture = <BloomDownMap7>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap7_LinearSampler = sampler_state {
 	texture = <BloomUpMap7>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap8_LinearSampler = sampler_state {
 	texture = <BloomDownMap8>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap8_LinearSampler = sampler_state {
 	texture = <BloomUpMap8>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap9_LinearSampler = sampler_state {
 	texture = <BloomDownMap9>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap9_LinearSampler = sampler_state {
 	texture = <BloomUpMap9>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 
 #if HDR_STAR_MODE || HDR_FLARE_MODE
