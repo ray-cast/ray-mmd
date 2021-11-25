@@ -156,12 +156,9 @@ void BloomPrefilterVS(
 	oTexcoord3 = oTexcoord1.xyxy + float4(0,-1,0,1) * _MainTex_TexelSize.xyxy;
 
 	oTexcoord1.zw = mExposure;
-#if HDR_EYE_ADAPTATION == 1
+#if EYE_ADAPTATION
 	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
 	oTexcoord1.zw *= ComputeExposureISO(aveLum, 12.5);
-#elif HDR_EYE_ADAPTATION == 2
-	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
-	oTexcoord1.zw *= ComputeExposureISO(aveLum, 18.0);
 #endif
 
 	oPosition = Position;

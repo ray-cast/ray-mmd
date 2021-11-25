@@ -47,29 +47,16 @@ float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
 #endif
 }
 
-float4 PostProcessUberVS(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord : TEXCOORD0) : POSITION
-{
-	oTexcoord = Texcoord;
-	oTexcoord.xy += ViewportOffset;
-	oTexcoord.zw = mExposure;
-#if HDR_EYE_ADAPTATION == 1
-	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
-	oTexcoord.zw *= ComputeExposureISO(aveLum, 12.5);
-#elif HDR_EYE_ADAPTATION == 2
-	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
-	oTexcoord.zw *= ComputeExposureISO(aveLum, 18.0);
-#endif
-	return Position;
-}
-
 float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : COLOR
 {
 	float3 color = ColorDispersion(_MainTex, uv.xy, mDispersionRadius, 1.0 + mDispersionRadius);
 
-	color *= uv.z; //exposure
+	color *= mExposure;
+
+#if EYE_ADAPTATION > 0
+	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
+	color *= ComputeExposureISO(aveLum, 12.5);
+#endif
 
 #if HDR_BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(_BloomUpMap0_LinearSampler, float4(uv.xy + _BloomMap0_TexelSize * 0.5, 0, 0)).rgb;

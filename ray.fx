@@ -114,7 +114,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessHexDOF.fxsub"
 #endif
 
-#if HDR_EYE_ADAPTATION
+#if EYE_ADAPTATION
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
@@ -165,9 +165,9 @@ float4 ScreenSpaceQuadOffsetVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD,
 	out float2 oTexcoord : TEXCOORD0,
-	uniform float2 offset) : POSITION
+	uniform float2 _MainTex_TexelSize) : POSITION
 {
-	oTexcoord = Texcoord + offset * 0.5;
+	oTexcoord = Texcoord + _MainTex_TexelSize * 0.5;
 	return Position;
 }
 
@@ -276,9 +276,16 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap; Pass=ComputeBokehGatherFinal;"
 #endif
 
-#if HDR_EYE_ADAPTATION
-	"RenderColorTarget=_EyeLumMap; 	 Pass=EyeLum;"
-	"RenderColorTarget=_EyeLumAveMap; Pass=EyeAdapation;"
+#if EYE_ADAPTATION
+	"RenderColorTarget=_EyeLumMap0;		Pass=EyePrefilter;"
+	"RenderColorTarget=_EyeLumMap1;		Pass=EyeLumDownsample1;"
+	"RenderColorTarget=_EyeLumMap2;		Pass=EyeLumDownsample2;"
+	"RenderColorTarget=_EyeLumMap3;		Pass=EyeLumDownsample3;"
+	"RenderColorTarget=_EyeLumMap4;		Pass=EyeLumDownsample4;"
+	"RenderColorTarget=_EyeLumMap5;		Pass=EyeLumDownsample5;"
+	"RenderColorTarget=_EyeLumMap6;		Pass=EyeLumDownsample6;"
+	"RenderColorTarget=_EyeLumMap7;		Pass=EyeLumDownsample7;"
+	"RenderColorTarget=_EyeLumAveMap; 	Pass=EyeAdapation;"
 #endif
 
 #if HDR_BLOOM_MODE
@@ -624,18 +631,60 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ComputeBokehGatherFinalPS(FocalBokehMapPointSamp, FocalBokehCoCNearMapSamp, 1.0 / mFocalStepScale);
 	}
 #endif
-#if HDR_EYE_ADAPTATION
-	pass EyeLum<string Script= "Draw=Buffer;";>{
+#if EYE_ADAPTATION
+	pass EyePrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 EyeDownsampleVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 EyeDownsamplePS(ShadingMapSamp);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 EyePrefilterPS(ShadingMapSamp, _EyeLumMap0_TexelSize * 0.5);
+	}
+	pass EyeLumDownsample1<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap0_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap0_PointSampler, _EyeLumMap0_TexelSize);
+	}
+	pass EyeLumDownsample2<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap1_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap1_PointSampler, _EyeLumMap1_TexelSize);
+	}
+	pass EyeLumDownsample3<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap2_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap2_PointSampler, _EyeLumMap2_TexelSize);
+	}
+	pass EyeLumDownsample4<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap3_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap3_PointSampler, _EyeLumMap3_TexelSize);
+	}
+	pass EyeLumDownsample5<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap4_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap4_PointSampler, _EyeLumMap4_TexelSize);
+	}
+	pass EyeLumDownsample6<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap5_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap5_PointSampler, _EyeLumMap5_TexelSize);
+	}
+	pass EyeLumDownsample7<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap6_TexelSize);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(_EyeLumMap6_PointSampler, _EyeLumMap6_TexelSize);
 	}
 	pass EyeAdapation<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 EyeAdapationPS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap7_TexelSize);
+		PixelShader  = compile ps_3_0 EyeAdapationPS(_EyeLumMap6_PointSampler, _EyeLumMap6_TexelSize);
 	}
 #endif
 #if HDR_BLOOM_MODE
@@ -958,7 +1007,7 @@ technique DeferredLighting<
 	pass PostProcessUber<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 PostProcessUberVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
 		PixelShader  = compile ps_3_0 PostProcessUberPS(ShadingMapPointSamp);
 	}
 #if AA_QUALITY == 1
