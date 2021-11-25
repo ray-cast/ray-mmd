@@ -191,7 +191,7 @@ float3 TonemapACESFit(float3 color)
     return saturate(color);
 }
 
-float3 TonemapACES(float3 color, float CINEMA_WHITE = 48.0)
+float3 TonemapACES(float3 color)
 {
 	float3 aces = mul(sRGB_2_AP0, color);
 	float3 oces = RRT(aces);
