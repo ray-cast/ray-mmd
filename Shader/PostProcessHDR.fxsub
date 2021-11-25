@@ -72,8 +72,17 @@ float4 HDRTonemappingPS(in float4 coord: TEXCOORD0, uniform sampler source) : CO
 	color *= coord.z;
 
 #if HDR_BLOOM_MODE > 0
-	float3 bloom = tex2Dlod(BloomSamp1st, float4(coord.xy, 0, 0)).rgb;
+	float3 bloom = tex2Dlod(_BloomUpMap0_LinearSampler, float4(coord.xy + _BloomMap0_TexelSize * 0.5, 0, 0)).rgb;
 	color += bloom;
+#endif
+
+#if HDR_STAR_MODE > 0
+	float2 uv = coord.xy + _GlareMap_TexelSize * 0.5;
+	float4 star = max(tex2Dlod(StreakSamp1st, float4(uv, 0, 0)), tex2Dlod(StreakSamp2nd, float4(uv, 0, 0)));
+#if HDR_STAR_MODE > 2
+	star = max(star, max(tex2Dlod(StreakSamp3rd, float4(uv, 0, 0)), tex2Dlod(StreakSamp4th, float4(uv, 0, 0))));
+#endif
+	color += star.rgb;
 #endif
 
 	color = ColorTemperature(color, mColorTemperature);

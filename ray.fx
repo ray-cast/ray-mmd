@@ -68,7 +68,7 @@ static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 40000, mSunTemperatureM);
 static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
-static float mBloomRadius = lerp(lerp(2.2, 10, mBloomRadiusP), 0.1, mBloomRadiusM);
+static float mBloomRadius = lerp(lerp(0.75, 1.0, mBloomRadiusP), 0.0, mBloomRadiusM);
 static float mBloomThreshold = lerp(lerp(mBloomThresholdMin, mBloomThresholdMax, mBloomThresholdP), 0, mBloomThresholdM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
@@ -118,16 +118,16 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
+#if HDR_BLOOM_MODE
+#	include "shader/PostProcessBloom.fxsub"
+#endif
+
 #if HDR_STAR_MODE
 #	include "shader/PostProcessLensflare.fxsub"
 #endif
 
 #if HDR_FLARE_MODE
 #	include "shader/PostProcessGhost.fxsub"
-#endif
-
-#if HDR_BLOOM_MODE
-#	include "shader/PostProcessBloom.fxsub"
 #endif
 
 #include "shader/PostProcessHDR.fxsub"
@@ -282,24 +282,37 @@ technique DeferredLighting<
 #endif
 
 #if HDR_BLOOM_MODE
-	"RenderColorTarget=DownsampleMap1st; Pass=GlareDetection;"
+	"RenderColorTarget=BloomDownMap0;   Pass=BloomPrefilter;"
+	"RenderColorTarget=BloomUpMap1;		Pass=BloomBlurX1;"
+	"RenderColorTarget=BloomDownMap1;	Pass=BloomBlurY1;"
+	"RenderColorTarget=BloomUpMap2;		Pass=BloomBlurX2;"
+	"RenderColorTarget=BloomDownMap2;	Pass=BloomBlurY2;"
+	"RenderColorTarget=BloomUpMap3;		Pass=BloomBlurX3;"
+	"RenderColorTarget=BloomDownMap3;	Pass=BloomBlurY3;"
+	"RenderColorTarget=BloomUpMap4;		Pass=BloomBlurX4;"
+	"RenderColorTarget=BloomDownMap4;	Pass=BloomBlurY4;"
+	"RenderColorTarget=BloomUpMap5;		Pass=BloomBlurX5;"
+	"RenderColorTarget=BloomDownMap5;	Pass=BloomBlurY5;"
+	"RenderColorTarget=BloomUpMap6;		Pass=BloomBlurX6;"
+	"RenderColorTarget=BloomDownMap6;	Pass=BloomBlurY6;"
+	"RenderColorTarget=BloomUpMap7;		Pass=BloomBlurX7;"
+	"RenderColorTarget=BloomDownMap7;	Pass=BloomBlurY7;"
+	"RenderColorTarget=BloomUpMap8;		Pass=BloomBlurX8;"
+	"RenderColorTarget=BloomDownMap8;	Pass=BloomBlurY8;"
+	"RenderColorTarget=BloomUpMap9;		Pass=BloomBlurX9;"
+	"RenderColorTarget=BloomDownMap9;	Pass=BloomBlurY9;"
+	"RenderColorTarget=BloomUpMap8;		Pass=BloomUpsample9;"
+	"RenderColorTarget=BloomUpMap7;		Pass=BloomUpsample8;"
+	"RenderColorTarget=BloomUpMap6;		Pass=BloomUpsample7;"
+	"RenderColorTarget=BloomUpMap5;		Pass=BloomUpsample6;"
+	"RenderColorTarget=BloomUpMap4;		Pass=BloomUpsample5;"
+	"RenderColorTarget=BloomUpMap3;		Pass=BloomUpsample4;"
+	"RenderColorTarget=BloomUpMap2;		Pass=BloomUpsample3;"
+	"RenderColorTarget=BloomUpMap1;		Pass=BloomUpsample2;"
+	"RenderColorTarget=BloomUpMap0;		Pass=BloomUpsample1;"
 #if HDR_STAR_MODE || HDR_FLARE_MODE
-	"RenderColorTarget=DownsampleMap2nd; Pass=HDRDownsample2nd;"
+	"RenderColorTarget=_GlareMap; Pass=GlarePrefilter;"
 #endif
-	"RenderColorTarget=BloomMap1stTemp;  Pass=BloomBlurX1;"
-	"RenderColorTarget=BloomMap1st;		 Pass=BloomBlurY1;"
-	"RenderColorTarget=BloomMap2nd;		 Pass=BloomDownsampleX2;"
-	"RenderColorTarget=BloomMap2ndTemp;  Pass=BloomBlurX2;"
-	"RenderColorTarget=BloomMap2nd;		 Pass=BloomBlurY2;"
-	"RenderColorTarget=BloomMap3rd;		 Pass=BloomDownsampleX3;"
-	"RenderColorTarget=BloomMap3rdTemp;  Pass=BloomBlurX3;"
-	"RenderColorTarget=BloomMap3rd;		 Pass=BloomBlurY3;"
-	"RenderColorTarget=BloomMap4th;		 Pass=BloomDownsampleX4;"
-	"RenderColorTarget=BloomMap4thTemp;  Pass=BloomBlurX4;"
-	"RenderColorTarget=BloomMap4th;		 Pass=BloomBlurY4;"
-	"RenderColorTarget=BloomMap5th;		 Pass=BloomDownsampleX5;"
-	"RenderColorTarget=BloomMap5thTemp;  Pass=BloomBlurX5;"
-	"RenderColorTarget=BloomMap5th;		 Pass=BloomBlurY5;"
 #if HDR_STAR_MODE == 1 || HDR_STAR_MODE == 2
 	"RenderColorTarget=StreakMap1stTemp; Pass=Star1stStreak1st;"
 	"RenderColorTarget=StreakMap1st;	 Pass=Star1stStreak2nd;"
@@ -324,10 +337,9 @@ technique DeferredLighting<
 	"RenderColorTarget=StreakMap4thTemp; Pass=Star4thStreak2nd;"
 	"RenderColorTarget=StreakMap4th;	 Pass=Star4thStreak3rd;"
 #endif
-	"RenderColorTarget=BloomMap1st;		Pass=GlareLightComp;"
 #if HDR_FLARE_MODE
-	"RenderColorTarget=BloomMap1stTemp; Pass=GhostImage1st;"
-	"RenderColorTarget=BloomMap1st;		Pass=GhostImage2nd;"
+	"RenderColorTarget=BloomDownMap0;    Pass=GhostImage1st;"
+	"RenderColorTarget=BloomUpMap0;		 Pass=GhostImage2nd;"
 #endif
 #endif
 
@@ -627,110 +639,188 @@ technique DeferredLighting<
 	}
 #endif
 #if HDR_BLOOM_MODE
-	pass GlareDetection<string Script= "Draw=Buffer;";>{
+	pass BloomPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 GlareDetectionVS();
-		PixelShader  = compile ps_3_0 GlareDetectionPS(ShadingMapPointSamp);
+		VertexShader = compile vs_3_0 BloomPrefilterVS();
+		PixelShader  = compile ps_3_0 BloomPrefilterPS(ShadingMapPointSamp);
 	}
-#if HDR_STAR_MODE || HDR_FLARE_MODE
-	pass HDRDownsample2nd<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(ViewportOffset2 * 2);
-		PixelShader  = compile ps_3_0 HDRDownsample4XPS(DownsampleSamp1st);
-	}
-#endif
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset1);
-		PixelShader  = compile ps_3_0 BloomBlurPS(DownsampleSamp1st, BloomOffsetX1);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap0_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap0_LinearSampler, _BloomMap0_TexelSize);
 	}
 	pass BloomBlurY1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset1);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp1stTemp, BloomOffsetY1);
-	}
-	pass BloomDownsampleX2<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset1);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp1st);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap1_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap1_LinearSampler, _BloomMap1_TexelSize);
 	}
 	pass BloomBlurX2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset2);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp2nd, BloomOffsetX2);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap1_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap1_LinearSampler, _BloomMap1_TexelSize);
 	}
 	pass BloomBlurY2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset2);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp2ndTemp, BloomOffsetY2);
-	}
-	pass BloomDownsampleX3<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset2);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp2nd);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap2_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap2_LinearSampler, _BloomMap2_TexelSize);
 	}
 	pass BloomBlurX3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset3);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp3rd, BloomOffsetX3);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap2_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap2_LinearSampler, _BloomMap2_TexelSize);
 	}
 	pass BloomBlurY3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset3);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp3rdTemp, BloomOffsetY3);
-	}
-	pass BloomDownsampleX4<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset3);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp3rd);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap3_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap3_LinearSampler, _BloomMap3_TexelSize);
 	}
 	pass BloomBlurX4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset4);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4th, BloomOffsetX4);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap3_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap3_LinearSampler, _BloomMap3_TexelSize);
 	}
 	pass BloomBlurY4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset4);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp4thTemp, BloomOffsetY4);
-	}
-	pass BloomDownsampleX5<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRDownsampleVS(BloomOffset4);
-		PixelShader  = compile ps_3_0 HDRDownsamplePS(BloomSamp4th);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap4_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap4_LinearSampler, _BloomMap4_TexelSize);
 	}
 	pass BloomBlurX5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset5);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp5th, BloomOffsetX5);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap4_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap4_LinearSampler, _BloomMap4_TexelSize);
 	}
 	pass BloomBlurY5<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(BloomOffset5);
-		PixelShader  = compile ps_3_0 BloomBlurPS(BloomSamp5thTemp, BloomOffsetY5);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap5_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap5_LinearSampler, _BloomMap5_TexelSize);
 	}
+	pass BloomBlurX6<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap5_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap5_LinearSampler, _BloomMap5_TexelSize);
+	}
+	pass BloomBlurY6<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap6_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap6_LinearSampler, _BloomMap6_TexelSize);
+	}
+	pass BloomBlurX7<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap6_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap6_LinearSampler, _BloomMap6_TexelSize);
+	}
+	pass BloomBlurY7<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap7_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap7_LinearSampler, _BloomMap7_TexelSize);
+	}
+	pass BloomBlurX8<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap7_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap7_LinearSampler, _BloomMap7_TexelSize);
+	}
+	pass BloomBlurY8<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap8_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap8_LinearSampler, _BloomMap8_TexelSize);
+	}
+	pass BloomBlurX9<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap8_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomH(_BloomDownMap8_LinearSampler, _BloomMap8_TexelSize);
+	}
+	pass BloomBlurY9<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_BloomMap9_TexelSize);
+		PixelShader  = compile ps_3_0 GaussianBlurBloomV(_BloomUpMap9_LinearSampler, _BloomMap9_TexelSize);
+	}
+	pass BloomUpsample9<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(9, _BloomDownMap8_LinearSampler, _BloomMap8_TexelSize, _BloomDownMap9_LinearSampler, _BloomMap9_TexelSize);
+	}
+	pass BloomUpsample8<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(8, _BloomDownMap7_LinearSampler, _BloomMap7_TexelSize, _BloomUpMap8_LinearSampler, _BloomMap8_TexelSize);
+	}
+	pass BloomUpsample7<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(7, _BloomDownMap6_LinearSampler, _BloomMap6_TexelSize, _BloomUpMap7_LinearSampler, _BloomMap7_TexelSize);
+	}
+	pass BloomUpsample6<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(6, _BloomDownMap5_LinearSampler, _BloomMap5_TexelSize, _BloomUpMap6_LinearSampler, _BloomMap6_TexelSize);
+	}
+	pass BloomUpsample5<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(5, _BloomDownMap4_LinearSampler, _BloomMap4_TexelSize, _BloomUpMap5_LinearSampler, _BloomMap5_TexelSize);
+	}
+	pass BloomUpsample4<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(4, _BloomDownMap3_LinearSampler, _BloomMap3_TexelSize, _BloomUpMap4_LinearSampler, _BloomMap4_TexelSize);
+	}
+	pass BloomUpsample3<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(3, _BloomDownMap2_LinearSampler, _BloomMap2_TexelSize, _BloomUpMap3_LinearSampler, _BloomMap3_TexelSize);
+	}
+	pass BloomUpsample2<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(2, _BloomDownMap1_LinearSampler, _BloomMap1_TexelSize, _BloomUpMap2_LinearSampler, _BloomMap2_TexelSize);
+	}
+	pass BloomUpsample1<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 UpsampleBloomPS(1, _BloomDownMap0_LinearSampler, _BloomMap0_TexelSize, _BloomUpMap1_LinearSampler, _BloomMap1_TexelSize);
+	}
+#if HDR_STAR_MODE || HDR_FLARE_MODE
+	pass GlarePrefilter<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 GlarePrefilterVS(_BloomMap0_TexelSize);
+		PixelShader  = compile ps_3_0 GlarePrefilterPS(_BloomDownMap0_LinearSampler);
+	}
+#endif
 #if HDR_STAR_MODE == 1 || HDR_STAR_MODE == 2
 	pass Star1stStreak1st<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star1stStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -754,7 +844,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star2ndStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -780,7 +870,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, 0.9), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star1stStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -798,7 +888,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, 0.9), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star2ndStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -816,7 +906,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(0.9, -0.9), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star3rdStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -834,7 +924,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 StarStreakVS(float2(-0.9, -0.9), 1);
-		PixelShader  = compile ps_3_0 StarStreakPS(DownsampleSamp2nd, star_colorCoeff1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 StarStreakPS(_GlareMap_LinearSampler, star_colorCoeff1st, mBloomStarFade);
 	}
 	pass Star4thStreak2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -854,23 +944,16 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar1st);
-		PixelShader  = compile ps_3_0 GhostImagePS(DownsampleSamp2nd, BloomSamp2nd, BloomSamp2nd, ghost_modulation1st, mBloomStarFade);
+		PixelShader  = compile ps_3_0 GhostImagePS(_GlareMap_LinearSampler, _BloomDownMap2_LinearSampler, _BloomDownMap2_LinearSampler, ghost_modulation1st, mBloomStarFade);
 	}
 	pass GhostImage2nd<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = ONE;
 		VertexShader = compile vs_3_0 GhostImageVS(ghost_scalar2nd);
-		PixelShader  = compile ps_3_0 GhostImagePS(BloomSamp1stTemp, BloomSamp1stTemp, BloomSamp2nd, ghost_modulation2nd, 0);
+		PixelShader  = compile ps_3_0 GhostImagePS(_BloomDownMap1_LinearSampler, _BloomDownMap1_LinearSampler, _BloomDownMap2_LinearSampler, ghost_modulation2nd, 0);
 	}
 #endif
-	pass GlareLightComp<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = SRCALPHA;
-		VertexShader = compile vs_3_0 GlareLightCompVS();
-		PixelShader  = compile ps_3_0 GlareLightCompPS();
-	}
 #endif
 	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
 		 AlphaBlendEnable = false; AlphaTestEnable = false;
