@@ -288,11 +288,11 @@ float4 GlarePrefilterPS(
 	in float2 uv1 : TEXCOORD1,
 	in float2 uv2 : TEXCOORD2,
 	in float2 uv3 : TEXCOORD3,
-	uniform sampler source) : COLOR
+	uniform sampler _MainTex) : COLOR
 {
-	float4 color = tex2Dlod(source, float4(uv0, 0, 0));
-	color += tex2Dlod(source, float4(uv1, 0, 0));
-	color += tex2Dlod(source, float4(uv2, 0, 0));
-	color += tex2Dlod(source, float4(uv3, 0, 0));
+	float4 color = tex2Dlod(_MainTex, float4(uv0, 0, 0));
+	color += tex2Dlod(_MainTex, float4(uv1, 0, 0));
+	color += tex2Dlod(_MainTex, float4(uv2, 0, 0));
+	color += tex2Dlod(_MainTex, float4(uv3, 0, 0));
 	return color * 0.25;
 }
