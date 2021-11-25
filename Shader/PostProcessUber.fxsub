@@ -80,9 +80,5 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 	color = linear2srgb(color);
 	color = ColorDithering(color, uv.xy);
 
-#if AA_QUALITY > 0
-	return float4(color, luminance(color));
-#else
 	return float4(color, 1);
-#endif
 }
