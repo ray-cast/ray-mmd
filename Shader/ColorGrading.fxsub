@@ -121,16 +121,6 @@ float3 NeutralCurve(float3 x, float a, float b, float c, float d, float e, float
 	return ((x * (a * x + c * b) + d * e) / (x * (a * x + b) + d * f)) - e / f;
 }
 
-float3 TonemapACES(float3 x)
-{
-	const float A = 2.51f;
-	const float B = 0.03f;
-	const float C = 2.43f;
-	const float D = 0.59f;
-	const float E = 0.14f;
-	return (x * (A * x + B)) / (x * (C * x + D) + E);
-}
-
 float3 TonemapHejl2015(float3 hdr, float whitePt) 
 {
 	float4 vh = float4(hdr, whitePt);
@@ -186,6 +176,29 @@ float3 TonemapReinhardLumaBased(float3 color, float whitePt)
 	return color;
 }
 
+float3 RRTAndODTFit(float3 v)
+{
+    float3 a = v * (v + 0.0245786f) - 0.000090537f;
+    float3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    return a / b;
+}
+
+float3 TonemapACESFit(float3 color)
+{
+    color = mul(RRT_SAT_MAT, mul(sRGB_2_AP1, color));
+	color = RRTAndODTFit(color);
+    color = mul(AP1_2_sRGB, mul(ODT_SAT_MAT, color));
+    return saturate(color);
+}
+
+float3 TonemapACES(float3 color, float CINEMA_WHITE = 48.0)
+{
+	float3 aces = mul(sRGB_2_AP0, color);
+	float3 oces = RRT(aces);
+	float3 odt = ODT_RGBmonitor(oces);
+	return odt;
+}
+
 float3 ColorToneMapping(float3 color)
 {
 #if HDR_TONEMAP_OPERATOR == 1
@@ -198,7 +211,7 @@ float3 ColorToneMapping(float3 color)
 #elif HDR_TONEMAP_OPERATOR == 4
 	return saturate(TonemapHejl2015(color, 4.0));
 #elif HDR_TONEMAP_OPERATOR == 5
-	return saturate(TonemapACES(color));
+	return saturate(TonemapACESFit(color * 1.8));
 #elif HDR_TONEMAP_OPERATOR == 6
 	return saturate(TonemapNaughtyDog(color));
 #else

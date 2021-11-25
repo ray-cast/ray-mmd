@@ -401,7 +401,7 @@ float3 darkSurround_to_dimSurround(float3 linearCV)
 	return mul(XYZ_2_AP1_MAT, XYZ);
 }
 
-float3 ODT_RGBmonitor_100nits_dim(float3 oces, float CINEMA_WHITE = 48.0)
+float3 ODT_RGBmonitor(float3 oces, float CINEMA_WHITE = 48.0)
 {
 	float3 rgbPre = mul(AP0_2_AP1_MAT, oces);
 
@@ -416,43 +416,4 @@ float3 ODT_RGBmonitor_100nits_dim(float3 oces, float CINEMA_WHITE = 48.0)
 	linearCV = saturate(mul(AP1_2_sRGB, linearCV));
 
 	return linearCV;
-}
-
-float3 FilmicTonemap(float3 color, float CINEMA_WHITE = 48.0)
-{
-#if 0
-	float3 aces = mul(sRGB_2_AP0, color);
-	float3 oces = RRT(aces);
-	float3 odt = ODT_RGBmonitor_100nits_dim(oces);
-	return odt;
-#else
-	float3 aces = mul(sRGB_2_AP0, color);
-
-	float saturation = rgb_2_saturation(aces);
-	float hue = rgb_2_hue(aces);
-	float centeredHue = center_hue( hue, RRT_RED_HUE );
-	float hueWeight = smoothstep(0, 1, 1 - abs(2 * centeredHue / RRT_RED_WIDTH));
-	hueWeight *= hueWeight;
-
-	aces.r += hueWeight * saturation * (RRT_RED_PIVOT - aces.r) * (1. - RRT_RED_SCALE);
-
-	float3 acescg = mul(AP0_2_AP1_MAT, aces);
-	acescg = max(0.0, acescg);
-	acescg = lerp(dot(acescg, AP1_RGB2Y), acescg, RRT_SAT_FACTOR);
-
-	const float a = 278.5085;
-	const float b = 10.7772;
-	const float c = 293.6045;
-	const float d = 88.7122;
-	const float e = 80.6889;
-
-	float3 x = acescg;
-	float3 rgbPost = (x * (a * x + b)) / (x * (c * x + d) + e);
-
-	float3 linearCV = darkSurround_to_dimSurround(rgbPost);
-	linearCV = lerp(dot(linearCV, AP1_RGB2Y).xxx, linearCV, ODT_SAT_FACTOR);
-	linearCV = saturate(mul(AP1_2_sRGB, linearCV));
-
-	return linearCV;
-#endif
 }
