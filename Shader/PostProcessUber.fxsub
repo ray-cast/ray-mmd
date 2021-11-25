@@ -77,10 +77,10 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 #endif
 
 #if HDR_STAR_MODE > 0
-	float2 uv = uv.xy + _GlareMap_TexelSize * 0.5;
-	float4 star = max(tex2Dlod(StreakSamp1st, float4(uv, 0, 0)), tex2Dlod(StreakSamp2nd, float4(uv, 0, 0)));
+	float2 uv2 = uv.xy + _GlareMap_TexelSize * 0.5;
+	float4 star = max(tex2Dlod(_StreakMap1_LinearSampler, float4(uv2, 0, 0)), tex2Dlod(_StreakMap2_LinearSampler, float4(uv2, 0, 0)));
 #if HDR_STAR_MODE > 2
-	star = max(star, max(tex2Dlod(StreakSamp3rd, float4(uv, 0, 0)), tex2Dlod(StreakSamp4th, float4(uv, 0, 0))));
+	star = max(star, max(tex2Dlod(_StreakMap3_LinearSampler, float4(uv2, 0, 0)), tex2Dlod(_StreakMap4_LinearSampler, float4(uv2, 0, 0))));
 #endif
 	color += star.rgb;
 #endif

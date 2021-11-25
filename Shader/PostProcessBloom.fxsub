@@ -1,23 +1,23 @@
-texture BloomUpMap0 : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture BloomUpMap1 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture BloomUpMap2 : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
-texture BloomUpMap3 : RENDERCOLORTARGET<float2 ViewportRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
-texture BloomUpMap4 : RENDERCOLORTARGET<float2 ViewportRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
-texture BloomUpMap5 : RENDERCOLORTARGET<float2 ViewportRatio={0.015625, 0.015625}; string Format="A16B16G16R16F";>;
-texture BloomUpMap6 : RENDERCOLORTARGET<float2 ViewportRatio={0.0078125, 0.0078125}; string Format="A16B16G16R16F";>;
-texture BloomUpMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.00390625}; string Format="A16B16G16R16F";>;
-texture BloomUpMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
-texture BloomUpMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
-texture BloomDownMap0 : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture BloomDownMap1 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture BloomDownMap2 : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
-texture BloomDownMap3 : RENDERCOLORTARGET<float2 ViewportRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
-texture BloomDownMap4 : RENDERCOLORTARGET<float2 ViewportRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
-texture BloomDownMap5 : RENDERCOLORTARGET<float2 ViewportRatio={0.015625, 0.015625}; string Format="A16B16G16R16F";>;
-texture BloomDownMap6 : RENDERCOLORTARGET<float2 ViewportRatio={0.0078125, 0.0078125}; string Format="A16B16G16R16F";>;
-texture BloomDownMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.00390625}; string Format="A16B16G16R16F";>;
-texture BloomDownMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
-texture BloomDownMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap0 : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap1 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap2 : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap3 : RENDERCOLORTARGET<float2 ViewportRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap4 : RENDERCOLORTARGET<float2 ViewportRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap5 : RENDERCOLORTARGET<float2 ViewportRatio={0.015625, 0.015625}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap6 : RENDERCOLORTARGET<float2 ViewportRatio={0.0078125, 0.0078125}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.00390625}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
+texture _BloomUpMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap0 : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap1 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap2 : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap3 : RENDERCOLORTARGET<float2 ViewportRatio={0.0625, 0.0625}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap4 : RENDERCOLORTARGET<float2 ViewportRatio={0.03125, 0.03125}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap5 : RENDERCOLORTARGET<float2 ViewportRatio={0.015625, 0.015625}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap6 : RENDERCOLORTARGET<float2 ViewportRatio={0.0078125, 0.0078125}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.00390625}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
+texture _BloomDownMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
 
 static float2 _BloomMap0_TexelSize = 2 / ViewportSize;
 static float2 _BloomMap1_TexelSize = 4 / ViewportSize;
@@ -31,102 +31,102 @@ static float2 _BloomMap8_TexelSize = 512 / ViewportSize;
 static float2 _BloomMap9_TexelSize = 1024 / ViewportSize;
 
 sampler _BloomDownMap0_LinearSampler = sampler_state {
-	texture = <BloomDownMap0>;
+	texture = <_BloomDownMap0>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap0_LinearSampler = sampler_state {
-	texture = <BloomUpMap0>;
+	texture = <_BloomUpMap0>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap1_LinearSampler = sampler_state {
-	texture = <BloomDownMap1>;
+	texture = <_BloomDownMap1>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap1_LinearSampler = sampler_state {
-	texture = <BloomUpMap1>;
+	texture = <_BloomUpMap1>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap2_LinearSampler = sampler_state {
-	texture = <BloomDownMap2>;
+	texture = <_BloomDownMap2>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap2_LinearSampler = sampler_state {
-	texture = <BloomUpMap2>;
+	texture = <_BloomUpMap2>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap3_LinearSampler = sampler_state {
-	texture = <BloomDownMap3>;
+	texture = <_BloomDownMap3>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap3_LinearSampler = sampler_state {
-	texture = <BloomUpMap3>;
+	texture = <_BloomUpMap3>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap4_LinearSampler = sampler_state {
-	texture = <BloomDownMap4>;
+	texture = <_BloomDownMap4>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap4_LinearSampler = sampler_state {
-	texture = <BloomUpMap4>;
+	texture = <_BloomUpMap4>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap5_LinearSampler = sampler_state {
-	texture = <BloomDownMap5>;
+	texture = <_BloomDownMap5>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap5_LinearSampler = sampler_state {
-	texture = <BloomUpMap5>;
+	texture = <_BloomUpMap5>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap6_LinearSampler = sampler_state {
-	texture = <BloomDownMap6>;
+	texture = <_BloomDownMap6>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap6_LinearSampler = sampler_state {
-	texture = <BloomUpMap6>;
+	texture = <_BloomUpMap6>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap7_LinearSampler = sampler_state {
-	texture = <BloomDownMap7>;
+	texture = <_BloomDownMap7>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap7_LinearSampler = sampler_state {
-	texture = <BloomUpMap7>;
+	texture = <_BloomUpMap7>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap8_LinearSampler = sampler_state {
-	texture = <BloomDownMap8>;
+	texture = <_BloomDownMap8>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap8_LinearSampler = sampler_state {
-	texture = <BloomUpMap8>;
+	texture = <_BloomUpMap8>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomDownMap9_LinearSampler = sampler_state {
-	texture = <BloomDownMap9>;
+	texture = <_BloomDownMap9>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 sampler _BloomUpMap9_LinearSampler = sampler_state {
-	texture = <BloomUpMap9>;
+	texture = <_BloomUpMap9>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };

@@ -1,74 +1,130 @@
 #if HDR_STAR_MODE == 1
-static const float4 star_colorCoeff1st[4] = {float4(0.1,0.15,0.475,0.5),float4(0.096,0.144,0.456,0.48),float4(0.04608,0.09216,0.41472,0.4608),float4(0.0884736,0.13271,0.42025,0.442368)};
-static const float4 star_colorCoeff2nd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0849346,0.127402,0.40344,0.424673),float4(0.0360695,0.072139,0.324625,0.360695),float4(0.061271,0.0919064,0.291037,0.306355)};
-static const float4 star_colorCoeff3rd[4] = {float4(0.1,0.15,0.475,0.5),float4(0.0260201,0.0520403,0.234181,0.260201),float4(0.00270819,0.013541,0.134055,0.13541),float4(0.00140935,0.00704675,0.0697628,0.0704675)};
-static const float4 star_colorCoeff4th[4] = {float4(0.5,0.5,0.5,0.5),float4(0.0366715,0.0366715,0.0366715,0.0366715),float4(0.00268959,0.00268959,0.00268959,0.00268959),float4(0.000197263,0.000197263,0.000197263,0.000197263)};
+	static const float4 _StarColorCoeff1[4] = {
+		float4(0.1,0.15,0.475,0.5),
+		float4(0.096,0.144,0.456,0.48),
+		float4(0.04608,0.09216,0.41472,0.4608),
+		float4(0.0884736,0.13271,0.42025,0.442368)};
+	static const float4 _StarColorCoeff2[4] = {
+		float4(0.1,0.15,0.475,0.5),
+		float4(0.0849346,0.127402,0.40344,0.424673),
+		float4(0.0360695,0.072139,0.324625,0.360695),
+		float4(0.061271,0.0919064,0.291037,0.306355)};
+	static const float4 _StarColorCoeff3[4] = {
+		float4(0.1,0.15,0.475,0.5),
+		float4(0.0260201,0.0520403,0.234181,0.260201),
+		float4(0.00270819,0.013541,0.134055,0.13541),
+		float4(0.00140935,0.00704675,0.0697628,0.0704675)};
+	static const float4 _StarColorCoeff4[4] = {
+		float4(0.5,0.5,0.5,0.5),
+		float4(0.0366715,0.0366715,0.0366715,0.0366715),
+		float4(0.00268959,0.00268959,0.00268959,0.00268959),
+		float4(0.000197263,0.000197263,0.000197263,0.000197263)};
 #elif HDR_STAR_MODE == 2
-static const float4 star_colorCoeff1st[4] = {float4(0.475,0.475,0.475,0.475), float4(0.456,0.456,0.456,0.456), float4(0.41472,0.41472,0.41472,0.41472), float4(0.42025,0.42025,0.42025,0.42025) };
-static const float4 star_colorCoeff2nd[4] = {float4(0.475,0.475,0.475,0.475), float4(0.40344,0.40344,0.40344,0.40344), float4(0.324625,0.324625,0.324625,0.324625), float4(0.291037,0.291037,0.291037,0.291037) };
-static const float4 star_colorCoeff3rd[4] = {float4(0.475,0.475,0.475,0.475), float4(0.234181,0.234181,0.234181,0.234181), float4(0.134055,0.134055,0.134055,0.134055), float4(0.0697628,0.0697628,0.0697628,0.0697628) };
-static const float4 star_colorCoeff4th[4] = {float4(0.5,0.5,0.5,0.5), float4(0.0366715,0.0366715,0.0366715,0.0366715), float4(0.00268959,0.00268959,0.00268959,0.00268959), float4(0.000197263,0.000197263,0.000197263,0.000197263) };
+	static const float4 _StarColorCoeff1[4] = {
+		float4(0.475,0.475,0.475,0.475),
+		float4(0.456,0.456,0.456,0.456),
+		float4(0.41472,0.41472,0.41472,0.41472),
+		float4(0.42025,0.42025,0.42025,0.42025) };
+	static const float4 _StarColorCoeff2[4] = {
+		float4(0.475,0.475,0.475,0.475),
+		float4(0.40344,0.40344,0.40344,0.40344),
+		float4(0.324625,0.324625,0.324625,0.324625),
+		float4(0.291037,0.291037,0.291037,0.291037) };
+	static const float4 _StarColorCoeff3[4] = {
+		float4(0.475,0.475,0.475,0.475),
+		float4(0.234181,0.234181,0.234181,0.234181),
+		float4(0.134055,0.134055,0.134055,0.134055),
+		float4(0.0697628,0.0697628,0.0697628,0.0697628) };
+	static const float4 _StarColorCoeff4[4] = {
+		float4(0.5,0.5,0.5,0.5),
+		float4(0.0366715,0.0366715,0.0366715,0.0366715),
+		float4(0.00268959,0.00268959,0.00268959,0.00268959),
+		float4(0.000197263,0.000197263,0.000197263,0.000197263) };
 #elif HDR_STAR_MODE == 3 
-static const float4 star_colorCoeff1st[4] = {float4(0.25,0.2375,0.225,0.25),float4(0.18,0.18,0.162,0.225),float4(0.18225,0.164025,0.18225,0.2025),float4(0.164025,0.164025,0.147622,0.18225)};
-static const float4 star_colorCoeff2nd[4] = {float4(0.25,0.225,0.2,0.25),float4(0.164025,0.098415,0.0820125,0.164025),float4(0.0538084,0.0538084,0.032285,0.107617),float4(0.0423644,0.0169458,0.0423644,0.0706074)};
-static const float4 star_colorCoeff3rd[4] = {float4(0.25,0.25,0.25,0.25),float4(0.0463255,0.0277953,0.0277953,0.0463255),float4(0.00515052,0.00515052,0.00309031,0.0085842),float4(0.000954402,0.000572641,0.000954402,0.00159067)};
+	static const float4 _StarColorCoeff1[4] = {
+		float4(0.25,0.2375,0.225,0.25),
+		float4(0.18,0.18,0.162,0.225),
+		float4(0.18225,0.164025,0.18225,0.2025),
+		float4(0.164025,0.164025,0.147622,0.18225)};
+	static const float4 _StarColorCoeff2[4] = {
+		float4(0.25,0.225,0.2,0.25),
+		float4(0.164025,0.098415,0.0820125,0.164025),
+		float4(0.0538084,0.0538084,0.032285,0.107617),
+		float4(0.0423644,0.0169458,0.0423644,0.0706074)};
+	static const float4 _StarColorCoeff3[4] = {
+		float4(0.25,0.25,0.25,0.25),
+		float4(0.0463255,0.0277953,0.0277953,0.0463255),
+		float4(0.00515052,0.00515052,0.00309031,0.0085842),
+		float4(0.000954402,0.000572641,0.000954402,0.00159067)};
 #elif HDR_STAR_MODE == 4
-static const float4 star_colorCoeff1st[4] = {float4(0.25,0.25,0.25,0.25),float4(0.225,0.225,0.225,0.225),float4(0.2025,0.2025,0.2025,0.2025),float4(0.18225,0.18225,0.18225,0.18225)};
-static const float4 star_colorCoeff2nd[4] = {float4(0.25,0.25,0.25,0.25),float4(0.164025,0.164025,0.164025,0.164025),float4(0.107617,0.107617,0.107617,0.107617),float4(0.0706074,0.0706074,0.0706074,0.0706074)};
-static const float4 star_colorCoeff3rd[4] = {float4(0.25,0.25,0.25,0.25),float4(0.0463255,0.0463255,0.0463255,0.0463255),float4(0.0085842,0.0085842,0.0085842,0.0085842),float4(0.00159067,0.00159067,0.00159067,0.00159067)};
+	static const float4 _StarColorCoeff1[4] = {
+		float4(0.25,0.25,0.25,0.25),
+		float4(0.225,0.225,0.225,0.225),
+		float4(0.2025,0.2025,0.2025,0.2025),
+		float4(0.18225,0.18225,0.18225,0.18225)};
+	static const float4 _StarColorCoeff2[4] = {
+		float4(0.25,0.25,0.25,0.25),
+		float4(0.164025,0.164025,0.164025,0.164025),
+		float4(0.107617,0.107617,0.107617,0.107617),
+		float4(0.0706074,0.0706074,0.0706074,0.0706074)};
+	static const float4 _StarColorCoeff3[4] = {
+		float4(0.25,0.25,0.25,0.25),
+		float4(0.0463255,0.0463255,0.0463255,0.0463255),
+		float4(0.0085842,0.0085842,0.0085842,0.0085842),
+		float4(0.00159067,0.00159067,0.00159067,0.00159067)};
 #endif
 
 const float StarScale = 256;
 
-texture StreakMap1st : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap2nd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap1stTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap2ndTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap1 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap2 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap1Temp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap2Temp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
-sampler StreakSamp1st = sampler_state {
-	texture = <StreakMap1st>;
+sampler _StreakMap1_LinearSampler = sampler_state {
+	texture = <_StreakMap1>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp1stTemp = sampler_state {
-	texture = <StreakMap1stTemp>;
+sampler _StreakMap1Temp_LinearSampler = sampler_state {
+	texture = <_StreakMap1Temp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp2nd = sampler_state {
-	texture = <StreakMap2nd>;
+sampler _StreakMap2_LinearSampler = sampler_state {
+	texture = <_StreakMap2>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp2ndTemp = sampler_state {
-	texture = <StreakMap2ndTemp>;
+sampler _StreakMap2Temp_LinearSampler = sampler_state {
+	texture = <_StreakMap2Temp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
 
 #if HDR_STAR_MODE == 3 || HDR_STAR_MODE == 4
-texture StreakMap3rd : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap4th : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap3rdTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
-texture StreakMap4thTemp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap3 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap4 : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap3Temp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
+texture _StreakMap4Temp : RENDERCOLORTARGET<float2 ViewportRatio={0.25, 0.25}; string Format="A16B16G16R16F";>;
 
-sampler StreakSamp3rd = sampler_state {
-	texture = <StreakMap3rd>;
+sampler _StreakMap3_LinearSampler = sampler_state {
+	texture = <_StreakMap3>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp3rdTemp = sampler_state {
-	texture = <StreakMap3rdTemp>;
+sampler _StreakMap3Temp_LinearSampler = sampler_state {
+	texture = <_StreakMap3Temp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp4th = sampler_state {
-	texture = <StreakMap4th>;
+sampler _StreakMap4_LinearSampler = sampler_state {
+	texture = <_StreakMap4>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
-sampler StreakSamp4thTemp = sampler_state {
-	texture = <StreakMap4thTemp>;
+sampler _StreakMap4Temp_LinearSampler = sampler_state {
+	texture = <_StreakMap4Temp>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
 };
@@ -93,15 +149,15 @@ void StarStreakVS(
 }
 
 float4 StarStreakPS(
-	in float2 coord0 : TEXCOORD0,
-	in float2 coord1 : TEXCOORD1,
-	in float2 coord2 : TEXCOORD2,
-	in float2 coord3 : TEXCOORD3,
+	in float2 uv0 : TEXCOORD0,
+	in float2 uv1 : TEXCOORD1,
+	in float2 uv2 : TEXCOORD2,
+	in float2 uv3 : TEXCOORD3,
 	uniform sampler source, uniform float4 colorCoeff[4], uniform float threshold) : COLOR
 {
-	float4 color0 = tex2Dlod(source, float4(coord0, 0, 0)) * colorCoeff[0];
-	float4 color1 = tex2Dlod(source, float4(coord1, 0, 0)) * colorCoeff[1];
-	float4 color2 = tex2Dlod(source, float4(coord2, 0, 0)) * colorCoeff[2];
-	float4 color3 = tex2Dlod(source, float4(coord3, 0, 0)) * colorCoeff[3];
+	float4 color0 = tex2Dlod(source, float4(uv0, 0, 0)) * colorCoeff[0];
+	float4 color1 = tex2Dlod(source, float4(uv1, 0, 0)) * colorCoeff[1];
+	float4 color2 = tex2Dlod(source, float4(uv2, 0, 0)) * colorCoeff[2];
+	float4 color3 = tex2Dlod(source, float4(uv3, 0, 0)) * colorCoeff[3];
 	return max(0, (color0 + color1 + color2 + color3) - threshold / (1 - threshold + EPSILON) * 10);
 }
