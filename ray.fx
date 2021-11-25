@@ -277,8 +277,8 @@ technique DeferredLighting<
 #endif
 
 #if HDR_EYE_ADAPTATION
-	"RenderColorTarget=EyeLumMap; 	 Pass=EyeLum;"
-	"RenderColorTarget=EyeLumAveMap; Pass=EyeAdapation;"
+	"RenderColorTarget=_EyeLumMap; 	 Pass=EyeLum;"
+	"RenderColorTarget=_EyeLumAveMap; Pass=EyeAdapation;"
 #endif
 
 #if HDR_BLOOM_MODE
@@ -629,7 +629,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 EyeDownsampleVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 EyeDownsamplePS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 EyeDownsamplePS(ShadingMapSamp);
 	}
 	pass EyeAdapation<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

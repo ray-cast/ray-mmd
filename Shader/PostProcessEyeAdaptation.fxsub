@@ -1,19 +1,19 @@
-texture EyeLumMap : RENDERCOLORTARGET<
+texture _EyeLumMap : RENDERCOLORTARGET<
 	int2 Dimensions = {256, 256};
-	string Format = "R16F";
+	string Format = "R32F";
 	int Miplevels = 0;
 >;
-texture EyeLumAveMap : RENDERCOLORTARGET<
+texture _EyeLumAveMap : RENDERCOLORTARGET<
 	int2 Dimensions = {1, 1};
 	string Format = "R32F";
 >;
-sampler EyeLumMapSamp = sampler_state {
-	texture = <EyeLumMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = POINT;
+sampler _EyeLumMap_LinearSampler = sampler_state {
+	texture = <_EyeLumMap>;
+	MinFilter = Linear; MagFilter = Linear; MipFilter = Linear;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler EyeLumAveMapSamp = sampler_state {
-	texture = <EyeLumAveMap>;
+sampler _EyeLumAveMap_PointSampler = sampler_state {
+	texture = <_EyeLumAveMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
@@ -34,31 +34,27 @@ float ComputeExposureISO(float avgLum, float middleGray = 12.5)
 void EyeDownsampleVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD,
-	out float2 oTexcoord1 : TEXCOORD0,
-	out float2 oTexcoord2 : TEXCOORD1,
-	out float2 oTexcoord3 : TEXCOORD2,
-	out float2 oTexcoord4 : TEXCOORD3,
+	out float4 oTexcoord1 : TEXCOORD0,
+	out float4 oTexcoord2 : TEXCOORD1,
 	out float4 oPosition : POSITION,
-	uniform float2 step)
+	uniform float2 _MainTex_TexelSize)
 {
-	oTexcoord1 = Texcoord + step * 0.5f;
-	oTexcoord2 = oTexcoord1 + float2(1.0f / 256.0f, 0);
-	oTexcoord3 = oTexcoord1 + float2(1.0f / 256.0f, 1.0f / 256.0f);
-	oTexcoord4 = oTexcoord1 + float2(0, 1.0f / 256.0f);
+	oTexcoord1 = Texcoord.xyxy + _MainTex_TexelSize.xyxy * 0.5f;
+	oTexcoord1.xy = oTexcoord1.xy + float2(1.0f / 512.0f, 0);
+	oTexcoord2.xy = oTexcoord1.xy + float2(1.0f / 512.0f, 1.0f / 512.0f);
+	oTexcoord2.zw = oTexcoord1.xy + float2(0, 1.0f / 512.0f);
 	oPosition = Position;
 }
 
 float4 EyeDownsamplePS(
-	in float2 coord1 : TEXCOORD0,
-	in float2 coord2 : TEXCOORD1,
-	in float2 coord3 : TEXCOORD2,
-	in float2 coord4 : TEXCOORD3,
-	uniform sampler source) : COLOR
+	in float4 uv0 : TEXCOORD0,
+	in float4 uv1 : TEXCOORD1,
+	uniform sampler _MainTex) : COLOR
 {
-	float color = log(max(luminance(tex2Dlod(source, float4(coord1, 0, 0)).rgb), 0.02));
-	color += log(max(luminance(tex2Dlod(source, float4(coord2, 0, 0)).rgb), 0.02));
-	color += log(max(luminance(tex2Dlod(source, float4(coord3, 0, 0)).rgb), 0.02));
-	color += log(max(luminance(tex2Dlod(source, float4(coord4, 0, 0)).rgb), 0.02));
+	float color = log(max(luminance(tex2Dlod(_MainTex, float4(uv0.xy, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(_MainTex, float4(uv0.zw, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(_MainTex, float4(uv1.xy, 0, 0)).rgb), 0.02));
+	color += log(max(luminance(tex2Dlod(_MainTex, float4(uv1.zw, 0, 0)).rgb), 0.02));
 	color *= 0.25;
 
 	return color;
@@ -66,8 +62,8 @@ float4 EyeDownsamplePS(
 
 float4 EyeAdapationPS(in float2 coord: TEXCOORD0) : COLOR
 {
-	float lum = exp(tex2Dlod(EyeLumMapSamp, float4(coord, 0, 20)).r);
-	float adaptedLum = tex2Dlod(EyeLumAveMapSamp, float4(float2(0.5, 0.5), 0, 0)).r;
+	float lum = exp(tex2Dlod(_EyeLumMap_LinearSampler, float4(coord, 0, 20)).r);
+	float adaptedLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(float2(0.5, 0.5), 0, 0)).r;
 
 	if (!all(isfinite(lum)))
 		lum = 1.0f;
