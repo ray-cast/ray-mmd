@@ -116,6 +116,11 @@ float3 ColorCorrectAll(
 	return blend;
 }
 
+float3 NeutralCurve(float3 x, float a, float b, float c, float d, float e, float f)
+{
+	return ((x * (a * x + c * b) + d * e) / (x * (a * x + b) + d * f)) - e / f;
+}
+
 float3 TonemapACES(float3 x)
 {
 	const float A = 2.51f;
@@ -134,7 +139,24 @@ float3 TonemapHejl2015(float3 hdr, float whitePt)
 	return vf.rgb / vf.www;
 }
 
-float4 TonemapHable(float4 x) 
+float3 TonemapNeutral(float3 x)
+{
+	float a = 0.2;
+	float b = 0.29;
+	float c = 0.24;
+	float d = 0.272;
+	float e = 0.02;
+	float f = 0.3;
+	float whiteLevel = 5.3;
+
+	float3 whiteScale = 1.0 / NeutralCurve(whiteLevel, a, b, c, d, e, f);
+	x = NeutralCurve(x * whiteScale, a, b, c, d, e, f);
+	x *= whiteScale;
+
+	return x;
+}
+
+float3 TonemapHable(float3 x) 
 {
 	float A = 0.22;
 	float B = 0.30;
@@ -142,7 +164,7 @@ float4 TonemapHable(float4 x)
 	float D = 0.20;
 	float E = 0.01;
 	float F = 0.30;
-	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+	return NeutralCurve(x, A, B, C, D, E, F) / NeutralCurve(4.0, A, B, C, D, E, F);
 }
 
 float3 TonemapNaughtyDog(float3 x)
@@ -153,7 +175,7 @@ float3 TonemapNaughtyDog(float3 x)
 	float D = -8.5706;
 	float E =  2.8784;
 	float F =  107.4683;
-	return ((x*(A*x+C*B)+D*E) / (x*(A*x+B)+D*F)) - E / F;
+	return NeutralCurve(x, A, B, C, D, E, F);
 }
 
 float3 TonemapReinhardLumaBased(float3 color, float whitePt)
@@ -170,22 +192,15 @@ float3 ColorToneMapping(float3 color)
 	float3 curr = TonemapReinhardLumaBased(color, 4.0);
 	return saturate(curr);
 #elif HDR_TONEMAP_OPERATOR == 2
-	float4 curr = TonemapHable(float4(color * 2, 4.0));
-	curr = curr / curr.w;
-	return saturate(curr.rgb);
+	return saturate(TonemapHable(color));
 #elif HDR_TONEMAP_OPERATOR == 3
-	float4 curr = TonemapHable(float4(color * 2, 8.0));
-	curr = curr / curr.w;
-	return saturate(curr.rgb);
+	return saturate(TonemapNeutral(color));
 #elif HDR_TONEMAP_OPERATOR == 4
-	float3 curr = TonemapHejl2015(color, 4.0);
-	return saturate(curr);
+	return saturate(TonemapHejl2015(color, 4.0));
 #elif HDR_TONEMAP_OPERATOR == 5
-	float3 curr = TonemapACES(color);
-	return saturate(curr);
+	return saturate(TonemapACES(color));
 #elif HDR_TONEMAP_OPERATOR == 6
-	float3 curr = TonemapNaughtyDog(color);
-	return saturate(curr);
+	return saturate(TonemapNaughtyDog(color));
 #else
 	return saturate(color);
 #endif
