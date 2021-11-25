@@ -642,7 +642,7 @@ technique DeferredLighting<
 	pass BloomPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 BloomPrefilterVS();
+		VertexShader = compile vs_3_0 BloomPrefilterVS(ViewportOffset2);
 		PixelShader  = compile ps_3_0 BloomPrefilterPS(ShadingMapPointSamp);
 	}
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{

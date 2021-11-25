@@ -19,16 +19,16 @@ texture BloomDownMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.00
 texture BloomDownMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
 texture BloomDownMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
 
-static float2 _BloomMap0_TexelSize = ViewportOffset2 * 2;
-static float2 _BloomMap1_TexelSize = ViewportOffset2 * 4;
-static float2 _BloomMap2_TexelSize = ViewportOffset2 * 8;
-static float2 _BloomMap3_TexelSize = ViewportOffset2 * 16;
-static float2 _BloomMap4_TexelSize = ViewportOffset2 * 32;
-static float2 _BloomMap5_TexelSize = ViewportOffset2 * 64;
-static float2 _BloomMap6_TexelSize = ViewportOffset2 * 128;
-static float2 _BloomMap7_TexelSize = ViewportOffset2 * 256;
-static float2 _BloomMap8_TexelSize = ViewportOffset2 * 512;
-static float2 _BloomMap9_TexelSize = ViewportOffset2 * 1024;
+static float2 _BloomMap0_TexelSize = 2 / ViewportSize;
+static float2 _BloomMap1_TexelSize = 4 / ViewportSize;
+static float2 _BloomMap2_TexelSize = 8 / ViewportSize;
+static float2 _BloomMap3_TexelSize = 16 / ViewportSize;
+static float2 _BloomMap4_TexelSize = 32 / ViewportSize;
+static float2 _BloomMap5_TexelSize = 64 / ViewportSize;
+static float2 _BloomMap6_TexelSize = 128 / ViewportSize;
+static float2 _BloomMap7_TexelSize = 256 / ViewportSize;
+static float2 _BloomMap8_TexelSize = 512 / ViewportSize;
+static float2 _BloomMap9_TexelSize = 1024 / ViewportSize;
 
 sampler _BloomDownMap0_LinearSampler = sampler_state {
 	texture = <BloomDownMap0>;
@@ -139,7 +139,7 @@ sampler _GlareMap_LinearSampler = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 _GlareMap_TexelSize = ViewportOffset2 * 4;
+static float2 _GlareMap_TexelSize = 4 / ViewportSize;
 #endif
 
 void BloomPrefilterVS(
@@ -148,14 +148,12 @@ void BloomPrefilterVS(
 	out float4 oTexcoord1 : TEXCOORD0,
 	out float4 oTexcoord2 : TEXCOORD1,
 	out float4 oTexcoord3 : TEXCOORD2,
-	out float4 oPosition : POSITION)
+	out float4 oPosition : POSITION,
+	uniform float2 _MainTex_TexelSize)
 {
-	float4 offset0 = float4(-1,0,1,0) * ViewportOffset2.xyxy;
-	float4 offset1 = float4(0,-1,0,1) * ViewportOffset2.xyxy;
-
-	oTexcoord1 = Texcoord.xyxy + ViewportOffset.xyxy;
-	oTexcoord2 = oTexcoord1.xyxy + offset0;
-	oTexcoord3 = oTexcoord1.xyxy + offset1;
+	oTexcoord1 = Texcoord.xyxy + _MainTex_TexelSize.xyxy * 0.5;
+	oTexcoord2 = oTexcoord1.xyxy + float4(-1,0,1,0) * _MainTex_TexelSize.xyxy;
+	oTexcoord3 = oTexcoord1.xyxy + float4(0,-1,0,1) * _MainTex_TexelSize.xyxy;
 
 	oTexcoord1.zw = mExposure;
 #if HDR_EYE_ADAPTATION == 1
@@ -170,16 +168,16 @@ void BloomPrefilterVS(
 }
 
 float4 BloomPrefilterPS(
-	in float4 coord1 : TEXCOORD0,
-	in float4 coord2 : TEXCOORD1,
-	in float4 coord3 : TEXCOORD2,
-	uniform sampler source) : COLOR
+	in float4 uv0 : TEXCOORD0,
+	in float4 uv1 : TEXCOORD1,
+	in float4 uv2 : TEXCOORD2,
+	uniform sampler _MainTex) : COLOR
 {
-	float3 color = tex2Dlod(source, float4(coord1.xy, 0, 0)).rgb;
-	color = min(color, tex2Dlod(source, float4(coord2.xy, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord2.zw, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord3.xy, 0, 0)).rgb);
-	color = min(color, tex2Dlod(source, float4(coord3.zw, 0, 0)).rgb);
+	float3 color = tex2Dlod(_MainTex, float4(uv0.xy, 0, 0)).rgb;
+	color = min(color, tex2Dlod(_MainTex, float4(uv1.xy, 0, 0)).rgb);
+	color = min(color, tex2Dlod(_MainTex, float4(uv1.zw, 0, 0)).rgb);
+	color = min(color, tex2Dlod(_MainTex, float4(uv2.xy, 0, 0)).rgb);
+	color = min(color, tex2Dlod(_MainTex, float4(uv2.zw, 0, 0)).rgb);
 	color = clamp(color, 0, 65535);
 
 #if BLOOM_MODE == 1
@@ -187,7 +185,7 @@ float4 BloomPrefilterPS(
 #elif BLOOM_MODE == 2
 	float3 bloom = saturate(color - mBloomThreshold);
 #elif BLOOM_MODE == 3
-	float lum = luminance(color) * coord1.z;
+	float lum = luminance(color) * uv0.z;
 	float3 bloom = saturate(color * (lum - mBloomThreshold) / lum);
 #else
 	float brightness = max(max(color.r, color.g), color.b);
@@ -201,10 +199,10 @@ float4 BloomPrefilterPS(
 
 	bloom *= hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord1.xy, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord1.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord1.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord1.xy, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(uv0.xy, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(uv0.xy, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(uv0.xy, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(uv0.xy, 0, 0));
 
 	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
 	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
@@ -289,15 +287,15 @@ void GlarePrefilterVS(
 }
 
 float4 GlarePrefilterPS(
-	in float2 coord1 : TEXCOORD0,
-	in float2 coord2 : TEXCOORD1,
-	in float2 coord3 : TEXCOORD2,
-	in float2 coord4 : TEXCOORD3,
+	in float2 uv0 : TEXCOORD0,
+	in float2 uv1 : TEXCOORD1,
+	in float2 uv2 : TEXCOORD2,
+	in float2 uv3 : TEXCOORD3,
 	uniform sampler source) : COLOR
 {
-	float4 color = tex2Dlod(source, float4(coord1, 0, 0));
-	color += tex2Dlod(source, float4(coord2, 0, 0));
-	color += tex2Dlod(source, float4(coord3, 0, 0));
-	color += tex2Dlod(source, float4(coord4, 0, 0));
+	float4 color = tex2Dlod(source, float4(uv0, 0, 0));
+	color += tex2Dlod(source, float4(uv1, 0, 0));
+	color += tex2Dlod(source, float4(uv2, 0, 0));
+	color += tex2Dlod(source, float4(uv3, 0, 0));
 	return color * 0.25;
 }
