@@ -1,0 +1,101 @@
+#if POST_DISPERSION_MODE == 2
+float3 SampleSpectrum(float x)
+{
+	float t = 3.0 * x - 1.5;
+	return saturate(float3(-t, 1 - abs(t), t));
+}
+
+float3 ChromaticAberration(sampler source, float2 coord, float2 offset)
+{
+	const int samples = 8;
+
+	float3 totalColor = 0.0;
+	float3 totalWeight = 0.0;
+	float2 delta = offset / samples;
+
+	[unroll]
+	for (int i = 0; i <= samples; i++, coord += delta)
+	{
+		float3 w = SampleSpectrum(float(i) / samples);
+
+		totalWeight += w;
+		totalColor += w * tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	}
+
+	return totalColor / totalWeight;
+}
+#endif
+
+float3 ColorDispersion(sampler source, float2 coord, float inner, float outer)
+{
+	const float scale = ((ViewportSize.x * 0.5) / 512);
+#if POST_DISPERSION_MODE == 1
+	float L = length(coord * 2 - 1);
+	L = 1 - smoothstep(outer, inner, L);
+	float2 offset = ViewportOffset2 * L * (mDispersion * 8) * scale;
+	float3 shift1 = tex2Dlod(source, float4(coord - offset, 0, 0)).rgb;
+	float3 shift2 = tex2Dlod(source, float4(coord, 0, 0)).rgb;
+	float3 shift3 = tex2Dlod(source, float4(coord + offset, 0, 0)).rgb;
+	return float3(shift1.r, shift2.g, shift3.b);
+#elif POST_DISPERSION_MODE == 2
+	float L = 1 - smoothstep(outer, inner, length(coord * 2 - 1));
+	float2 dist = ViewportOffset2 * L * (mDispersion * 16) * scale;
+	float2 offset = (coord * 2 - 1.0) * dist;
+	return ChromaticAberration(source, coord, offset);
+#else
+	return tex2Dlod(source, float4(coord, 0, 0)).rgb;
+#endif
+}
+
+float4 PostProcessUberVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord : TEXCOORD0) : POSITION
+{
+	oTexcoord = Texcoord;
+	oTexcoord.xy += ViewportOffset;
+	oTexcoord.zw = mExposure;
+#if HDR_EYE_ADAPTATION == 1
+	float aveLum = tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
+	oTexcoord.zw *= ComputeExposureISO(aveLum, 12.5);
+#elif HDR_EYE_ADAPTATION == 2
+	float aveLum = tex2Dlod(EyeLumAveMapSamp, float4(0.5,0.5,0,0)).r;
+	oTexcoord.zw *= ComputeExposureISO(aveLum, 18.0);
+#endif
+	return Position;
+}
+
+float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : COLOR
+{
+	float3 color = ColorDispersion(_MainTex, uv.xy, mDispersionRadius, 1.0 + mDispersionRadius);
+
+	color *= uv.z; //exposure
+
+#if HDR_BLOOM_MODE > 0
+	float3 bloom = tex2Dlod(_BloomUpMap0_LinearSampler, float4(uv.xy + _BloomMap0_TexelSize * 0.5, 0, 0)).rgb;
+	color += bloom;
+#endif
+
+#if HDR_STAR_MODE > 0
+	float2 uv = uv.xy + _GlareMap_TexelSize * 0.5;
+	float4 star = max(tex2Dlod(StreakSamp1st, float4(uv, 0, 0)), tex2Dlod(StreakSamp2nd, float4(uv, 0, 0)));
+#if HDR_STAR_MODE > 2
+	star = max(star, max(tex2Dlod(StreakSamp3rd, float4(uv, 0, 0)), tex2Dlod(StreakSamp4th, float4(uv, 0, 0))));
+#endif
+	color += star.rgb;
+#endif
+
+	color = ColorTemperature(color, mColorTemperature);
+	color = ColorCorrect(color, mColorSaturation, mColorContrast, mColorGamma, mColorBalanceP, mColorBalanceM);
+	color = ColorVignette(color, uv.xy);
+	color = ColorToneMapping(color);
+
+	color = linear2srgb(color);
+	color = ColorDithering(color, uv.xy);
+
+#if AA_QUALITY > 0
+	return float4(color, luminance(color));
+#else
+	return float4(color, 1);
+#endif
+}

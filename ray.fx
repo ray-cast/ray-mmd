@@ -130,7 +130,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessGhost.fxsub"
 #endif
 
-#include "shader/PostProcessHDR.fxsub"
+#include "shader/PostProcessUber.fxsub"
 
 #if AA_QUALITY == 1
 #	include "shader/FXAA3.fxsub"
@@ -346,10 +346,10 @@ technique DeferredLighting<
 #if AA_QUALITY == 0
 	"RenderColorTarget=;"
 	"RenderDepthStencilTarget=;"
-	"Pass=HDRTonemapping;"
+	"Pass=PostProcessUber;"
 #else
 	"RenderColorTarget=ShadingMapTemp;"
-	"Pass=HDRTonemapping;"
+	"Pass=PostProcessUber;"
 #endif
 
 #if AA_QUALITY == 1
@@ -955,11 +955,11 @@ technique DeferredLighting<
 	}
 #endif
 #endif
-	pass HDRTonemapping<string Script= "Draw=Buffer;";>{
-		 AlphaBlendEnable = false; AlphaTestEnable = false;
+	pass PostProcessUber<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HDRTonemappingVS();
-		PixelShader  = compile ps_3_0 HDRTonemappingPS(ShadingMapPointSamp);
+		VertexShader = compile vs_3_0 PostProcessUberVS();
+		PixelShader  = compile ps_3_0 PostProcessUberPS(ShadingMapPointSamp);
 	}
 #if AA_QUALITY == 1
 	pass FXAA<string Script= "Draw=Buffer;";>{
