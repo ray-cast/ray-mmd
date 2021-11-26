@@ -42,7 +42,7 @@ texture FogMap : OFFSCREENRENDERTARGET<
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"* = hide;";
 >;
-sampler FogMap_PointSampler = sampler_state {
+sampler _CamraFogTexture_PointSampler = sampler_state {
 	texture = <FogMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -164,7 +164,7 @@ shared texture OutlineMap : OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
-sampler OutlineMap_PointSampler = sampler_state {
+sampler _CamraOutlineTexture_PointSampler = sampler_state {
 	texture = <OutlineMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;

@@ -207,12 +207,12 @@ float4 ShadingTransparentPS(
 	lighting += lerp(emissive0, emissive1, MRT8.a) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
 #if OUTLINE_QUALITY
-	float4 outline = tex2Dlod(OutlineMap_PointSampler, float4(coord, 0, 0));
+	float4 outline = tex2Dlod(_CamraOutlineTexture_PointSampler, float4(coord, 0, 0));
 	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
 #endif
 
 #if FOG_ENABLE
-	float4 fog = tex2Dlod(FogMap_PointSampler, float4(coord, 0, 0));
+	float4 fog = tex2Dlod(_CamraFogTexture_PointSampler, float4(coord, 0, 0));
 	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
 #endif
 
