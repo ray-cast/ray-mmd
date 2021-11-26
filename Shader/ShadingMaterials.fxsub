@@ -182,7 +182,7 @@ float4 ShadingTransparentPS(
 
 	float2 ior = (material.lightModel != SHADINGMODELID_GLASS) ? 0 : mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
 	float3 prefilteredRefract = tex2Dlod(ShadingMapTempPointSamp, float4(coord + ior, 0, 0)).rgb;
-	prefilteredRefract += srgb2linear(tex2Dlod(ScnSamp, float4(coord + ior, 0, 0)).rgb);
+	prefilteredRefract += srgb2linear(tex2Dlod(_CameraColorAttachment_PointSampler, float4(coord + ior, 0, 0)).rgb);
 
 	if (material.lightModel == SHADINGMODELID_GLASS)
 	{

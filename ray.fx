@@ -188,8 +188,8 @@ float Script : STANDARDSGLOBAL<
 
 technique DeferredLighting<
 	string Script =
-	"RenderColorTarget=ScnMap;"
-	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderColorTarget=_CameraColorAttachment;"
+	"RenderDepthStencilTarget=_CamraDepthAttachment;"
 	"ClearSetColor=BackColor;"
 	"ClearSetDepth=ClearDepth;"
 	"ClearSetStencil=ClearStencil;"
@@ -223,7 +223,7 @@ technique DeferredLighting<
 	"Pass=ShadingOpacity;"
 	"RenderColorTarget1=;"
 
-	"RenderDepthStencilTarget=DepthBuffer;"
+	"RenderDepthStencilTarget=_CamraDepthAttachment;"
 	"RenderColorTarget=;"
 	"Clear=Depth;"
 	"Pass=SSSSStencilTest;"

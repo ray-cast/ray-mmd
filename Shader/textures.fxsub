@@ -10,16 +10,21 @@
 #	define SHADOW_MAP_SIZE 8192
 #endif
 
-texture DepthBuffer : RENDERDEPTHSTENCILTARGET<
+texture _CamraDepthAttachment : RENDERDEPTHSTENCILTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";
 >;
-texture ScnMap : RENDERCOLORTARGET<
+texture _CameraColorAttachment : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler ScnSamp = sampler_state {
-	texture = <ScnMap>;
+sampler _CamraDepthAttachmentSampler = sampler_state {
+	texture = <_CamraDepthAttachment>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CameraColorAttachment_PointSampler = sampler_state {
+	texture = <_CameraColorAttachment>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
