@@ -1,13 +1,5 @@
 #include "../../shader/Common.fxsub"
 
-float GetCameraFOV()
-{
-    float t = matProject._m11;
-    float Rad2Deg = 180 / 3.1415;
-    float fov = atan(t) * 2.0 * Rad2Deg;
-    return fov;
-}
-
 void OutlineVertex(
 	in float4 Position : POSITION,
 	in float3 Normal : NORMAL,
@@ -17,8 +9,11 @@ void OutlineVertex(
 	float3 viewNormal = mul(Normal, (float3x3)matWorldView);
 	float3 ndcNormal = normalize(mul(float4(viewNormal, 1), matProject)).xyz;
 
+    float t = matProject._m11;
+    float fov = degrees(atan(t)) * 2.0;
+
 	oPosition = mul(Position , matWorldViewProject);
-	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00003 * GetCameraFOV() * outlinePadding;
+	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00003 * fov * outlinePadding;
 
 	oWorldPos = float4(Position.xyz, oPosition.w);
 }

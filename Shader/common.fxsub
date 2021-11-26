@@ -40,3 +40,15 @@ uniform bool use_spheremap;
 uniform bool use_toon;
 
 uniform bool opadd;
+
+float GetCameraFov()
+{
+	// matProject._m11 = 1.0f / tan((aperture / 180 * 3.1415926) * 0.5f)
+    return degrees(atan(1.0f / matProject._m11) * 2.0);
+}
+
+float GetCamraFocalLength(float filmSize = 36.0)
+{
+	float length = filmSize * matProject._m11 / 2.0f;
+	return length;
+}
