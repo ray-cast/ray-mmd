@@ -52,6 +52,18 @@ sampler _CameraFocalBlur2Map_PointSampler = sampler_state
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
+sampler _CameraFocalBlur1Map_LinearSampler = sampler_state
+{
+	texture=<_CameraFocalBlur1Map>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalBlur2Map_LinearSampler = sampler_state
+{
+	texture=<_CameraFocalBlur2Map>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
 sampler _CameraCoCTexture_PointSampler = sampler_state
 {
 	texture=<_CameraCoCTexture>;

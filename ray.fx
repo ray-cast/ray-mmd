@@ -546,19 +546,19 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeHexBlurXVS();
-		PixelShader  = compile ps_3_0 ComputeHexBlurXFarPS(_CameraCoCTexture_PointSampler);
+		PixelShader  = compile ps_3_0 ComputeHexBlurXFarPS(_CameraCoCTexture_LinearSampler);
 	}
 	pass ComputeHexBlurFarY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeHexBlurYVS();
-		PixelShader  = compile ps_3_0 ComputeHexBlurYFarPS(_CameraCoCTexture_PointSampler, _CameraFocalBlur1Map_PointSampler, _CameraFocalBlur2Map_PointSampler);
+		PixelShader  = compile ps_3_0 ComputeHexBlurYFarPS(_CameraCoCTexture_LinearSampler, _CameraFocalBlur1Map_LinearSampler, _CameraFocalBlur2Map_LinearSampler);
 	}
 	pass ComputeBokehFarGather<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeBokehGatherVS();
-		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(_CameraCoCTexture_LinearSampler, _CameraDepthOfFarMap_PointSampler);
+		PixelShader  = compile ps_3_0 ComputeBokehFarGatherPS(_CameraCoCTexture_PointSampler, _CameraDepthOfFarMap_PointSampler);
 	}
 	pass ComputeNearDown<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
