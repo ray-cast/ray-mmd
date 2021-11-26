@@ -105,14 +105,14 @@ void ScreenSpaceOpacityLightingPS(
 #endif
 
 #if IBL_QUALITY
-	float2x3 ibl = ComputeImageBasedLighting(_CamraEnvLightingTexture0_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
+	float2x3 ibl = ComputeImageBasedLighting(_CameraEnvLightingTexture0_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
 	diffuse += ibl[0];
 	specular += ibl[1];
 #endif
 
 #if MULTI_LIGHT_ENABLE
-	diffuse += tex2Dlod(_CamraLightingTexture0_PointSampler, float4(uv, 0, 0)).rgb;
-	specular += tex2Dlod(_CamraLightingTexture1_PointSampler, float4(uv, 0, 0)).rgb;
+	diffuse += tex2Dlod(_CameraLightingTexture0_PointSampler, float4(uv, 0, 0)).rgb;
+	specular += tex2Dlod(_CameraLightingTexture1_PointSampler, float4(uv, 0, 0)).rgb;
 #endif
 
 	oColor0 = float4(diffuse, material.linearDepth * any(material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE));
@@ -138,12 +138,12 @@ float4 ScreenSpaceLightingFinalPS(
 #endif
 
 #if IBL_QUALITY
-	float2x3 ibl = ComputeImageBasedLighting(_CamraEnvLightingTexture1_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
+	float2x3 ibl = ComputeImageBasedLighting(_CameraEnvLightingTexture1_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
 	lighting += mad(material.albedo, ibl[0], ibl[1]);
 #endif
 
 #if MULTI_LIGHT_ENABLE
-	lighting += tex2Dlod(_CamraLightingTexture2_PointSampler, float4(uv, 0, 0)).rgb;
+	lighting += tex2Dlod(_CameraLightingTexture2_PointSampler, float4(uv, 0, 0)).rgb;
 #endif
 
 	float2 ior = (material.lightModel != SHADINGMODELID_GLASS) ? 0 : mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
@@ -173,12 +173,12 @@ float4 ScreenSpaceLightingFinalPS(
 	lighting += lerp(emissive0, emissive1, material.alpha) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
 #if OUTLINE_QUALITY
-	float4 outline = tex2Dlod(_CamraOutlineTexture_PointSampler, float4(uv, 0, 0));
+	float4 outline = tex2Dlod(_CameraOutlineTexture_PointSampler, float4(uv, 0, 0));
 	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
 #endif
 
 #if FOG_ENABLE
-	float4 fog = tex2Dlod(_CamraFogTexture_PointSampler, float4(uv, 0, 0));
+	float4 fog = tex2Dlod(_CameraFogTexture_PointSampler, float4(uv, 0, 0));
 	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
 #endif
 

@@ -10,7 +10,7 @@
 #	define SHADOW_MAP_SIZE 8192
 #endif
 
-texture _CamraDepthAttachment : RENDERDEPTHSTENCILTARGET<
+texture _CameraDepthAttachment : RENDERDEPTHSTENCILTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";
 >;
@@ -37,7 +37,7 @@ texture FogMap : OFFSCREENRENDERTARGET<
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"* = hide;";
 >;
-sampler _CamraFogTexture_PointSampler = sampler_state {
+sampler _CameraFogTexture_PointSampler = sampler_state {
 	texture = <FogMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -71,17 +71,17 @@ shared texture LightAlphaMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler _CamraLightingTexture0_PointSampler = sampler_state {
+sampler _CameraLightingTexture0_PointSampler = sampler_state {
 	texture = <LightMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraLightingTexture1_PointSampler = sampler_state {
+sampler _CameraLightingTexture1_PointSampler = sampler_state {
 	texture = <LightSpecMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraLightingTexture2_PointSampler = sampler_state {
+sampler _CameraLightingTexture2_PointSampler = sampler_state {
 	texture = <LightAlphaMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -103,12 +103,12 @@ shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler _CamraEnvLightingTexture0_PointSampler = sampler_state {
+sampler _CameraEnvLightingTexture0_PointSampler = sampler_state {
 	texture = <EnvLightMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraEnvLightingTexture1_PointSampler = sampler_state {
+sampler _CameraEnvLightingTexture1_PointSampler = sampler_state {
 	texture = <EnvLightAlphaMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -159,7 +159,7 @@ shared texture OutlineMap : OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
-sampler _CamraOutlineTexture_PointSampler = sampler_state {
+sampler _CameraOutlineTexture_PointSampler = sampler_state {
 	texture = <OutlineMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
