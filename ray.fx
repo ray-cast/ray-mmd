@@ -218,25 +218,18 @@ technique DeferredLighting<
 #endif
 #endif
 
-#if SSSS_QUALITY
 	"RenderColorTarget0=ShadingMapTemp;"
 	"RenderColorTarget1=ShadingMapTempSpecular;"
+	"Clear=Color;"
 	"Pass=ShadingOpacity;"
 	"RenderColorTarget1=;"
 
-	"RenderDepthStencilTarget=_CamraDepthAttachment;"
-	"RenderColorTarget=;"
-	"Clear=Depth;"
-	"Pass=SSSSStencilTest;"
-	"RenderColorTarget=ShadingMap; Clear=Color; Pass=SSSSBlurX;"
-	"RenderColorTarget=ShadingMapTemp;	Pass=SSSSBlurY;"
-	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacityAlbedo;"
-	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacitySpecular;"
-	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
-#else
-	"RenderColorTarget=ShadingMapTemp;	Pass=ShadingOpacity;"
-	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
+#if SSSS_QUALITY
+	"RenderColorTarget=ShadingMap; 		Clear=Color; Pass=SSSSBlurX;"
+	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=SSSSBlurY;"
 #endif
+
+	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
 
 #if TOON_ENABLE == 2
 	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
@@ -442,47 +435,17 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ShadingTransparentPS();
 	}
 #if SSSS_QUALITY
-	pass SSSSStencilTest<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = false; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		ColorWriteEnable = false;
-		StencilEnable = true;
-		StencilFunc = ALWAYS;
-		StencilRef = 1;
-		StencilPass = REPLACE;
-		StencilFail = KEEP;
-		StencilZFail = KEEP;
-		StencilWriteMask = 1;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSSSStencilTestPS();
-	}
 	pass SSSSBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true; StencilFunc = EQUAL; StencilRef = 1; StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempPointSamp, ShadingMapTempPointSamp, float2(1.0, 0.0));
 	}
 	pass SSSSBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		StencilEnable = true; StencilFunc = EQUAL; StencilRef = 1; StencilWriteMask = 0;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapPointSamp, ShadingMapTempPointSamp,float2(0.0, 1.0));
-	}
-	pass ShadingOpacityAlbedo<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = DESTCOLOR; DestBlend = ZERO;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadingOpacityAlbedoPS();
-	}
-	pass ShadingOpacitySpecular<string Script= "Draw=Buffer;";>{
-		AlphaBlendEnable = true; AlphaTestEnable = false;
-		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = ONE;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadingOpacitySpecularPS();
 	}
 #endif
 #if TOON_ENABLE == 2

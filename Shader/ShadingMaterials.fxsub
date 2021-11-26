@@ -115,16 +115,11 @@ void ShadingOpacityPS(
 	specular += tex2Dlod(_CamraLightingTexture1_PointSampler, float4(uv, 0, 0)).rgb;
 #endif
 
-#if SSSS_QUALITY // Fix white edge
 	float lightModel = DecodeLightModel(tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)));
 	material.linearDepth *= any(lightModel == SHADINGMODELID_SKIN || lightModel == SHADINGMODELID_SUBSURFACE);
 
 	oColor0 = float4(diffuse, material.linearDepth);
 	oColor1 = float4(specular, 0);
-#else
-	oColor0 = float4(diffuse * material.albedo + specular, material.linearDepth);
-	oColor1 = 0;
-#endif
 }
 
 float4 ShadingTransparentPS(
@@ -155,7 +150,10 @@ float4 ShadingTransparentPS(
 #endif
 
 	float2 ior = (material.lightModel != SHADINGMODELID_GLASS) ? 0 : mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
+
 	float3 prefilteredRefract = tex2Dlod(ShadingMapTempPointSamp, float4(uv + ior, 0, 0)).rgb;
+	prefilteredRefract = mad(SampleOpacityAlbedo(uv + ior), prefilteredRefract, tex2Dlod(ShadingMapTempSpecularSamp, float4(uv + ior, 0, 0)).rgb);
+
 	prefilteredRefract += srgb2linear(tex2Dlod(_CameraColorAttachment_PointSampler, float4(uv + ior, 0, 0)).rgb);
 
 	if (material.lightModel == SHADINGMODELID_GLASS)
@@ -188,14 +186,4 @@ float4 ShadingTransparentPS(
 #endif
 
 	return float4(lighting, material.linearDepth);
-}
-
-float4 ShadingOpacityAlbedoPS(in float2 uv : TEXCOORD0) : COLOR
-{
-	return float4(SampleOpacityAlbedo(uv), 0);
-}
-
-float4 ShadingOpacitySpecularPS(in float2 uv: TEXCOORD0) : COLOR
-{
-	return float4(tex2Dlod(ShadingMapTempSpecularSamp, float4(uv, 0, 0)).rgb, 0);
 }

@@ -18,11 +18,6 @@ texture _CameraColorAttachment : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler _CamraDepthAttachmentSampler = sampler_state {
-	texture = <_CamraDepthAttachment>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
 sampler _CameraColorAttachment_PointSampler = sampler_state {
 	texture = <_CameraColorAttachment>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
