@@ -292,21 +292,21 @@ sampler PSSM4Samp = sampler_state {
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-texture ShadowMap : RENDERCOLORTARGET<
+texture _CameraShadowTexture : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
-texture ShadowMapTemp : RENDERCOLORTARGET<
+texture _CameraShadowTextureTemp : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "L8";
 >;
-sampler ShadowMapSamp = sampler_state {
-	texture = <ShadowMap>;
+sampler _CameraShadowTexture_PointSampler = sampler_state {
+	texture = <_CameraShadowTexture>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler ShadowMapSampTemp = sampler_state {
-	texture = <ShadowMapTemp>;
+sampler _CameraShadowTextureTemp_PointSampler = sampler_state {
+	texture = <_CameraShadowTextureTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };

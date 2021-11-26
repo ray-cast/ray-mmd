@@ -10,7 +10,7 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 
 	float shadow = 1;
 #if SUN_SHADOW_QUALITY
-	shadow = tex2Dlod(ShadowMapSamp, float4(uv, 0, 0)).r;
+	shadow = tex2Dlod(_CameraShadowTexture_PointSampler, float4(uv, 0, 0)).r;
 #endif
 
 #if SSDO_QUALITY
@@ -55,7 +55,7 @@ float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, 
 	float shadow = 1;
 
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
-	float shadowDepth = tex2Dlod(ShadowMapSamp, float4(uv, 0, 0)).r;
+	float shadowDepth = tex2Dlod(_CameraShadowTexture_PointSampler, float4(uv, 0, 0)).r;
 	shadowDepth = min(shadowDepth, saturate(dot(material.normal, L) * 3));
 	shadow = lerp(shadow, shadowDepth, mSunShadowVM);
 #endif

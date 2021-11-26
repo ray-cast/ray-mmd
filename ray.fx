@@ -93,7 +93,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
-#	include "shader/ShadowMap.fxsub"
+#	include "shader/ScreenSpaceShadow.fxsub"
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
@@ -166,10 +166,13 @@ float4 ScreenSpaceQuadVS(
 float4 ScreenSpaceQuadOffsetVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD,
-	out float2 oTexcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
 	uniform float2 _MainTex_TexelSize) : POSITION
 {
-	oTexcoord = Texcoord + _MainTex_TexelSize * 0.5;
+	oTexcoord0.xy = Texcoord + _MainTex_TexelSize * 0.5;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
 	return Position;
 }
 
@@ -199,14 +202,14 @@ technique DeferredLighting<
 	"ScriptExternal=Color;"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
-	"RenderColorTarget=ShadowMap;"
+	"RenderColorTarget=_CameraShadowTexture;"
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
-	"Pass=ShadowMapGen;"
+	"Pass=ScreenSapceShadowMap;"
 	"ClearSetColor=BackColor;"
 #if SHADOW_BLUR_COUNT
-	"RenderColorTarget=ShadowMapTemp; Pass=ShadowBlurX;"
-	"RenderColorTarget=ShadowMap;	  Pass=ShadowBlurY;"
+	"RenderColorTarget=_CameraShadowTextureTemp;	Pass=ScreenSpaceShadowBlurX;"
+	"RenderColorTarget=_CameraShadowTexture;		Pass=ScreenSpaceShadowBlurY;"
 #endif
 #endif
 
@@ -381,24 +384,24 @@ technique DeferredLighting<
 ;>
 {
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
-	pass ShadowMapGen<string Script= "Draw=Buffer;";>{
+	pass ScreenSapceShadowMap<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadowMapGenPS();
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapPS();
 	}
 #if SHADOW_BLUR_COUNT
-	pass ShadowBlurX<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceShadowBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowMapSamp, float2(ViewportOffset2.x, 0.0f));
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBlurPS(_CameraShadowTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
-	pass ShadowBlurY<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceShadowBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ShadowMapBlurPS(ShadowMapSampTemp, float2(0.0f, ViewportOffset2.y));
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBlurPS(_CameraShadowTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 #endif
