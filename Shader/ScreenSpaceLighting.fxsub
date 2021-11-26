@@ -1,0 +1,186 @@
+#if SUN_LIGHT_ENABLE
+float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 lightColor, float2 uv)
+{
+	float3 R = reflect(-V, material.normal);
+	float e = 0.0092501131168;	// sin(radians(0.53));
+	float d = 0.99995721678846;	// cos(radians(0.53));
+	float dr = dot(L, R);
+	float3 s = R - dr * L;
+	L = dr < d ? normalize(d * L + normalize(s) * e) : R;
+
+	float shadow = 1;
+#if SUN_SHADOW_QUALITY
+	shadow = tex2Dlod(ShadowMapSamp, float4(uv, 0, 0)).r;
+#endif
+
+#if SSDO_QUALITY
+	float3 bentNormal = tex2Dlod(SSDOMap_PointSampler, float4(uv, 0, 0)).xyz * 2 - 1;
+	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mSSDOScale);
+	shadow *= ssdo;
+#endif
+
+#if TOON_ENABLE
+	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
+#else
+	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, min(shadow, saturate(dot(material.normal, L) * 4)));
+#endif
+	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
+
+	lightColor *= any(material.visibility);
+
+	float3 diffuse = (energy[0] + subsurface * shadow) * lightColor;
+	float3 specular = energy[1] * lightColor;
+
+#if SUN_SHADOW_QUALITY
+	diffuse += mColorShadowSunP * (1 - shadow);
+#endif
+
+	return float2x3(diffuse, specular);
+}
+#endif
+
+#if IBL_QUALITY
+float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, MaterialParam material, float4 screenPosition, float2 uv, float3 V, float3 L)
+{
+	float3 diffuse; float3 specular;
+	DecodeYcbcr(_MainTex, uv, screenPosition, _MainTex_TexelSize, diffuse, specular);
+
+	float occlusion = material.visibility;
+
+#if SSDO_QUALITY
+	float ssao = tex2Dlod(SSDOMap_PointSampler, float4(uv, 0, 0)).w;
+	occlusion = min(occlusion, (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao);
+#endif
+
+	float shadow = 1;
+
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
+	float shadowDepth = tex2Dlod(ShadowMapSamp, float4(uv, 0, 0)).r;
+	shadowDepth = min(shadowDepth, saturate(dot(material.normal, L) * 3));
+	shadow = lerp(shadow, shadowDepth, mSunShadowVM);
+#endif
+
+	diffuse *= occlusion * shadow;
+	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + 1e-5, occlusion, material.smoothness) * shadow * shadow * shadow;
+
+	return float2x3(diffuse, specular);
+}
+#endif
+
+float4 ScreenSpaceLightingVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = -mul(Position, matProjectInverse).xyz;
+	oTexcoord2 = ColorTemperature(MainLightColor, mSunTemperature) * mSunIntensity;
+
+	return Position;
+}
+
+void ScreenSpaceOpacityLightingPS(
+	in float2 uv: TEXCOORD0, 
+	in float3 viewdir: TEXCOORD1, 
+	in float3 lightColor: TEXCOORD2,
+	in float4 screenPosition : SV_Position,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1)
+{
+	float3 V = normalize(viewdir);
+	float3 L = mul(-MainLightDirection, (float3x3)matView);
+
+	MaterialParam material = SampleOpacityGbuffer(uv);
+
+	float3 diffuse = 0, specular = 0;
+
+#if SUN_LIGHT_ENABLE
+	float2x3 mainLighing = ComputeMainLighting(material, V, L, lightColor, uv);
+	diffuse += mainLighing[0];
+	specular += mainLighing[1];
+#endif
+
+#if IBL_QUALITY
+	float2x3 ibl = ComputeImageBasedLighting(_CamraEnvLightingTexture0_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
+	diffuse += ibl[0];
+	specular += ibl[1];
+#endif
+
+#if MULTI_LIGHT_ENABLE
+	diffuse += tex2Dlod(_CamraLightingTexture0_PointSampler, float4(uv, 0, 0)).rgb;
+	specular += tex2Dlod(_CamraLightingTexture1_PointSampler, float4(uv, 0, 0)).rgb;
+#endif
+
+	oColor0 = float4(diffuse, material.linearDepth * any(material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE));
+	oColor1 = float4(specular, 0);
+}
+
+float4 ScreenSpaceLightingFinalPS(
+	in float2 uv: TEXCOORD0, 
+	in float3 viewdir: TEXCOORD1, 
+	in float3 lightColor: TEXCOORD2, 
+	in float4 screenPosition : SV_Position) : COLOR
+{
+	float3 V = normalize(viewdir);
+	float3 L = mul(-MainLightDirection, (float3x3)matView);
+
+	MaterialParam material = SampleTransparentGbuffer(uv);
+
+	float3 lighting = 0;
+
+#if SUN_LIGHT_ENABLE
+	float2x3 mainLighing = ComputeMainLighting(material, V, L, lightColor, uv);
+	lighting += mad(material.albedo, mainLighing[0], mainLighing[1]);
+#endif
+
+#if IBL_QUALITY
+	float2x3 ibl = ComputeImageBasedLighting(_CamraEnvLightingTexture1_PointSampler, ViewportOffset2, material, screenPosition, uv, V, L);
+	lighting += mad(material.albedo, ibl[0], ibl[1]);
+#endif
+
+#if MULTI_LIGHT_ENABLE
+	lighting += tex2Dlod(_CamraLightingTexture2_PointSampler, float4(uv, 0, 0)).rgb;
+#endif
+
+	float2 ior = (material.lightModel != SHADINGMODELID_GLASS) ? 0 : mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
+
+	float3 prefilteredRefract = tex2Dlod(ShadingMapTempPointSamp, float4(uv + ior, 0, 0)).rgb;
+	prefilteredRefract = mad(SampleOpacityAlbedo(uv + ior), prefilteredRefract, tex2Dlod(ShadingMapTempSpecularSamp, float4(uv + ior, 0, 0)).rgb);
+
+	prefilteredRefract += srgb2linear(tex2Dlod(_CameraColorAttachment_PointSampler, float4(uv + ior, 0, 0)).rgb);
+
+	if (material.lightModel == SHADINGMODELID_GLASS)
+	{
+		float3 dielectricColor = max(0.02, material.customDataB);
+		float3 trans = lerp(material.specular, 1.0, (1 - saturate(dot(normalize((L + V) / 2), -L))));
+		float3 fresnel = FresnelSchlickGlass(material.normal, V, material.smoothness, material.specular);
+
+		lighting = lerp(prefilteredRefract * dielectricColor, lighting, fresnel * material.alpha);
+		lighting += material.customDataA * material.customDataB * trans * saturate(dot(material.normal, -L));
+	}
+	else
+	{
+		lighting = lerp(prefilteredRefract * (1 - material.alpha), lighting, material.alpha);
+	}
+
+	float3 emissive0 = SampleOpacityEmissive(uv);
+	float3 emissive1 = material.customDataB * material.customDataA * any(material.lightModel == SHADINGMODELID_EMISSIVE);
+
+	lighting += lerp(emissive0, emissive1, material.alpha) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
+
+#if OUTLINE_QUALITY
+	float4 outline = tex2Dlod(_CamraOutlineTexture_PointSampler, float4(uv, 0, 0));
+	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
+#endif
+
+#if FOG_ENABLE
+	float4 fog = tex2Dlod(_CamraFogTexture_PointSampler, float4(uv, 0, 0));
+	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
+#endif
+
+	return float4(lighting, material.linearDepth);
+}

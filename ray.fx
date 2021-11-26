@@ -89,7 +89,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ACES.fxsub"
 #include "shader/ColorGrading.fxsub"
 #include "shader/VolumeRendering.fxsub"
-#include "shader/ShadingMaterials.fxsub"
+#include "shader/ScreenSpaceLighting.fxsub"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
@@ -221,7 +221,7 @@ technique DeferredLighting<
 	"RenderColorTarget0=ShadingMapTemp;"
 	"RenderColorTarget1=ShadingMapTempSpecular;"
 	"Clear=Color;"
-	"Pass=ShadingOpacity;"
+	"Pass=ScreenSpaceOpacityLighting;"
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY
@@ -229,7 +229,7 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=SSSSBlurY;"
 #endif
 
-	"RenderColorTarget=ShadingMap;		Pass=ShadingTransparent;"
+	"RenderColorTarget=ShadingMap;		Pass=ScreenSpaceLightingFinal;"
 
 #if TOON_ENABLE == 2
 	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
@@ -422,17 +422,17 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
-	pass ShadingOpacity<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceOpacityLighting<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ShadingMaterialVS();
-		PixelShader  = compile ps_3_0 ShadingOpacityPS();
+		VertexShader = compile vs_3_0 ScreenSpaceLightingVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceOpacityLightingPS();
 	}
-	pass ShadingTransparent<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceLightingFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ShadingMaterialVS();
-		PixelShader  = compile ps_3_0 ShadingTransparentPS();
+		VertexShader = compile vs_3_0 ScreenSpaceLightingVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceLightingFinalPS();
 	}
 #if SSSS_QUALITY
 	pass SSSSBlurX<string Script= "Draw=Buffer;";>{
