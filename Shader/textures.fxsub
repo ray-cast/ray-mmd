@@ -29,7 +29,7 @@ sampler _CameraColorAttachment_PointSampler = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #if FOG_ENABLE
-texture FogMap: OFFSCREENRENDERTARGET<
+texture FogMap : OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
@@ -42,7 +42,7 @@ texture FogMap: OFFSCREENRENDERTARGET<
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"* = hide;";
 >;
-sampler FogMapSamp = sampler_state {
+sampler FogMap_PointSampler = sampler_state {
 	texture = <FogMap>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -164,9 +164,9 @@ shared texture OutlineMap : OFFSCREENRENDERTARGET<
 		"*.x = hide;"
 		"* = hide;";
 >;
-sampler OutlineMapSamp = sampler_state {
+sampler OutlineMap_PointSampler = sampler_state {
 	texture = <OutlineMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
@@ -185,10 +185,31 @@ texture SSAOMap : OFFSCREENRENDERTARGET<
 		"Volumetric*.pmx=hide;"
 		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
-sampler SSAOMapSamp = sampler_state {
+
+shared texture SSDOMap : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+	string Format = "A8R8G8B8";
+>;
+texture SSDOMapTemp : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	bool AntiAlias = false;
+	string Format = "A8R8G8B8";
+>;
+sampler SSAOMap_PointSampler = sampler_state {
 	texture = <SSAOMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler SSDOMap_PointSampler = sampler_state {
+	texture = <SSDOMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
+};
+sampler SSDOMapTemp_PointSampler = sampler_state {
+	texture = <SSDOMapTemp>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP;  AddressV = CLAMP;
 };
 #endif
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
@@ -400,25 +421,3 @@ sampler ShadingMapTempSpecularSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-#if SSDO_QUALITY > 0 && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-shared texture SSDOMap : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-texture SSDOMapTemp : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-sampler SSDOMapSamp = sampler_state {
-	texture = <SSDOMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP;  AddressV = CLAMP;
-};
-sampler SSDOMapSampTemp = sampler_state {
-	texture = <SSDOMapTemp>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP;  AddressV = CLAMP;
-};
-#endif

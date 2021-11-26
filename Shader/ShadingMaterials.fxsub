@@ -14,7 +14,7 @@ void ShadingMaterial(MaterialParam material, float3 V, float3 L, float3 lightCol
 #endif
 
 #if SSDO_QUALITY
-	float3 bentNormal = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).xyz * 2 - 1;
+	float3 bentNormal = tex2Dlod(SSDOMap_PointSampler, float4(coord, 0, 0)).xyz * 2 - 1;
 	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mSSDOScale);
 	shadow *= ssdo;
 #endif
@@ -50,7 +50,7 @@ void ShadingImageBasedLighting(sampler source, MaterialParam material, float4 sc
 	DecodeYcbcr(source, coord, screenPosition, ViewportOffset2, diffuse, specular);
 
 #if SSDO_QUALITY
-	float ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0)).w;
+	float ssao = tex2Dlod(SSDOMap_PointSampler, float4(coord, 0, 0)).w;
 	ssao = (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao;
 	ssao = min(ssao, material.visibility);
 	diffuse *= ssao;
@@ -207,12 +207,12 @@ float4 ShadingTransparentPS(
 	lighting += lerp(emissive0, emissive1, MRT8.a) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
 #if OUTLINE_QUALITY
-	float4 outline = tex2Dlod(OutlineMapSamp, float4(coord, 0, 0));
+	float4 outline = tex2Dlod(OutlineMap_PointSampler, float4(coord, 0, 0));
 	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
 #endif
 
 #if FOG_ENABLE
-	float4 fog = tex2Dlod(FogMapSamp, float4(coord, 0, 0));
+	float4 fog = tex2Dlod(FogMap_PointSampler, float4(coord, 0, 0));
 	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
 #endif
 

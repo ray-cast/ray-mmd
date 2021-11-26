@@ -419,13 +419,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapSamp, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMap_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
 	pass SSDOBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapSampTemp, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMapTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 	pass ShadingOpacity<string Script= "Draw=Buffer;";>{
