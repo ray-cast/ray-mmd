@@ -76,17 +76,17 @@ shared texture LightAlphaMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler LightSpecMapSamp = sampler_state {
-	texture = <LightSpecMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler LightMapSamp = sampler_state {
+sampler _CamraLightingTexture0_PointSampler = sampler_state {
 	texture = <LightMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler LightAlphaMapSamp = sampler_state {
+sampler _CamraLightingTexture1_PointSampler = sampler_state {
+	texture = <LightSpecMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraLightingTexture2_PointSampler = sampler_state {
 	texture = <LightAlphaMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -108,12 +108,12 @@ shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler EnvLightMapSamp = sampler_state {
+sampler _CamraEnvLightingTexture0_PointSampler = sampler_state {
 	texture = <EnvLightMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler EnvLightAlphaMapSamp = sampler_state {
+sampler _CamraEnvLightingTexture1_PointSampler = sampler_state {
 	texture = <EnvLightAlphaMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;

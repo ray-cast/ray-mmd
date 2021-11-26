@@ -84,6 +84,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/Color.fxsub"
 #include "shader/Packing.fxsub"
 #include "shader/gbuffer.fxsub"
+#include "shader/DeclareGbufferTexture.fxsub"
 #include "shader/BRDF.fxsub"
 #include "shader/ACES.fxsub"
 #include "shader/ColorGrading.fxsub"
@@ -210,7 +211,7 @@ technique DeferredLighting<
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-	"RenderColorTarget=SSDOMap; Pass=SSDO;"
+	"RenderColorTarget=SSDOMap;		Pass=SSDO;"
 #if SSDO_BLUR_RADIUS
 	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
 	"RenderColorTarget=SSDOMap;	    Pass=SSDOBlurY;"
