@@ -44,7 +44,7 @@ texture FogMap : OFFSCREENRENDERTARGET<
 >;
 sampler FogMap_PointSampler = sampler_state {
 	texture = <FogMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
