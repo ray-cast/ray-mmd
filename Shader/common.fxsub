@@ -49,6 +49,5 @@ float GetCameraFov()
 
 float GetCamraFocalLength(float filmSize = 36.0)
 {
-	float length = filmSize * matProject._m11 / 2.0f;
-	return length;
+	return filmSize * matProject._m11 / 2.0f;
 }
