@@ -1,0 +1,95 @@
+float4 SSSSStencilTestPS(in float2 uv : TEXCOORD0) : COLOR
+{
+	float lightModel = DecodeLightModel(tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)));
+	if (lightModel != SHADINGMODELID_SKIN &&
+		lightModel != SHADINGMODELID_SUBSURFACE)
+	{
+		clip(-1);
+	}
+
+	return 1;
+}
+
+float4 SSSGaussBlurVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+{
+	oTexcoord0 = Texcoord;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord0.zw = oTexcoord0.xy * ViewportSize;
+	oTexcoord1 = GetProjConstant(); 
+	return Position;
+}
+
+float4 SSSGaussBlurPS(
+	in float2 uv : TEXCOORD0,
+	in float4 projConstant : TEXCOORD1,
+	uniform sampler source,
+	uniform sampler original,
+	uniform float2 direction) : COLOR
+{
+	const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
+
+	const float3 profileVarArr[2] = { float3(6.6, 5.6, 2.8), float3(9.6, 2.8, 2.2) };
+	const float4 profileSpikeRadArr[2] = { float4(0.30, 0.30, 0.80, 8.0 ), float4(0.35, 0.40, 0.50, 1.0) };
+
+	MaterialParam material = SampleOpacityGbuffer(uv);
+
+	[branch]
+	if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
+	{
+		float3 N = material.normal;
+		float3 P = GetViewPosition(projConstant, uv, material.linearDepth);
+
+		float perspectiveScaleX = dot(normalize(N.xz), normalize(-P.xz));
+		float perspectiveScaleY = dot(normalize(N.yz), normalize(-P.yz));
+		float perspectiveScale = max(dot(direction, float2(perspectiveScaleX, perspectiveScaleY)), 0.3);
+
+		float sssAmount = material.customDataA;
+		float sssIndex = (material.lightModel != SHADINGMODELID_SKIN) ? 0 : 1;
+		float sssStrength = (material.lightModel != SHADINGMODELID_SKIN) ? sssAmount : 1;
+		float sssWidth = (material.lightModel != SHADINGMODELID_SKIN) ? mSSSSScale * 3 : mSSSSScale;
+		float sssRadius = 0.0055 * profileSpikeRadArr[sssIndex].w * sssStrength * perspectiveScale / sssWidth;
+
+		float3 sampleWeight = 1;
+		float4 sampleColor = tex2Dlod(source, float4(uv, 0, 0));
+		float2 sampleStep = direction * sssRadius / material.linearDepth;
+
+		[unroll]
+		for (int i = 0; i < 6; i++)
+		{
+			float2 offset1 = uv + offsets[i] / 5.5 * sampleStep;
+			float2 offset2 = uv - offsets[i] / 5.5 * sampleStep;
+
+			float4 sampleColor1 = tex2Dlod(source, float4(offset1, 0, 0));
+			float4 sampleColor2 = tex2Dlod(source, float4(offset2, 0, 0));
+
+			float depthDiff1 = (sampleColor1.a - material.linearDepth) * 1000 * mSSSSScale;
+			float depthDiff2 = (sampleColor2.a - material.linearDepth) * 1000 * mSSSSScale;
+
+			float3 weight1 = exp(-(offsets[i] * offsets[i] + depthDiff1 * depthDiff1) / profileVarArr[sssIndex]);
+			float3 weight2 = exp(-(offsets[i] * offsets[i] + depthDiff2 * depthDiff2) / profileVarArr[sssIndex]);
+			
+			sampleWeight += weight1;
+			sampleWeight += weight2;
+
+			sampleColor.rgb += weight1 * sampleColor1.rgb;
+			sampleColor.rgb += weight2 * sampleColor2.rgb;
+		}
+
+		sampleColor.rgb /= sampleWeight;
+
+		if (direction.y > 0.01)
+		{
+			sampleColor.rgb = lerp(sampleColor.rgb, tex2Dlod(original, float4(uv, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
+		}
+
+		return sampleColor;
+	}
+	else
+	{
+		return tex2Dlod(source, float4(uv, 0, 0));
+	}
+}
