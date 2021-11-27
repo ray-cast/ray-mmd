@@ -229,6 +229,20 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
+void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 farAcc, inout float4 nearAcc)
+{
+    float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
+
+    float farCoC = max(min(samp0.a, samp.a), 0.0);
+
+    float margin = _MainTex_TexelSize.y * 2.0;
+    float farWeight = saturate((farCoC + margin) / margin);
+    float nearWeight = saturate((-samp.a + margin) / margin);
+
+    farAcc += float4(samp.rgb, 1.0) * farWeight;
+    nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
+}
+
 void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 farAcc, inout float4 nearAcc)
 {
     float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
@@ -255,7 +269,7 @@ float4 ComputeBokehBlurPS(
 
 	float4 samp0 = tex2Dlod(_MainTex, float4(uv.xy, 0, 0));
 
-    ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, 0.0, farAcc, nearAcc);
+    ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, farAcc, nearAcc);
 
     [loop]
     for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
