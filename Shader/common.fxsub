@@ -47,7 +47,7 @@ float GetCameraFov()
     return degrees(atan(1.0f / matProject._m11) * 2.0);
 }
 
-float GetCamraFocalLength(float filmSize = 36.0)
+float GetCameraFocalLength(float filmSize = 36.0f)
 {
 	return filmSize * matProject._m11 / 2.0f;
 }

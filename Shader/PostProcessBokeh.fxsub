@@ -179,9 +179,6 @@ float GetFocalDistance()
 
 float ComputeDepthCoC(float depth, float4 focalParams)
 {
-	// 35mm "full-frame" film format is 36mm x 24mm
-	float sensorHeight = 0.024f;
-
 	float D = depth;
 	float P = focalParams.x; // focalDistance
 	float F = focalParams.y / 1000.0f; // focalLength
@@ -191,6 +188,8 @@ float ComputeDepthCoC(float depth, float4 focalParams)
 	// Calculate circle of confusion diameter
 	// http://en.wikipedia.org/wiki/Circle_of_confusion
 	float CoC = A * (max(abs(D - P) - focalParams.w, 0) / D) * (F / (P - F));
+
+	float sensorHeight = mSensorHeight * 0.001f;
 
 	// put CoC into a % of the image sensor height
 	float percentOfSensor = CoC / sensorHeight * sign(D - P);
@@ -236,7 +235,7 @@ float4 ComputeBokehWeightVS(
 {
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += _MainTex_TexelSize * 0.5;
-	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCamraFocalLength(), mFstop, mFocalRegion);
+	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
 	return Position;
 }
 
