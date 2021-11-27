@@ -116,8 +116,12 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessSSR.fxsub"
 #endif
 
-#if BOKEH_MODE
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 #	include "shader/PostProcessBokeh.fxsub"
+#endif
+
+#if BOKEH_MODE == 3
+#	include "shader/PostProcessBokehDiaphragm.fxsub"
 #endif
 
 #if EYE_ADAPTATION
@@ -260,7 +264,7 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
-#if BOKEH_MODE
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraFocalPingTexture;		Clear=Color; Pass=ComputeBokehPrefilter;"
@@ -268,6 +272,18 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraFocalPingTexture; 	Clear=Color; Pass=ComputeBilinearBlur;"
 
 	"RenderColorTarget=ShadingMap; Pass=ComputeBokehFinal;"
+#endif
+
+#if BOKEH_MODE == 3
+	"RenderColorTarget0=AutoFocalMap;    Pass=ComputeFocalDistance;"
+	"RenderColorTarget0=SetupOutputFull; Pass=FDiaphragmDOFSetupFull;"
+	"RenderColorTarget0=SetupOutputHalf; Pass=FDiaphragmDOFSetupHalf;"
+
+	"RenderColorTarget0=TileOutput_Foreground;"
+	"RenderColorTarget0=TileOutput_Background;"
+	"Pass=FDiaphragmDOFCocFlattenCS;"
+
+	"RenderColorTarget=ShadingMap;       Pass=FDiaphragmDOFOutput;"
 #endif
 
 #if AA_QUALITY == 1
@@ -517,7 +533,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
 #endif
-#if BOKEH_MODE
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -554,6 +570,39 @@ technique DeferredLighting<
 		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraPingTexture_TexelSize);
 		PixelShader  = compile ps_3_0 ComputeBokehFinalPS(_CameraFocalPingTexture_LinearSampler, _CameraPingTexture_TexelSize);
+	}
+#endif
+#if BOKEH_MODE == 3
+	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComputeFocalDistancePS(ShadingMapPointSamp);
+	}
+	pass FDiaphragmDOFSetupFull<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 DOFSetupFullVS();
+		PixelShader  = compile ps_3_0 DOFSetupFullPS(ShadingMapPointSamp);
+	}
+	pass FDiaphragmDOFSetupHalf<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 DOFSetupHalfVS();
+		PixelShader  = compile ps_3_0 DOFSetupHalfPS(ShadingMapPointSamp);
+	}
+	pass FDiaphragmDOFCocFlattenCS<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 CocFlattenMainVS();
+		PixelShader  = compile ps_3_0 CocFlattenMainPS(ShadingMapPointSamp);
+	}
+	pass FDiaphragmDOFOutput<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		DestBlend = INVSRCALPHA; SrcBlend = SRCALPHA;
+		VertexShader = compile vs_3_0 DOFOutputVS();
+		PixelShader  = compile ps_3_0 DOFOutputPS(ShadingMapPointSamp);
 	}
 #endif
 #if AA_QUALITY > 0

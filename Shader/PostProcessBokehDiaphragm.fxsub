@@ -1,0 +1,486 @@
+#define DOF_POSSION_SAMPLES 36
+
+texture AutoFocalMap : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
+sampler AutoFocalMapSamp = sampler_state { texture=<AutoFocalMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
+float GetCameraFOV()
+{
+    float t = matProject._m11;
+    float Rad2Deg = 180 / 3.1415;
+    float fov = atan(t) * 2.0 * Rad2Deg;
+    return fov;
+}
+
+float GetSampleRadius()
+{
+	return 0.2;
+}
+
+float2 GetSamplePoint()
+{
+	float4 proj = mul(float4(AcsPosition, 1), matViewProject);
+	proj /= proj.w;
+	proj.xy = PosToCoord(proj.xy);
+	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.25, mMeasureMode);
+}
+
+float GetFocalDistance()
+{
+	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
+	return max(1, focalDistance);
+}
+
+float GetFocalAperture(float Fstop)
+{
+	float aperture = 1.0 / Fstop;
+	return aperture;
+}
+
+float GetFocalLength(float mFocalLength, float focalDistance)
+{
+	return 1.0 / (1.0 / (0.5 * mFocalLength * matProject._22) + 1.0 / focalDistance);
+}
+
+float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
+{
+	static const float2 poisson[DOF_POSSION_SAMPLES] =
+	{
+		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2(3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
+		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2(0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0), float2(1.0, -1.0),
+		float2(-1.0,  1.0), float2(-2.0,  1.0), float2(-3.0,  1.0), float2(0.0,  1.0), float2(3.0,  1.0), float2(2.0,  1.0), float2(1.0,  1.0),
+		float2(-2.0,  2.0), float2(-1.0,  2.0), float2( 0.0,  2.0), float2(1.0,  2.0), float2(2.0,  2.0),
+		float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2(1.0, -2.0), float2(2.0, -2.0),
+		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0),
+		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
+	};
+
+	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect * 3, 3.0);
+	const float2 samplePoint = GetSamplePoint();
+
+	float minDepth = 65535;
+
+	[loop]
+	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[i] * sampleRadius, 0, 0)).r;
+		minDepth = min(minDepth, depth);
+	}
+
+	float2 avgDepth = 0;
+
+	[loop]
+	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[j] * sampleRadius, 0, 0)).r;
+		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
+	}
+
+	float distance = avgDepth.x / avgDepth.y;
+	return lerp(distance + mFocalDistance - 1, GetFocalDistance(), step(0.5, mMeasureMode));
+}
+
+// Common DOF
+//------------------------------------------------------- DIMENSIONS VALUES.
+
+// Matches C++'s EDiaphragmDOFLayerProcessing
+#define LAYER_PROCESSING_FOREGROUND_ONLY 0
+#define LAYER_PROCESSING_FOREGROUND_HOLE_FILLING 1
+#define LAYER_PROCESSING_BACKGROUND_ONLY 2
+#define LAYER_PROCESSING_COMBINED 3
+#define LAYER_PROCESSING_SLIGHT_OUT_OF_FOCUS 4
+
+
+// Matches C++'s EDiaphragmDOFBokehSimulation
+#define BOKEH_SIMULATION_DISABLED 0
+#define BOKEH_SIMULATION_SIMMETRIC 1
+#define BOKEH_SIMULATION_GENERAL 2
+
+
+//------------------------------------------------------- ENUM VALUES
+
+/** Different hole filling methods. */
+	// Hole filling technic that directly changes the foreground opacity. Simplest but hugliest.
+	#define HOLE_FILLING_METHOD_OPACITY_AMEND 0
+	
+	// Use's foreground gathering pass.
+	#define HOLE_FILLING_METHOD_SEPARATE_GATHER 1
+	
+	// TODO IDEA: bilateral sample foreground according to opacity.
+	#define HOLE_FILLING_METHOD_BILATERAL 2
+	
+/** Layout of the input of the gathering passes. */
+	// Scene color and CocRadius stored within RGBA buffer 0.
+	#define GATHER_INPUT_LAYOUT_RGB_COC 0
+	
+	// Scene color and alpha stored within RGBA buffer 0, and Coc in buffer 1.
+	#define GATHER_INPUT_LAYOUT_RGB_ALPHA_COC 1
+	
+	// Scene color within RGB_11_11_10 buffer 0, and Coc in buffer 1.
+	#define GATHER_INPUT_LAYOUT_RGB_SEPARATE_COC 2
+
+
+//------------------------------------------------------- COMPILE TIME CONSTANTS.
+
+// A very large Coc radius that is assumed to be unreachable, but still encodable in 16bits float.
+#define EXTREMELY_LARGE_COC_RADIUS 16384
+
+
+// Default border size for group.
+#define DEFAULT_GROUP_BORDER_SIZE 8
+
+// Size of the COC in pixel from full screen.
+#define COC_TILE_SIZE 8
+
+// TILE_SCALE
+#define COC_TILE_SCALE 1/COC_TILE_SIZE
+
+
+// The resolution divisor of the current pass
+#define PASS_RES_DIVISOR 2
+
+// The resolution devisor that passed as an input of the Coc flatten.
+#define COC_TILE_RES_DIVISOR 2
+
+// Number of rings on the main kernel.
+#define MAIN_KERNEL_RING_COUNT 5
+
+// Maximum abs(coc radius) the full res recombine pass is going to do.
+#define MAX_RECOMBINE_ABS_COC_RADIUS 3.0
+
+/** Width and height of the bokeh LUT. */
+#define BOKEH_LUT_SIZE 32
+
+/** Whether alpha channel should be processed or not. */
+#define CONFIG_DOF_ALPHA (POST_PROCESS_ALPHA)
+
+/** Amount of error tolerated to quick fast gathering in. */
+#define FAST_GATHERING_COC_ERROR 0.05
+
+
+//------------------------------------------------------- COMPILE TIME CONSTANTS.
+
+// Coc radiuses are in half res.
+static const float kCocRadiusToFullResFactor = 0.5;
+
+
+static const int2 kSquare2x2[4] = {
+	int2(0, 0),
+	int2(1, 0),
+	int2(0, 1),
+	int2(1, 1),
+};
+
+static const int2 kOffsetsCross3x3[4] = {
+	int2(-1, -1),
+	int2( 1, -1),
+	int2(-1,  1),
+	int2( 1,  1),
+};
+
+static const int2 kOffsetsSquare3x3[9] = {
+	int2(-1, +1),
+	int2(-1,  0),
+	int2(-1, -1),
+	int2( 0, +1),
+	int2( 0,  0),
+	int2( 0, -1),
+	int2(+1, +1),
+	int2(+1,  0),
+	int2(+1, -1),
+};
+
+
+
+float DepthToHalfResCocRadius(float focalDistance, float4 CocModelParameters, float2 DepthBlurParameters, float SceneDepth)
+{
+	const float Focus = focalDistance;
+	const float InfinityCocRadius = CocModelParameters.x;
+	const float MinCocRadius = CocModelParameters.y;
+	const float MaxCocRadius = CocModelParameters.z;
+	
+	// Radius from the circle of confusion.
+	float CocRadius = ((SceneDepth - Focus) / SceneDepth) * InfinityCocRadius;
+
+	// Depth blur's radius.
+	float DepthBlurAbsRadius = (1.0 - exp2(-SceneDepth * DepthBlurParameters.x)) * DepthBlurParameters.y;
+
+	float ReturnCoc = max(abs(CocRadius), DepthBlurAbsRadius);
+	if(CocRadius < 0.0)
+	{
+		// Near CoC is using negative values.
+		ReturnCoc = -ReturnCoc;
+	}
+
+	return clamp(ReturnCoc, MinCocRadius, MaxCocRadius);
+}
+
+// Return whether this is front element from CocRadius.
+bool IsForeground(float CocRadius)
+{
+	return CocRadius < 0.0f;
+}
+
+// Faster but less accurate luma computation with a scaling by 4.
+float Luma4(float3 Color)
+{
+	return (Color.g * 2.0) + (Color.r + Color.b);
+}
+
+// Returns 1/x if x > 0, d otherwise.
+float SafeRcp(float x, float d = 0.0)
+{
+	return x > 0.0 ? rcp(x) : d;
+}
+
+// Converts a distance in full res pixel to coc distance.
+#define FullResPixelDistanceToCocDistance(x) (0.5 * (x))
+
+// Converts a distance in full res pixel to coc distance.
+#define CocDistanceToFullResPixelDistance(x) (2.0 * (x))
+
+// Utility to use a saturating affine transformation.
+float SaturateWithAffineTransformation(float x, float2 AffineTransformation)
+{
+	// Hint: Just one MAD with saturate post modifier on GCN.
+	return saturate(x * AffineTransformation.x + AffineTransformation.y);
+}
+
+// Affine transformtations that always return 0 or 1.
+#define kContantlyPassingAffineTransformation float2(0, 1)
+#define kContantlyBlockingAffineTransformation float2(0, 0)
+
+
+/*
+Some other functions
+*/
+
+
+// Setup Pass
+
+#define SUBTILE_SIZE DEFAULT_GROUP_BORDER_SIZE
+
+static const float CocRadiusBasis = 1.0;
+static const float DepthOfFieldSensorWidth = 24.576f; // APS-C
+static const float SensorWidthInMM = DepthOfFieldSensorWidth;
+
+static const float MinForegroundCocRadius = -256;
+static const float MaxBackgroundCocRadius = 256;
+static const float DepthOfFieldDepthBlurAmount = 1.0f;
+static const float DepthOfFieldDepthBlurRadius = 0.0f;
+static const float DepthBlurExponent = 1.0f / (DepthOfFieldDepthBlurAmount * 100000.0f);
+// Circle DOF was actually computing in this depth blur radius in half res.
+static const float MaxDepthBlurRadius = 2.0f * DepthOfFieldDepthBlurRadius / 1920.0f;
+static const float2 DepthBlurParameters = float2(DepthBlurExponent, CocRadiusBasis * MaxDepthBlurRadius);
+
+texture SetupOutputFull : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
+texture SetupOutputHalf : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture TileOutput_Foreground : RENDERCOLORTARGET<float2 ViewportRatio={COC_TILE_SCALE, COC_TILE_SCALE}; string Format="A16B16G16R16F";>;
+texture TileOutput_Background : RENDERCOLORTARGET<float2 ViewportRatio={COC_TILE_SCALE, COC_TILE_SCALE}; string Format="A16B16G16R16F";>;
+
+sampler SetupOutputFullSampler = sampler_state { texture=<SetupOutputFull>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler SetupOutputHalfSampler = sampler_state { texture=<SetupOutputHalf>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
+float4 DOFSetupFullVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float4 oTexcoord2 : TEXCOORD2) : POSITION
+{
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0)).r;
+	float focalLength = GetFocalLength(mFocalLength, focalDistance);
+	float focalAperture = GetFocalAperture(mFstop);
+
+	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
+
+	float FocalLengthInMM = focalLength;
+	float FocalDistanceInMM = focalDistance;
+	const float DiameterInMM = sqrt(FocalLengthInMM) / (mFstop * (FocalDistanceInMM - FocalLengthInMM));
+	const float InfinityBackgroundCocRadius = DiameterInMM * 0.5f / SensorWidthInMM;
+	const float4 CocModelParameters = CocRadiusBasis * float4(InfinityBackgroundCocRadius, MinForegroundCocRadius, MaxBackgroundCocRadius, 0);
+
+	oTexcoord0 = Texcoord.xy;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord1 = focalCameraParams;
+	oTexcoord2 = CocModelParameters;
+
+	return Position;
+}
+
+float4 DOFSetupFullPS(
+	in float2 coord : TEXCOORD0,
+    in float4 focalCameraParams : TEXCOORD1,
+	in float4 cocModelParameters : TEXCOORD2,
+    uniform sampler source) : COLOR
+{
+	float3 sceneColor = min(tex2Dlod(source, float4(coord, 0, 0)).rgb, float3(65535, 65535, 65535));
+	float deviceZ = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
+	float focalDistance = tex2Dlod(AutoFocalMapSamp, float4(0.5,0.5, 0, 0)).r;
+	float cocRadius = DepthToHalfResCocRadius(focalDistance, cocModelParameters, DepthBlurParameters, deviceZ);
+
+	// Output full resolution.
+	return float4(sceneColor, cocRadius);
+}
+
+
+
+/** Operator to use to downsample 4 sample to 1. */
+// TODO: This as been fetched from Circle DOF, so redo this experiments, and try new ones.
+float DownsampleCoc(float CocRadii[4])
+{
+	// Doing a max depth reduction (erode the foreground). Less correct, but less artifacts.
+	// Perhaps need to re-open this in the future.
+	float mi = min(min(CocRadii[0], CocRadii[1]), min(CocRadii[2], CocRadii[3]));
+	float ma = max(max(CocRadii[0], CocRadii[1]), max(CocRadii[2], CocRadii[3]));
+	float ami = min(min(abs(CocRadii[0]), abs(CocRadii[1])), min(abs(CocRadii[2]), abs(CocRadii[3])));
+	float ama = max(max(abs(CocRadii[0]), abs(CocRadii[1])), max(abs(CocRadii[2]), abs(CocRadii[3])));
+
+	// This in theory is better but causes bleeding artifacts with temporal AA..
+	// This is important otherwise near thin objects disappear (leaves clamping artifacts in recombined pass).
+	// bad on TemporalDitherAA, flat opacity where it should transition
+	float OutCocRadius = CocRadii[0];
+	if(abs(OutCocRadius) > CocRadii[1]) OutCocRadius = CocRadii[1];
+	if(abs(OutCocRadius) > CocRadii[2]) OutCocRadius = CocRadii[2];
+	if(abs(OutCocRadius) > CocRadii[3]) OutCocRadius = CocRadii[3];
+
+	return OutCocRadius;
+}
+
+/** Compute the bilateral weight of sample to downsample. */
+float ComputeDownsamplingBilateralWeight(
+	float OutCocRadius,
+	float SampleCocRadius,
+	float3 SampleColor = 0)
+{
+	// Remove samples which are outside the size.
+	// TODO: Tune the ScaleFactor. Looks like to large.
+	float ScaleFactor = 64.0;
+
+	// not doing abs(OutCocRadius - SampleCocRadius) because: it is fine to leak background on foreground arround geometric
+	// edges because going to be close to the hole filling as well. This allow dither opacity material such as dithered human hair
+	// to keep consistent opacity, thickness, and temporal stability as the Coc changes between slight out focus, foreground
+	// and background.
+	#if 1
+		float BilateralWeight = saturate(1.0 - (OutCocRadius - SampleCocRadius) * ScaleFactor);
+	#else
+		// GCN Hint: one subtract with abs() post modifier + one MAD with saturate post modifier.
+		float BilateralWeight = saturate(1.0 - abs(OutCocRadius - SampleCocRadius) * ScaleFactor);
+	#endif
+	
+	float ColorWeight = 1;
+
+	return BilateralWeight * ColorWeight;
+}
+
+float4 DOFSetupHalfVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+{
+	float focalDistance = mFocalDistance;
+	float focalLength = GetFocalLength(mFocalLength, focalDistance);
+	float focalAperture = GetFocalAperture(mFstop);
+	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
+
+	oTexcoord0 = Texcoord.xy;
+	oTexcoord0.xy += float2(0.5, 0.5) / (ViewportSize * 0.5);
+	oTexcoord1 = focalCameraParams;
+	return Position;
+}
+
+float4 DOFSetupHalfPS(
+	in float2 coord : TEXCOORD0,
+    in float4 focalCameraParams : TEXCOORD1,
+    uniform sampler source) : COLOR
+{
+	float4 samples[4];
+
+	samples[0] = tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
+	samples[1] = tex2Dlod(SetupOutputFullSampler, float4(coord + float2(ViewportOffset2.x, 0), 0, 0));
+	samples[2] = tex2Dlod(SetupOutputFullSampler, float4(coord + float2(0, ViewportOffset2.y), 0, 0));
+	samples[3] = tex2Dlod(SetupOutputFullSampler, float4(coord + ViewportOffset2, 0, 0));
+
+	// Choose the best the coc to use.
+	float cocs[4];
+	cocs[0] = samples[0].a;
+	cocs[1] = samples[1].a;
+	cocs[2] = samples[2].a;
+	cocs[3] = samples[3].a;
+	float outCocRadius = DownsampleCoc(cocs);
+
+	float4 BilateralWeights = float4(
+		ComputeDownsamplingBilateralWeight(outCocRadius, cocs[0], samples[0].rgb),
+		ComputeDownsamplingBilateralWeight(outCocRadius, cocs[1], samples[1].rgb),
+		ComputeDownsamplingBilateralWeight(outCocRadius, cocs[2], samples[2].rgb),
+		ComputeDownsamplingBilateralWeight(outCocRadius, cocs[3], samples[3].rgb));
+
+	float WeightSum = dot(float4(1, 1, 1, 1), BilateralWeights);
+
+	// Normalize weights.
+	float WeightNormalizationFactor = rcp(WeightSum);
+
+	// Do the multiply of WeightNormalizationFactor, because save one mad when alpha channel is disabled.
+	float4 outColor = WeightNormalizationFactor * (
+		samples[0] * BilateralWeights.x +
+		samples[1] * BilateralWeights.y +
+		samples[2] * BilateralWeights.z +
+		samples[3] * BilateralWeights.w);
+
+	return float4(outColor.rgb, outCocRadius);
+}
+
+
+float4 CocFlattenMainVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+{
+	float focalDistance = mFocalDistance;
+	float focalLength = GetFocalLength(mFocalLength, focalDistance);
+	float focalAperture = GetFocalAperture(mFstop);
+	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
+
+	oTexcoord0 = Texcoord.xy;
+	oTexcoord0.xy += float2(0.5, 0.5) / (ViewportSize * 0.5);
+	oTexcoord1 = focalCameraParams;
+	return Position;
+}
+
+float4 CocFlattenMainPS(
+	in float2 coord : TEXCOORD0,
+    in float4 focalCameraParams : TEXCOORD1,
+    uniform sampler source) : COLOR
+{
+	return 0;
+}
+
+float4 DOFOutputVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float2 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
+{
+	float focalDistance = mFocalDistance;
+	float focalLength = GetFocalLength(mFocalLength, focalDistance);
+	float focalAperture = GetFocalAperture(mFstop);
+	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
+
+	oTexcoord0 = Texcoord.xy;
+	oTexcoord0.xy += ViewportOffset;
+	oTexcoord1 = focalCameraParams;
+	return Position;
+}
+
+float4 DOFOutputPS(
+	in float2 coord : TEXCOORD0,
+    in float4 focalCameraParams : TEXCOORD1,
+    uniform sampler source): COLOR
+{
+	float3 color = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).rgb;
+	float coc = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
+	return float4(coc, coc, coc, 1.0);
+	// return float4(color, 0.0);
+}
+
