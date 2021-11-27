@@ -598,7 +598,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS(float4(ViewportOffset2, ViewportSize));
-		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(1, 1, 1, 0), ViewportOffset2);
+		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(1, 1, 1, 0), float4(ViewportOffset2, ViewportSize));
 	}
 	pass SMAANeighborhoodBlending<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -616,7 +616,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS(float4(ViewportOffset2, ViewportSize));
-		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(2, 2, 2, 0), ViewportOffset2);
+		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(2, 2, 2, 0), float4(ViewportOffset2, ViewportSize));
 	}
 	pass SMAANeighborhoodBlendingFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
