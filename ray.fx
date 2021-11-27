@@ -116,7 +116,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessSSR.fxsub"
 #endif
 
-#if BOKEH_QUALITY
+#if BOKEH_MODE
 #	include "shader/PostProcessBokeh.fxsub"
 #endif
 
@@ -260,7 +260,7 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
 #endif
 
-#if BOKEH_QUALITY
+#if BOKEH_MODE
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraFocalPingTexture;		Clear=Color; Pass=ComputeBokehPrefilter;"
@@ -517,7 +517,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
 	}
 #endif
-#if BOKEH_QUALITY
+#if BOKEH_MODE
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

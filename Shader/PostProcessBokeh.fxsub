@@ -41,6 +41,7 @@ sampler _CameraCoCTexture_LinearSampler = sampler_state
 
 #define DOF_POSSION_SAMPLES 42
 
+#if BOKEH_MODE == 1
 static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
 	float2(0.363636, 0),
 	float2(0.226724, 0.284302),
@@ -85,6 +86,52 @@ static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
 	float2(0.826239, -0.56332),
 	float2(0.955573, -0.294755)
 };
+#else
+static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
+	float2(0.294188, 0),
+	float2(0.195916, 0.245671),
+	float2(-0.0762573, 0.334105),
+	float2(-0.269383, 0.129728),
+	float2(-0.269383, -0.129728),
+	float2(-0.0762572, -0.334105),
+	float2(0.195916, -0.245671),
+	float2(0.551602, 0),
+	float2(0.551603, 0.265638),
+	float2(0.367342, 0.460633),
+	float2(0.123239, 0.539946),
+	float2(-0.142982, 0.626447),
+	float2(-0.356776, 0.447383),
+	float2(-0.505094, 0.24324),
+	float2(-0.681818, -5.96064e-08),
+	float2(-0.505094, -0.24324),
+	float2(-0.356776, -0.447383),
+	float2(-0.142982, -0.626447),
+	float2(0.12324, -0.539946),
+	float2(0.367342, -0.460633),
+	float2(0.551603, -0.265638),
+	float2(0.809017, 0),
+	float2(0.809017, 0.249549),
+	float2(0.809017, 0.551579),
+	float2(0.538769, 0.675594),
+	float2(0.296097, 0.754443),
+	float2(0.0622321, 0.83043),
+	float2(-0.209708, 0.918789),
+	float2(-0.44279, 0.766934),
+	float2(-0.597324, 0.554236),
+	float2(-0.740804, 0.356753),
+	float2(-0.9013, 0.135849),
+	float2(-0.9013, -0.135849),
+	float2(-0.740804, -0.356752),
+	float2(-0.597324, -0.554236),
+	float2(-0.44279, -0.766934),
+	float2(-0.209708, -0.918789),
+	float2(0.0622323, -0.83043),
+	float2(0.296097, -0.754443),
+	float2(0.538768, -0.675594),
+	float2(0.809017, -0.551578),
+	float2(0.809017, -0.249548)
+};
+#endif
 
 float CircleSDF(float2 uv, float2 pos, float radius)
 {
