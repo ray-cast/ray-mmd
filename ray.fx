@@ -26,8 +26,6 @@ float mExposureP : CONTROLOBJECT<string name="ray_controller.pmx"; string item =
 float mExposureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Exposure-";>;
 float mFstopP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Fstop+";>;
 float mFstopM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Fstop-";>;
-float mFocalLengthP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalLength+";>;
-float mFocalLengthM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalLength-";>;
 float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance+";>;
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalRegionP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion+";>;
@@ -75,7 +73,6 @@ static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM
 static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
 static float mColorTemperature = lerp(lerp(mTemperature, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mFstop = lerp(lerp(5.6, 32.0, mFstopP), 1.0, mFstopM);
-static float mFocalLength = lerp(lerp(50.0, 300.0, mFocalLengthP), 1.0, mFocalLengthM);
 static float mFocalDistance = lerp(lerp(1, 10.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static float mFocalRegion = lerp(lerp(0.1, 5.0, mFocalRegionP), 0.0, mFocalRegionM);
 static float3 mColorShadowSunP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
@@ -101,11 +98,11 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-#	include "shader/PostProcessOcclusion.fxsub"
+#	include "shader/ScreenSpaceAmbientOcclusion.fxsub"
 #endif
 
 #if SSSS_QUALITY
-#	include "shader/PostProcessScattering.fxsub"
+#	include "shader/ScreenSpaceSubsurfaceScattering.fxsub"
 #endif
 
 #if TOON_ENABLE == 2
@@ -222,11 +219,9 @@ technique DeferredLighting<
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-	"RenderColorTarget=SSDOMap;		Pass=SSDO;"
-#if SSDO_BLUR_RADIUS
-	"RenderColorTarget=SSDOMapTemp; Pass=SSDOBlurX;"
-	"RenderColorTarget=SSDOMap;	    Pass=SSDOBlurY;"
-#endif
+	"RenderColorTarget=SSDOMap;		Clear=Color; Pass=ScreenSpaceAmbientOcclusion;"
+	"RenderColorTarget=SSDOMapTemp; Clear=Color; Pass=ScreenSpaceAmbientOcclusionBlurX;"
+	"RenderColorTarget=SSDOMap;	    Clear=Color; Pass=ScreenSpaceAmbientOcclusionBlurY;"
 #endif
 
 	"RenderColorTarget0=ShadingMapTemp;"
@@ -236,16 +231,11 @@ technique DeferredLighting<
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY
-	"RenderColorTarget=ShadingMap; 		Clear=Color; Pass=SSSSBlurX;"
-	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=SSSSBlurY;"
+	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=ScreenSpaceSubsurfaceBlurX;"
+	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=ScreenSpaceSubsurfaceBlurY;"
 #endif
 
-	"RenderColorTarget=ShadingMap;		Pass=ScreenSpaceLightingFinal;"
-
-#if TOON_ENABLE == 2
-	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
-	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
-#endif
+	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=ScreenSpaceLightingFinal;"
 
 #if SSR_QUALITY
 	"RenderColorTarget=SSRLightX1Map;"
@@ -308,47 +298,52 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=SMAANeighborhoodBlendingFinal;"
 #endif
 
+#if TOON_ENABLE == 2
+	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
+	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
+#endif
+
 #if EYE_ADAPTATION
-	"RenderColorTarget=_EyeLumMap0;		Pass=EyePrefilter;"
-	"RenderColorTarget=_EyeLumMap1;		Pass=EyeLumDownsample1;"
-	"RenderColorTarget=_EyeLumMap2;		Pass=EyeLumDownsample2;"
-	"RenderColorTarget=_EyeLumMap3;		Pass=EyeLumDownsample3;"
-	"RenderColorTarget=_EyeLumMap4;		Pass=EyeLumDownsample4;"
-	"RenderColorTarget=_EyeLumMap5;		Pass=EyeLumDownsample5;"
-	"RenderColorTarget=_EyeLumMap6;		Pass=EyeLumDownsample6;"
-	"RenderColorTarget=_EyeLumMap7;		Pass=EyeLumDownsample7;"
+	"RenderColorTarget=_EyeLumMap0;		Clear=Color; Pass=EyePrefilter;"
+	"RenderColorTarget=_EyeLumMap1;		Clear=Color; Pass=EyeLumDownsample1;"
+	"RenderColorTarget=_EyeLumMap2;		Clear=Color; Pass=EyeLumDownsample2;"
+	"RenderColorTarget=_EyeLumMap3;		Clear=Color; Pass=EyeLumDownsample3;"
+	"RenderColorTarget=_EyeLumMap4;		Clear=Color; Pass=EyeLumDownsample4;"
+	"RenderColorTarget=_EyeLumMap5;		Clear=Color; Pass=EyeLumDownsample5;"
+	"RenderColorTarget=_EyeLumMap6;		Clear=Color; Pass=EyeLumDownsample6;"
+	"RenderColorTarget=_EyeLumMap7;		Clear=Color; Pass=EyeLumDownsample7;"
 	"RenderColorTarget=_EyeLumAveMap; 	Pass=EyeAdapation;"
 #endif
 
 #if HDR_BLOOM_MODE
-	"RenderColorTarget=_BloomDownMap0;  Pass=BloomPrefilter;"
-	"RenderColorTarget=_BloomUpMap1;	Pass=BloomBlurX1;"
-	"RenderColorTarget=_BloomDownMap1;	Pass=BloomBlurY1;"
-	"RenderColorTarget=_BloomUpMap2;	Pass=BloomBlurX2;"
-	"RenderColorTarget=_BloomDownMap2;	Pass=BloomBlurY2;"
-	"RenderColorTarget=_BloomUpMap3;	Pass=BloomBlurX3;"
-	"RenderColorTarget=_BloomDownMap3;	Pass=BloomBlurY3;"
-	"RenderColorTarget=_BloomUpMap4;	Pass=BloomBlurX4;"
-	"RenderColorTarget=_BloomDownMap4;	Pass=BloomBlurY4;"
-	"RenderColorTarget=_BloomUpMap5;	Pass=BloomBlurX5;"
-	"RenderColorTarget=_BloomDownMap5;	Pass=BloomBlurY5;"
-	"RenderColorTarget=_BloomUpMap6;	Pass=BloomBlurX6;"
-	"RenderColorTarget=_BloomDownMap6;	Pass=BloomBlurY6;"
-	"RenderColorTarget=_BloomUpMap7;	Pass=BloomBlurX7;"
-	"RenderColorTarget=_BloomDownMap7;	Pass=BloomBlurY7;"
-	"RenderColorTarget=_BloomUpMap8;	Pass=BloomBlurX8;"
-	"RenderColorTarget=_BloomDownMap8;	Pass=BloomBlurY8;"
-	"RenderColorTarget=_BloomUpMap9;	Pass=BloomBlurX9;"
-	"RenderColorTarget=_BloomDownMap9;	Pass=BloomBlurY9;"
-	"RenderColorTarget=_BloomUpMap8;	Pass=BloomUpsample9;"
-	"RenderColorTarget=_BloomUpMap7;	Pass=BloomUpsample8;"
-	"RenderColorTarget=_BloomUpMap6;	Pass=BloomUpsample7;"
-	"RenderColorTarget=_BloomUpMap5;	Pass=BloomUpsample6;"
-	"RenderColorTarget=_BloomUpMap4;	Pass=BloomUpsample5;"
-	"RenderColorTarget=_BloomUpMap3;	Pass=BloomUpsample4;"
-	"RenderColorTarget=_BloomUpMap2;	Pass=BloomUpsample3;"
-	"RenderColorTarget=_BloomUpMap1;	Pass=BloomUpsample2;"
-	"RenderColorTarget=_BloomUpMap0;	Pass=BloomUpsample1;"
+	"RenderColorTarget=_BloomDownMap0;  Clear=Color; Pass=BloomPrefilter;"
+	"RenderColorTarget=_BloomUpMap1;	Clear=Color; Pass=BloomBlurX1;"
+	"RenderColorTarget=_BloomDownMap1;	Clear=Color; Pass=BloomBlurY1;"
+	"RenderColorTarget=_BloomUpMap2;	Clear=Color; Pass=BloomBlurX2;"
+	"RenderColorTarget=_BloomDownMap2;	Clear=Color; Pass=BloomBlurY2;"
+	"RenderColorTarget=_BloomUpMap3;	Clear=Color; Pass=BloomBlurX3;"
+	"RenderColorTarget=_BloomDownMap3;	Clear=Color; Pass=BloomBlurY3;"
+	"RenderColorTarget=_BloomUpMap4;	Clear=Color; Pass=BloomBlurX4;"
+	"RenderColorTarget=_BloomDownMap4;	Clear=Color; Pass=BloomBlurY4;"
+	"RenderColorTarget=_BloomUpMap5;	Clear=Color; Pass=BloomBlurX5;"
+	"RenderColorTarget=_BloomDownMap5;	Clear=Color; Pass=BloomBlurY5;"
+	"RenderColorTarget=_BloomUpMap6;	Clear=Color; Pass=BloomBlurX6;"
+	"RenderColorTarget=_BloomDownMap6;	Clear=Color; Pass=BloomBlurY6;"
+	"RenderColorTarget=_BloomUpMap7;	Clear=Color; Pass=BloomBlurX7;"
+	"RenderColorTarget=_BloomDownMap7;	Clear=Color; Pass=BloomBlurY7;"
+	"RenderColorTarget=_BloomUpMap8;	Clear=Color; Pass=BloomBlurX8;"
+	"RenderColorTarget=_BloomDownMap8;	Clear=Color; Pass=BloomBlurY8;"
+	"RenderColorTarget=_BloomUpMap9;	Clear=Color; Pass=BloomBlurX9;"
+	"RenderColorTarget=_BloomDownMap9;	Clear=Color; Pass=BloomBlurY9;"
+	"RenderColorTarget=_BloomUpMap8;	Clear=Color; Pass=BloomUpsample9;"
+	"RenderColorTarget=_BloomUpMap7;	Clear=Color; Pass=BloomUpsample8;"
+	"RenderColorTarget=_BloomUpMap6;	Clear=Color; Pass=BloomUpsample7;"
+	"RenderColorTarget=_BloomUpMap5;	Clear=Color; Pass=BloomUpsample6;"
+	"RenderColorTarget=_BloomUpMap4;	Clear=Color; Pass=BloomUpsample5;"
+	"RenderColorTarget=_BloomUpMap3;	Clear=Color; Pass=BloomUpsample4;"
+	"RenderColorTarget=_BloomUpMap2;	Clear=Color; Pass=BloomUpsample3;"
+	"RenderColorTarget=_BloomUpMap1;	Clear=Color; Pass=BloomUpsample2;"
+	"RenderColorTarget=_BloomUpMap0;	Clear=Color; Pass=BloomUpsample1;"
 #if HDR_STAR_MODE || HDR_FLARE_MODE
 	"RenderColorTarget=_GlareMap;		Pass=GlarePrefilter;"
 #endif
@@ -410,19 +405,19 @@ technique DeferredLighting<
 #endif
 #endif
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-	pass SSDO<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceAmbientOcclusion<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceDirOccPassVS();
 		PixelShader  = compile ps_3_0 ScreenSpaceDirOccPassPS();
 	}
-	pass SSDOBlurX<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceAmbientOcclusionBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ScreenSpaceDirOccBlurPS(SSDOMap_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
-	pass SSDOBlurY<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceAmbientOcclusionBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
@@ -442,13 +437,13 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ScreenSpaceLightingFinalPS();
 	}
 #if SSSS_QUALITY
-	pass SSSSBlurX<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceSubsurfaceBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempPointSamp, ShadingMapTempPointSamp, float2(1.0, 0.0));
 	}
-	pass SSSSBlurY<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceSubsurfaceBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
@@ -652,7 +647,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS(float4(ViewportOffset2, ViewportSize));
-		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(1, 1, 1, 0), ViewportOffset2);
+		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(1, 1, 1, 0), float4(ViewportOffset2, ViewportSize));
 	}
 	pass SMAANeighborhoodBlending<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -670,7 +665,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAABlendingWeightCalculationVS(float4(ViewportOffset2, ViewportSize));
-		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(2, 2, 2, 0), ViewportOffset2);
+		PixelShader  = compile ps_3_0 SMAABlendingWeightCalculationPS(float4(2, 2, 2, 0), float4(ViewportOffset2, ViewportSize));
 	}
 	pass SMAANeighborhoodBlendingFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

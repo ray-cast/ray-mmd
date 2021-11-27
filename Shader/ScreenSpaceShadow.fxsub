@@ -1,5 +1,5 @@
 #define SHADOW_BLUR_COUNT 6
-#define SHADOW_POISSON_COUNT 25
+#define SHADOW_POISSON_COUNT 21
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection, mLightDistance);
@@ -10,31 +10,27 @@ static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraVi
 
 static const float2 Poisson[SHADOW_POISSON_COUNT] =
 {
-	float2(-0.978698, -0.0884121),
-	float2(-0.841121, 0.521165),
-	float2(-0.71746, -0.50322),
-	float2(-0.702933, 0.903134),
-	float2(-0.663198, 0.15482),
-	float2(-0.495102, -0.232887),
-	float2(-0.364238, -0.961791),
-	float2(-0.345866, -0.564379),
-	float2(-0.325663, 0.64037),
-	float2(-0.182714, 0.321329),
-	float2(-0.142613, -0.0227363),
-	float2(-0.0564287, -0.36729),
-	float2(-0.0185858, 0.918882),
-	float2(0.0381787, -0.728996),
-	float2(0.16599, 0.093112),
-	float2(0.253639, 0.719535),
-	float2(0.369549, -0.655019),
-	float2(0.423627, 0.429975),
-	float2(0.530747, -0.364971),
-	float2(0.566027, -0.940489),
-	float2(0.639332, 0.0284127),
-	float2(0.652089, 0.669668),
-	float2(0.773797, 0.345012),
-	float2(0.968871, 0.840449),
-	float2(0.991882, -0.657338)
+	float2(0.533333, 0),
+	float2(0.332528, 0.416977),
+	float2(-0.118678, 0.519962),
+	float2(-0.480517, 0.231405),
+	float2(-0.480517, -0.231405),
+	float2(-0.118678, -0.519962),
+	float2(0.332528, -0.416977),
+	float2(1, 0),
+	float2(0.900969, 0.433884),
+	float2(0.62349, 0.781832),
+	float2(0.222521, 0.974928),
+	float2(-0.222521, 0.974928),
+	float2(-0.62349, 0.781831),
+	float2(-0.900969, 0.433884),
+	float2(-1, -8.74228e-08),
+	float2(-0.900969, -0.433884),
+	float2(-0.62349, -0.781832),
+	float2(-0.222521, -0.974928),
+	float2(0.222521, -0.974928),
+	float2(0.62349, -0.781832),
+	float2(0.900969, -0.433884)
 };
 
 float2 Rotate(float2 pos, float2 rotation)
