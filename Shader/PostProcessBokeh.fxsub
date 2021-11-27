@@ -1,0 +1,309 @@
+static const float2 _CameraCoCTexture_TexelSize = 1.0f / ViewportSize;
+static const float2 _CameraPingTexture_TexelSize = 2.0f / ViewportSize;
+static const float2 _CameraPongTexture_TexelSize = 2.0f / ViewportSize;
+
+texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
+
+texture _CameraFocalDistanceTexture : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
+texture _CameraFocalPingTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture _CameraFocalPongTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+
+sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
+{
+	texture=<_CameraFocalDistanceTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalPingTexture_LinearSampler = sampler_state
+{
+	texture=<_CameraFocalPingTexture>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalPongTexture_LinearSampler = sampler_state
+{
+	texture=<_CameraFocalPongTexture>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraCoCTexture_PointSampler = sampler_state
+{
+	texture=<_CameraCoCTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraCoCTexture_LinearSampler = sampler_state
+{
+	texture=<_CameraCoCTexture>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+
+#define DOF_POSSION_SAMPLES 42
+
+static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
+	float2(0.363636, 0),
+	float2(0.226724, 0.284302),
+	float2(-0.0809167, 0.354519),
+	float2(-0.327625, 0.157776),
+	float2(-0.327625, -0.157776),
+	float2(-0.0809166, -0.354519),
+	float2(0.226724, -0.284302),
+	float2(0.681818, 0),
+	float2(0.614297, 0.29583),
+	float2(0.425107, 0.533067),
+	float2(0.151719, 0.664724),
+	float2(-0.151719, 0.664724),
+	float2(-0.425107, 0.533067),
+	float2(-0.614297, 0.29583),
+	float2(-0.681818, -5.96064e-08),
+	float2(-0.614297, -0.29583),
+	float2(-0.425107, -0.533067),
+	float2(-0.151719, -0.664724),
+	float2(0.151719, -0.664724),
+	float2(0.425107, -0.533067),
+	float2(0.614297, -0.29583),
+	float2(1, 0),
+	float2(0.955573, 0.294755),
+	float2(0.826239, 0.56332),
+	float2(0.62349, 0.781832),
+	float2(0.365341, 0.930874),
+	float2(0.07473, 0.997204),
+	float2(-0.222521, 0.974928),
+	float2(-0.5, 0.866025),
+	float2(-0.733052, 0.680173),
+	float2(-0.900969, 0.433884),
+	float2(-0.988831, 0.149042),
+	float2(-0.988831, -0.149042),
+	float2(-0.900969, -0.433884),
+	float2(-0.733052, -0.680173),
+	float2(-0.5, -0.866025),
+	float2(-0.222521, -0.974928),
+	float2(0.0747303, -0.997204),
+	float2(0.365341, -0.930874),
+	float2(0.62349, -0.781832),
+	float2(0.826239, -0.56332),
+	float2(0.955573, -0.294755)
+};
+
+float CircleSDF(float2 uv, float2 pos, float radius)
+{
+	float d = length(pos - uv);
+	float d1 = d - radius;
+	float d2 = d - radius * 0.85;
+	return saturate(saturate(d2) - saturate(d1));
+}
+
+float GetSampleRadius()
+{
+	return 0.2;
+}
+
+float2 GetSamplePoint()
+{
+	float4 proj = mul(float4(AcsPosition, 1), matViewProject);
+	proj /= proj.w;
+	proj.xy = PosToCoord(proj.xy);
+	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.25, mMeasureMode);
+}
+
+float2 GetMaxBokehRadius(float2 viewportSize)
+{
+    const float RadiusInPixels = 14.f;
+    return min(0.05f, RadiusInPixels / viewportSize.y) / float2(viewportSize.x / viewportSize.y, 1.0);
+}
+
+float GetFocalDistance()
+{
+	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
+	return max(1, focalDistance);
+}
+
+float ComputeDepthCoC(float depth, float4 focalParams)
+{
+	// 35mm "full-frame" film format is 36mm x 24mm
+	float sensorHeight = 0.024f;
+
+	float D = depth;
+	float P = focalParams.x; // focalDistance
+	float F = focalParams.y / 1000.0f; // focalLength
+	float A = focalParams.y / focalParams.z; // focalAperture
+	float focalRegion = focalParams.w;
+
+	// Calculate circle of confusion diameter
+	// http://en.wikipedia.org/wiki/Circle_of_confusion
+	float CoC = A * (max(abs(D - P) - focalParams.w, 0) / D) * (F / (P - F));
+
+ 	// put CoC into a % of the image sensor height
+ 	float percentOfSensor = CoC / sensorHeight * sign(D - P);
+
+    return clamp(percentOfSensor, -1.0, 1.0);
+}
+
+float4 ComputeFocalDistancePS(
+	in float2 coord : TEXCOORD0,
+	uniform sampler source) : COLOR
+{
+	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect, 1.0);
+	const float2 samplePoint = GetSamplePoint();
+
+	float minDepth = 65535;
+	float2 avgDepth = 0;
+
+	[loop]
+	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	{
+		float depth = tex2Dlod(source, float4(samplePoint + _BokehKernel[i] * sampleRadius, 0, 0)).r;
+		minDepth = min(minDepth, depth);
+	}
+
+	[loop]
+	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	{
+		float depth = tex2Dlod(source, float4(samplePoint + _BokehKernel[j] * sampleRadius, 0, 0)).r;
+		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
+	}
+
+	float distnace = avgDepth.x / avgDepth.y;
+
+	return lerp(distnace + mFocalDistance - 1, GetFocalDistance(), step(0.5, mMeasureMode));
+}
+
+float4 ComputeBokehWeightVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	uniform float2 _MainTex_TexelSize) : POSITION
+{
+	oTexcoord0 = Texcoord.xyxy;
+	oTexcoord0.xy += _MainTex_TexelSize * 0.5;
+	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCamraFocalLength(), mFstop, mFocalRegion);
+	return Position;
+}
+
+float4 ComputeBokehWeightPS(
+	in float2 uv : TEXCOORD0,
+	in float4 focalCameraParams : TEXCOORD1,
+	uniform sampler _DepthTex) : COLOR
+{
+	return ComputeDepthCoC(tex2Dlod(_DepthTex, float4(uv, 0, 0)).r, focalCameraParams);
+}
+
+float4 ComputeBokehPrefilterPS(
+	in float2 uv : TEXCOORD0,
+	in float4 focalCameraParams : TEXCOORD1,
+	uniform sampler _MainTex,
+	uniform float2 _MainTex_TexelSize) : COLOR
+{
+    float3 duv = _MainTex_TexelSize.xyx * float3(0.5, 0.5, -0.5);
+    float2 uv0 = uv - duv.xy;
+    float2 uv1 = uv - duv.zy;
+    float2 uv2 = uv + duv.zy;
+    float2 uv3 = uv + duv.xy;
+
+    float3 c0 = tex2Dlod(_MainTex, float4(uv0, 0, 0)).xyz;
+    float3 c1 = tex2Dlod(_MainTex, float4(uv1, 0, 0)).xyz;
+    float3 c2 = tex2Dlod(_MainTex, float4(uv2, 0, 0)).xyz;
+    float3 c3 = tex2Dlod(_MainTex, float4(uv3, 0, 0)).xyz;
+
+    float coc0 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv0, 0, 0)).x;
+    float coc1 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv1, 0, 0)).x;
+    float coc2 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv2, 0, 0)).x;
+    float coc3 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv3, 0, 0)).x;
+
+    float w0 = abs(coc0) / (max(max(c0.x, c0.y), c0.z) + 1.0);
+    float w1 = abs(coc1) / (max(max(c1.x, c1.y), c1.z) + 1.0);
+    float w2 = abs(coc2) / (max(max(c2.x, c2.y), c2.z) + 1.0);
+    float w3 = abs(coc3) / (max(max(c3.x, c3.y), c3.z) + 1.0);
+
+    float3 avg = c0 * w0 + c1 * w1 + c2 * w2 + c3 * w3;
+    avg /= max(w0 + w1 + w2 + w3, 1e-5);
+
+    float cocMin = min(coc0, min(min(coc1, coc2), coc3));
+    float cocMax = max(coc0, max(max(coc1, coc2), coc3));
+    float coc = (-cocMin > cocMax ? cocMin : cocMax) * GetMaxBokehRadius(ViewportSize).y;
+
+    avg *= smoothstep(0, _MainTex_TexelSize.y * 2.0, abs(coc));
+
+	return float4(avg, coc);
+}
+
+void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 farAcc, inout float4 nearAcc)
+{
+    float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
+
+    float farCoC = max(min(samp0.a, samp.a), 0.0);
+
+    float dist = length(disp);
+    float margin = _MainTex_TexelSize.y * 2.0;
+    float farWeight = saturate((farCoC - dist + margin) / margin);
+    float nearWeight = saturate((-samp.a - dist + margin) / margin);
+
+    farAcc += float4(samp.rgb, 1.0) * farWeight;
+    nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
+}
+
+float4 ComputeBokehBlurPS(
+	in float2 uv : TEXCOORD0,
+	uniform sampler _MainTex,
+	uniform float2 _MainTex_TexelSize) : COLOR
+{
+	float4 farAcc = 0.0;
+	float4 nearAcc = 0.0;
+	float2 maxRadius = GetMaxBokehRadius(ViewportSize);
+
+	float4 samp0 = tex2Dlod(_MainTex, float4(uv.xy, 0, 0));
+
+    ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, 0.0, farAcc, nearAcc);
+
+    [loop]
+    for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+    {
+    	float2 disp = _BokehKernel[i].xy * maxRadius;
+        ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, disp, farAcc, nearAcc);
+    }
+
+    nearAcc.rgb /= max(1, nearAcc.a);
+    farAcc.rgb /= max(1, farAcc.a);
+
+    float alpha = saturate(nearAcc.a * PI / (DOF_POSSION_SAMPLES + 1));
+    float3 rgb = lerp(farAcc.rgb, nearAcc.rgb, alpha);
+
+	return float4(rgb, alpha);
+}
+
+float4 ComputeBilinearBlurPS(
+	in float2 uv : TEXCOORD0,
+	uniform sampler _MainTex,
+	uniform float2 _MainTex_TexelSize) : COLOR
+{
+    float4 duv = _MainTex_TexelSize.xyxy * float4(0.5, 0.5, -0.5, 0);
+
+    float4 acc;
+    acc  = tex2Dlod(_MainTex, float4(uv - duv.xy, 0, 0));
+    acc += tex2Dlod(_MainTex, float4(uv - duv.zy, 0, 0));
+    acc += tex2Dlod(_MainTex, float4(uv + duv.zy, 0, 0));
+    acc += tex2Dlod(_MainTex, float4(uv + duv.xy, 0, 0));
+
+    return acc * 0.25;
+}
+
+float4 ComputeBokehFinalPS(
+	in float2 uv : TEXCOORD0,
+	uniform sampler _MainTex,
+	uniform float2 _MainTex_TexelSize) : COLOR
+{
+    float4 dof = tex2Dlod(_MainTex, float4(uv, 0, 0));
+
+    float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv, 0, 0)).r;
+
+    float ffa = smoothstep(_MainTex_TexelSize.y * 2.0, _MainTex_TexelSize.y * 4.0, coc * GetMaxBokehRadius(ViewportSize).y);
+    float alpha = ffa + dof.a - ffa * dof.a;
+
+	float SDF = CircleSDF(uv.xy * ViewportSize, ViewportSize * GetSamplePoint(), ViewportSize.y * GetSampleRadius()) * 0.5;
+	dof.rgb = lerp(dof.rgb, (coc > 0 ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(coc), mTestMode);
+	dof.rgb = lerp(dof.rgb, float3(0.01, 0.4, 0.09), SDF * mTestMode * (1 - step(0.5, mMeasureMode)));
+
+    return float4(dof.rgb, alpha);
+}
