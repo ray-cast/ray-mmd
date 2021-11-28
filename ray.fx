@@ -275,6 +275,18 @@ technique DeferredLighting<
 	"Pass=FDiaphragmDOFCocFlatten;"
 	"RenderColorTarget1=;"
 
+	"RenderColorTarget0=DilateOutputForeground;"
+	"RenderColorTarget1=DilateOutputBackground;"
+	"Clear=Color;"
+	"Pass=FDiaphragmDOFCocDilate;"
+	"RenderColorTarget1=;"
+
+	"RenderColorTarget0=ConvolutionOutputSceneColor;"
+	"RenderColorTarget1=ConvolutionOutputSeparateAlpha;"
+	"Clear=Color;"
+	"Pass=FDiaphragmDOFGatherMain;"
+	"RenderColorTarget1=;"
+
 	"RenderColorTarget=ShadingMap;      Clear=Color; Pass=FDiaphragmDOFOutput;"
 #endif
 
@@ -593,6 +605,18 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 CocFlattenMainVS();
 		PixelShader  = compile ps_3_0 CocFlattenMainPS();
+	}
+	pass FDiaphragmDOFCocDilate<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 CocDilateMainVS();
+		PixelShader  = compile ps_3_0 CocDilateMainPS();
+	}
+	pass FDiaphragmDOFGatherMain<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 GatherMainVS();
+		PixelShader  = compile ps_3_0 GatherMainPS();
 	}
 	pass FDiaphragmDOFOutput<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
