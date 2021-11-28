@@ -22,17 +22,6 @@
 #	define SSDO_UNROLL [unroll]
 #endif
 
-float linearizeDepth(float2 uv)
-{
-	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
-}
-
-float3 GetNormal(float2 uv)
-{
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
-	return DecodeGBufferNormal(MRT6);
-}
-
 static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),
@@ -102,10 +91,10 @@ float4 ScreenSpaceDirOccLowPS(
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
 
 		float4 sampleDepths;
-		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
-		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
-		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
-		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
+		sampleDepths[0] = SampleLinearEyeDepth(sampleOffset[0]);
+		sampleDepths[1] = SampleLinearEyeDepth(sampleOffset[1]);
+		sampleDepths[2] = SampleLinearEyeDepth(sampleOffset[2]);
+		sampleDepths[3] = SampleLinearEyeDepth(sampleOffset[3]);
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
@@ -193,10 +182,10 @@ float4 ScreenSpaceDirOccMediumPS(
 		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
 
 		float4 sampleDepths;
-		sampleDepths[0] = linearizeDepth(sampleOffset[0]);
-		sampleDepths[1] = linearizeDepth(sampleOffset[1]);
-		sampleDepths[2] = linearizeDepth(sampleOffset[2]);
-		sampleDepths[3] = linearizeDepth(sampleOffset[3]);
+		sampleDepths[0] = SampleLinearEyeDepth(sampleOffset[0]);
+		sampleDepths[1] = SampleLinearEyeDepth(sampleOffset[1]);
+		sampleDepths[2] = SampleLinearEyeDepth(sampleOffset[2]);
+		sampleDepths[3] = SampleLinearEyeDepth(sampleOffset[3]);
 
 		float3 samplePosition[4];
 		samplePosition[0] = float3(sampleOffset[0] * SSDOParams1.xy + SSDOParams1.zw, 1) * sampleDepths[0];
@@ -252,9 +241,9 @@ float4 ScreenSpaceDirOccPassPS(
 	in float4 SSDOParams1 : TEXCOORD1,
 	in float4 SSDOParams2 : TEXCOORD2) : COLOR
 {
-	float linearDepth = linearizeDepth(coord.xy);
+	float linearDepth = SampleLinearEyeDepth(coord.xy);
 
-	float3 viewNormal = GetNormal(coord.xy);
+	float3 viewNormal = SampleTransparentNormal(coord.xy);
 	float3 viewPosition = GetViewPosition(SSDOParams1, coord.xy, linearDepth);
 
 	float sampleJitter = GetJitterOffset(coord.zw) * PI_2;
@@ -288,12 +277,12 @@ float4 ScreenSpaceDirOccBlurPS(
 	uniform sampler source,
 	uniform float2 offset) : COLOR
 {
-	float center_d = linearizeDepth(coord);
+	float center_d = SampleLinearEyeDepth(coord);
 
 	float total_w = 1.0f;
 	float4 total_c = tex2Dlod(source, float4(coord, 0, 0));
 
-	float3 normal = GetNormal(coord);
+	float3 normal = SampleTransparentNormal(coord);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
 	float falloff = ALN2I / (0.5 * SSDO_BLUR_RADIUS * SSDO_BLUR_RADIUS);
@@ -308,11 +297,11 @@ float4 ScreenSpaceDirOccBlurPS(
 	[unroll]
 	for (int r = 1; r < SSDO_BLUR_RADIUS; ++r)
 	{
-		float2 depth = float2(linearizeDepth(offset1), linearizeDepth(offset2));
+		float2 depth = float2(SampleLinearEyeDepth(offset1), SampleLinearEyeDepth(offset2));
 		float2 weight = exp2(-r * r * falloff - pow2((depth - center_d) * sharpness));
 
-		weight.x *= saturate(dot(GetNormal(offset1), normal));
-		weight.y *= saturate(dot(GetNormal(offset2), normal));
+		weight.x *= saturate(dot(SampleTransparentNormal(offset1), normal));
+		weight.y *= saturate(dot(SampleTransparentNormal(offset2), normal));
 
 		total_c += tex2Dlod(source, float4(offset1, 0, 0)) * weight.x;
 		total_c += tex2Dlod(source, float4(offset2, 0, 0)) * weight.y;

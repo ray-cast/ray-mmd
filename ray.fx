@@ -517,13 +517,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ComputeFocalDistancePS(Gbuffer8Map);
+		PixelShader  = compile ps_3_0 ComputeFocalDistancePS();
 	}
 	pass ComputeBokehWeight<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ComputeBokehWeightVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ComputeBokehWeightPS(Gbuffer8Map);
+		VertexShader = compile vs_3_0 ComputeBokehWeightVS();
+		PixelShader  = compile ps_3_0 ComputeBokehWeightPS();
 	}
 	pass ComputeBokehPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

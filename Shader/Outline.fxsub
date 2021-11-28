@@ -13,7 +13,7 @@ void OutlineVertex(
     float fov = degrees(atan(t)) * 2.0;
 
 	oPosition = mul(Position , matWorldViewProject);
-	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.00003 * fov * outlinePadding;
+	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.000025 * fov * outlinePadding;
 
 	oWorldPos = float4(Position.xyz, oPosition.w);
 }
@@ -34,6 +34,7 @@ technique MainTecSS<string MMDPass = "object_ss";>{
 	}
 }
 
+technique EdgeTec<string MMDPass = "edge";>{}
 technique MainTec0<string MMDPass = "object";>{}
 technique ZplotTec<string MMDPass = "zplot";>{}
 technique ShadowTech<string MMDPass = "shadow";>{}

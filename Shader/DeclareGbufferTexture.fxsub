@@ -37,3 +37,14 @@ MaterialParam SampleTransparentGbuffer(float2 uv)
 
 	return material;
 }
+
+float3 SampleTransparentNormal(float2 uv)
+{
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv, 0, 0));
+	return DecodeNormal(MRT6.rgb);
+}
+
+float SampleLinearEyeDepth(float2 uv)
+{
+	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
+}

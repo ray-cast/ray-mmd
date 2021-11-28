@@ -197,9 +197,7 @@ float ComputeDepthCoC(float depth, float4 focalParams)
 	return clamp(percentOfSensor, -1.0, 1.0);
 }
 
-float4 ComputeFocalDistancePS(
-	in float2 coord : TEXCOORD0,
-	uniform sampler source) : COLOR
+float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0) : COLOR
 {
 	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect, 1.0);
 	const float2 samplePoint = GetSamplePoint();
@@ -210,14 +208,14 @@ float4 ComputeFocalDistancePS(
 	[loop]
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
-		float depth = tex2Dlod(source, float4(samplePoint + _BokehKernel[i] * sampleRadius, 0, 0)).r;
+		float depth = SampleLinearEyeDepth(samplePoint + _BokehKernel[i] * sampleRadius);
 		minDepth = min(minDepth, depth);
 	}
 
 	[loop]
 	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
 	{
-		float depth = tex2Dlod(source, float4(samplePoint + _BokehKernel[j] * sampleRadius, 0, 0)).r;
+		float depth = SampleLinearEyeDepth(samplePoint + _BokehKernel[j] * sampleRadius);
 		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
 	}
 
@@ -230,21 +228,19 @@ float4 ComputeBokehWeightVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1,
-	uniform float2 _MainTex_TexelSize) : POSITION
+	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
 	oTexcoord0 = Texcoord.xyxy;
-	oTexcoord0.xy += _MainTex_TexelSize * 0.5;
+	oTexcoord0.xy += ViewportOffset;
 	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
 	return Position;
 }
 
 float4 ComputeBokehWeightPS(
 	in float2 uv : TEXCOORD0,
-	in float4 focalCameraParams : TEXCOORD1,
-	uniform sampler _DepthTex) : COLOR
+	in float4 focalCameraParams : TEXCOORD1) : COLOR
 {
-	return ComputeDepthCoC(tex2Dlod(_DepthTex, float4(uv, 0, 0)).r, focalCameraParams);
+	return ComputeDepthCoC(SampleLinearEyeDepth(uv), focalCameraParams);
 }
 
 float4 ComputeBokehPrefilterPS(
