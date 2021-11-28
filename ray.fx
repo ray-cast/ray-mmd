@@ -269,11 +269,12 @@ technique DeferredLighting<
 	"RenderColorTarget0=SetupOutputFull; Pass=FDiaphragmDOFSetupFull;"
 	"RenderColorTarget0=SetupOutputHalf; Pass=FDiaphragmDOFSetupHalf;"
 
-	"RenderColorTarget0=TileOutput_Foreground;"
-	"RenderColorTarget0=TileOutput_Background;"
-	"Pass=FDiaphragmDOFCocFlattenCS;"
+	"RenderColorTarget0=TileOutputForeground;"
+	"RenderColorTarget1=TileOutputBackground;"
+	"Clear=Color;"
+	"Pass=FDiaphragmDOFCocFlatten;"
 
-	"RenderColorTarget=ShadingMap;       Pass=FDiaphragmDOFOutput;"
+	"RenderColorTarget=ShadingMap;      Clear=Color; Pass=FDiaphragmDOFOutput;"
 #endif
 
 #if AA_QUALITY == 1
@@ -586,11 +587,11 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 DOFSetupHalfVS();
 		PixelShader  = compile ps_3_0 DOFSetupHalfPS(ShadingMapPointSamp);
 	}
-	pass FDiaphragmDOFCocFlattenCS<string Script= "Draw=Buffer;";>{
+	pass FDiaphragmDOFCocFlatten<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 CocFlattenMainVS();
-		PixelShader  = compile ps_3_0 CocFlattenMainPS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 CocFlattenMainPS();
 	}
 	pass FDiaphragmDOFOutput<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;

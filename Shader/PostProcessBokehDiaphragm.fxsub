@@ -131,10 +131,6 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler sourc
 // Size of the COC in pixel from full screen.
 #define COC_TILE_SIZE 8
 
-// TILE_SCALE
-#define COC_TILE_SCALE 1/COC_TILE_SIZE
-
-
 // The resolution divisor of the current pass
 #define PASS_RES_DIVISOR 2
 
@@ -256,13 +252,18 @@ Some other functions
 
 #define SUBTILE_SIZE DEFAULT_GROUP_BORDER_SIZE
 
+// TILE_SCALE
+const static float CocTileScale = 1.0f/COC_TILE_SIZE;
+
 texture SetupOutputFull : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
 texture SetupOutputHalf : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture TileOutput_Foreground : RENDERCOLORTARGET<float2 ViewportRatio={COC_TILE_SCALE, COC_TILE_SCALE}; string Format="A16B16G16R16F";>;
-texture TileOutput_Background : RENDERCOLORTARGET<float2 ViewportRatio={COC_TILE_SCALE, COC_TILE_SCALE}; string Format="A16B16G16R16F";>;
+texture TileOutputForeground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture TileOutputBackground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
 
 sampler SetupOutputFullSampler = sampler_state { texture=<SetupOutputFull>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 sampler SetupOutputHalfSampler = sampler_state { texture=<SetupOutputHalf>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler TileOutputForegroundSampler = sampler_state { texture=<TileOutputForeground>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler TileOutputBackgroundSampler = sampler_state { texture=<TileOutputBackground>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 
 float4 DOFSetupFullVS(
 	in float4 Position : POSITION,
@@ -415,17 +416,42 @@ float4 CocFlattenMainVS(
 	float4 focalCameraParams = float4(focalDistance, focalLength, focalAperture, 1);
 
 	oTexcoord0 = Texcoord.xy;
-	oTexcoord0.xy += float2(0.5, 0.5) / (ViewportSize * 0.5);
+	oTexcoord0.xy += float2(0.5, 0.5) / (ViewportSize * CocTileScale);
 	oTexcoord1 = focalCameraParams;
 	return Position;
 }
 
-float4 CocFlattenMainPS(
+void CocFlattenMainPS(
 	in float2 coord : TEXCOORD0,
     in float4 focalCameraParams : TEXCOORD1,
-    uniform sampler source) : COLOR
+    out float4 foreground : COLOR0,
+    out float4 background : COLOR1)
 {
-	return 0;
+    float minFgdCoc, minBgdCoc = 25565;
+    float maxFgdCoc, maxBgdCoc = -25565;
+    foreground = 0;
+    background = 0;
+    
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            float4 colorCoc = tex2Dlod(SetupOutputHalfSampler, float4(coord + float2(i, j) * ViewportOffset2, 0, 0));
+            float coc = colorCoc.a;
+            if (coc > 1e-4)
+            {
+                if (coc > maxBgdCoc) maxBgdCoc = coc;
+                if (coc < minBgdCoc) minBgdCoc = coc;
+            }
+            else if (coc < -1e-4)
+            {
+                if (coc > maxFgdCoc) maxFgdCoc = coc;
+                if (coc < minFgdCoc) minFgdCoc = coc;
+            }
+        }
+    }
+    foreground.rg = float2(minFgdCoc, maxFgdCoc);
+    background.rg = float2(minBgdCoc, maxBgdCoc);
 }
 
 float4 DOFOutputVS(
@@ -454,5 +480,6 @@ float4 DOFOutputPS(
 	float coc = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
 	return float4(coc, coc, coc, 1.0);
 	// return float4(color, 0.0);
+    // return float4(0, 1, 0, 1.0);
 }
 
