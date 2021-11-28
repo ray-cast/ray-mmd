@@ -48,3 +48,19 @@ float SampleLinearEyeDepth(float2 uv)
 {
 	return tex2Dlod(Gbuffer8Map, float4(uv, 0, 0)).r;
 }
+
+float3 SampleViewPosition(float2 uv)
+{
+	float3 V = normalize(-mul(float4(CoordToPos(uv), 0, 1), matProjectInverse).xyz);
+	float3 viewPosition = V * SampleLinearEyeDepth(uv) / V.z;
+
+	return viewPosition;
+}
+
+float3 SampleViewPosition(float2 uv, float linearEyeDepth)
+{
+	float3 V = normalize(-mul(float4(CoordToPos(uv), 0, 1), matProjectInverse).xyz);
+	float3 viewPosition = V * linearEyeDepth / V.z;
+
+	return viewPosition;
+}

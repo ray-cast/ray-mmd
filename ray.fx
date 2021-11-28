@@ -529,7 +529,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ComputeBokehPrefilterPS(ShadingMapPointSamp, ViewportOffset2);
+		PixelShader  = compile ps_3_0 ComputeBokehPrefilterPS(_CamraColorTexture_PointSampler, _CamraColorTexture_TexelSize);
 	}
 	pass ComputeBokehBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

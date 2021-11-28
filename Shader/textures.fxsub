@@ -18,11 +18,6 @@ texture _CameraColorAttachment : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler _CameraColorAttachment_PointSampler = sampler_state {
-	texture = <_CameraColorAttachment>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
 #if FOG_ENABLE
 texture FogMap : OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
@@ -416,3 +411,21 @@ sampler ShadingMapTempSpecularSamp = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
+sampler _CameraColorAttachment_PointSampler = sampler_state {
+	texture = <_CameraColorAttachment>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTexture_PointSampler = sampler_state {
+	texture = <ShadingMap>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTexture_LinearSampler = sampler_state {
+	texture = <ShadingMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
+static const float2 _CamraColorTexture_TexelSize = 1.0f / ViewportSize;
+static const float2 _CamraColorAttachment_TexelSize = 1.0f / ViewportSize;
