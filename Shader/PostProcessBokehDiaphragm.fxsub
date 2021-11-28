@@ -112,7 +112,7 @@ static const int2 kOffsetsSquare3x3[9] = {
 // TILE_SCALE
 const static float CocTileScale = 1.0f/COC_TILE_SIZE;
 
-const static int MaxRingCount = 8;
+const static int MaxRingCount = 16;
 #define KernelSamplingDensityMode 0
 #define KERNEL_DENSITY_CONSTANT_HEXAWEB 0
 #define KERNEL_DENSITY_LOWER_IN_CENTER_HEXAWEB 1
@@ -455,8 +455,8 @@ void CocFlattenMainPS(
             }
         }
     }
-    foreground = float4(minFgdCoc, maxFgdCoc, 0, 0);
-    background = float4(minBgdCoc, maxBgdCoc, 0, 0);
+    foreground = float4(clamp(minFgdCoc, -1, 0), clamp(maxFgdCoc, -1, 0), 0, 0);
+    background = float4(clamp(minBgdCoc, 0, 1), clamp(maxBgdCoc, 0, 1), 0, 0);
 }
 
 
@@ -560,8 +560,10 @@ float2x2 GetSampleRotationMatrix(int RingSampleIteration)
 
 float4 GatherRingSamples(float2 coord, int RingId, int RingCount)
 {
-    float4 cumcolor = tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
-    float cumweight = 1.0;
+    float4 cumcolor = 0;
+    float cumweight = 0;
+
+    float centerCoC = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
 
     // Radius of a sample in the unit circle.
 	const float UnitSampleRadius = rcp(RingCount + 0.5);
@@ -604,17 +606,21 @@ float4 GatherRingSamples(float2 coord, int RingId, int RingCount)
         float2 CircleSamplePosOffset = CurrentCircleSamplePosOffset;
 
         float2 SamplePos = coord + CircleSamplePosOffset * ViewportOffset2;
-        float backWeight = abs(tex2Dlod(DilateOutputBackgroundSampler, float4(SamplePos, 0, 0)).g);
-        float foreWeight = abs(tex2Dlod(DilateOutputForegroundSampler, float4(SamplePos, 0, 0)).r);
+        float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(SamplePos, 0, 0)).g;
+        float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(SamplePos, 0, 0)).r;
         float weight = max(backWeight, foreWeight);
         float4 color = tex2Dlod(SetupOutputFullSampler, float4(SamplePos, 0, 0));
-        if (weight >= RingRadius) {
+        if (min(backWeight, foreWeight) < centerCoC && weight * ViewportSize.x >= RingRadius) {
             cumcolor += weight * color;
             cumweight += weight;
         }
     }
 
-    return cumcolor / cumweight;
+    if (cumweight < 1e-6) {
+        return tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
+    } else {
+        return cumcolor / cumweight;
+    }
 }
 
 float4 GatherRing(float2 coord, int RingId)
