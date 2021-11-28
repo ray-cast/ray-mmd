@@ -1,83 +1,5 @@
 #define DOF_POSSION_SAMPLES 36
 
-texture AutoFocalMap : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
-sampler AutoFocalMapSamp = sampler_state { texture=<AutoFocalMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
-
-float GetCameraFOV()
-{
-    float t = matProject._m11;
-    float Rad2Deg = 180 / 3.1415;
-    float fov = atan(t) * 2.0 * Rad2Deg;
-    return fov;
-}
-
-float GetSampleRadius()
-{
-	return 0.2;
-}
-
-float2 GetSamplePoint()
-{
-	float4 proj = mul(float4(AcsPosition, 1), matViewProject);
-	proj /= proj.w;
-	proj.xy = PosToCoord(proj.xy);
-	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.25, mMeasureMode);
-}
-
-float GetFocalDistance()
-{
-	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
-	return max(1, focalDistance);
-}
-
-float GetFocalAperture(float Fstop)
-{
-	float aperture = 1.0 / Fstop;
-	return aperture;
-}
-
-float GetFocalLength(float mFocalLength, float focalDistance)
-{
-	return 1.0 / (1.0 / (0.5 * mFocalLength * matProject._22) + 1.0 / focalDistance);
-}
-
-float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
-{
-	static const float2 poisson[DOF_POSSION_SAMPLES] =
-	{
-		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2(3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
-		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2(0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0), float2(1.0, -1.0),
-		float2(-1.0,  1.0), float2(-2.0,  1.0), float2(-3.0,  1.0), float2(0.0,  1.0), float2(3.0,  1.0), float2(2.0,  1.0), float2(1.0,  1.0),
-		float2(-2.0,  2.0), float2(-1.0,  2.0), float2( 0.0,  2.0), float2(1.0,  2.0), float2(2.0,  2.0),
-		float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2(1.0, -2.0), float2(2.0, -2.0),
-		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0),
-		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
-	};
-
-	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect * 3, 3.0);
-	const float2 samplePoint = GetSamplePoint();
-
-	float minDepth = 65535;
-
-	[loop]
-	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
-	{
-		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[i] * sampleRadius, 0, 0)).r;
-		minDepth = min(minDepth, depth);
-	}
-
-	float2 avgDepth = 0;
-
-	[loop]
-	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
-	{
-		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[j] * sampleRadius, 0, 0)).r;
-		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
-	}
-
-	float distance = avgDepth.x / avgDepth.y;
-	return lerp(distance + mFocalDistance - 1, GetFocalDistance(), step(0.5, mMeasureMode));
-}
 
 // Common DOF
 //------------------------------------------------------- DIMENSIONS VALUES.
@@ -185,7 +107,99 @@ static const int2 kOffsetsSquare3x3[9] = {
 	int2(+1, -1),
 };
 
+#define SUBTILE_SIZE DEFAULT_GROUP_BORDER_SIZE
 
+// TILE_SCALE
+const static float CocTileScale = 1.0f/COC_TILE_SIZE;
+
+texture AutoFocalMap : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
+sampler AutoFocalMapSamp = sampler_state { texture=<AutoFocalMap>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
+texture SetupOutputFull : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
+texture SetupOutputHalf : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+sampler SetupOutputFullSampler = sampler_state { texture=<SetupOutputFull>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler SetupOutputHalfSampler = sampler_state { texture=<SetupOutputHalf>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
+texture TileOutputForeground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+texture TileOutputBackground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
+sampler TileOutputForegroundSampler = sampler_state { texture=<TileOutputForeground>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+sampler TileOutputBackgroundSampler = sampler_state { texture=<TileOutputBackground>; MinFilter=POINT; MagFilter=POINT; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
+
+float GetCameraFOV()
+{
+    float t = matProject._m11;
+    float Rad2Deg = 180 / 3.1415;
+    float fov = atan(t) * 2.0 * Rad2Deg;
+    return fov;
+}
+
+float GetSampleRadius()
+{
+	return 0.2;
+}
+
+float2 GetSamplePoint()
+{
+	float4 proj = mul(float4(AcsPosition, 1), matViewProject);
+	proj /= proj.w;
+	proj.xy = PosToCoord(proj.xy);
+	return 0.5 + float2(proj.x - 0.5, 0.0) * step(0.25, mMeasureMode);
+}
+
+float GetFocalDistance()
+{
+	float focalDistance = mFocalDistance + (distance(CameraPosition, AcsPosition) - 1) * step(0.99, mMeasureMode);
+	return max(1, focalDistance);
+}
+
+float GetFocalAperture(float Fstop)
+{
+	float aperture = 1.0 / Fstop;
+	return aperture;
+}
+
+float GetFocalLength(float mFocalLength, float focalDistance)
+{
+	return 1.0 / (1.0 / (0.5 * mFocalLength * matProject._22) + 1.0 / focalDistance);
+}
+
+float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0, uniform sampler source) : COLOR
+{
+	static const float2 poisson[DOF_POSSION_SAMPLES] =
+	{
+		float2(-1.0,  0.0), float2(-2.0,  0.0), float2(-3.0,  0.0), float2(3.0,  0.0), float2(2.0,  0.0), float2(1.0,  0.0),
+		float2(-1.0, -1.0), float2(-2.0, -1.0),	float2(-3.0, -1.0), float2(0.0, -1.0), float2(3.0, -1.0), float2(2.0, -1.0), float2(1.0, -1.0),
+		float2(-1.0,  1.0), float2(-2.0,  1.0), float2(-3.0,  1.0), float2(0.0,  1.0), float2(3.0,  1.0), float2(2.0,  1.0), float2(1.0,  1.0),
+		float2(-2.0,  2.0), float2(-1.0,  2.0), float2( 0.0,  2.0), float2(1.0,  2.0), float2(2.0,  2.0),
+		float2(-2.0, -2.0), float2(-1.0, -2.0), float2( 0.0, -2.0), float2(1.0, -2.0), float2(2.0, -2.0),
+		float2(-1.0,  3.0), float2( 0.0,  3.0), float2( 1.0,  3.0),
+		float2(-1.0, -3.0), float2( 0.0, -3.0), float2( 1.0, -3.0),
+	};
+
+	const float2 sampleRadius = GetSampleRadius() / float2(ViewportAspect * 3, 3.0);
+	const float2 samplePoint = GetSamplePoint();
+
+	float minDepth = 65535;
+
+	[loop]
+	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[i] * sampleRadius, 0, 0)).r;
+		minDepth = min(minDepth, depth);
+	}
+
+	float2 avgDepth = 0;
+
+	[loop]
+	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	{
+		float depth = tex2Dlod(Gbuffer8Map, float4(samplePoint + poisson[j] * sampleRadius, 0, 0)).r;
+		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
+	}
+
+	float distance = avgDepth.x / avgDepth.y;
+	return lerp(distance + mFocalDistance - 1, GetFocalDistance(), step(0.5, mMeasureMode));
+}
 
 float ComputeDepthCoC(float depth, float4 focalParams)
 {
@@ -242,28 +256,6 @@ float SaturateWithAffineTransformation(float x, float2 AffineTransformation)
 #define kContantlyPassingAffineTransformation float2(0, 1)
 #define kContantlyBlockingAffineTransformation float2(0, 0)
 
-
-/*
-Some other functions
-*/
-
-
-// Setup Pass
-
-#define SUBTILE_SIZE DEFAULT_GROUP_BORDER_SIZE
-
-// TILE_SCALE
-const static float CocTileScale = 1.0f/COC_TILE_SIZE;
-
-texture SetupOutputFull : RENDERCOLORTARGET<float2 ViewportRatio={1.0, 1.0}; string Format="A16B16G16R16F";>;
-texture SetupOutputHalf : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture TileOutputForeground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
-texture TileOutputBackground : RENDERCOLORTARGET<float2 ViewportRatio={0.125, 0.125}; string Format="A16B16G16R16F";>;
-
-sampler SetupOutputFullSampler = sampler_state { texture=<SetupOutputFull>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
-sampler SetupOutputHalfSampler = sampler_state { texture=<SetupOutputHalf>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
-sampler TileOutputForegroundSampler = sampler_state { texture=<TileOutputForeground>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
-sampler TileOutputBackgroundSampler = sampler_state { texture=<TileOutputBackground>; MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE; AddressU=CLAMP; AddressV=CLAMP; };
 
 float4 DOFSetupFullVS(
 	in float4 Position : POSITION,
@@ -429,8 +421,6 @@ void CocFlattenMainPS(
 {
     float minFgdCoc, minBgdCoc = 25565;
     float maxFgdCoc, maxBgdCoc = -25565;
-    foreground = 0;
-    background = 0;
     
     for (int i = 0; i < 4; ++i)
     {
@@ -450,8 +440,8 @@ void CocFlattenMainPS(
             }
         }
     }
-    foreground.rg = float2(minFgdCoc, maxFgdCoc);
-    background.rg = float2(minBgdCoc, maxBgdCoc);
+    foreground = float4(minFgdCoc, maxFgdCoc, 0, 0);
+    background = float4(minBgdCoc, maxBgdCoc, 0, 0);
 }
 
 float4 DOFOutputVS(
@@ -476,10 +466,12 @@ float4 DOFOutputPS(
     in float4 focalCameraParams : TEXCOORD1,
     uniform sampler source): COLOR
 {
-	float3 color = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).rgb;
-	float coc = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
-	return float4(coc, coc, coc, 1.0);
-	// return float4(color, 0.0);
-    // return float4(0, 1, 0, 1.0);
+	// float3 color = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).rgb;
+	// float coc = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a / 10;
+	// return float4(coc, coc, coc, 1.0);
+
+	float2 minMaxBgdCoc = tex2Dlod(TileOutputBackgroundSampler, float4(coord, 0, 0)).rg / 10;
+    float2 minMaxFgdCoc = tex2Dlod(TileOutputForegroundSampler, float4(coord, 0, 0)).rg / 10;
+	return float4(abs(minMaxFgdCoc.r), minMaxBgdCoc.g, 0.0, 1.0);
 }
 

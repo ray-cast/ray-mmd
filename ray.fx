@@ -265,14 +265,15 @@ technique DeferredLighting<
 #endif
 
 #if BOKEH_MODE == 3
-	"RenderColorTarget0=AutoFocalMap;    Pass=ComputeFocalDistance;"
-	"RenderColorTarget0=SetupOutputFull; Pass=FDiaphragmDOFSetupFull;"
-	"RenderColorTarget0=SetupOutputHalf; Pass=FDiaphragmDOFSetupHalf;"
+	"RenderColorTarget0=AutoFocalMap;    Clear=Color; Pass=ComputeFocalDistance;"
+	"RenderColorTarget0=SetupOutputFull; Clear=Color; Pass=FDiaphragmDOFSetupFull;"
+	"RenderColorTarget0=SetupOutputHalf; Clear=Color; Pass=FDiaphragmDOFSetupHalf;"
 
 	"RenderColorTarget0=TileOutputForeground;"
 	"RenderColorTarget1=TileOutputBackground;"
 	"Clear=Color;"
 	"Pass=FDiaphragmDOFCocFlatten;"
+	"RenderColorTarget1=;"
 
 	"RenderColorTarget=ShadingMap;      Clear=Color; Pass=FDiaphragmDOFOutput;"
 #endif
