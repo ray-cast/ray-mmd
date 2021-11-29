@@ -148,11 +148,11 @@ float3 TonemapNeutral(float3 x)
 
 float3 TonemapHable(float3 x) 
 {
-	float A = 0.22;
-	float B = 0.30;
+	float A = 0.15;
+	float B = 0.50;
 	float C = 0.10;
 	float D = 0.20;
-	float E = 0.01;
+	float E = 0.0;
 	float F = 0.30;
 	return NeutralCurve(x, A, B, C, D, E, F) / NeutralCurve(4.0, A, B, C, D, E, F);
 }
@@ -168,12 +168,11 @@ float3 TonemapNaughtyDog(float3 x)
 	return NeutralCurve(x, A, B, C, D, E, F);
 }
 
-float3 TonemapReinhardLumaBased(float3 color, float whitePt)
+float3 TonemapReinhard(float3 color, float adaptedLum)
 {
-	float luma = luminance(color);
-	float toneMappedLuma = luma * (1 + luma / (whitePt * whitePt))/ (1 + luma);
-	color *= toneMappedLuma / luma;
-	return color;
+    const float MIDDLE_GREY = 0.18;
+    color *= MIDDLE_GREY / adaptedLum;
+    return color / (1.0f + color);
 }
 
 float3 RRTAndODTFit(float3 v)
@@ -199,10 +198,10 @@ float3 TonemapACES(float3 color)
 	return odt;
 }
 
-float3 ColorToneMapping(float3 color)
+float3 ColorToneMapping(float3 color, float adaptedLum)
 {
 #if HDR_TONEMAP_OPERATOR == 1
-	float3 curr = TonemapReinhardLumaBased(color, 4.0);
+	float3 curr = TonemapReinhard(color, adaptedLum);
 	return saturate(curr);
 #elif HDR_TONEMAP_OPERATOR == 2
 	return saturate(TonemapHable(color));

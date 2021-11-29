@@ -51,10 +51,10 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 {
 	float3 color = ColorDispersion(_MainTex, uv.xy, mDispersionRadius, 1.0 + mDispersionRadius);
 
-	color *= mExposure;
-
-#if EYE_ADAPTATION > 0
 	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
+
+	color *= mExposure;
+#if EYE_ADAPTATION > 0
 	color *= ComputeExposureISO(aveLum, 12.5);
 #endif
 
@@ -75,7 +75,7 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 	color = ColorTemperature(color, mColorTemperature);
 	color = ColorCorrect(color, mColorSaturation, mColorContrast, mColorGamma, mColorBalanceP, mColorBalanceM);
 	color = ColorVignette(color, uv.xy);
-	color = ColorToneMapping(color);
+	color = ColorToneMapping(color, aveLum);
 
 	color = linear2srgb(color);
 	color = ColorDithering(color, uv.xy);

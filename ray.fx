@@ -70,7 +70,7 @@ static float mBloomRadius = lerp(lerp(0.75, 1.0, mBloomRadiusP), 0.0, mBloomRadi
 static float mBloomThreshold = lerp(lerp(1.0, mBloomThresholdMax, mBloomThresholdP), mBloomThresholdMin, mBloomThresholdM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
-static float mColorGamma = lerp(lerp(1.0, 0.45, mGammaP), 2.2, mGammaM);
+static float mColorGamma = lerp(lerp(1.0, 2.2, mGammaP), 0.45, mGammaM);
 static float mColorTemperature = lerp(lerp(mTemperature, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mFstop = lerp(lerp(5.6, 32.0, mFstopP), 1.0, mFstopM);
 static float mFocalDistance = lerp(lerp(1, 10.0, mFocalDistanceP), -10.0, mFocalDistanceM);
@@ -91,6 +91,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 #include "shader/VolumeRendering.fxsub"
 #include "shader/ScreenSpaceLighting.fxsub"
+#include "shader/PostProcessEyeAdaptation.fxsub"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
@@ -115,10 +116,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if BOKEH_MODE
 #	include "shader/PostProcessBokeh.fxsub"
-#endif
-
-#if EYE_ADAPTATION
-#	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
 #if HDR_BLOOM_MODE
@@ -287,7 +284,6 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
 #endif
 
-#if EYE_ADAPTATION
 	"RenderColorTarget=_EyeLumMap0;		Clear=Color; Pass=EyePrefilter;"
 	"RenderColorTarget=_EyeLumMap1;		Clear=Color; Pass=EyeLumDownsample1;"
 	"RenderColorTarget=_EyeLumMap2;		Clear=Color; Pass=EyeLumDownsample2;"
@@ -297,7 +293,6 @@ technique DeferredLighting<
 	"RenderColorTarget=_EyeLumMap6;		Clear=Color; Pass=EyeLumDownsample6;"
 	"RenderColorTarget=_EyeLumMap7;		Clear=Color; Pass=EyeLumDownsample7;"
 	"RenderColorTarget=_EyeLumAveMap; 	Pass=EyeAdapation;"
-#endif
 
 #if HDR_BLOOM_MODE
 	"RenderColorTarget=_BloomDownMap0;  Clear=Color; Pass=BloomPrefilter;"
@@ -625,7 +620,6 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, ViewportOffset2, true);
 	}
 #endif
-#if EYE_ADAPTATION
 	pass EyePrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -680,7 +674,6 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap7_TexelSize);
 		PixelShader  = compile ps_3_0 EyeAdapationPS(_EyeLumMap6_PointSampler, _EyeLumMap6_TexelSize);
 	}
-#endif
 #if HDR_BLOOM_MODE
 	pass BloomPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
