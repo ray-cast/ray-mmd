@@ -91,7 +91,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 #include "shader/VolumeRendering.fxsub"
 #include "shader/ScreenSpaceLighting.fxsub"
-#include "shader/PostProcessEyeAdaptation.fxsub"
+
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
@@ -104,6 +104,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if SSSS_QUALITY
 #	include "shader/ScreenSpaceSubsurfaceScattering.fxsub"
+#endif
+
+#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+#	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
 #if TOON_ENABLE == 2
@@ -284,6 +288,7 @@ technique DeferredLighting<
 	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
 #endif
 
+#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
 	"RenderColorTarget=_EyeLumMap0;		Clear=Color; Pass=EyePrefilter;"
 	"RenderColorTarget=_EyeLumMap1;		Clear=Color; Pass=EyeLumDownsample1;"
 	"RenderColorTarget=_EyeLumMap2;		Clear=Color; Pass=EyeLumDownsample2;"
@@ -293,6 +298,7 @@ technique DeferredLighting<
 	"RenderColorTarget=_EyeLumMap6;		Clear=Color; Pass=EyeLumDownsample6;"
 	"RenderColorTarget=_EyeLumMap7;		Clear=Color; Pass=EyeLumDownsample7;"
 	"RenderColorTarget=_EyeLumAveMap; 	Pass=EyeAdapation;"
+#endif
 
 #if HDR_BLOOM_MODE
 	"RenderColorTarget=_BloomDownMap0;  Clear=Color; Pass=BloomPrefilter;"
@@ -620,6 +626,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, ViewportOffset2, true);
 	}
 #endif
+#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
 	pass EyePrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -674,6 +681,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_EyeLumMap7_TexelSize);
 		PixelShader  = compile ps_3_0 EyeAdapationPS(_EyeLumMap6_PointSampler, _EyeLumMap6_TexelSize);
 	}
+#endif
 #if HDR_BLOOM_MODE
 	pass BloomPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
