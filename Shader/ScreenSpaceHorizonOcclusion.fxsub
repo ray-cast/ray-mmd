@@ -1,0 +1,205 @@
+#if SSDO_QUALITY == 1
+#	define HBAO_DIRECTION_COUNT 4
+#	define HBAO_SAMPLER_COUNT 4
+#	define HBAO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 2
+#	define HBAO_DIRECTION_COUNT 5
+#	define HBAO_SAMPLER_COUNT 4
+#	define HBAO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 3
+#	define HBAO_DIRECTION_COUNT 6
+#	define HBAO_SAMPLER_COUNT 4
+#	define HBAO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 4
+#	define HBAO_DIRECTION_COUNT 6
+#	define HBAO_SAMPLER_COUNT 8
+#	define HBAO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 4
+#	define HBAO_DIRECTION_COUNT 8
+#	define HBAO_SAMPLER_COUNT 8
+#	define HBAO_BLUR_RADIUS 6
+#else
+#	define HBAO_DIRECTION_COUNT 4
+#	define HBAO_SAMPLER_COUNT 8
+#	define HBAO_BLUR_RADIUS 6
+#endif
+
+float Falloff(float distanceSquare, float maxRadius)
+{
+	float negInvRadius2 = -1.0 / (maxRadius * maxRadius);
+	return distanceSquare * negInvRadius2 + 1.0;
+}
+
+float4 HorizonOcclusion(
+	float4 coord,
+	float3 viewNormal,
+	float3 viewPosition,
+	float2 direction,
+	float  maxRadius,
+	float  jitter,
+	float  bias)
+{
+	float2 samplePoint[HBAO_SAMPLER_COUNT];
+	float4 sampleOcclustion = 0.0f;
+
+	float2 sampleStepDelta = direction * clamp(maxRadius * viewPosition.z, HBAO_SAMPLER_COUNT, mHBAOMaxRadiusPixels) / HBAO_SAMPLER_COUNT;
+	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
+
+	for (int i = 0; i < HBAO_SAMPLER_COUNT; i+=4)
+	{
+		samplePoint[i + 0] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[i + 1] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[i + 2] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[i + 3] = round(sampleDirection); sampleDirection += sampleStepDelta;
+	}
+
+	for (int j = 0; j < HBAO_SAMPLER_COUNT; j+=4)
+	{
+		float2 sampleOffset[4];
+		sampleOffset[0] = coord.xy + samplePoint[j + 0] * _CamraColorTexture_TexelSize;
+		sampleOffset[1] = coord.xy + samplePoint[j + 1] * _CamraColorTexture_TexelSize;
+		sampleOffset[2] = coord.xy + samplePoint[j + 2] * _CamraColorTexture_TexelSize;
+		sampleOffset[3] = coord.xy + samplePoint[j + 3] * _CamraColorTexture_TexelSize;
+
+		float3 samplePosition[4];
+		samplePosition[0] = SampleViewPosition(sampleOffset[0]);
+		samplePosition[1] = SampleViewPosition(sampleOffset[1]);
+		samplePosition[2] = SampleViewPosition(sampleOffset[2]);
+		samplePosition[3] = SampleViewPosition(sampleOffset[3]);
+
+		float3 sampleDirection[4];
+		sampleDirection[0] = samplePosition[0] - viewPosition;
+		sampleDirection[1] = samplePosition[1] - viewPosition;
+		sampleDirection[2] = samplePosition[2] - viewPosition;
+		sampleDirection[3] = samplePosition[3] - viewPosition;
+
+		float4 sampleLength2 = float4(
+			dot(sampleDirection[0], sampleDirection[0]),
+			dot(sampleDirection[1], sampleDirection[1]),
+			dot(sampleDirection[2], sampleDirection[2]),
+			dot(sampleDirection[3], sampleDirection[3]));
+
+		float4 sampleLengthInv = rsqrt(sampleLength2);
+
+		sampleDirection[0] *= sampleLengthInv[0];
+		sampleDirection[1] *= sampleLengthInv[1];
+		sampleDirection[2] *= sampleLengthInv[2];
+		sampleDirection[3] *= sampleLengthInv[3];
+
+		float4 sampleAngle = float4(
+			dot(sampleDirection[0], viewNormal),
+			dot(sampleDirection[1], viewNormal),
+			dot(sampleDirection[2], viewNormal),
+			dot(sampleDirection[3], viewNormal));
+
+		float4 sampleFalloff = float4(
+				Falloff(sampleLength2[0], maxRadius),
+				Falloff(sampleLength2[1], maxRadius),
+				Falloff(sampleLength2[2], maxRadius),
+				Falloff(sampleLength2[3], maxRadius)
+			);
+
+		float4 sh = saturate(sampleAngle - bias) * saturate(sampleFalloff);
+
+		sampleOcclustion.w += sum(sh);
+		sampleOcclustion.xyz += sh.x * sampleDirection[0];
+		sampleOcclustion.xyz += sh.y * sampleDirection[1];
+		sampleOcclustion.xyz += sh.z * sampleDirection[2];
+		sampleOcclustion.xyz += sh.w * sampleDirection[3];
+	}
+
+	return sampleOcclustion;
+}
+
+float4 HorizonBasedAmbientOcclusionVS(
+	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD,
+	out float4 oTexcoord0 : TEXCOORD0) : POSITION
+{
+	oTexcoord0.xy = Texcoord.xy + ViewportOffset;
+	oTexcoord0.zw = Texcoord.xy * ViewportSize;
+	return Position;
+}
+
+float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
+{
+	float3 viewNormal = SampleTransparentNormal(uv.xy);
+	float3 viewPosition = SampleViewPosition(uv.xy);
+
+	float sampleBias = 0;
+	sampleBias += mSSDOBiasFar * viewPosition.z;
+	sampleBias += mSSDOBiasNear * (1 - saturate(viewPosition.z / mSSDOBiasFalloffNear));
+
+	float maxRadius = mSSAORadius * mHBAORadius;
+	if (floor(fmod(uv.z, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(uv.w, 2)) > 0) maxRadius *= 0.5;
+
+	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
+	float2 random = float2(GetJitterOffset(uv.zw), PseudoRandom(uv.zw));
+
+	float4 occclusion = 0;
+
+	[loop]
+	for (int d = 0; d < HBAO_DIRECTION_COUNT; ++d)
+	{
+		float angle = alpha * (d + random.x);
+
+		float cosA, sinA;
+		sincos(angle, sinA, cosA);
+
+		float2 direction = float2(cos(angle), sin(angle));
+
+		occclusion += HorizonOcclusion(uv, viewNormal, viewPosition, direction, maxRadius, random.y, sampleBias);
+	}
+
+	occclusion /= HBAO_SAMPLER_COUNT * HBAO_DIRECTION_COUNT;
+	occclusion.xyz = occclusion.xyz * 0.5 + 0.5;
+
+	occclusion.w = occclusion.w * tex2Dlod(SSAOMap_PointSampler, float4(uv.xy, 0, 0)).a;
+	occclusion.w = 1 - occclusion.w;
+	occclusion.w = pow(occclusion.w, mSSAOScale);
+
+	return occclusion;
+}
+
+float4 ScreenSpaceBilateralBlurPS(
+	in float2 coord   : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1,
+	uniform sampler _MainTex,
+	uniform float2 _MainTex_TexelSize) : COLOR
+{
+	float center_d = SampleLinearEyeDepth(coord);
+
+	float total_w = 1.0f;
+	float4 total_c = tex2Dlod(_MainTex, float4(coord, 0, 0));
+
+	float3 normal = SampleTransparentNormal(coord);
+
+	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
+	float falloff = ALN2I / (0.5 * HBAO_BLUR_RADIUS * HBAO_BLUR_RADIUS);
+
+	float sharpness = 8;
+
+	float2 offset1 = coord + _MainTex_TexelSize;
+	float2 offset2 = coord - _MainTex_TexelSize;
+
+	[unroll]
+	for (int r = 1; r < HBAO_BLUR_RADIUS; ++r)
+	{
+		float2 depth = float2(SampleLinearEyeDepth(offset1), SampleLinearEyeDepth(offset2));
+		float2 weight = exp2(-r * r * falloff - pow2((depth - center_d) * sharpness));
+
+		weight.x *= saturate(dot(SampleTransparentNormal(offset1), normal));
+		weight.y *= saturate(dot(SampleTransparentNormal(offset2), normal));
+
+		total_c += tex2Dlod(_MainTex, float4(offset1, 0, 0)) * weight.x;
+		total_c += tex2Dlod(_MainTex, float4(offset2, 0, 0)) * weight.y;
+
+		total_w += sum(weight);
+
+		offset1 += _MainTex_TexelSize;
+		offset2 -= _MainTex_TexelSize;
+	}
+
+	return total_c / total_w;
+}

@@ -60,7 +60,7 @@ float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, 
 	shadow = lerp(shadow, shadowDepth, mSunShadowVM);
 #endif
 
-	diffuse *= occlusion * shadow;
+	diffuse *= GTAOMultiBounce(occlusion, material.albedo) * shadow;
 	specular *= ComputeSpecularOcclusion(abs(dot(material.normal, V)) + 1e-5, occlusion, material.smoothness) * shadow * shadow * shadow;
 
 	return float2x3(diffuse, specular);

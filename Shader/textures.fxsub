@@ -175,7 +175,6 @@ texture SSAOMap : OFFSCREENRENDERTARGET<
 		"Volumetric*.pmx=hide;"
 		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
-
 shared texture SSDOMap : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	bool AntiAlias = false;

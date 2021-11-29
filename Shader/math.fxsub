@@ -131,6 +131,14 @@ float PseudoRandom(float2 xy)
     return frac(dot(pos.xyx * pos.xyy, float3(20.390625f, 60.703125f, 2.4281209f)));
 }
 
+float InterleavedGradientNoise(float2 pixCoord, int frameCount = 0)
+{
+    const float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    float2 frameMagicScale = float2(2.083f, 4.867f);
+    pixCoord += frameCount * frameMagicScale;
+    return frac(magic.z * frac(dot(pixCoord, magic.xy)));
+}
+
 float BilateralWeight(float r, float depth, float center_d, float sigma, float sharpness)
 {
 	const float blurSigma = sigma * 0.5f;

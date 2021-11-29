@@ -123,6 +123,16 @@ float ComputeSpecularMicroOcclusion(float3 f0)
 	return saturate(dot(f0, 0.33333h) * 50);
 }
 
+float3 GTAOMultiBounce(float visibility, float3 albedo)
+{
+	float3 A =  2.0404 * albedo - 0.3324;
+	float3 B = -4.7951 * albedo + 0.6417;
+	float3 C =  2.7552 * albedo + 0.6903;
+
+	float x = visibility;
+	return max(x, ((x * A + B) * x + C) * x);
+}
+
 float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)
 {
 	float nl = dot(N, L);
