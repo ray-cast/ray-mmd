@@ -366,20 +366,19 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 	float lv = saturate(dot(L, V));
 
 	float roughness = max(PerceptualRoughnessToRoughness(SmoothnessToPerceptualRoughness(material.smoothness)), 0.001);
-	float occlusion = ComputeAmbientMicroOcclusion(nl, material.visibility) * shadow;
 
 #if TOON_ENABLE
 	float3 diffuse = 0;
 
 	[branch]
 	if (material.lightModel == SHADINGMODELID_CEL)
-		diffuse = CelShading(dot(N, L), vh, nv, material.customDataB, material.specular, occlusion, roughness, material.customDataA);
+		diffuse = CelShading(dot(N, L), vh, nv, material.customDataB, material.specular, shadow, roughness, material.customDataA);
 	else if (material.lightModel == SHADINGMODELID_TONEBASED)
-		diffuse = ToonBasedShading(dot(N, L), vh, nv, material.customDataB, material.specular, material.visibility * shadow, roughness, material.customDataA);
+		diffuse = ToonBasedShading(dot(N, L), vh, nv, material.customDataB, material.specular, shadow, roughness, material.customDataA);
 	else
-		diffuse = BurleyBRDF(nl, nv, vh, roughness) * nl * occlusion;
+		diffuse = BurleyBRDF(nl, nv, vh, roughness) * nl * shadow;
 #else
-	float3 diffuse = BurleyBRDF(nl, nv, vh, roughness) * nl * occlusion;
+	float3 diffuse = BurleyBRDF(nl, nv, vh, roughness) * nl * shadow;
 #endif
 
 	float3 specular = 0;
@@ -396,7 +395,10 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float2x3(diffuse, specular * nl * occlusion);
+	diffuse *= ComputeAmbientMicroOcclusion(nl, material.visibility);
+	specular *= ComputeSpecularOcclusion(nv, material.visibility, material.smoothness);
+
+	return float2x3(diffuse, specular * nl * shadow);
 }
 
 float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, float3 V, float normalizeFactor = 1.0)
@@ -411,7 +413,6 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 
 	float roughness = max(PerceptualRoughnessToRoughness(SmoothnessToPerceptualRoughness(material.smoothness)), 0.001);
 	float diffuse = DiffuseBRDF(N, Ld, V, roughness);
-	float shadow = ComputeAmbientMicroOcclusion(nl2, material.visibility);
 
 	float3 specular = 0;
 
@@ -427,5 +428,8 @@ float4 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, flo
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 
-	return float4(diffuse, specular) * nl2 * shadow;
+	diffuse *= ComputeAmbientMicroOcclusion(nl2, material.visibility);
+	specular *= ComputeSpecularOcclusion(nv, material.visibility, material.smoothness);
+
+	return float4(diffuse, specular) * nl2;
 }
