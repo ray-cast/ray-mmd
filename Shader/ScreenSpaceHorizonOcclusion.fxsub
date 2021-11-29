@@ -155,7 +155,6 @@ float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
 
 	occclusion.w = occclusion.w * tex2Dlod(SSAOMap_PointSampler, float4(uv.xy, 0, 0)).a;
 	occclusion.w = 1 - occclusion.w;
-	occclusion.w = pow(occclusion.w, mAmbientOcclusionIntensity);
 
 	return occclusion;
 }
