@@ -112,7 +112,9 @@ static const int2 kOffsetsSquare3x3[9] = {
 // TILE_SCALE
 const static float CocTileScale = 1.0f/COC_TILE_SIZE;
 
-const static int MaxRingCount = 16;
+const static int MaxRingCount = 8;
+const static float KernelRadius = 16;
+const static int CocRadiusError = 1;
 #define KernelSamplingDensityMode 0
 #define KERNEL_DENSITY_CONSTANT_HEXAWEB 0
 #define KERNEL_DENSITY_LOWER_IN_CENTER_HEXAWEB 1
@@ -548,7 +550,7 @@ float2 GetDiskSampleOnUnitCirle(int RingId, int RingSampleIteration, int RingSam
 // Returns the rotation matrix to use between sample of the ring.
 float2x2 GetSampleRotationMatrix(int RingSampleIteration)
 {
-	float RotationAngle = 2 * PI / float(RingSampleIteration);
+	float RotationAngle = PI / float(RingSampleIteration);
 
 	float C = cos(RotationAngle);
 	float S = sin(RotationAngle);
@@ -558,19 +560,279 @@ float2x2 GetSampleRotationMatrix(int RingSampleIteration)
 		float2(-S,  C));
 }
 
-float4 GatherRingSamples(float2 coord, int RingId, int RingCount)
+// Compute sample weight according's to its Coc radius.
+float ComputeSampleWeight(float CocRadius)
 {
-    float4 cumcolor = 0;
-    float cumweight = 0;
+	#if 1
+		const float PixelRadius = 0.25; // = 0.5 / CocDownresSample;
+		return min(rcp(PI * CocRadius * CocRadius), rcp(PI * PixelRadius * PixelRadius));
 
+	#else
+		return 1.0;
+	#endif
+}
+
+float ComputeForegroundFading(float MaxRecombineAbsCocRadius, float CocRadius)
+{
+	return saturate((-CocRadius) - (MaxRecombineAbsCocRadius - 1.0));
+}
+
+/** Informations about a ring. */
+struct FGatherRingInfos
+{
+	/** Id of the ring. 0 is the smallest ring after the center sample. */
+	uint RingId;
+
+	/** Total number of samples on the ring. */
+	uint SampleCount;
+
+	/** Compile time constant on whether this is the first accumualted ring. */
+	bool bIsFirstRing;
+
+	// Total weight of the ring.
+	float Weight;
+
+	/** Radius of the ring in pixels from the center of the kernel. */
+	float Radius;
+};
+
+/** Structs that holds data about a sample for gathering. */
+struct FGatherSample
+{
+	// Sample's scene color (and optionally alpha channel).
+	float4 Color;
+
+	// Sample's radius of the Coc
+	float CocRadius;
+
+	// Sample distance from center of kernel, in CocRadius unit.
+	float Distance;
+
+	// Sample's intersection.
+	float Intersection;
+};
+
+/** Accumulator of all gathered samples. */
+struct FGatherAccumulator
+{
+    // Accumulated results for background reconstruction.
+    // float4 BackgroundReconstruction; // TODO.
+
+    // Accumulated results for previous bucket.
+    float4 PreviousColor;
+    float PreviousCocRadius;
+    float PreviousCocRadiusSquare;
+    float PreviousWeight;
+
+    // Accumulating results for current bucket.
+    float4 CurrentColor;
+    float CurrentCocRadius;
+    float CurrentCocRadiusSquare;
+    float CurrentWeight;
+    
+    float CurrentTranslucency;
+
+    // The bordering radius between current and previous buckets.
+    float BorderingRadius;
+
+    bool bIsFirstRing;
+
+    float FarBorderingRadius;
+    float CloseBorderingRadius;
+};
+
+FGatherAccumulator CreateGatherAccumulator()
+{
+	FGatherAccumulator Accumulator;
+
+    Accumulator.PreviousColor = 0;
+    Accumulator.PreviousCocRadius = 0;
+    Accumulator.PreviousCocRadiusSquare = 0;
+    Accumulator.PreviousWeight = 0;
+
+    Accumulator.CurrentColor = 0;
+    Accumulator.CurrentCocRadius = 0;
+    Accumulator.CurrentCocRadiusSquare = 0;
+    Accumulator.CurrentWeight = 0;
+
+    Accumulator.CurrentTranslucency = 0;
+
+    Accumulator.FarBorderingRadius = 0;
+    Accumulator.CloseBorderingRadius = 0;
+
+    Accumulator.BorderingRadius = 0;
+    Accumulator.bIsFirstRing = false;
+
+	return Accumulator;
+}
+
+
+/** Merge current bucket into the previous bucket. */
+void MergeCurrentBucketIntoPreviousBucket(inout FGatherAccumulator Accumulator, float SampleCount)
+{
+	// If have not accumulated any sample into the current bucket, just avoid this useless work and the
+	// NaNs that would be coming with.
+	if (Accumulator.CurrentWeight == 0.0)
+	{
+		return;
+	}
+
+	// Opacity of the current bucket.
+	float CurrentRingOpacity = saturate(1 - Accumulator.CurrentTranslucency * rcp(SampleCount));
+	
+	// Compute current and previous Coc radii.
+	float PreviousCocRadius = Accumulator.PreviousCocRadius * rcp(Accumulator.PreviousWeight);
+	float CurrentCocRadius = Accumulator.CurrentCocRadius * rcp(Accumulator.CurrentWeight);
+
+	// Whether current bucket is occluding previous bucket.
+	// TODO: put a contrast.
+	float bOccludingCoc = saturate((PreviousCocRadius - CurrentCocRadius));
+
+	// Compute final factor to use to with previous bucket.
+	float PreviousBucketFactor = (Accumulator.PreviousWeight == 0.0) ? 0.0 : (1.0 - CurrentRingOpacity * bOccludingCoc);
+
+	// Compose current ring into previous.
+	Accumulator.PreviousColor     = Accumulator.PreviousColor     * PreviousBucketFactor + Accumulator.CurrentColor;
+	Accumulator.PreviousCocRadius = Accumulator.PreviousCocRadius * PreviousBucketFactor + Accumulator.CurrentCocRadius;
+	Accumulator.PreviousCocRadiusSquare = Accumulator.PreviousCocRadiusSquare * PreviousBucketFactor + Accumulator.CurrentCocRadiusSquare;
+	Accumulator.PreviousWeight    = Accumulator.PreviousWeight    * PreviousBucketFactor + Accumulator.CurrentWeight;
+}
+
+/** Accumulates sample. */
+void AccumulateSample(inout FGatherAccumulator Accumulator, in FGatherSample A, float Weight)
+{
+	// Fade intersection if sample's Coc radius is out of the gathering pass coc bounds.
+	float IsConsidered = 1; // IsConsideredCocRadius(Accumulator.GatherParameters, A.CocRadius);
+	
+	// Compare the sample's Coc radius with the bucket bordering radius.
+	float bBelongsToPrevious = saturate(A.CocRadius - Accumulator.BorderingRadius + 0.5);
+
+	// First ring is directly accumulated to the current bucket, because merge with potential larger .
+	if (Accumulator.bIsFirstRing)
+	{
+		bBelongsToPrevious = 0.0;
+	}
+
+	float bBelongsToCurrent = 1.0 - bBelongsToPrevious;
+
+	if (!Accumulator.bIsFirstRing)
+	{
+		float M = 1;
+		M *= 1 - saturate(A.CocRadius - Accumulator.FarBorderingRadius + 0.5);
+		M *= saturate(A.CocRadius - Accumulator.CloseBorderingRadius + 0.5);
+
+		bBelongsToCurrent *= saturate(A.CocRadius - Accumulator.CloseBorderingRadius + 0.5);
+		bBelongsToPrevious *= 1 - saturate(A.CocRadius - Accumulator.FarBorderingRadius + 0.5);
+	}
+
+	float CurrentWeight = (A.Intersection * IsConsidered * Weight) * bBelongsToCurrent;
+
+	Accumulator.CurrentColor += A.Color * CurrentWeight;
+	Accumulator.CurrentCocRadius += A.CocRadius * CurrentWeight;
+	Accumulator.CurrentCocRadiusSquare += A.CocRadius * (A.CocRadius * CurrentWeight);
+	Accumulator.CurrentWeight += CurrentWeight;
+	
+	float PreviousWeight = (A.Intersection * IsConsidered * Weight) * bBelongsToPrevious;
+
+	Accumulator.PreviousColor += A.Color * PreviousWeight;
+	Accumulator.PreviousCocRadius += A.CocRadius * PreviousWeight;
+	Accumulator.PreviousCocRadiusSquare += A.CocRadius * (A.CocRadius * PreviousWeight);
+	Accumulator.PreviousWeight += PreviousWeight;
+
+	// Accumulate current bucket translucency.
+	{
+		float SampleTranslucency = saturate(A.CocRadius - Accumulator.BorderingRadius);
+
+		//Accumulator.CurrentTranslucency += A.CocRadius > Accumulator.BorderingRadius;
+		Accumulator.CurrentTranslucency += SampleTranslucency;
+	}
+}
+
+/** Accumulates center sample. */
+void AccumulateCenterSample(inout FGatherAccumulator Accumulator, in FGatherSample A)
+{
+	// Fade intersection as CocRadius becomes close to 0 to fallback to full resolution gathering.	
+	A.Intersection *= ComputeForegroundFading(1.0, A.CocRadius);
+
+	// TODO: when accumulating the foreground, there is an issue in geometric edges.
+	#if 1
+		float WeightA = ComputeSampleWeight(A.CocRadius);
+		AccumulateSample(Accumulator, A, WeightA);
+		// Accumulator.bIsHoleFillingForForeground = IsForeground(A.CocRadius);
+		// Accumulator.CenterCocRadius = A.CocRadius;
+	#endif
+}
+
+void AccumulateCenterSampleAsItsOwnRing(inout FGatherAccumulator Accumulator, in FGatherSample A)
+{
+	AccumulateCenterSample(/* inout */ Accumulator, A);
+}
+
+/** Accumulates mirror samples. */
+void AccumulateMirrorSamples(inout FGatherAccumulator Accumulator, in FGatherSample A, in FGatherSample B)
+{	
+	float WeightA = ComputeSampleWeight(A.CocRadius);
+	float WeightB = ComputeSampleWeight(B.CocRadius);
+
+    // Fade intersection as CocRadius becomes close to 0 to fallback to full resolution gathering.	
+    A.Intersection *= ComputeForegroundFading(1.0, A.CocRadius);
+    B.Intersection *= ComputeForegroundFading(1.0, B.CocRadius);
+
+    // If sample B is behind sample A. CocRadius < 0 when foreground.
+    if (B.CocRadius > A.CocRadius)
+    {
+        B.Intersection = A.Intersection;
+        B.CocRadius = A.CocRadius;
+        WeightB = WeightA;
+    }
+    else
+    {
+        A.Intersection = B.Intersection;
+        A.CocRadius = B.CocRadius;
+        WeightA = WeightB;
+    }
+
+	AccumulateSample(Accumulator, A, WeightA);
+	AccumulateSample(Accumulator, B, WeightB);
+}
+
+// Computes intersection of sample from its Coc and its distance.
+// Returns 0: no intersection, 1: intersection.
+float ComputeSampleIntersection(float SampleCocRadius, float SampleDistance)
+{
+	// Intersection of output pixel's disk area with sample's Coc.
+	#if 1
+		// To have an intersection of 50% when the Sample's Coc radius == SampleDistance to be area conservative
+		// with bilinear sampled gathering or hybrid scattering.
+		const float Offset = 0.5;
+
+        // Uses a sharper intersection for slight out of focus like Recombine pass since it is being used
+        // for full res temporal statbility clamping box, so the aliasing this may introduce at half res is
+        // Fine.
+        const float Multiplier = 4.0;
+
+		return saturate((abs(SampleCocRadius) - SampleDistance) * Multiplier + Offset);
+
+	// Same as Circle DOF.
+	#elif 0
+		// 0.5 because Coc radius is at half res, and 0.5 so that the fallof is only the radius of a ful res pixel.
+		const float IntersectionSharpen = 0.5 * 0.5;
+
+		// TODO: missing +0.5 to be energy conservative.
+		return saturate((abs(SampleCocRadius) - SampleDistance) * IntersectionSharpen);
+
+	#else // Hard cut of.
+		if (SampleDistance > abs(SampleCocRadius))
+		{
+			return 0.0;
+		}
+		return 1.0;
+	#endif
+}
+
+void GatherRingSamples(float2 coord, int RingId, float SampleCountToSamplePosition, inout FGatherAccumulator Accumulator)
+{
     float centerCoC = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
-
-    // Radius of a sample in the unit circle.
-	const float UnitSampleRadius = rcp(RingCount + 0.5);
-
-    const float KernelRadius = 16;
-
-    float SampleCountToSamplePosition = KernelRadius * UnitSampleRadius;
 
     // Number of sample iteration for this ring.
     const int RingSamplePairCount = GetRingSamplingPairCount(RingId);
@@ -592,7 +854,6 @@ float4 GatherRingSamples(float2 coord, int RingId, int RingCount)
     // Position of the first sample on circle with radius according to KernelRadius.
     float2 FirstCircleSamplePosOffset = FirstCircleUnitPos * RingRadius;
 
-    // Setup iteratable SGPR
     float2 CurrentCircleUnitPos = FirstCircleUnitPos;
     float2 CurrentCircleSamplePosOffset = FirstCircleSamplePosOffset;
 
@@ -601,44 +862,103 @@ float4 GatherRingSamples(float2 coord, int RingId, int RingCount)
         CurrentCircleUnitPos = mul(CurrentCircleUnitPos, SampleRotationMatrix);
         CurrentCircleSamplePosOffset = mul(CurrentCircleSamplePosOffset, SampleRotationMatrix);
 
-        // Swizzle the batch positions' X and Y components.
-        float2 CirleUnitPos = CurrentCircleUnitPos;
-        float2 CircleSamplePosOffset = CurrentCircleSamplePosOffset;
+        float2 BatchCirleUnitPos = CurrentCircleUnitPos;
+        float2 BatchCircleSamplePosOffset = CurrentCircleSamplePosOffset;
 
-        float2 SamplePos = coord + CircleSamplePosOffset * ViewportOffset2;
-        float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(SamplePos, 0, 0)).g;
-        float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(SamplePos, 0, 0)).r;
-        float weight = max(backWeight, foreWeight);
-        float4 color = tex2Dlod(SetupOutputFullSampler, float4(SamplePos, 0, 0));
-        if (min(backWeight, foreWeight) < centerCoC && weight * ViewportSize.x >= RingRadius) {
-            cumcolor += weight * color;
-            cumweight += weight;
+        float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(coord, 0, 0)).g;
+        float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(coord, 0, 0)).r;
+        float CoC = backWeight > -foreWeight ? backWeight : foreWeight;
+        float4 color = tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
+
+        FGatherSample CenterSample;
+        CenterSample.Color = color;
+        CenterSample.CocRadius = CoC;
+        CenterSample.Distance = RingRadius;
+        CenterSample.Intersection = ComputeSampleIntersection(CoC, RingRadius);
+        AccumulateCenterSample(Accumulator, CenterSample);
+
+        // Fetches the mirrored samples.
+        FGatherSample Sample[2];
+        [unroll]
+        for (int k = 0; k < 2; k++)
+        {
+            const float SampleSign = (k == 0) ? 1.0 : -1.0;
+            // Swizzle the batch positions' X and Y components.
+            float2 CirleUnitPos = BatchCirleUnitPos * SampleSign;
+            float2 CircleSamplePosOffset = BatchCircleSamplePosOffset * SampleSign;
+
+            float2 SamplePos = coord + CircleSamplePosOffset * ViewportOffset2;
+            float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(SamplePos, 0, 0)).g;
+            float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(SamplePos, 0, 0)).r;
+            float CoC = backWeight > -foreWeight ? backWeight : foreWeight;
+            float4 color = tex2Dlod(SetupOutputHalfSampler, float4(SamplePos, 0, 0));
+            // if (weight * ViewportSize.x >= RingRadius)
+            Sample[k].Color = color;
+            Sample[k].CocRadius = CoC;
+            Sample[k].Distance = RingRadius;
+            Sample[k].Intersection = ComputeSampleIntersection(CoC, RingRadius);
         }
-    }
-
-    if (cumweight < 1e-6) {
-        return tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
-    } else {
-        return cumcolor / cumweight;
+        
+        AccumulateMirrorSamples(Accumulator, Sample[0], Sample[1]);
     }
 }
 
-float4 GatherRing(float2 coord, int RingId)
+/** Setup up the accumulator for a ring. */
+void StartRingSamples(inout FGatherAccumulator Accumulator, FGatherRingInfos RingInfos)
 {
-    float4 color = 0;
+	Accumulator.BorderingRadius = (RingInfos.RingId + (1.5 + CocRadiusError)) * (KernelRadius * rcp(0.5 + MaxRingCount)); 
+}
+
+/** Digests all samples accumulated for the ring. */
+void EndRingSamples(inout FGatherAccumulator Accumulator, FGatherRingInfos RingInfos)
+{
+    if (RingInfos.bIsFirstRing)
+	{
+		// Simply move current bucket into previous bucket.
+		Accumulator.PreviousColor     = Accumulator.CurrentColor;
+		Accumulator.PreviousCocRadius = Accumulator.CurrentCocRadius;
+		Accumulator.PreviousCocRadiusSquare = Accumulator.CurrentCocRadiusSquare;
+		Accumulator.PreviousWeight    = Accumulator.CurrentWeight;
+    }
+    else
+    {
+        MergeCurrentBucketIntoPreviousBucket(Accumulator, RingInfos.SampleCount);
+    }
+	
+	// Reset current bucket accumulators.
+	Accumulator.CurrentColor = 0;
+	Accumulator.CurrentCocRadius = 0;
+	Accumulator.CurrentCocRadiusSquare = 0;
+	Accumulator.CurrentWeight = 0;
+	Accumulator.CurrentTranslucency = 0;
+}
+
+void GatherRing(float2 coord, int RingId, bool bIsFirstRing, inout FGatherAccumulator Accumulator)
+{
     // Number of sample iteration for this ring.
     const int RingSamplePairCount = GetRingSamplingPairCount(RingId);
+
 	// Distance of the ring from the center of the kernel in sample count.
 	const int RingDistance = int(RingId + 1);
 
-    // Start accumulating ring samples
-	// StartRingSamples(Accumulator, RingInfos);
+    // Radius of a sample in the unit circle.
+	const float UnitSampleRadius = rcp(MaxRingCount + 0.5);
+    float SampleCountToSamplePosition = KernelRadius * UnitSampleRadius;
 
-	color += GatherRingSamples(coord, RingId, MaxRingCount);
+    FGatherRingInfos RingInfos;
+    RingInfos.RingId = RingId;
+    RingInfos.SampleCount = 2 * RingSamplePairCount;
+    RingInfos.bIsFirstRing = bIsFirstRing;
+    RingInfos.Weight = RingInfos.SampleCount * ComputeSampleWeight(RingInfos.Radius);
+    RingInfos.Radius = RingDistance * SampleCountToSamplePosition;
+
+    // Start accumulating ring samples
+	StartRingSamples(Accumulator, RingInfos);
+
+	GatherRingSamples(coord, RingId, SampleCountToSamplePosition, Accumulator);
 	
 	// End accumulating ring samples.
-	// EndRingSamples(Accumulator, RingInfos);
-    return color;
+	EndRingSamples(Accumulator, RingInfos);
 }
 
 void GatherMainPS(
@@ -649,13 +969,21 @@ void GatherMainPS(
 {
     sceneColor = 0;
     separateAlpha = 0;
+
+    FGatherAccumulator Accumulator = CreateGatherAccumulator();
+
     // Sample Coc tile texture.
     for (int RingId = MaxRingCount - 1; RingId >= 0; RingId--)
     {
-        sceneColor += GatherRing(coord, int(RingId));
+        // Sample Ring
+        GatherRing(
+            coord,
+            RingId,
+            RingId == MaxRingCount - 1, 
+            Accumulator
+        );
     }
-
-    sceneColor /= float(MaxRingCount);
+    sceneColor = Accumulator.PreviousColor * rcp(Accumulator.PreviousWeight); // Accumulator.PreviousColor;
 }
 
 float4 DOFOutputVS(
