@@ -12,7 +12,7 @@ void OutlineVertex(
     float t = matProject._m11;
     float fov = degrees(atan(t)) * 2.0;
 
-	oPosition = mul(Position , matWorldViewProject);
+	oPosition = mul(Position, matWorldViewProject);
 	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.000025 * fov * outlinePadding;
 
 	oWorldPos = float4(Position.xyz, oPosition.w);
