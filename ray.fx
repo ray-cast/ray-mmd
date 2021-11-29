@@ -61,7 +61,7 @@ float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 40000, mSunTemperatureM);
-static float mAmbientOcclusionRadius = lerp(lerp(8.0, mAmbientOcclusionMaxRadius, mSSAORadiusP), mAmbientOcclusionMinRadius, mSSAORadiusM);
+static float mAmbientOcclusionRadius = lerp(lerp(16.0, mAmbientOcclusionMaxRadius, mSSAORadiusP), mAmbientOcclusionMinRadius, mSSAORadiusM);
 static float mAmbientOcclusionIntensity = lerp(lerp(2.0, mAmbientOcclusionIntensityMax, mSSAOP), mAmbientOcclusionIntensityMin, mSSAOM);
 static float mDirectionalOcclusionIntensity = lerp(lerp(2.0, mAmbientOcclusionIntensityMax, mSSDOP), mAmbientOcclusionIntensityMin, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);

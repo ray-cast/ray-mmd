@@ -1,27 +1,27 @@
 #if SSDO_QUALITY == 1
 #	define HBAO_DIRECTION_COUNT 4
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #elif SSDO_QUALITY == 2
 #	define HBAO_DIRECTION_COUNT 5
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #elif SSDO_QUALITY == 3
 #	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #elif SSDO_QUALITY == 4
 #	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #elif SSDO_QUALITY == 4
 #	define HBAO_DIRECTION_COUNT 8
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #else
 #	define HBAO_DIRECTION_COUNT 4
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 6
+#	define HBAO_BLUR_RADIUS 8
 #endif
 
 float Falloff(float distanceSquare, float maxRadius)
@@ -42,7 +42,7 @@ float4 HorizonOcclusion(
 	float2 samplePoint[HBAO_SAMPLER_COUNT];
 	float4 sampleOcclustion = 0.0f;
 
-	float2 sampleStepDelta = direction * maxRadius / (HBAO_SAMPLER_COUNT + 1);
+	float2 sampleStepDelta = direction * maxRadius / HBAO_SAMPLER_COUNT;
 	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
 
 	for (int i = 0; i < HBAO_SAMPLER_COUNT; i+=4)
@@ -56,10 +56,10 @@ float4 HorizonOcclusion(
 	for (int j = 0; j < HBAO_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + samplePoint[j + 0] * _CamraColorTexture_TexelSize;
-		sampleOffset[1] = coord.xy + samplePoint[j + 1] * _CamraColorTexture_TexelSize;
-		sampleOffset[2] = coord.xy + samplePoint[j + 2] * _CamraColorTexture_TexelSize;
-		sampleOffset[3] = coord.xy + samplePoint[j + 3] * _CamraColorTexture_TexelSize;
+		sampleOffset[0] = coord.xy + samplePoint[j + 0] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[1] = coord.xy + samplePoint[j + 1] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[2] = coord.xy + samplePoint[j + 2] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[3] = coord.xy + samplePoint[j + 3] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
 
 		float3 samplePosition[4];
 		samplePosition[0] = SampleViewPosition(sampleOffset[0]);
@@ -132,7 +132,8 @@ float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
 	float2 sampleRandom = float2(GetJitterOffset(uv.zw), PseudoRandom(uv.zw));
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
-	float radius = clamp(maxRadius * log2(samplePosition.z), HBAO_SAMPLER_COUNT, mAmbientOcclusionMaxRadiusPixels);
+	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
+	float radius = clamp(maxRadius * log2(samplePosition.z), HBAO_SAMPLER_COUNT, maxRadiusPixels);
 
 	float4 occclusion = 0;
 
