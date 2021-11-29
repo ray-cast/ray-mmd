@@ -59,10 +59,10 @@ Features:
 * Ground fog effect
 * Skybox based on RGBT encode
 * Image-based lighting based on RGBT encode
+* Horizon Based Ambient Occlusition
 * Screen Space Reflection
-* Screen Space Ambient Occlusition
 * Screen Space Subsurface Scattering
-* Post-Process Bokeh Depth Of Field
+* Post-Process Bokeh - Depth Of Field
 * Post-Process Bloom
 * Post-Process Eye adaptation
 * Post-Process Tone-mapping (ACES-like,Reinhard,Hable,Hejl2015,NaughtyDog support)
