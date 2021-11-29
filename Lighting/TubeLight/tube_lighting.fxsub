@@ -134,12 +134,12 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightCol
 	float3 atten = GetPhysicalLightAttenuation(Lw, LightRange, LightAttenuationBulb);
 	atten *= lightColor;
 
-	float4 energy = TubeLightEnergy(material, P, material.normal, V, L, L0, L1, LightWidth, LightRadius);
-	diffuse = energy.r + SubsurfaceShading(material, material.normal, L, V);
+	float2x3 energy = TubeLightEnergy(material, P, material.normal, V, L, L0, L1, LightWidth, LightRadius);
+	diffuse = energy[0];
 	diffuse *= atten;
 
 #if LIGHT_PARAMS_TYPE == 0
-	specular = energy.gba;
+	specular = energy[1];
 	specular *= atten;
 #endif
 }

@@ -136,7 +136,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightCol
 	float3 points[4];
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
-	diffuse = SubsurfaceShading(material, material.normal, L, V);
+	diffuse = SubsurfaceShading(material, material.normal, L);
 	diffuse += LTC_EvaluateDisk(material.normal, V, P, viewLightDirection, points);
 	diffuse *= atten;
 

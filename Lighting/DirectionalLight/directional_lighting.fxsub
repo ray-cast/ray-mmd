@@ -195,7 +195,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightCol
 	float3 L = viewLightDirection;
 
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
-	diffuse = energy[0] + SubsurfaceShading(material, material.normal, L, V);
+	diffuse = energy[0];
 	diffuse *= lightColor;
 
 #if LIGHT_PARAMS_TYPE == 0 || LIGHT_PARAMS_TYPE == 2

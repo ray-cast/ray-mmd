@@ -32,7 +32,7 @@ float3 SphereLightDirection(float3 N, float3 V, float3 L, float lightRadius)
 	return closestPoint;
 }
 
-float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius)
+float2x3 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float radius)
 {
 	float3 Lw = SphereLightDirection(N, V, L, radius);
 	float3 L2 = normalize(Lw);
@@ -40,8 +40,7 @@ float4 SphereAreaLightEnergy(MaterialParam material, float3 N, float3 L, float3 
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float normFactor = SphereNormalization(Lw, radius, roughness);
 
-	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
-	return energy;
+	return SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
 }
 
 float3 RectangleDirection(float3 L, float3 Lt, float3 Lb, float3 Ln, float2 Lwh)
@@ -70,7 +69,7 @@ float RectangleAttenuation(float3 L, float3 lightDirection)
 	return rectangleAngle;
 }
 
-float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
+float2x3 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V, float3 Lt, float3 Lb, float3 Ln, float2 Lwh, out float2 coord)
 {
 	float3 R = reflect(V, N);
 	float3 Lw = RectangleLight(R, L, Lt, Lb, Ln, Lwh, coord);
@@ -79,8 +78,7 @@ float4 RectangleLightEnergy(MaterialParam material, float3 N, float3 L, float3 V
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float normFactor = SphereNormalization(Lw, length(Lwh), roughness);
 	
-	float4 energy = SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
-	return energy;
+	return SurfaceEnergy(material, N, normalize(L), L2, V, normFactor);
 }
 
 float3 TubeLightDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P, float radius)
@@ -106,7 +104,7 @@ float3 TubeLightSpecDirection(float3 N, float3 V, float3 L0, float3 L1, float3 P
 	return closestPoint + centerToRay * saturate(radius / length(centerToRay));
 }
 
-float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius)
+float2x3 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, float3 L, float3 L0, float3 L1, float LightWidth, float LightRadius)
 {
 	float3 Lw = TubeLightSpecDirection(N, V, L0, L1, P, LightRadius);
 	float3 Ls = normalize(Lw);
@@ -114,6 +112,5 @@ float4 TubeLightEnergy(MaterialParam material, float3 P, float3 N, float3 V, flo
 	float roughness = max(SmoothnessToRoughness(material.smoothness), 0.001);
 	float normFactor = SphereNormalization(Lw, LightWidth * LightWidth * LightRadius, roughness);
 
-	float4 energy = SurfaceEnergy(material, N, L, Ls, V, normFactor);
-	return energy;
+	return SurfaceEnergy(material, N, L, Ls, V, normFactor);
 }

@@ -426,5 +426,13 @@ sampler _CamraColorTexture_LinearSampler = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
+shared texture _PreIntegratedSkinLut<string ResourceName = "shader/textures/shadowLUT.bmp"; int Miplevels = 1;>; 
+sampler _PreIntegratedSkinLut_LinearSampler = sampler_state
+{
+	texture = <_PreIntegratedSkinLut>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+
 static const float2 _CamraColorTexture_TexelSize = 1.0f / ViewportSize;
 static const float2 _CamraColorAttachment_TexelSize = 1.0f / ViewportSize;

@@ -8,6 +8,7 @@ shared texture Gbuffer7RT: RENDERCOLORTARGET;
 shared texture Gbuffer8RT: RENDERCOLORTARGET;
 shared texture LightSpecMap : RENDERCOLORTARGET;
 shared texture LightAlphaMap : RENDERCOLORTARGET;
+shared texture _PreIntegratedSkinLut; 
 
 sampler Gbuffer1Map = sampler_state {
 	texture = <MaterialMap>;
@@ -47,5 +48,11 @@ sampler Gbuffer7Map = sampler_state {
 sampler Gbuffer8Map = sampler_state {
 	texture = <Gbuffer8RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _PreIntegratedSkinLut_LinearSampler = sampler_state
+{
+	texture = <_PreIntegratedSkinLut>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
