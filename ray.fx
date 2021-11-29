@@ -60,12 +60,12 @@ float mTemperatureP : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Temperature-";>;
 
 static float mSSAOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSAOP), 0, mSSAOM);
-static float mSSAORadius = lerp(lerp(1.0, 2.0, mSSAORadiusP), 0.5, mSSAORadiusM);
+static float mSSAORadius = lerp(lerp(1.0, 2.0, mSSAORadiusP), 0.1, mSSAORadiusM);
 static float mSSDOScale = lerp(lerp(mSSDOIntensityMin, mSSDOIntensityMax, mSSDOP), 0, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 40000, mSunTemperatureM);
-static float mExposure = lerp(lerp(mExposureMin, mExposureMax, mExposureP), 0, mExposureM);
+static float mExposure = lerp(lerp(1.0, mExposureMax, mExposureP), mExposureMin, mExposureM);
 static float mBloomRadius = lerp(lerp(0.75, 1.0, mBloomRadiusP), 0.0, mBloomRadiusM);
 static float mBloomThreshold = lerp(lerp(1.0, mBloomThresholdMax, mBloomThresholdP), mBloomThresholdMin, mBloomThresholdM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
