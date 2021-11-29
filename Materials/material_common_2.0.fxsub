@@ -8,8 +8,6 @@ float4 MaterialAmbient : EMISSIVE<string Object = "Geometry";>;
 float4 MaterialSpecular : SPECULAR<string Object = "Geometry";>;
 float  MaterialPower : SPECULARPOWER<string Object = "Geometry";>;
 
-float3 CameraPosition  : POSITION<string Object = "Camera";>;
-
 float time : TIME;
 
 bool use_texture;
@@ -1520,7 +1518,7 @@ void MaterialVS(
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	out float2 oTexcoord2 : TEXCOORD2,
 #endif
-	out float3 oWorldPos  : TEXCOORD3,
+	out float4 oWorldPos  : TEXCOORD3,
 	out float4 oPosition  : POSITION)
 {
 	oNormal = Normal;
@@ -1528,8 +1526,8 @@ void MaterialVS(
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	oTexcoord2 = Texcoord2;
 #endif
-	oWorldPos = mul(Position, matWorld).xyz;
 	oPosition = mul(Position, matWorldViewProject);
+	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
 GbufferParam MaterialPS(
@@ -1538,7 +1536,7 @@ GbufferParam MaterialPS(
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	in float2 coord1   : TEXCOORD2,
 #endif
-	in float3 worldPos : TEXCOORD3)
+	in float4 worldPos : TEXCOORD3)
 {
 	normal = normalize(normal);
 
@@ -1546,7 +1544,7 @@ GbufferParam MaterialPS(
 	#if PARALLAX_MAP_UV_FLIP
 		coord0.y = 1 - coord0.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord0 * parallaxMapLoopNum);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord0 * parallaxMapLoopNum);
 	coord0 = ParallaxOcclusionMap(ParallaxMapSamp, coord0 * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 	#if PARALLAX_MAP_UV_FLIP
 		coord0.y = 1 - coord0.y;
@@ -1561,7 +1559,7 @@ GbufferParam MaterialPS(
 
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
-	material.normal = GetNormal(normal, worldPos, coord0);
+	material.normal = GetNormal(normal, worldPos.xyz, coord0);
 #if SPECULAR_ANTIALIASING_ENABLE
 	material.smoothness = GeometricNormalFiltering(GetSmoothness(coord0), material.normal, specularAntiAliasingVariance, specularAntiAliasingThreshold);
 #else
@@ -1581,7 +1579,7 @@ GbufferParam MaterialPS(
 	material.lightModel = GetLightMode(material);
 	material.alpha = 1;
 
-	return EncodeGbuffer(material, length(worldPos - CameraPosition));
+	return EncodeGbuffer(material, worldPos.w);
 }
 
 GbufferParam Material2PS(
@@ -1590,7 +1588,7 @@ GbufferParam Material2PS(
 #if OCCLUSION_MAP_TYPE == 2 || OCCLUSION_MAP_TYPE == 3
 	in float2 coord1   : TEXCOORD2,
 #endif
-	in float3 worldPos : TEXCOORD3)
+	in float4 worldPos : TEXCOORD3)
 {
 	normal = normalize(normal);
 
@@ -1598,7 +1596,7 @@ GbufferParam Material2PS(
 	#if PARALLAX_MAP_UV_FLIP
 		coord0.y = 1 - coord0.y;
 	#endif
-	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos, coord0);
+	float3 viewdir = ParallaxOcclusionDirection(normal, worldPos.xyz, coord0);
 #if PARALLAX_MAP_TYPE
 	coord0 = ParallaxOcclusionMap(ParallaxMapSamp, coord0 * parallaxMapLoopNum, viewdir, 15, parallaxMapScale);
 #else
@@ -1618,7 +1616,7 @@ GbufferParam Material2PS(
 
 	MaterialParam material;
 	material.albedo = GetSubAlbedo(GetAlbedo(coord0), coord0);
-	material.normal = GetNormal(normal, worldPos, coord0);
+	material.normal = GetNormal(normal, worldPos.xyz, coord0);
 	material.smoothness = min(geometricSmoothness, GetSmoothness(coord0));
 	material.metalness = GetMetalness(coord0);
 	material.specular = GetSpecular(coord0);
@@ -1638,7 +1636,7 @@ GbufferParam Material2PS(
 	material.alpha = alpha > ALPHA_THRESHOLD ? 0 : alpha;
 #endif
 
-	return EncodeGbuffer(material, length(worldPos - CameraPosition));
+	return EncodeGbuffer(material, worldPos.w);
 }
 
 #define OBJECT_TEC(name, mmdpass)\
