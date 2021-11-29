@@ -15,8 +15,8 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 
 #if SSDO_QUALITY
 	float3 bentNormal = tex2Dlod(SSDOMap_PointSampler, float4(uv, 0, 0)).xyz * 2 - 1;
-	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mSSDOScale);
-	shadow *= ssdo;
+	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mDirectionalOcclusionIntensity);
+	shadow *= lerp(ssdo, 1, material.lightModel == SHADINGMODELID_CEL);
 #endif
 
 #if TOON_ENABLE
