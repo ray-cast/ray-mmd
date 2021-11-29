@@ -21,14 +21,8 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 	material.visibility = min(material.visibility, (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ao.w);
 #endif
 
-#if TOON_ENABLE
 	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, shadow);
-#else
-	float2x3 energy = SurfaceEnergy(material, material.normal, L, V, min(shadow, saturate(dot(material.normal, L) * 4)));
-#endif
 	float3 subsurface = SubsurfaceShading(material, material.normal, L, V);
-
-	lightColor *= any(material.visibility);
 
 	float3 diffuse = (energy[0] + subsurface * shadow) * lightColor;
 	float3 specular = energy[1] * lightColor;
