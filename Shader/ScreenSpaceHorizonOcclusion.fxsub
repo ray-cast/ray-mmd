@@ -5,23 +5,23 @@
 #elif SSDO_QUALITY == 2
 #	define HBAO_DIRECTION_COUNT 5
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 4
 #elif SSDO_QUALITY == 3
 #	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 4
 #elif SSDO_QUALITY == 4
 #	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 4
 #elif SSDO_QUALITY == 4
 #	define HBAO_DIRECTION_COUNT 8
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 4
 #else
 #	define HBAO_DIRECTION_COUNT 4
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 4
 #endif
 
 float Falloff(float distanceSquare, float maxRadius)
@@ -129,7 +129,7 @@ float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
 
 	float3 sampleNormal = SampleTransparentNormal(uv.xy);
 	float3 samplePosition = SampleViewPosition(uv.xy);
-	float2 sampleRandom = float2(GetJitterOffset(uv.zw), PseudoRandom(uv.zw));
+	float2 sampleRandom = float2(InterleavedGradientNoise(uv.zw, 1.0f / elapsed), PseudoRandom(uv.zw));
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
 	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
