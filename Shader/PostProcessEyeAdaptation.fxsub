@@ -72,8 +72,8 @@ float ComputeExposureISO(float avgLum, float middleGray = 12.5)
 {
 	float EV100 = log2(avgLum * 100.0f / middleGray);
 	float maxLuminance = 1.2f * exp2(EV100);
-	float exposure = 0.5 / maxLuminance; // mExposureMin = 2.0, Need to multiply with 0.5
-	return clamp(exposure, mExposureEyeAdapationMin, mExposureEyeAdapationMax);
+	float exposure = 1.0 / maxLuminance;
+	return clamp(exposure, mEyeAdapationMinExposure, mEyeAdapationMaxExposure);
 }
 
 float4 EyePrefilterPS(
