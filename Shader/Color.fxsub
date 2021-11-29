@@ -1,6 +1,6 @@
 float luminance(float3 rgb)
 {
-	return dot(rgb, float3(0.299f, 0.587f, 0.114f));
+	return dot(rgb, float3(0.2126, 0.7152, 0.0722));
 }
 
 float3 srgb2linear(float3 rgb)

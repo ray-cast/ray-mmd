@@ -81,10 +81,15 @@ float4 EyePrefilterPS(
 	uniform sampler _MainTex,
 	uniform float2 _MainTex_TexelSize) : COLOR
 {
-	float color = log(luminance(tex2Dlod(_MainTex, float4(uv, 0, 0)).rgb));
-	color += log(luminance(tex2Dlod(_MainTex, float4(uv + float2(_MainTex_TexelSize.x, 0), 0, 0)).rgb));
-	color += log(luminance(tex2Dlod(_MainTex, float4(uv + float2(0, _MainTex_TexelSize.y), 0, 0)).rgb));
-	color += log(luminance(tex2Dlod(_MainTex, float4(uv + float2(_MainTex_TexelSize.x, _MainTex_TexelSize.y), 0, 0)).rgb));
+	float L1 = luminance(tex2Dlod(_MainTex, float4(uv, 0, 0)).rgb);
+	float L2 = luminance(tex2Dlod(_MainTex, float4(uv + float2(_MainTex_TexelSize.x, 0), 0, 0)).rgb);
+	float L3 = luminance(tex2Dlod(_MainTex, float4(uv + float2(0, _MainTex_TexelSize.y), 0, 0)).rgb);
+	float L4 = luminance(tex2Dlod(_MainTex, float4(uv + float2(_MainTex_TexelSize.x, _MainTex_TexelSize.y), 0, 0)).rgb);
+
+	float color = log(clamp(L1, mEyeAdaptationMinBrightness, mEyeAdaptationMaxBrightness));
+	color += log(clamp(L2, mEyeAdaptationMinBrightness, mEyeAdaptationMaxBrightness));
+	color += log(clamp(L3, mEyeAdaptationMinBrightness, mEyeAdaptationMaxBrightness));
+	color += log(clamp(L4, mEyeAdaptationMinBrightness, mEyeAdaptationMaxBrightness));
 	color *= 0.25;
 
 	return color;
