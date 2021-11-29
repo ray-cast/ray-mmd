@@ -315,7 +315,7 @@ shared texture Gbuffer3RT: RENDERCOLORTARGET<
 >;
 shared texture Gbuffer4RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A16B16G16R16F";
+	string Format = "A32B32G32R32F";
 >;
 shared texture Gbuffer5RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
@@ -331,7 +331,7 @@ shared texture Gbuffer7RT: RENDERCOLORTARGET<
 >;
 shared texture Gbuffer8RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A16B16G16R16F";
+	string Format = "A32B32G32R32F";
 >;
 sampler Gbuffer1Map = sampler_state {
 	texture = <MaterialMap>;
