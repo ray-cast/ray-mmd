@@ -112,8 +112,8 @@ static const int2 kOffsetsSquare3x3[9] = {
 // TILE_SCALE
 const static float CocTileScale = 1.0f/COC_TILE_SIZE;
 
-const static int MaxRingCount = 8;
-const static float KernelRadius = 16;
+const static int MaxRingCount = 12;
+const static float KernelRadius = 32 * ViewportOffset2;
 const static int CocRadiusError = 1;
 #define KernelSamplingDensityMode 0
 #define KERNEL_DENSITY_CONSTANT_HEXAWEB 0
@@ -752,7 +752,7 @@ void AccumulateSample(inout FGatherAccumulator Accumulator, in FGatherSample A, 
 void AccumulateCenterSample(inout FGatherAccumulator Accumulator, in FGatherSample A)
 {
 	// Fade intersection as CocRadius becomes close to 0 to fallback to full resolution gathering.	
-	A.Intersection *= ComputeForegroundFading(1.0, A.CocRadius);
+	A.Intersection *= ComputeForegroundFading(3/4, A.CocRadius);
 
 	// TODO: when accumulating the foreground, there is an issue in geometric edges.
 	#if 1
@@ -775,22 +775,37 @@ void AccumulateMirrorSamples(inout FGatherAccumulator Accumulator, in FGatherSam
 	float WeightB = ComputeSampleWeight(B.CocRadius);
 
     // Fade intersection as CocRadius becomes close to 0 to fallback to full resolution gathering.	
-    A.Intersection *= ComputeForegroundFading(1.0, A.CocRadius);
-    B.Intersection *= ComputeForegroundFading(1.0, B.CocRadius);
+    A.Intersection *= ComputeForegroundFading(3/4, A.CocRadius);
+    B.Intersection *= ComputeForegroundFading(3/4, B.CocRadius);
 
-    // If sample B is behind sample A. CocRadius < 0 when foreground.
-    if (B.CocRadius > A.CocRadius)
-    {
-        B.Intersection = A.Intersection;
-        B.CocRadius = A.CocRadius;
-        WeightB = WeightA;
-    }
-    else
-    {
-        A.Intersection = B.Intersection;
-        A.CocRadius = B.CocRadius;
-        WeightA = WeightB;
-    }
+    // Hole filling for foreground pixels.
+	#if 1
+	{
+		if (IsForeground(A.CocRadius) && B.CocRadius > A.CocRadius)
+		{
+			B.Intersection = max(B.Intersection, A.Intersection);
+		}
+		else if (IsForeground(B.CocRadius) && A.CocRadius > B.CocRadius)
+		{
+			A.Intersection = max(B.Intersection, A.Intersection);
+		}
+	}
+	#elif 0
+	{
+		if (B.CocRadius > A.CocRadius)
+		{
+			B.Intersection = A.Intersection;
+			DerivedB.Weight = DerivedA.Weight;
+		}
+		else
+		{
+			A.Intersection = B.Intersection;
+			DerivedA.Weight = DerivedB.Weight;
+		}
+	}
+	#else
+		#error Unimplemented hole filling.
+	#endif
 
 	AccumulateSample(Accumulator, A, WeightA);
 	AccumulateSample(Accumulator, B, WeightB);
@@ -832,8 +847,6 @@ float ComputeSampleIntersection(float SampleCocRadius, float SampleDistance)
 
 void GatherRingSamples(float2 coord, int RingId, float SampleCountToSamplePosition, inout FGatherAccumulator Accumulator)
 {
-    float centerCoC = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0)).a;
-
     // Number of sample iteration for this ring.
     const int RingSamplePairCount = GetRingSamplingPairCount(RingId);
 
@@ -844,7 +857,7 @@ void GatherRingSamples(float2 coord, int RingId, float SampleCountToSamplePositi
     const int RingDistance = RingId + 1;
 
     float RingRadius = RingDistance * SampleCountToSamplePosition;
-
+    
     // Generate at compile time sample rotation matrix.
     const float2x2 SampleRotationMatrix = GetSampleRotationMatrix(RingSamplePairCount);
 
@@ -861,22 +874,6 @@ void GatherRingSamples(float2 coord, int RingId, float SampleCountToSamplePositi
     {
         CurrentCircleUnitPos = mul(CurrentCircleUnitPos, SampleRotationMatrix);
         CurrentCircleSamplePosOffset = mul(CurrentCircleSamplePosOffset, SampleRotationMatrix);
-
-        float2 BatchCirleUnitPos = CurrentCircleUnitPos;
-        float2 BatchCircleSamplePosOffset = CurrentCircleSamplePosOffset;
-
-        float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(coord, 0, 0)).g;
-        float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(coord, 0, 0)).r;
-        float CoC = backWeight > -foreWeight ? backWeight : foreWeight;
-        float4 color = tex2Dlod(SetupOutputFullSampler, float4(coord, 0, 0));
-
-        FGatherSample CenterSample;
-        CenterSample.Color = color;
-        CenterSample.CocRadius = CoC;
-        CenterSample.Distance = RingRadius;
-        CenterSample.Intersection = ComputeSampleIntersection(CoC, RingRadius);
-        AccumulateCenterSample(Accumulator, CenterSample);
-
         // Fetches the mirrored samples.
         FGatherSample Sample[2];
         [unroll]
@@ -884,15 +881,14 @@ void GatherRingSamples(float2 coord, int RingId, float SampleCountToSamplePositi
         {
             const float SampleSign = (k == 0) ? 1.0 : -1.0;
             // Swizzle the batch positions' X and Y components.
-            float2 CirleUnitPos = BatchCirleUnitPos * SampleSign;
-            float2 CircleSamplePosOffset = BatchCircleSamplePosOffset * SampleSign;
+            float2 CirleUnitPos = CurrentCircleUnitPos * SampleSign;
+            float2 CircleSamplePosOffset = CurrentCircleSamplePosOffset * SampleSign;
 
-            float2 SamplePos = coord + CircleSamplePosOffset * ViewportOffset2;
+            float2 SamplePos = coord + float2(CircleSamplePosOffset.x, CircleSamplePosOffset.y * ViewportAspect);
             float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(SamplePos, 0, 0)).g;
             float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(SamplePos, 0, 0)).r;
             float CoC = backWeight > -foreWeight ? backWeight : foreWeight;
             float4 color = tex2Dlod(SetupOutputHalfSampler, float4(SamplePos, 0, 0));
-            // if (weight * ViewportSize.x >= RingRadius)
             Sample[k].Color = color;
             Sample[k].CocRadius = CoC;
             Sample[k].Distance = RingRadius;
@@ -972,6 +968,16 @@ void GatherMainPS(
 
     FGatherAccumulator Accumulator = CreateGatherAccumulator();
 
+    // Computes compile time known values about radius changes
+    const float DensityChangeRingCount = MaxRingCount / 2;
+	const float LargeKernelRadius = 1 + 2 * MaxRingCount;
+	const float SmallKernelRadius = 1 + 2 * (MaxRingCount - DensityChangeRingCount);
+
+	const float RadiusDownScaleFactor = SmallKernelRadius / LargeKernelRadius;
+
+    Accumulator.CloseBorderingRadius = ((MaxRingCount - DensityChangeRingCount) + (0.5 + CocRadiusError)) * (KernelRadius * rcp(0.5 + MaxRingCount));
+    Accumulator.FarBorderingRadius = Accumulator.CloseBorderingRadius/ RadiusDownScaleFactor;
+
     // Sample Coc tile texture.
     for (int RingId = MaxRingCount - 1; RingId >= 0; RingId--)
     {
@@ -983,6 +989,19 @@ void GatherMainPS(
             Accumulator
         );
     }
+
+    float backWeight = tex2Dlod(DilateOutputBackgroundSampler, float4(coord, 0, 0)).g;
+    float foreWeight = -tex2Dlod(DilateOutputForegroundSampler, float4(coord, 0, 0)).r;
+    float CoC = backWeight > -foreWeight ? backWeight : foreWeight;
+    float4 color = tex2Dlod(SetupOutputHalfSampler, float4(coord, 0, 0));
+
+    FGatherSample CenterSample;
+    CenterSample.Color = color;
+    CenterSample.CocRadius = CoC;
+    CenterSample.Distance = 0;
+    CenterSample.Intersection = ComputeSampleIntersection(CoC, 0);
+    AccumulateCenterSampleAsItsOwnRing(Accumulator, CenterSample);
+
     sceneColor = Accumulator.PreviousColor * rcp(Accumulator.PreviousWeight); // Accumulator.PreviousColor;
 }
 
