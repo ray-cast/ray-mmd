@@ -1,27 +1,31 @@
 #if SSDO_QUALITY == 1
 #	define HBAO_DIRECTION_COUNT 4
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 8
+#	define HBAO_BLUR_RADIUS 5
 #elif SSDO_QUALITY == 2
-#	define HBAO_DIRECTION_COUNT 5
+#	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 4
 #	define HBAO_BLUR_RADIUS 4
 #elif SSDO_QUALITY == 3
-#	define HBAO_DIRECTION_COUNT 6
+#	define HBAO_DIRECTION_COUNT 8
 #	define HBAO_SAMPLER_COUNT 4
-#	define HBAO_BLUR_RADIUS 4
+#	define HBAO_BLUR_RADIUS 3
 #elif SSDO_QUALITY == 4
 #	define HBAO_DIRECTION_COUNT 6
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 4
-#elif SSDO_QUALITY == 4
+#	define HBAO_BLUR_RADIUS 2
+#elif SSDO_QUALITY == 5
 #	define HBAO_DIRECTION_COUNT 8
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 4
+#	define HBAO_BLUR_RADIUS 2
+#elif SSDO_QUALITY == 6
+#	define HBAO_DIRECTION_COUNT 10
+#	define HBAO_SAMPLER_COUNT 8
+#	define HBAO_BLUR_RADIUS 2
 #else
 #	define HBAO_DIRECTION_COUNT 4
 #	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 4
+#	define HBAO_BLUR_RADIUS 2
 #endif
 
 float Falloff(float distanceSquare, float maxRadius)
@@ -173,7 +177,9 @@ float4 ScreenSpaceBilateralBlurPS(
 	float3 normal = SampleTransparentNormal(coord);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
-	float falloff = ALN2I / (0.5 * HBAO_BLUR_RADIUS * HBAO_BLUR_RADIUS);
+
+	float blurSigma = HBAO_BLUR_RADIUS * 0.5f;
+	float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
 	float2 offset1 = coord + _MainTex_TexelSize;
 	float2 offset2 = coord - _MainTex_TexelSize;
@@ -182,7 +188,7 @@ float4 ScreenSpaceBilateralBlurPS(
 	for (int r = 1; r < HBAO_BLUR_RADIUS; ++r)
 	{
 		float2 depth = float2(SampleLinearEyeDepth(offset1), SampleLinearEyeDepth(offset2));
-		float2 weight = BilateralWeight(r, depth, center_d, HBAO_BLUR_RADIUS, mAmbientOcclusionBilateralSharpness);
+		float2 weight = exp2(-r * r * blurFalloff - pow2((depth - center_d) * mAmbientOcclusionBilateralSharpness));
 
 		weight.x *= saturate(dot(SampleTransparentNormal(offset1), normal));
 		weight.y *= saturate(dot(SampleTransparentNormal(offset2), normal));
