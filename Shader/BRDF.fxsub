@@ -115,7 +115,7 @@ float ComputeAmbientMicroOcclusion(float nl, float ao)
 
 float ComputeSpecularOcclusion(float nv, float ao, float smoothness)
 {
-	return saturate(pow(nv + ao, smoothness) - 1 + ao);
+	return saturate(pow(max(nv + ao, 0), smoothness) - 1 + ao);
 }
 
 float ComputeSpecularMicroOcclusion(float3 f0)

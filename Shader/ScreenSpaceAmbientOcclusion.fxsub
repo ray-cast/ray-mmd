@@ -7,21 +7,30 @@
 #elif SSDO_QUALITY == 3
 #	define SSDO_SAMPLER_COUNT 16
 #	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 4
+ // 3 rings 8 point
+#	define SSDO_SAMPLER_COUNT 24
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 5
+ // 4 rings 6 point
+#	define SSDO_SAMPLER_COUNT 36
+#	define SSDO_BLUR_RADIUS 6
+#elif SSDO_QUALITY == 6
+ // 4 rings 8 point
+#	define SSDO_SAMPLER_COUNT 48
+#	define SSDO_BLUR_RADIUS 6
 #else
 #	define SSDO_SAMPLER_COUNT 16
 #	define SSDO_BLUR_RADIUS 6
 #endif
 
 #if SSDO_QUALITY >= 4
-#	define SSDO_LOW_SAMPLER_COUNT 12
-#endif
-
-#if SSDO_QUALITY >= 5
 #	define SSDO_UNROLL
 #else
 #	define SSDO_UNROLL [unroll]
 #endif
 
+#if SSDO_QUALITY == 1 || SSDO_QUALITY == 2 || SSDO_QUALITY == 3
 static const float2 SSDOKernel[16] = 
 {
 	float2( -0.14, -0.02 ),
@@ -41,6 +50,127 @@ static const float2 SSDOKernel[16] =
 	float2(-0.338, -0.684),
 	float2(-0.622, -0.415)
 };
+#elif SSDO_QUALITY == 4
+static const float2 SSDOKernel[24] = 
+{
+	float2(0.529412, 0),
+	float2(0.374351, 0.374351),
+	float2(-2.31413e-08, 0.529412),
+	float2(-0.374351, 0.374351),
+	float2(-0.529412, -4.62827e-08),
+	float2(-0.374351, -0.374351),
+	float2(6.31317e-09, -0.529412),
+	float2(0.374351, -0.374351),
+	float2(1, 0),
+	float2(0.92388, 0.382683),
+	float2(0.707107, 0.707107),
+	float2(0.382683, 0.92388),
+	float2(-4.37114e-08, 1),
+	float2(-0.382684, 0.92388),
+	float2(-0.707107, 0.707107),
+	float2(-0.92388, 0.382683),
+	float2(-1, -8.74228e-08),
+	float2(-0.92388, -0.382683),
+	float2(-0.707107, -0.707107),
+	float2(-0.382683, -0.92388),
+	float2(1.19249e-08, -1),
+	float2(0.382684, -0.923879),
+	float2(0.707107, -0.707107),
+	float2(0.92388, -0.382683)
+};
+#elif SSDO_QUALITY == 5
+static const float2 SSDOKernel[36] =
+{
+	float2(0.368421, 0),
+	float2(0.18421, 0.319062),
+	float2(-0.184211, 0.319062),
+	float2(-0.368421, -3.22084e-08),
+	float2(-0.18421, -0.319062),
+	float2(0.184211, -0.319062),
+	float2(0.684211, 0),
+	float2(0.592544, 0.342105),
+	float2(0.342105, 0.592544),
+	float2(-2.99078e-08, 0.684211),
+	float2(-0.342105, 0.592544),
+	float2(-0.592544, 0.342105),
+	float2(-0.684211, -5.98156e-08),
+	float2(-0.592544, -0.342105),
+	float2(-0.342105, -0.592544),
+	float2(8.15913e-09, -0.684211),
+	float2(0.342106, -0.592544),
+	float2(0.592544, -0.342105),
+	float2(1, 0),
+	float2(0.939693, 0.34202),
+	float2(0.766044, 0.642788),
+	float2(0.5, 0.866025),
+	float2(0.173648, 0.984808),
+	float2(-0.173648, 0.984808),
+	float2(-0.5, 0.866025),
+	float2(-0.766045, 0.642787),
+	float2(-0.939693, 0.34202),
+	float2(-1, -8.74228e-08),
+	float2(-0.939693, -0.34202),
+	float2(-0.766044, -0.642788),
+	float2(-0.5, -0.866025),
+	float2(-0.173648, -0.984808),
+	float2(0.173649, -0.984808),
+	float2(0.5, -0.866025),
+	float2(0.766045, -0.642787),
+	float2(0.939693, -0.34202)
+};
+#elif SSDO_QUALITY == 6
+static const float2 SSDOKernel[48] = 
+{
+	float2(0.36, 0),
+	float2(0.254558, 0.254558),
+	float2(-1.57361e-08, 0.36),
+	float2(-0.254558, 0.254558),
+	float2(-0.36, -3.14722e-08),
+	float2(-0.254558, -0.254559),
+	float2(4.29296e-09, -0.36),
+	float2(0.254559, -0.254558),
+	float2(0.68, 0),
+	float2(0.628238, 0.260225),
+	float2(0.480833, 0.480833),
+	float2(0.260225, 0.628238),
+	float2(-2.97237e-08, 0.68),
+	float2(-0.260225, 0.628238),
+	float2(-0.480833, 0.480833),
+	float2(-0.628238, 0.260225),
+	float2(-0.68, -5.94475e-08),
+	float2(-0.628238, -0.260225),
+	float2(-0.480833, -0.480833),
+	float2(-0.260225, -0.628238),
+	float2(8.10892e-09, -0.68),
+	float2(0.260225, -0.628238),
+	float2(0.480833, -0.480832),
+	float2(0.628238, -0.260225),
+	float2(1, 0),
+	float2(0.965926, 0.258819),
+	float2(0.866025, 0.5),
+	float2(0.707107, 0.707107),
+	float2(0.5, 0.866025),
+	float2(0.258819, 0.965926),
+	float2(-4.37114e-08, 1),
+	float2(-0.258819, 0.965926),
+	float2(-0.5, 0.866025),
+	float2(-0.707107, 0.707107),
+	float2(-0.866026, 0.5),
+	float2(-0.965926, 0.258819),
+	float2(-1, -8.74228e-08),
+	float2(-0.965926, -0.258819),
+	float2(-0.866025, -0.5),
+	float2(-0.707107, -0.707107),
+	float2(-0.5, -0.866025),
+	float2(-0.258819, -0.965926),
+	float2(1.19249e-08, -1),
+	float2(0.258819, -0.965926),
+	float2(0.5, -0.866025),
+	float2(0.707107, -0.707107),
+	float2(0.866026, -0.5),
+	float2(0.965926, -0.258819)
+};
+#endif
 
 float4 ScreenSpaceAmbientOcclusionVS(
 	in float4 Position : POSITION,
@@ -65,29 +195,25 @@ float4 ScreenSpaceAmbientOcclusion(
 	float  jitter,
 	float  bias)
 {
-	float2 sampleRotate[16];
 	float2 sampleSinCos = float2(sin(jitter * PI_2), cos(jitter * PI_2));
 	float4 sampleOcclustion = 0.0f;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
 	SSDO_UNROLL
-	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
-	{
-		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[i + 1] = mul(SSDOKernel[i + 1], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[i + 2] = mul(SSDOKernel[i + 2], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-	}
-
-	SSDO_UNROLL
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
+		float2 sampleRotate[4];
+		sampleRotate[0] = mul(SSDOKernel[j + 0], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[1] = mul(SSDOKernel[j + 1], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[2] = mul(SSDOKernel[j + 2], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[3] = mul(SSDOKernel[j + 3], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[j + 0];
-		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
-		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
-		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
+		sampleOffset[0] = coord.xy + sampleRotate[0];
+		sampleOffset[1] = coord.xy + sampleRotate[1];
+		sampleOffset[2] = coord.xy + sampleRotate[2];
+		sampleOffset[3] = coord.xy + sampleRotate[3];
 
 		float4 sampleDepths;
 		sampleDepths[0] = SampleLinearEyeDepth(sampleOffset[0]);

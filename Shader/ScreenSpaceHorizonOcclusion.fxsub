@@ -43,27 +43,24 @@ float4 HorizonOcclusion(
 	float  jitter,
 	float  bias)
 {
-	float2 samplePoint[HBAO_SAMPLER_COUNT];
-	float4 sampleOcclustion = 0.0f;
-
 	float2 sampleStepDelta = direction * maxRadius / HBAO_SAMPLER_COUNT;
 	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
 
-	for (int i = 0; i < HBAO_SAMPLER_COUNT; i+=4)
-	{
-		samplePoint[i + 0] = round(sampleDirection); sampleDirection += sampleStepDelta;
-		samplePoint[i + 1] = round(sampleDirection); sampleDirection += sampleStepDelta;
-		samplePoint[i + 2] = round(sampleDirection); sampleDirection += sampleStepDelta;
-		samplePoint[i + 3] = round(sampleDirection); sampleDirection += sampleStepDelta;
-	}
+	float4 sampleOcclustion = 0.0f;
 
 	for (int j = 0; j < HBAO_SAMPLER_COUNT; j+=4)
 	{
+		float2 samplePoint[4];
+		samplePoint[0] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[1] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[2] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[3] = round(sampleDirection); sampleDirection += sampleStepDelta;
+
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + samplePoint[j + 0] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[1] = coord.xy + samplePoint[j + 1] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[2] = coord.xy + samplePoint[j + 2] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[3] = coord.xy + samplePoint[j + 3] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[0] = coord.xy + samplePoint[0] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[1] = coord.xy + samplePoint[1] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[2] = coord.xy + samplePoint[2] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[3] = coord.xy + samplePoint[3] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
 
 		float3 samplePosition[4];
 		samplePosition[0] = SampleViewPosition(sampleOffset[0]);
