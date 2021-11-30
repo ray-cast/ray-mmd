@@ -45,9 +45,9 @@ sampler ScnSamp = sampler_state {
 };
 
 #if SSDO_QUALITY > 0
-shared texture SSDOMap : RENDERCOLORTARGET;
-sampler SSDOMapSamp = sampler_state {
-	texture = <SSDOMap>;
+shared texture _CameraOcclusionTexture : RENDERCOLORTARGET;
+sampler _CameraOcclusionTextureSamp = sampler_state {
+	texture = <_CameraOcclusionTexture>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
@@ -168,7 +168,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	result += pow(saturate(materialAlpha.linearDepth / 200), 0.5) * showDepthAlpha;
 
 	#if SSDO_QUALITY > 0
-		float4 ssao = tex2Dlod(SSDOMapSamp, float4(coord, 0, 0));
+		float4 ssao = tex2Dlod(_CameraOcclusionTextureSamp, float4(coord, 0, 0));
 		result += ssao.w * showSSAO;
 		result += ssao.xyz * showSSDO;
 	#endif

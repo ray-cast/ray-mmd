@@ -14,7 +14,7 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 #endif
 
 #if SSDO_QUALITY
-	float4 ao = tex2Dlod(SSDOMap_PointSampler, float4(uv, 0, 0));
+	float4 ao = tex2Dlod(_CameraOcclusionTexture_PointSampler, float4(uv, 0, 0));
 	float3 bentNormal = ao.xyz * 2 - 1;
 	float ssdo = pow(1 - saturate(dot(bentNormal, L)), mDirectionalOcclusionIntensity);
 	shadow *= lerp(ssdo, 1, material.lightModel == SHADINGMODELID_CEL);
@@ -43,7 +43,7 @@ float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, 
 	float occlusion = material.visibility;
 
 #if SSDO_QUALITY
-	float ssao = tex2Dlod(SSDOMap_PointSampler, float4(uv, 0, 0)).w;
+	float ssao = tex2Dlod(_CameraOcclusionTexture_PointSampler, float4(uv, 0, 0)).w;
 	occlusion = min(occlusion, (material.lightModel == SHADINGMODELID_GLASS) ? 1.0 : ssao);
 #endif
 

@@ -216,9 +216,9 @@ technique DeferredLighting<
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
-	"RenderColorTarget=SSDOMap;		Clear=Color; Pass=ScreenSpaceHorizonOcclusion;"
-	"RenderColorTarget=SSDOMapTemp; Clear=Color; Pass=ScreenSpaceHorizonOcclusionBlurX;"
-	"RenderColorTarget=SSDOMap;	    Clear=Color; Pass=ScreenSpaceHorizonOcclusionBlurY;"
+	"RenderColorTarget=_CameraOcclusionTexture;		Clear=Color; Pass=ScreenSpaceHorizonOcclusion;"
+	"RenderColorTarget=_CameraOcclusionTextureTemp; Clear=Color; Pass=ScreenSpaceHorizonOcclusionBlurX;"
+	"RenderColorTarget=_CameraOcclusionTexture;	    Clear=Color; Pass=ScreenSpaceHorizonOcclusionBlurY;"
 #endif
 
 	"RenderColorTarget0=ShadingMapTemp;"
@@ -400,13 +400,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(SSDOMap_PointSampler, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(_CameraOcclusionTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
 	pass ScreenSpaceHorizonOcclusionBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(SSDOMapTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(_CameraOcclusionTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 	pass ScreenSpaceOpacityLighting<string Script= "Draw=Buffer;";>{

@@ -42,12 +42,14 @@ static const float2 SSDOKernel[16] =
 	float2(-0.622, -0.415)
 };
 
-float4 ScreenSpaceDirOccPassVS(
+float4 ScreenSpaceAmbientOcclusionVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1) : POSITION
 {
+	const float mSSDOParams[4] = {2.0, 2.0, 0.03, 0.15};
+
 	oTexcoord0.xy = Texcoord.xy + ViewportOffset;
 	oTexcoord0.zw = Texcoord.xy * ViewportSize;
 	oTexcoord1.xy = float2(mSSDOParams[0], mSSDOParams[1]) * float2(1, ViewportAspect);
@@ -55,105 +57,16 @@ float4 ScreenSpaceDirOccPassVS(
 	return Position;
 }
 
-#if SSDO_LOW_SAMPLER_COUNT
-float4 ScreenSpaceDirOccLowPS(
+float4 ScreenSpaceAmbientOcclusion(
 	float4 coord,
 	float3 viewNormal,
 	float3 viewPosition,
-	float  SSDOJitter,
-	float  SSDOBias,
-	float  SSDORadius,
-	float4 SSDOParams2)
+	float2 sampleRadius,
+	float  jitter,
+	float  bias)
 {
 	float2 sampleRotate[16];
-	float4 sampleOcclustion = 0.0f;
-	float2 sampleRadius = SSDOParams2.w * SSDORadius * ViewportAspect / SSDO_LOW_SAMPLER_COUNT;
-
-	SSDO_UNROLL
-	for (int i = 1; i <= SSDO_LOW_SAMPLER_COUNT; i++)
-	{
-		float2 angle;
-		sincos(i * 7.0 * PI_2 / SSDO_LOW_SAMPLER_COUNT + SSDOJitter, angle.x, angle.y);
-		sampleRotate[i - 1] = angle * sampleRadius * i * 0.5;
-	}
-
-	SSDO_UNROLL
-	for (int j = 0; j < SSDO_LOW_SAMPLER_COUNT; j+=4)
-	{
-		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[j + 0];
-		sampleOffset[1] = coord.xy + sampleRotate[j + 1];
-		sampleOffset[2] = coord.xy + sampleRotate[j + 2];
-		sampleOffset[3] = coord.xy + sampleRotate[j + 3];
-
-		float4 sampleDepths;
-		sampleDepths[0] = SampleLinearEyeDepth(sampleOffset[0]);
-		sampleDepths[1] = SampleLinearEyeDepth(sampleOffset[1]);
-		sampleDepths[2] = SampleLinearEyeDepth(sampleOffset[2]);
-		sampleDepths[3] = SampleLinearEyeDepth(sampleOffset[3]);
-
-		float3 samplePosition[4];
-		samplePosition[0] = SampleViewPosition(sampleOffset[0], sampleDepths[0]);
-		samplePosition[1] = SampleViewPosition(sampleOffset[1], sampleDepths[1]);
-		samplePosition[2] = SampleViewPosition(sampleOffset[2], sampleDepths[2]);
-		samplePosition[3] = SampleViewPosition(sampleOffset[3], sampleDepths[3]);
-
-		float3 sampleDirection[4];
-		sampleDirection[0] = samplePosition[0] - viewPosition;
-		sampleDirection[1] = samplePosition[1] - viewPosition;
-		sampleDirection[2] = samplePosition[2] - viewPosition;
-		sampleDirection[3] = samplePosition[3] - viewPosition;
-
-		float4 sampleLength2 = float4(
-			dot(sampleDirection[0], sampleDirection[0]),
-			dot(sampleDirection[1], sampleDirection[1]),
-			dot(sampleDirection[2], sampleDirection[2]),
-			dot(sampleDirection[3], sampleDirection[3]));
-
-		float4 sampleLengthInv = rsqrt(sampleLength2);
-
-		sampleDirection[0] *= sampleLengthInv[0];
-		sampleDirection[1] *= sampleLengthInv[1];
-		sampleDirection[2] *= sampleLengthInv[2];
-		sampleDirection[3] *= sampleLengthInv[3];
-
-		float4 sampleAngle = float4(
-			dot(sampleDirection[0], viewNormal),
-			dot(sampleDirection[1], viewNormal),
-			dot(sampleDirection[2], viewNormal),
-			dot(sampleDirection[3], viewNormal));
-
-		float emitterScale = 5.0;
-		float emitterRadius = (sampleRadius.x * viewPosition.z) * GetProjConstant().x;
-		float emitterArea = (emitterScale * emitterRadius * emitterRadius) * PI;
-
-		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
-
-		sampleOcclustion.w += sum(sh);
-		sampleOcclustion.xyz += sh.x * sampleDirection[0];
-		sampleOcclustion.xyz += sh.y * sampleDirection[1];
-		sampleOcclustion.xyz += sh.z * sampleDirection[2];
-		sampleOcclustion.xyz += sh.w * sampleDirection[3];
-	}
-
-	sampleOcclustion /= SSDO_LOW_SAMPLER_COUNT;
-
-	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
-}
-#endif
-
-float4 ScreenSpaceDirOccMediumPS(
-	float4 coord,
-	float3 viewNormal,
-	float3 viewPosition,
-	float  SSDOJitter,
-	float  SSDOBias,
-	float  SSDORadius,
-	float4 SSDOParams2)
-{
-	float2 sampleRotate[16];
-	float2 sampleRadius = clamp(SSDOParams2.xy / viewPosition.z, SSDOParams2.z, SSDOParams2.w * SSDORadius);
-	float2 sampleSinCos = float2(sin(SSDOJitter), cos(SSDOJitter));
+	float2 sampleSinCos = float2(sin(jitter * PI_2), cos(jitter * PI_2));
 	float4 sampleOcclustion = 0.0f;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
@@ -161,10 +74,10 @@ float4 ScreenSpaceDirOccMediumPS(
 	SSDO_UNROLL
 	for (int i = 0; i < SSDO_SAMPLER_COUNT; i+=4)
 	{
-		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius;
-		sampleRotate[i + 1] = mul(SSDOKernel[i + 1], sampleRotMat) * sampleRadius;
-		sampleRotate[i + 2] = mul(SSDOKernel[i + 2], sampleRotMat) * sampleRadius;
-		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius;
+		sampleRotate[i + 0] = mul(SSDOKernel[i + 0], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[i + 1] = mul(SSDOKernel[i + 1], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[i + 2] = mul(SSDOKernel[i + 2], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[i + 3] = mul(SSDOKernel[i + 3], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
 	}
 
 	SSDO_UNROLL
@@ -214,10 +127,10 @@ float4 ScreenSpaceDirOccMediumPS(
 			dot(sampleDirection[3], viewNormal));
 
 		float emitterScale = 2.5;
-		float emitterRadius = (sampleRadius.x * viewPosition.z) * GetProjConstant().x;
+		float emitterRadius = sampleRadius.x;
 		float emitterArea = (emitterScale * emitterRadius * emitterRadius) * PI * 0.25;
 
-		float4 sh = emitterArea * saturate(sampleAngle - SSDOBias) / (sampleLength2 + emitterArea);
+		float4 sh = emitterArea * saturate(sampleAngle - bias) / (sampleLength2 + emitterArea);
 
 		sampleOcclustion.w += sum(sh);
 		sampleOcclustion.xyz += sh.x * sampleDirection[0];
@@ -231,41 +144,30 @@ float4 ScreenSpaceDirOccMediumPS(
 	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
 }
 
-float4 ScreenSpaceDirOccPassPS(
+float4 ScreenSpaceAmbientOcclusionPS(
 	in float4 coord : TEXCOORD0,
 	in float4 SSDOParams : TEXCOORD1) : COLOR
 {
-	float linearDepth = SampleLinearEyeDepth(coord.xy);
-
-	float3 viewNormal = SampleTransparentNormal(coord.xy);
-	float3 viewPosition = SampleViewPosition(coord.xy, linearDepth);
-
-	float sampleJitter = GetJitterOffset(coord.zw) * PI_2;
-	float sampleBias = 0;
-	sampleBias += mSSDOBiasFar * linearDepth;
-	sampleBias += mSSDOBiasNear * (1 - saturate(linearDepth / mSSDOBiasFalloffNear));
-
-	float maxRadius = mSSAORadius;
+	float maxRadius = mAmbientOcclusionRadius * 0.5;
 	if (floor(fmod(coord.z, 2)) > 0) maxRadius *= 0.5;
 	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
-#if SSDO_QUALITY >= 4
-	float4 sh1 = ScreenSpaceDirOccLowPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams);
-	float4 sh2 = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams);
+	float3 viewNormal = SampleTransparentNormal(coord.xy);
+	float3 viewPosition = SampleViewPosition(coord.xy);
 
-	float4 sh = sh1.w > sh2.w ? sh1 : sh2;
-#else
-	float4 sh = ScreenSpaceDirOccMediumPS(coord, viewNormal, viewPosition, sampleJitter, sampleBias, maxRadius, SSDOParams);
-#endif
+	float jitter = GetJitterOffset(coord.zw);
+	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
+	float radius = clamp(maxRadius * log2(viewPosition.z), SSDO_SAMPLER_COUNT, maxRadiusPixels);
+
+	float4 sh = ScreenSpaceAmbientOcclusion(coord, viewNormal, viewPosition, radius, jitter, mAmbientOcclusionBias);
 
 	sh.w = sh.w * tex2Dlod(SSAOMap_PointSampler, float4(coord.xy, 0, 0)).a;
 	sh.w = 1 - sh.w;
-	sh.w = pow(sh.w, mSSAOScale);
 
 	return sh;
 }
 
-float4 ScreenSpaceDirOccBlurPS(
+float4 ScreenSpaceBilateralBlurPS(
 	in float2 coord   : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	uniform sampler _MainTex,
@@ -279,11 +181,9 @@ float4 ScreenSpaceDirOccBlurPS(
 	float3 normal = SampleTransparentNormal(coord);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
-	float falloff = ALN2I / (0.5 * SSDO_BLUR_RADIUS * SSDO_BLUR_RADIUS);
 
-	float sharpness = 0;
-	sharpness = lerp(mSSDOBlurSharpnessMax * angle, mSSDOBlurSharpnessMin, saturate(center_d / mSSDOBlurFalloff));
-	sharpness = lerp(mSSDOBlurSharpnessMax, sharpness, saturate(center_d / mSSDOBiasFalloffNear));
+	float blurSigma = SSDO_BLUR_RADIUS * 0.5f;
+	float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
 	float2 offset1 = coord + _MainTex_TexelSize;
 	float2 offset2 = coord - _MainTex_TexelSize;
@@ -292,7 +192,7 @@ float4 ScreenSpaceDirOccBlurPS(
 	for (int r = 1; r < SSDO_BLUR_RADIUS; ++r)
 	{
 		float2 depth = float2(SampleLinearEyeDepth(offset1), SampleLinearEyeDepth(offset2));
-		float2 weight = exp2(-r * r * falloff - pow2((depth - center_d) * sharpness));
+		float2 weight = exp2(-r * r * blurFalloff - pow2((depth - center_d) * mAmbientOcclusionBilateralSharpness));
 
 		weight.x *= saturate(dot(SampleTransparentNormal(offset1), normal));
 		weight.y *= saturate(dot(SampleTransparentNormal(offset2), normal));

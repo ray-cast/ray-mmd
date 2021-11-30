@@ -175,28 +175,26 @@ texture SSAOMap : OFFSCREENRENDERTARGET<
 		"Volumetric*.pmx=hide;"
 		"*.*=shadow/SSAO visibility 1.0.fx;";
 >;
-shared texture SSDOMap : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
-texture SSDOMapTemp : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	bool AntiAlias = false;
-	string Format = "A8R8G8B8";
->;
 sampler SSAOMap_PointSampler = sampler_state {
 	texture = <SSAOMap>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler SSDOMap_PointSampler = sampler_state {
-	texture = <SSDOMap>;
+shared texture _CameraOcclusionTexture : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+>;
+texture _CameraOcclusionTextureTemp : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A8R8G8B8";
+>;
+sampler _CameraOcclusionTexture_PointSampler = sampler_state {
+	texture = <_CameraOcclusionTexture>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
-sampler SSDOMapTemp_PointSampler = sampler_state {
-	texture = <SSDOMapTemp>;
+sampler _CameraOcclusionTextureTemp_PointSampler = sampler_state {
+	texture = <_CameraOcclusionTextureTemp>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
