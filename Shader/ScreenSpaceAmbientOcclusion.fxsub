@@ -172,7 +172,7 @@ static const float2 SSDOKernel[48] =
 };
 #endif
 
-float4 ScreenSpaceAmbientOcclusionVS(
+float4 ScreenSpaceAmbientOcclusionVertex(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -223,10 +223,10 @@ float4 ScreenSpaceAmbientOcclusion(
 		sampleDepths[3] = SampleLinearEyeDepth(sampleOffset[3]);
 
 		float3 samplePosition[4];
-		samplePosition[0] = SampleViewPosition(sampleOffset[0], sampleDepths[0]);
-		samplePosition[1] = SampleViewPosition(sampleOffset[1], sampleDepths[1]);
-		samplePosition[2] = SampleViewPosition(sampleOffset[2], sampleDepths[2]);
-		samplePosition[3] = SampleViewPosition(sampleOffset[3], sampleDepths[3]);
+		samplePosition[0] = ComputeViewSpacePosition(sampleOffset[0], sampleDepths[0]);
+		samplePosition[1] = ComputeViewSpacePosition(sampleOffset[1], sampleDepths[1]);
+		samplePosition[2] = ComputeViewSpacePosition(sampleOffset[2], sampleDepths[2]);
+		samplePosition[3] = ComputeViewSpacePosition(sampleOffset[3], sampleDepths[3]);
 
 		float3 sampleDirection[4];
 		sampleDirection[0] = samplePosition[0] - viewPosition;
@@ -271,7 +271,7 @@ float4 ScreenSpaceAmbientOcclusion(
 	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
 }
 
-float4 ScreenSpaceAmbientOcclusionPS(
+float4 ScreenSpaceAmbientOcclusionFragment(
 	in float4 coord : TEXCOORD0,
 	in float4 SSDOParams : TEXCOORD1) : COLOR
 {
@@ -280,7 +280,7 @@ float4 ScreenSpaceAmbientOcclusionPS(
 	if (floor(fmod(coord.w, 2)) > 0) maxRadius *= 0.5;
 
 	float3 viewNormal = SampleTransparentNormal(coord.xy);
-	float3 viewPosition = SampleViewPosition(coord.xy);
+	float3 viewPosition = ComputeViewSpacePosition(coord.xy, SampleLinearEyeDepth(coord.xy));
 
 	float jitter = GetJitterOffset(coord.zw);
 	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
@@ -294,7 +294,7 @@ float4 ScreenSpaceAmbientOcclusionPS(
 	return sh;
 }
 
-float4 ScreenSpaceBilateralBlurPS(
+float4 ScreenSpaceBilateralFilterFragment(
 	in float2 coord   : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	uniform sampler _MainTex,
