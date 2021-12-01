@@ -113,7 +113,7 @@ float4 HorizonOcclusion(
 	return sampleOcclustion;
 }
 
-float4 HorizonBasedAmbientOcclusionVS(
+float4 HorizonBasedAmbientOcclusionVertex(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0) : POSITION
@@ -123,7 +123,7 @@ float4 HorizonBasedAmbientOcclusionVS(
 	return Position;
 }
 
-float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
+float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
 {
 	float maxRadius = mAmbientOcclusionRadius;
 	if (floor(fmod(uv.z, 2)) > 0) maxRadius *= 0.5;
@@ -161,7 +161,7 @@ float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
 	return occclusion;
 }
 
-float4 ScreenSpaceBilateralBlurPS(
+float4 ScreenSpaceBilateralFilterFragment(
 	in float2 coord   : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	uniform sampler _MainTex,

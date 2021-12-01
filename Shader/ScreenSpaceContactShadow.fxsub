@@ -1,0 +1,51 @@
+#define CONTACT_SHADOW_SAMPLES 4
+
+float4 ScreenSapceContactShadowFragment(in float4 uv : TEXCOORD0) : COLOR
+{
+	MaterialParam material = SampleTransparentGbuffer(uv.xy);
+	clip(any(material.visibility) - 1e-5);
+
+	float rayLength = max(0.1, 0.01 * material.linearDepth);
+	float rayStep = 1.0f / CONTACT_SHADOW_SAMPLES;
+	float raySampleTime = rayStep * (1 + InterleavedGradientNoise(uv.zw, 1.0f / elapsed));
+
+	float3 viewPosition = SampleViewPosition(uv.xy);
+
+	float4 rayStartClip = mul(float4(viewPosition, 1.0f), matProject);
+	float4 rayEndClip = mul(float4(viewPosition + mul(-MainLightDirection * rayLength, (float3x3)matView), 1.0f), matProject);
+
+	float3 rayStartScreen = float3(rayStartClip.xy / rayStartClip.w, rayStartClip.w);
+	float3 rayEndScreen = float3(rayEndClip.xy / rayEndClip.w, rayEndClip.w);
+
+	rayStartScreen.xy = PosToCoord(rayStartScreen.xy);
+	rayEndScreen.xy = PosToCoord(rayEndScreen.xy);
+
+	float3 rayStepScreen = rayEndScreen - rayStartScreen;
+
+	float3 rayStartUVz = float3(rayStartScreen.xy, material.linearDepth);
+	float3 rayStepUVz = float3(rayStepScreen.xy, rayStepScreen.z);
+
+	float4 rayDepthClip = rayStartClip + mul(float4(0, 0, rayLength, 0), matProject);
+	float4 rayDepthScreen = float4(rayDepthClip.xyz / rayDepthClip.w, rayDepthClip.w);
+
+	float firstHitTime = -1.0;
+	float compareTolerance = abs(rayDepthScreen.w - rayStartClip.w) * rayStep * 2;
+
+	for (uint i = 0; i < CONTACT_SHADOW_SAMPLES; i++, raySampleTime += rayStep)
+	{
+		float3 sampleUVz = rayStartUVz + rayStepUVz * raySampleTime;
+
+		float sampleDepth = SampleLinearEyeDepth(sampleUVz.xy);
+		float sampleDepthDiff = sampleDepth - sampleUVz.z;
+
+		bool hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
+
+		if (hit)
+		{
+			firstHitTime = raySampleTime;
+			break;
+		}
+	}
+
+	return firstHitTime >= 0.0 ? 0 : 1.0;
+}

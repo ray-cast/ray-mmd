@@ -107,7 +107,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	return shadow;
 }
 
-float4 ScreenSapceShadowMapPS(
+float4 ScreenSapceShadowMapFragment(
 	in float2 coord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1) : COLOR
 {
@@ -128,7 +128,7 @@ float4 ScreenSapceShadowMapPS(
 }
 
 #if SHADOW_BLUR_COUNT
-float4 ScreenSapceShadowMapBlurPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
+float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
 	float2 offset1 = coord + offset;
 	float2 offset2 = coord - offset;

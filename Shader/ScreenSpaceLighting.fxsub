@@ -62,7 +62,7 @@ float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, 
 }
 #endif
 
-float4 ScreenSpaceLightingVS(
+float4 ScreenSpaceLightingVertex(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD,
 	out float4 oTexcoord0 : TEXCOORD0,
@@ -78,7 +78,7 @@ float4 ScreenSpaceLightingVS(
 	return Position;
 }
 
-void ScreenSpaceOpacityLightingPS(
+void ScreenSpaceOpacityLightingFragment(
 	in float2 uv: TEXCOORD0, 
 	in float3 viewdir: TEXCOORD1, 
 	in float3 lightColor: TEXCOORD2,
@@ -114,7 +114,7 @@ void ScreenSpaceOpacityLightingPS(
 	oColor1 = float4(specular, 0);
 }
 
-float4 ScreenSpaceLightingFinalPS(
+float4 ScreenSpaceLightingFinalFragment(
 	in float2 uv: TEXCOORD0, 
 	in float3 viewdir: TEXCOORD1, 
 	in float3 lightColor: TEXCOORD2, 

@@ -91,7 +91,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 #include "shader/VolumeRendering.fxsub"
 #include "shader/ScreenSpaceLighting.fxsub"
-
+#include "shader/ScreenSpaceContactShadow.fxsub"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ShadowMapCascaded.fxsub"
@@ -208,10 +208,13 @@ technique DeferredLighting<
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
 	"Pass=ScreenSapceShadowMap;"
+#if SUN_CONTACT_SHADOW_QUALITY
+	"Pass=ScreenSapceContactShadow;"
+#endif
 	"ClearSetColor=BackColor;"
 #if SHADOW_BLUR_COUNT
-	"RenderColorTarget=_CameraShadowTextureTemp;	Pass=ScreenSpaceShadowBlurX;"
-	"RenderColorTarget=_CameraShadowTexture;		Pass=ScreenSpaceShadowBlurY;"
+	"RenderColorTarget=_CameraShadowTextureTemp;	Pass=ScreenSpaceShadowBilateralFilterX;"
+	"RenderColorTarget=_CameraShadowTexture;		Pass=ScreenSpaceShadowBilateralFilterY;"
 #endif
 #endif
 
@@ -372,20 +375,29 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSapceShadowMapPS();
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapFragment();
 	}
+#if SUN_CONTACT_SHADOW_QUALITY
+	pass ScreenSapceContactShadow<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = DESTCOLOR; DestBlend = ZERO;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ScreenSapceContactShadowFragment();
+	}
+#endif
 #if SHADOW_BLUR_COUNT
-	pass ScreenSpaceShadowBlurX<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceShadowBilateralFilterX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBlurPS(_CameraShadowTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBilateralFilterPS(_CameraShadowTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
-	pass ScreenSpaceShadowBlurY<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceShadowBilateralFilterY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBlurPS(_CameraShadowTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSapceShadowMapBilateralFilterPS(_CameraShadowTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 #endif
@@ -393,33 +405,33 @@ technique DeferredLighting<
 	pass ScreenSpaceHorizonOcclusion<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HorizonBasedAmbientOcclusionVS();
-		PixelShader  = compile ps_3_0 HorizonBasedAmbientOcclusionPS();
+		VertexShader = compile vs_3_0 HorizonBasedAmbientOcclusionVertex();
+		PixelShader  = compile ps_3_0 HorizonBasedAmbientOcclusionFragment();
 	}
 	pass ScreenSpaceHorizonOcclusionBlurX<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(_CameraOcclusionTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterFragment(_CameraOcclusionTexture_PointSampler, float2(ViewportOffset2.x, 0.0f));
 	}
 	pass ScreenSpaceHorizonOcclusionBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralBlurPS(_CameraOcclusionTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterFragment(_CameraOcclusionTextureTemp_PointSampler, float2(0.0f, ViewportOffset2.y));
 	}
 #endif
 	pass ScreenSpaceOpacityLighting<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceLightingVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceOpacityLightingPS();
+		VertexShader = compile vs_3_0 ScreenSpaceLightingVertex();
+		PixelShader  = compile ps_3_0 ScreenSpaceOpacityLightingFragment();
 	}
 	pass ScreenSpaceLightingFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceLightingVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceLightingFinalPS();
+		VertexShader = compile vs_3_0 ScreenSpaceLightingVertex();
+		PixelShader  = compile ps_3_0 ScreenSpaceLightingFinalFragment();
 	}
 #if SSSS_QUALITY
 	pass ScreenSpaceSubsurfaceBlurX<string Script= "Draw=Buffer;";>{
