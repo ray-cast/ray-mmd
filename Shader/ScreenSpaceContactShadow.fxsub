@@ -47,5 +47,7 @@ float4 ScreenSapceContactShadowFragment(in float4 uv : TEXCOORD0) : COLOR
 		}
 	}
 
-	return firstHitTime >= 0.0 ? 0 : 1.0;
+	float2 borderCheck = abs(rayEndScreen.xy) - 1;
+
+	return (firstHitTime >= 0.0 && borderCheck.x <= 0.0f && borderCheck.y <= 0.0f ? 0.0f : 1.0f);
 }
