@@ -195,8 +195,9 @@ float4 ScreenSpaceAmbientOcclusion(
 	float  jitter,
 	float  bias)
 {
-	float2 sampleSinCos = float2(sin(jitter * PI_2), cos(jitter * PI_2));
 	float4 sampleOcclustion = 0.0f;
+	float2 sampleSinCos = float2(sin(jitter * PI_2), cos(jitter * PI_2));
+	float2 sampleRadiusTexelSize = sampleRadius * _CamraColorTexture_TexelSize;
 
 	float2x2 sampleRotMat = { sampleSinCos.y, sampleSinCos.x, -sampleSinCos.x, sampleSinCos.y };
 
@@ -204,16 +205,16 @@ float4 ScreenSpaceAmbientOcclusion(
 	for (int j = 0; j < SSDO_SAMPLER_COUNT; j+=4)
 	{
 		float2 sampleRotate[4];
-		sampleRotate[0] = mul(SSDOKernel[j + 0], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[1] = mul(SSDOKernel[j + 1], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[2] = mul(SSDOKernel[j + 2], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
-		sampleRotate[3] = mul(SSDOKernel[j + 3], sampleRotMat) * sampleRadius * _CamraColorTexture_TexelSize;
+		sampleRotate[0] = mul(SSDOKernel[j + 0], sampleRotMat);
+		sampleRotate[1] = mul(SSDOKernel[j + 1], sampleRotMat);
+		sampleRotate[2] = mul(SSDOKernel[j + 2], sampleRotMat);
+		sampleRotate[3] = mul(SSDOKernel[j + 3], sampleRotMat);
 
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + sampleRotate[0];
-		sampleOffset[1] = coord.xy + sampleRotate[1];
-		sampleOffset[2] = coord.xy + sampleRotate[2];
-		sampleOffset[3] = coord.xy + sampleRotate[3];
+		sampleOffset[0] = mad(sampleRotate[0], sampleRadiusTexelSize, coord.xy);
+		sampleOffset[1] = mad(sampleRotate[1], sampleRadiusTexelSize, coord.xy);
+		sampleOffset[2] = mad(sampleRotate[2], sampleRadiusTexelSize, coord.xy);
+		sampleOffset[3] = mad(sampleRotate[3], sampleRadiusTexelSize, coord.xy);
 
 		float4 sampleDepths;
 		sampleDepths[0] = SampleLinearEyeDepth(sampleOffset[0]);
@@ -265,7 +266,7 @@ float4 ScreenSpaceAmbientOcclusion(
 		sampleOcclustion.xyz += sh.w * sampleDirection[3];
 	}
 
-	sampleOcclustion /= SSDO_SAMPLER_COUNT;
+	sampleOcclustion *= (1.0f / SSDO_SAMPLER_COUNT);
 
 	return float4(sampleOcclustion.xyz * 0.5 + 0.5, sampleOcclustion.w);
 }

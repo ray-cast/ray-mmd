@@ -45,6 +45,7 @@ float4 HorizonOcclusion(
 {
 	float2 sampleStepDelta = direction * maxRadius / HBAO_SAMPLER_COUNT;
 	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
+	float2 sampleTexelSize = _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
 
 	float4 sampleOcclustion = 0.0f;
 
@@ -57,10 +58,10 @@ float4 HorizonOcclusion(
 		samplePoint[3] = round(sampleDirection); sampleDirection += sampleStepDelta;
 
 		float2 sampleOffset[4];
-		sampleOffset[0] = coord.xy + samplePoint[0] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[1] = coord.xy + samplePoint[1] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[2] = coord.xy + samplePoint[2] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
-		sampleOffset[3] = coord.xy + samplePoint[3] * _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+		sampleOffset[0] = mad(samplePoint[0], sampleTexelSize, coord.xy);
+		sampleOffset[1] = mad(samplePoint[1], sampleTexelSize, coord.xy);
+		sampleOffset[2] = mad(samplePoint[2], sampleTexelSize, coord.xy);
+		sampleOffset[3] = mad(samplePoint[3], sampleTexelSize, coord.xy);
 
 		float3 samplePosition[4];
 		samplePosition[0] = SampleViewPosition(sampleOffset[0]);
@@ -151,8 +152,8 @@ float4 HorizonBasedAmbientOcclusionPS(in float4 uv : TEXCOORD0) : COLOR
 		occclusion += HorizonOcclusion(uv, sampleNormal, samplePosition, direction, radius, sampleRandom.y, mAmbientOcclusionBias);
 	}
 
-	occclusion /= HBAO_SAMPLER_COUNT * HBAO_DIRECTION_COUNT;
-	occclusion.xyz = occclusion.xyz * 0.5 + 0.5;
+	occclusion *= (1.0f / (HBAO_SAMPLER_COUNT * HBAO_DIRECTION_COUNT));
+	occclusion.xyz = mad(occclusion.xyz, 0.5, 0.5);
 
 	occclusion.w = occclusion.w * tex2Dlod(SSAOMap_PointSampler, float4(uv.xy, 0, 0)).a;
 	occclusion.w = 1 - occclusion.w;
