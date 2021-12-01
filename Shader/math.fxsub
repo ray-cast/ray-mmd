@@ -39,6 +39,11 @@ float length2(float4 v) { return dot(v, v); }
 float min2(float2 v) { return min(v.x, v.y); }
 float max3(float3 v) { return max(v.x, max(v.y, v.z)); }
 
+float4 ComputeScreenPos(float4 pos)
+{
+	return float4(pos.xy * float2(0.5, -0.5) + float2(0.5, 0.5) * pos.w, pos.zw);
+}
+
 float2 PosToCoord(float2 position)
 {
 	return position * float2(0.5, -0.5) + float2(0.5, 0.5);

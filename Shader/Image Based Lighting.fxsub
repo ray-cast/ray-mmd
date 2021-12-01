@@ -152,7 +152,7 @@ void ImageBasedLightingVertex(
 	out float4 oPosition : POSITION)
 {
 	oTexcoord0 = oPosition = mul(Position, matViewProject);
-	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = ComputeScreenPos(oTexcoord0).xy / oTexcoord0.w + ViewportOffset;
 	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
 	oTexcoord1 = CameraPosition - Position.xyz;
 }

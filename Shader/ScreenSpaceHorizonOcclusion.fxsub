@@ -64,10 +64,10 @@ float4 HorizonOcclusion(
 		sampleOffset[3] = mad(samplePoint[3], sampleTexelSize, coord.xy);
 
 		float3 samplePosition[4];
-		samplePosition[0] = SampleViewPosition(sampleOffset[0]);
-		samplePosition[1] = SampleViewPosition(sampleOffset[1]);
-		samplePosition[2] = SampleViewPosition(sampleOffset[2]);
-		samplePosition[3] = SampleViewPosition(sampleOffset[3]);
+		samplePosition[0] = ComputeViewSpacePosition(sampleOffset[0], SampleLinearEyeDepth(sampleOffset[0]));
+		samplePosition[1] = ComputeViewSpacePosition(sampleOffset[1], SampleLinearEyeDepth(sampleOffset[1]));
+		samplePosition[2] = ComputeViewSpacePosition(sampleOffset[2], SampleLinearEyeDepth(sampleOffset[2]));
+		samplePosition[3] = ComputeViewSpacePosition(sampleOffset[3], SampleLinearEyeDepth(sampleOffset[3]));
 
 		float3 sampleDirection[4];
 		sampleDirection[0] = samplePosition[0] - viewPosition;
@@ -130,7 +130,7 @@ float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
 	if (floor(fmod(uv.w, 2)) > 0) maxRadius *= 0.5;
 
 	float3 sampleNormal = SampleTransparentNormal(uv.xy);
-	float3 samplePosition = SampleViewPosition(uv.xy);
+	float3 samplePosition = ComputeViewSpacePosition(uv.xy, SampleLinearEyeDepth(uv.xy));
 	float2 sampleRandom = float2(InterleavedGradientNoise(uv.zw, 1.0f / elapsed), PseudoRandom(uv.zw));
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;

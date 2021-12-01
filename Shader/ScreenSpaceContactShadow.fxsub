@@ -9,21 +9,21 @@ float4 ScreenSapceContactShadowFragment(in float4 uv : TEXCOORD0) : COLOR
 	float rayStep = 1.0f / CONTACT_SHADOW_SAMPLES;
 	float raySampleTime = rayStep * (1 + InterleavedGradientNoise(uv.zw, 1.0f / elapsed));
 
-	float3 viewPosition = SampleViewPosition(uv.xy);
+	float3 viewPosition = ComputeViewSpacePosition(uv.xy, material.linearDepth);
 
 	float4 rayStartClip = mul(float4(viewPosition, 1.0f), matProject);
 	float4 rayEndClip = mul(float4(viewPosition + mul(-MainLightDirection * rayLength, (float3x3)matView), 1.0f), matProject);
 
-	float3 rayStartScreen = float3(rayStartClip.xy / rayStartClip.w, rayStartClip.w);
-	float3 rayEndScreen = float3(rayEndClip.xy / rayEndClip.w, rayEndClip.w);
+	float4 rayStartScreen = ComputeScreenPos(rayStartClip);
+	float4 rayEndScreen = ComputeScreenPos(rayEndClip);
 
-	rayStartScreen.xy = PosToCoord(rayStartScreen.xy);
-	rayEndScreen.xy = PosToCoord(rayEndScreen.xy);
+	rayStartScreen.xy /= rayStartClip.w;
+	rayEndScreen.xy /= rayEndClip.w;
 
-	float3 rayStepScreen = rayEndScreen - rayStartScreen;
+	float4 rayStepScreen = rayEndScreen - rayStartScreen;
 
 	float3 rayStartUVz = float3(rayStartScreen.xy, material.linearDepth);
-	float3 rayStepUVz = float3(rayStepScreen.xy, rayStepScreen.z);
+	float3 rayStepUVz = float3(rayStepScreen.xy, rayStepScreen.w);
 
 	float4 rayDepthClip = rayStartClip + mul(float4(0, 0, rayLength, 0), matProject);
 	float4 rayDepthScreen = float4(rayDepthClip.xyz / rayDepthClip.w, rayDepthClip.w);
