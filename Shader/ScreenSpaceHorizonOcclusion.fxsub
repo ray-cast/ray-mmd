@@ -135,7 +135,7 @@ float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
 	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
-	float radius = clamp(maxRadius * log2(samplePosition.z), HBAO_SAMPLER_COUNT, maxRadiusPixels);
+	float radius = clamp(maxRadius * log2(samplePosition.z) * atan(matProject._m11), HBAO_SAMPLER_COUNT, maxRadiusPixels);
 
 	float4 occclusion = 0;
 
