@@ -410,7 +410,7 @@ technique DeferredLighting<
 	pass ScreenSpaceHorizonOcclusion<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 HorizonBasedAmbientOcclusionVertex();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
 		PixelShader  = compile ps_3_0 HorizonBasedAmbientOcclusionFragment();
 	}
 	pass ScreenSpaceHorizonOcclusionBlurX<string Script= "Draw=Buffer;";>{

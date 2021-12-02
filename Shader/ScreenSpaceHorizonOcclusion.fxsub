@@ -35,7 +35,7 @@ float Falloff(float distanceSquare, float maxRadius)
 }
 
 float4 HorizonOcclusion(
-	float4 coord,
+	float2 uv,
 	float3 viewNormal,
 	float3 viewPosition,
 	float2 direction,
@@ -58,16 +58,16 @@ float4 HorizonOcclusion(
 		samplePoint[3] = round(sampleDirection); sampleDirection += sampleStepDelta;
 
 		float2 sampleOffset[4];
-		sampleOffset[0] = mad(samplePoint[0], sampleTexelSize, coord.xy);
-		sampleOffset[1] = mad(samplePoint[1], sampleTexelSize, coord.xy);
-		sampleOffset[2] = mad(samplePoint[2], sampleTexelSize, coord.xy);
-		sampleOffset[3] = mad(samplePoint[3], sampleTexelSize, coord.xy);
+		sampleOffset[0] = mad(samplePoint[0], sampleTexelSize, uv);
+		sampleOffset[1] = mad(samplePoint[1], sampleTexelSize, uv);
+		sampleOffset[2] = mad(samplePoint[2], sampleTexelSize, uv);
+		sampleOffset[3] = mad(samplePoint[3], sampleTexelSize, uv);
 
 		float3 samplePosition[4];
-		samplePosition[0] = ComputeViewSpacePosition(sampleOffset[0], SampleLinearEyeDepth(sampleOffset[0]));
-		samplePosition[1] = ComputeViewSpacePosition(sampleOffset[1], SampleLinearEyeDepth(sampleOffset[1]));
-		samplePosition[2] = ComputeViewSpacePosition(sampleOffset[2], SampleLinearEyeDepth(sampleOffset[2]));
-		samplePosition[3] = ComputeViewSpacePosition(sampleOffset[3], SampleLinearEyeDepth(sampleOffset[3]));
+		samplePosition[0] = ComputeViewSpacePosition(sampleOffset[0], SampleLinearEyeDepth(sampleOffset[0] + ViewportOffset));
+		samplePosition[1] = ComputeViewSpacePosition(sampleOffset[1], SampleLinearEyeDepth(sampleOffset[1] + ViewportOffset));
+		samplePosition[2] = ComputeViewSpacePosition(sampleOffset[2], SampleLinearEyeDepth(sampleOffset[2] + ViewportOffset));
+		samplePosition[3] = ComputeViewSpacePosition(sampleOffset[3], SampleLinearEyeDepth(sampleOffset[3] + ViewportOffset));
 
 		float3 sampleDirection[4];
 		sampleDirection[0] = samplePosition[0] - viewPosition;
@@ -113,25 +113,16 @@ float4 HorizonOcclusion(
 	return sampleOcclustion;
 }
 
-float4 HorizonBasedAmbientOcclusionVertex(
-	in float4 Position : POSITION,
-	in float4 Texcoord : TEXCOORD,
-	out float4 oTexcoord0 : TEXCOORD0) : POSITION
-{
-	oTexcoord0.xy = Texcoord.xy + ViewportOffset;
-	oTexcoord0.zw = Texcoord.xy * ViewportSize;
-	return Position;
-}
-
-float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
+float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0, in float2 screen : SV_POSITION) : COLOR
 {
 	float maxRadius = mAmbientOcclusionRadius;
-	if (floor(fmod(uv.z, 2)) > 0) maxRadius *= 0.5;
-	if (floor(fmod(uv.w, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(screen.x, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(screen.y, 2)) > 0) maxRadius *= 0.5;
 
+	float2 samplePixel = screen / ViewportSize;
 	float3 sampleNormal = SampleTransparentNormal(uv.xy);
-	float3 samplePosition = ComputeViewSpacePosition(uv.xy, SampleLinearEyeDepth(uv.xy));
-	float2 sampleRandom = float2(InterleavedGradientNoise(uv.zw, 1.0f / elapsed), PseudoRandom(uv.zw));
+	float3 samplePosition = ComputeViewSpacePosition(samplePixel, SampleLinearEyeDepth(uv.xy));
+	float2 sampleRandom = float2(InterleavedGradientNoise(screen, 1.0f / elapsed), PseudoRandom(screen));
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
 	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
@@ -149,7 +140,7 @@ float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
 
 		float2 direction = float2(cos(angle), sin(angle));
 
-		occclusion += HorizonOcclusion(uv, sampleNormal, samplePosition, direction, radius, sampleRandom.y, mAmbientOcclusionBias);
+		occclusion += HorizonOcclusion(samplePixel, sampleNormal, samplePosition, direction, radius, sampleRandom.y, mAmbientOcclusionBias);
 	}
 
 	occclusion *= (1.0f / (HBAO_SAMPLER_COUNT * HBAO_DIRECTION_COUNT));
@@ -162,25 +153,25 @@ float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0) : COLOR
 }
 
 float4 ScreenSpaceBilateralFilterFragment(
-	in float2 coord   : TEXCOORD0,
+	in float2 uv : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	uniform sampler _MainTex,
 	uniform float2 _MainTex_TexelSize) : COLOR
 {
-	float center_d = SampleLinearEyeDepth(coord);
+	float center_d = SampleLinearEyeDepth(uv);
 
 	float total_w = 1.0f;
-	float4 total_c = tex2Dlod(_MainTex, float4(coord, 0, 0));
+	float4 total_c = tex2Dlod(_MainTex, float4(uv, 0, 0));
 
-	float3 normal = SampleTransparentNormal(coord);
+	float3 normal = SampleTransparentNormal(uv);
 
 	float angle = pow2(saturate(dot(normal, normalize(viewdir))));
 
 	float blurSigma = HBAO_BLUR_RADIUS * 0.5f;
 	float blurFalloff = 1.0f / (2.0f * blurSigma * blurSigma);
 
-	float2 offset1 = coord + _MainTex_TexelSize;
-	float2 offset2 = coord - _MainTex_TexelSize;
+	float2 offset1 = uv + _MainTex_TexelSize;
+	float2 offset2 = uv - _MainTex_TexelSize;
 
 	[unroll]
 	for (int r = 1; r < HBAO_BLUR_RADIUS; ++r)
