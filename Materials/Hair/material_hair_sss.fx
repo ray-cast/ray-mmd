@@ -17,7 +17,7 @@ const float2 albedoMapLoopNum = 1.0;
 const float3 albedoSub = 1.0;
 const float2 albedoSubMapLoopNum = 1.0;
 
-#define ALPHA_MAP_FROM 3
+#define ALPHA_MAP_FROM 0
 #define ALPHA_MAP_UV_FLIP 0
 #define ALPHA_MAP_SWIZZLE 3
 #define ALPHA_MAP_FILE "alpha.png"
@@ -48,7 +48,7 @@ const float normalSubMapLoopNum = 1.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.2;
+const float smoothness = 0.55;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -116,6 +116,7 @@ const float customA = 0.5;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 3
+#define CUSTOM_B_MAP_TYPE 1
 #define CUSTOM_B_MAP_UV_FLIP 0
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_APPLY_SCALE 0
