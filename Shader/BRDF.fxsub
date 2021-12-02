@@ -133,7 +133,7 @@ float3 GTAOMultiBounce(float visibility, float3 albedo)
 	return max(x, ((x * A + B) * x + C) * x);
 }
 
-float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)
+float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	float nl = dot(N, L);
 
@@ -144,7 +144,7 @@ float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)
 	float brdf = pndl;
 	float3 sss = material.customDataB * pow2(1.0 - pndl) * pow(1.0-nndl,3.0 / (ir + 0.001)) * saturate(ir - 0.04);
 
-	return sss;
+	return sss + saturate(dot(V, -normalize(L + N * (1 - ir))));
 }
 
 float3 SubsurfaceShadingPreIntegratedSkinLUT(MaterialParam material, float3 N, float3 L)
@@ -305,10 +305,10 @@ float3 ClearCoatShading(MaterialParam material, float nh, float nl, float vh, fl
 	return lerp(spec1, spec2.rgb, spec2.a);
 }
 
-float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L)
+float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-		return SubsurfaceShadingPennerSkin(material, N, L);
+		return SubsurfaceShadingPennerSkin(material, N, L, V);
 	else
 		return 0;
 }
@@ -337,7 +337,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 		diffuse = ToonBasedShading(dot(N, L), vh, nv, material.customDataB, material.specular, shadow, roughness, material.customDataA);
 #endif
 	else
-		diffuse = (BurleyBRDF(nl, nv, vh, roughness) + SubsurfaceShading(material, N, L)) * shadow;
+		diffuse = (BurleyBRDF(nl, nv, vh, roughness) + SubsurfaceShading(material, N, L, V)) * shadow;
 
 	float3 specular = 0;
 
@@ -376,7 +376,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, f
 	if (material.lightModel == SHADINGMODELID_SKIN)
 		diffuse = SubsurfaceShadingPreIntegratedSkinLUT(material, N, Ld);
 	else
-		diffuse = BurleyBRDF(nld, nv, vh, roughness) + SubsurfaceShading(material, N, Ld);
+		diffuse = BurleyBRDF(nld, nv, vh, roughness) + SubsurfaceShading(material, N, Ld, V);
 
 	float3 specular = 0;
 
