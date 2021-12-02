@@ -226,34 +226,34 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraOcclusionTexture;	    Clear=Color; Pass=ScreenSpaceHorizonOcclusionBlurY;"
 #endif
 
-	"RenderColorTarget0=ShadingMapTemp;"
-	"RenderColorTarget1=ShadingMapTempSpecular;"
+	"RenderColorTarget0=_CamraColorTempTexture;"
+	"RenderColorTarget1=_CamraSpecularTexture;"
 	"Clear=Color;"
 	"Pass=ScreenSpaceOpacityLighting;"
 	"RenderColorTarget1=;"
 
 #if SSSS_QUALITY
-	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=ScreenSpaceSubsurfaceBlurX;"
-	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=ScreenSpaceSubsurfaceBlurY;"
+	"RenderColorTarget=_CamraColorTexture;		Clear=Color; Pass=ScreenSpaceSubsurfaceBlurX;"
+	"RenderColorTarget=_CamraColorTempTexture;	Clear=Color; Pass=ScreenSpaceSubsurfaceBlurY;"
 #endif
 
-	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=ScreenSpaceLightingFinal;"
+	"RenderColorTarget=_CamraColorTexture;		Clear=Color; Pass=ScreenSpaceLightingFinal;"
 
 #if SSR_QUALITY
 	"RenderColorTarget=SSRLightX1Map;"
 	"Clear=Color;"
 	"Pass=SSRConeTracing;"
 
-	"RenderColorTarget=SSRLightX1MapTemp; Pass=SSRGaussionBlurX1;"
-	"RenderColorTarget=SSRLightX1Map;	  Pass=SSRGaussionBlurY1;"
-	"RenderColorTarget=SSRLightX2MapTemp; Pass=SSRGaussionBlurX2;"
-	"RenderColorTarget=SSRLightX2Map;	  Pass=SSRGaussionBlurY2;"
-	"RenderColorTarget=SSRLightX3MapTemp; Pass=SSRGaussionBlurX3;"
-	"RenderColorTarget=SSRLightX3Map;	  Pass=SSRGaussionBlurY3;"
-	"RenderColorTarget=SSRLightX4MapTemp; Pass=SSRGaussionBlurX4;"
-	"RenderColorTarget=SSRLightX4Map;	  Pass=SSRGaussionBlurY4;"
+	"RenderColorTarget=SSRLightX1MapTemp; 	Pass=SSRGaussionBlurX1;"
+	"RenderColorTarget=SSRLightX1Map;	  	Pass=SSRGaussionBlurY1;"
+	"RenderColorTarget=SSRLightX2MapTemp; 	Pass=SSRGaussionBlurX2;"
+	"RenderColorTarget=SSRLightX2Map;	  	Pass=SSRGaussionBlurY2;"
+	"RenderColorTarget=SSRLightX3MapTemp; 	Pass=SSRGaussionBlurX3;"
+	"RenderColorTarget=SSRLightX3Map;	  	Pass=SSRGaussionBlurY3;"
+	"RenderColorTarget=SSRLightX4MapTemp; 	Pass=SSRGaussionBlurX4;"
+	"RenderColorTarget=SSRLightX4Map;	  	Pass=SSRGaussionBlurY4;"
 
-	"RenderColorTarget=ShadingMap;		  Pass=SSRFinalCombie;"
+	"RenderColorTarget=_CamraColorTexture;	Pass=SSRFinalCombie;"
 #endif
 
 #if BOKEH_MODE
@@ -263,34 +263,34 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraFocalPongTexture; 	Clear=Color; Pass=ComputeBokehBlur;"
 	"RenderColorTarget=_CameraFocalPingTexture; 	Clear=Color; Pass=ComputeBilinearBlur;"
 
-	"RenderColorTarget=ShadingMap; Pass=ComputeBokehFinal;"
+	"RenderColorTarget=_CamraColorTexture; Pass=ComputeBokehFinal;"
 #endif
 
 #if AA_QUALITY == 1
-	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=FXAA;"
-	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=Blit;"
+	"RenderColorTarget=_CamraColorTempTexture;	Clear=Color; Pass=FXAA;"
+	"RenderColorTarget=_CamraColorTexture;		Clear=Color; Pass=Blit;"
 #endif
 
 #if AA_QUALITY == 2 || AA_QUALITY == 3
-	"RenderColorTarget=_SMAAEdgeMap;	Clear=Color; Pass=SMAAEdgeDetection;"
-	"RenderColorTarget=_SMAABlendMap;	Clear=Color; Pass=SMAABlendingWeightCalculation;"
-	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=SMAANeighborhoodBlending;"
-	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=Blit;"
+	"RenderColorTarget=_SMAAEdgeMap;			Clear=Color; Pass=SMAAEdgeDetection;"
+	"RenderColorTarget=_SMAABlendMap;			Clear=Color; Pass=SMAABlendingWeightCalculation;"
+	"RenderColorTarget=_CamraColorTempTexture;	Clear=Color; Pass=SMAANeighborhoodBlending;"
+	"RenderColorTarget=_CamraColorTexture;		Clear=Color; Pass=Blit;"
 #endif
 
 #if AA_QUALITY == 4 || AA_QUALITY == 5
-	"RenderColorTarget=_SMAAEdgeMap;	Clear=Color; Pass=SMAAEdgeDetection1x;"
-	"RenderColorTarget=_SMAABlendMap;	Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
-	"RenderColorTarget=ShadingMapTemp;	Clear=Color; Pass=SMAANeighborhoodBlending;"
+	"RenderColorTarget=_SMAAEdgeMap;			Clear=Color; Pass=SMAAEdgeDetection1x;"
+	"RenderColorTarget=_SMAABlendMap;			Clear=Color; Pass=SMAABlendingWeightCalculation1x;"
+	"RenderColorTarget=_CamraColorTempTexture;	Clear=Color; Pass=SMAANeighborhoodBlending;"
 
-	"RenderColorTarget=_SMAAEdgeMap;	Clear=Color; Pass=SMAAEdgeDetection2x;"
-	"RenderColorTarget=_SMAABlendMap;	Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
-	"RenderColorTarget=ShadingMap;		Clear=Color; Pass=SMAANeighborhoodBlendingFinal;"
+	"RenderColorTarget=_SMAAEdgeMap;			Clear=Color; Pass=SMAAEdgeDetection2x;"
+	"RenderColorTarget=_SMAABlendMap;			Clear=Color; Pass=SMAABlendingWeightCalculation2x;"
+	"RenderColorTarget=_CamraColorTexture;		Clear=Color; Pass=SMAANeighborhoodBlendingFinal;"
 #endif
 
 #if TOON_ENABLE == 2
-	"RenderColorTarget=ShadingMapTemp; 	Pass=DiffusionBlurX;"
-	"RenderColorTarget=ShadingMap; 		Pass=DiffusionBlurY;"
+	"RenderColorTarget=_CamraColorTempTexture; 	Pass=DiffusionBlurX;"
+	"RenderColorTarget=_CamraColorTexture; 		Pass=DiffusionBlurY;"
 #endif
 
 #if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
@@ -440,13 +440,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
-		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapTempPointSamp, ShadingMapTempPointSamp, float2(1.0, 0.0));
+		PixelShader  = compile ps_3_0 SSSGaussBlurPS(_CamraColorTempTexture_PointSampler, _CamraColorTempTexture_PointSampler, float2(1.0, 0.0));
 	}
 	pass ScreenSpaceSubsurfaceBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
-		PixelShader  = compile ps_3_0 SSSGaussBlurPS(ShadingMapPointSamp, ShadingMapTempPointSamp,float2(0.0, 1.0));
+		PixelShader  = compile ps_3_0 SSSGaussBlurPS(_CamraColorTexture_PointSampler, _CamraColorTempTexture_PointSampler,float2(0.0, 1.0));
 	}
 #endif
 #if TOON_ENABLE == 2
@@ -454,14 +454,14 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(ShadingMapSamp, mDiffusionOffsetX);
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(_CamraColorTexture_LinearSampler, mDiffusionOffsetX);
 	}
 	pass DiffusionBlurY<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(ShadingMapTempSamp, mDiffusionOffsetY);
+		PixelShader  = compile ps_3_0 ScreenSpaceBilateralFilterPS(_CamraColorTempTexture_LinearSampler, mDiffusionOffsetY);
 	}
 #endif
 #if SSR_QUALITY
@@ -571,7 +571,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceQuadPS(ShadingMapTempSamp);
+		PixelShader  = compile ps_3_0 ScreenSpaceQuadPS(_CamraColorTempTexture_LinearSampler);
 	}
 #endif
 #if AA_QUALITY == 1
@@ -579,7 +579,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 FXAA3(ShadingMapSamp, ViewportOffset2);
+		PixelShader  = compile ps_3_0 FXAA3(_CamraColorTexture_LinearSampler, ViewportOffset2);
 	}
 #endif
 #if AA_QUALITY == 2 || AA_QUALITY == 3
@@ -587,7 +587,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(_CamraColorTexture_PointSampler);
 	}
 	pass SMAABlendingWeightCalculation<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -599,7 +599,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, ViewportOffset2, true);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(_CamraColorTexture_LinearSampler, ViewportOffset2, true);
 	}
 #endif
 #if AA_QUALITY == 4 || AA_QUALITY == 5
@@ -607,7 +607,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapSamp);
+		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(_CamraColorTexture_LinearSampler);
 	}
 	pass SMAABlendingWeightCalculation1x<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -619,13 +619,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapSamp, ViewportOffset2, false);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(_CamraColorTexture_LinearSampler, ViewportOffset2, false);
 	}
 	pass SMAAEdgeDetection2x<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAAEdgeDetectionVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(ShadingMapTempSamp);
+		PixelShader  = compile ps_3_0 SMAALumaEdgeDetectionPS(_CamraColorTempTexture_LinearSampler);
 	}
 	pass SMAABlendingWeightCalculation2x<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -637,7 +637,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SMAANeighborhoodBlendingVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(ShadingMapTempSamp, ViewportOffset2, true);
+		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(_CamraColorTempTexture_LinearSampler, ViewportOffset2, true);
 	}
 #endif
 #if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
@@ -645,7 +645,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 EyePrefilterPS(ShadingMapSamp, _EyeLumMap0_TexelSize * 0.5);
+		PixelShader  = compile ps_3_0 EyePrefilterPS(_CamraColorTexture_LinearSampler, _EyeLumMap0_TexelSize * 0.5);
 	}
 	pass EyeLumDownsample1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -701,7 +701,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 BloomPrefilterVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 BloomPrefilterPS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 BloomPrefilterPS(_CamraColorTexture_PointSampler);
 	}
 	pass BloomBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -1017,6 +1017,6 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 PostProcessUberPS(ShadingMapPointSamp);
+		PixelShader  = compile ps_3_0 PostProcessUberPS(_CamraColorTexture_PointSampler);
 	}
 }

@@ -143,8 +143,8 @@ float4 ScreenSpaceLightingFinalFragment(
 
 	float2 ior = (material.lightModel != SHADINGMODELID_GLASS) ? 0 : mul(material.normal, (float3x3)matViewInverse).xy * material.customDataA * 0.04;
 
-	float3 prefilteredRefract = tex2Dlod(ShadingMapTempPointSamp, float4(uv + ior, 0, 0)).rgb;
-	prefilteredRefract = mad(SampleOpacityAlbedo(uv + ior), prefilteredRefract, tex2Dlod(ShadingMapTempSpecularSamp, float4(uv + ior, 0, 0)).rgb);
+	float3 prefilteredRefract = tex2Dlod(_CamraColorTempTexture_PointSampler, float4(uv + ior, 0, 0)).rgb;
+	prefilteredRefract = mad(SampleOpacityAlbedo(uv + ior), prefilteredRefract, tex2Dlod(_CamraSpecularTexture_PointSampler, float4(uv + ior, 0, 0)).rgb);
 
 	prefilteredRefract += srgb2linear(tex2Dlod(_CameraColorAttachment_PointSampler, float4(uv + ior, 0, 0)).rgb);
 

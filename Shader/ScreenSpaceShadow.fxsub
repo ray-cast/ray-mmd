@@ -80,13 +80,13 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 
 	[branch]
 	if (coord.w == 0)
-		clip(tex2Dlod(PSSM1Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+		clip(tex2Dlod(_PSSM1_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 	else if (coord.w == 1)
-		clip(tex2Dlod(PSSM2Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+		clip(tex2Dlod(_PSSM2_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 	else if (coord.w == 2)
-		clip(tex2Dlod(PSSM3Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+		clip(tex2Dlod(_PSSM3_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 	else
-		clip(tex2Dlod(PSSM4Samp, float4(coord.xy, 0, 0)).r - 1e-5);
+		clip(tex2Dlod(_PSSM4_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
 	float radius = 2.0 / SHADOW_MAP_SIZE;
@@ -96,13 +96,13 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(PSSM1Samp, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth, rotation);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(PSSM2Samp, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth, rotation);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(PSSM3Samp, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth, rotation);
 	else
-		shadow = ShadowPCF(PSSM4Samp, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth, rotation);
 
 	return shadow;
 }

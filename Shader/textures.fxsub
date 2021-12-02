@@ -18,6 +18,48 @@ texture _CameraColorAttachment : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
+texture _CamraColorTexture : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+>;
+texture _CamraColorTempTexture : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+>;
+texture _CamraSpecularTexture : RENDERCOLORTARGET<
+	float2 ViewportRatio = {1.0, 1.0};
+	string Format = "A16B16G16R16F";
+>;
+sampler _CamraSpecularTexture_PointSampler = sampler_state {
+	texture = <_CamraSpecularTexture>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CameraColorAttachment_PointSampler = sampler_state {
+	texture = <_CameraColorAttachment>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTexture_PointSampler = sampler_state {
+	texture = <_CamraColorTexture>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTexture_LinearSampler = sampler_state {
+	texture = <_CamraColorTexture>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTempTexture_PointSampler = sampler_state {
+	texture = <_CamraColorTempTexture>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+sampler _CamraColorTempTexture_LinearSampler = sampler_state {
+	texture = <_CamraColorTempTexture>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
 #if FOG_ENABLE
 texture FogMap : OFFSCREENRENDERTARGET<
 	string Description = "Multi volumetirc fog map for ray";
@@ -264,22 +306,22 @@ shared texture PSSM4 : OFFSCREENRENDERTARGET<
 		"*.pmd=shadow/PSSM4.fx;"
 		"*.x=hide;";
 >;
-sampler PSSM1Samp = sampler_state {
+sampler _PSSM1_LinearSampler = sampler_state {
 	texture = <PSSM1>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler PSSM2Samp = sampler_state {
+sampler _PSSM2_LinearSampler = sampler_state {
 	texture = <PSSM2>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler PSSM3Samp = sampler_state {
+sampler _PSSM3_LinearSampler = sampler_state {
 	texture = <PSSM3>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler PSSM4Samp = sampler_state {
+sampler _PSSM4_LinearSampler = sampler_state {
 	texture = <PSSM4>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
@@ -369,58 +411,6 @@ sampler Gbuffer7Map = sampler_state {
 sampler Gbuffer8Map = sampler_state {
 	texture = <Gbuffer8RT>;
 	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-texture ShadingMap : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A16B16G16R16F";
->;
-texture ShadingMapTemp : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A16B16G16R16F";
->;
-texture ShadingMapTempSpecular : RENDERCOLORTARGET<
-	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A16B16G16R16F";
->;
-sampler ShadingMapSamp = sampler_state {
-	texture = <ShadingMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler ShadingMapPointSamp = sampler_state {
-	texture = <ShadingMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler ShadingMapTempSamp = sampler_state {
-	texture = <ShadingMapTemp>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler ShadingMapTempPointSamp = sampler_state {
-	texture = <ShadingMapTemp>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler ShadingMapTempSpecularSamp = sampler_state {
-	texture = <ShadingMapTempSpecular>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler _CameraColorAttachment_PointSampler = sampler_state {
-	texture = <_CameraColorAttachment>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler _CamraColorTexture_PointSampler = sampler_state {
-	texture = <ShadingMap>;
-	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
-	AddressU = CLAMP; AddressV = CLAMP;
-};
-sampler _CamraColorTexture_LinearSampler = sampler_state {
-	texture = <ShadingMap>;
-	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
