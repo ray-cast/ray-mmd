@@ -80,10 +80,10 @@ float3 SampleSky(float3 N)
 
 float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
 {
-	float3 dependentSplit = 0.5 + (1 - material.visibility) * 5;
+	float3 dependentSplit = 0.5 + (1 - material.visibility);
 	float3 scattering = prefilteredDiffuse + SampleSky(-N);
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
-	return scattering * mEnvIntensitySSS;
+	return scattering * mEnvIntensitySSS / PI;
 }
 
 float3 ComputeAnisotropyDominantDir(float3 N, float3 V, float roughness, float anisotropy, float shift)

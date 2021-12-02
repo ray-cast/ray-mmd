@@ -41,7 +41,7 @@ float4 SSSGaussBlurPS(
 	if (material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE)
 	{
 		float3 N = material.normal;
-		float3 P = GetViewPosition(projConstant, uv, material.linearDepth);
+		float3 P = ComputeViewSpacePosition(uv, material.linearDepth);
 
 		float perspectiveScaleX = dot(normalize(N.xz), normalize(-P.xz));
 		float perspectiveScaleY = dot(normalize(N.yz), normalize(-P.yz));
