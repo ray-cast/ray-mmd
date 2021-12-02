@@ -155,13 +155,13 @@ float CircleSDF(float2 uv, float2 pos, float radius)
 
 float GetSampleRadius()
 {
-	return 0.2;
+	return 0.1 * atan(matProject._m11);
 }
 
 float2 GetSamplePoint()
 {
 	float4 proj = ComputeScreenPos(mul(float4(AcsPosition, 1), matViewProject));
-	return 0.5 + float2(proj.x / proj.w - 0.5, 0.0) * step(0.25, mMeasureMode);
+	return proj.xy / proj.w * step(0.25, mMeasureMode);
 }
 
 float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 14.f)
@@ -366,9 +366,10 @@ float4 ComputeBokehFinalPS(
 	float ffa = smoothstep(_MainTex_TexelSize.y * 2.0, _MainTex_TexelSize.y * 4.0, coc * GetMaxBokehRadius(ViewportSize).y);
 	float alpha = ffa + dof.a - ffa * dof.a;
 
-	float SDF = CircleSDF(uv.xy * ViewportSize, ViewportSize * GetSamplePoint(), ViewportSize.y * GetSampleRadius()) * 0.5;
+	float2 samplePoint = GetSamplePoint();
+	float SDF = CircleSDF(uv.xy * ViewportSize, ViewportSize * samplePoint, ViewportSize.y * GetSampleRadius()) * 0.5;
 	dof.rgb = lerp(dof.rgb, (coc > 0 ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(coc), mTestMode);
 	dof.rgb = lerp(dof.rgb, float3(0.01, 0.4, 0.09), SDF * mTestMode * (1 - step(0.5, mMeasureMode)));
 
-	return float4(dof.rgb, alpha);
+	return float4(dof.rgb, lerp(alpha, 1, SDF * mTestMode));
 }
