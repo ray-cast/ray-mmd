@@ -177,6 +177,13 @@ float4 BloomPrefilterPS(
 	color = min(color, tex2Dlod(_MainTex, float4(uv2.zw, 0, 0)).rgb);
 	color = clamp(color, 0, 65535);
 
+	color *= mExposure;
+
+#if EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
+	color *= ComputeExposureISO(aveLum, 12.5);
+#endif
+
 #if BLOOM_MODE == 1
 	float3 bloom = max(0, color - mBloomThreshold);
 #elif BLOOM_MODE == 2

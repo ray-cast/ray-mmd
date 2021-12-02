@@ -65,7 +65,7 @@ sampler _EyeLumAveMap_PointSampler = sampler_state {
 
 float CalcAdaptedLum(float adaptedLum, float lum, float delta)
 {
-    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - exp2(-1.45 * delta)));
+    return max(0, adaptedLum + (lum - adaptedLum) * (1.0f - exp2(-7.25 * delta)));
 }
 
 float ComputeExposureISO(float avgLum, float middleGray = 12.5)
