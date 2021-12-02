@@ -81,9 +81,9 @@ float4 SSSGaussBlurPS(
 
 		sampleColor.rgb /= sampleWeight;
 
-		if (direction.y > 0.01)
+		if (direction.y > 0.1)
 		{
-			sampleColor.rgb = lerp(sampleColor.rgb, tex2Dlod(original, float4(uv, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * (1 - sssAmount));
+			sampleColor.rgb = lerp(sampleColor.rgb, tex2Dlod(original, float4(uv, 0, 0)).rgb, profileSpikeRadArr[sssIndex].xyz * sssAmount);
 		}
 
 		return sampleColor;
