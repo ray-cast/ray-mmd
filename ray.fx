@@ -6,6 +6,8 @@ const float4 WhiteColor = 1.0;
 const float ClearDepth = 1.0;
 const int ClearStencil = 0;
 
+bool _GlobalVolumeSetting : CONTROLOBJECT<string name = "ray_controller.pmx";>;
+
 float mSunLightP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunLight+";>;
 float mSunLightM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunLight-";>;
 float mSunShadowRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "SunShadowR+";>;
@@ -208,10 +210,10 @@ technique DeferredLighting<
 	"ClearSetColor=WhiteColor;"
 	"Clear=Color;"
 	"Pass=ScreenSapceShadowMap;"
-#if SUN_CONTACT_SHADOW_QUALITY
+	"ClearSetColor=BackColor;"
+#if CONTACT_SHADOW_QUALITY
 	"Pass=ScreenSapceContactShadow;"
 #endif
-	"ClearSetColor=BackColor;"
 #if SHADOW_BLUR_COUNT
 	"RenderColorTarget=_CameraShadowTextureTemp;	Pass=ScreenSpaceShadowBilateralFilterX;"
 	"RenderColorTarget=_CameraShadowTexture;		Pass=ScreenSpaceShadowBilateralFilterY;"
@@ -377,7 +379,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ScreenSapceShadowMapFragment();
 	}
-#if SUN_CONTACT_SHADOW_QUALITY
+#if CONTACT_SHADOW_QUALITY
 	pass ScreenSapceContactShadow<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
