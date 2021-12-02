@@ -1,5 +1,6 @@
 #define SHADOW_BLUR_COUNT 6
-#define SHADOW_POISSON_COUNT 21
+#define SHADOW_BLOCKER_COUNT 15
+#define SHADOW_POISSON_COUNT 36
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection, mLightDistance);
@@ -8,51 +9,120 @@ static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
 
+static const float2 Blockers[SHADOW_BLOCKER_COUNT] =
+{
+	float2(0.545455, 0),
+	float2(0.168555, 0.518758),
+	float2(-0.441282, 0.32061),
+	float2(-0.441282, -0.32061),
+	float2(0.168555, -0.518758),
+	float2(1, 0),
+	float2(0.809017, 0.587785),
+	float2(0.309017, 0.951057),
+	float2(-0.309017, 0.951056),
+	float2(-0.809017, 0.587785),
+	float2(-1, -8.74228e-08),
+	float2(-0.809017, -0.587785),
+	float2(-0.309017, -0.951057),
+	float2(0.309017, -0.951056),
+	float2(0.809017, -0.587785)
+};
+
 static const float2 Poisson[SHADOW_POISSON_COUNT] =
 {
-	float2(0.533333, 0),
-	float2(0.332528, 0.416977),
-	float2(-0.118678, 0.519962),
-	float2(-0.480517, 0.231405),
-	float2(-0.480517, -0.231405),
-	float2(-0.118678, -0.519962),
-	float2(0.332528, -0.416977),
+	float2(0.368421, 0),
+	float2(0.18421, 0.319062),
+	float2(-0.184211, 0.319062),
+	float2(-0.368421, -3.22084e-08),
+	float2(-0.18421, -0.319062),
+	float2(0.184211, -0.319062),
+	float2(0.684211, 0),
+	float2(0.592544, 0.342105),
+	float2(0.342105, 0.592544),
+	float2(-2.99078e-08, 0.684211),
+	float2(-0.342105, 0.592544),
+	float2(-0.592544, 0.342105),
+	float2(-0.684211, -5.98156e-08),
+	float2(-0.592544, -0.342105),
+	float2(-0.342105, -0.592544),
+	float2(8.15913e-09, -0.684211),
+	float2(0.342106, -0.592544),
+	float2(0.592544, -0.342105),
 	float2(1, 0),
-	float2(0.900969, 0.433884),
-	float2(0.62349, 0.781832),
-	float2(0.222521, 0.974928),
-	float2(-0.222521, 0.974928),
-	float2(-0.62349, 0.781831),
-	float2(-0.900969, 0.433884),
+	float2(0.939693, 0.34202),
+	float2(0.766044, 0.642788),
+	float2(0.5, 0.866025),
+	float2(0.173648, 0.984808),
+	float2(-0.173648, 0.984808),
+	float2(-0.5, 0.866025),
+	float2(-0.766045, 0.642787),
+	float2(-0.939693, 0.34202),
 	float2(-1, -8.74228e-08),
-	float2(-0.900969, -0.433884),
-	float2(-0.62349, -0.781832),
-	float2(-0.222521, -0.974928),
-	float2(0.222521, -0.974928),
-	float2(0.62349, -0.781832),
-	float2(0.900969, -0.433884)
+	float2(-0.939693, -0.34202),
+	float2(-0.766044, -0.642788),
+	float2(-0.5, -0.866025),
+	float2(-0.173648, -0.984808),
+	float2(0.173649, -0.984808),
+	float2(0.5, -0.866025),
+	float2(0.766045, -0.642787),
+	float2(0.939693, -0.34202)
 };
+
+float FindBlocker(sampler source, float2 uv, float depth, float lightSize = 50)
+{
+    float searchRadius = lightSize / SHADOW_MAP_SIZE;
+
+    float blockerWeight = 0;
+    float blockerDepthSum = 0.0;
+
+    for (int i = 0; i < SHADOW_BLOCKER_COUNT; i++)
+    {
+        float sampleDepth = tex2Dlod(source, float4(uv + Blockers[i] * searchRadius, 0, 0)).r;
+        if (sampleDepth < depth)
+        {
+            blockerDepthSum += sampleDepth;
+            blockerWeight++;
+        }
+    }
+
+    if (blockerWeight == 0)
+    {
+        return -1.0;
+    }
+
+    return blockerDepthSum / max(1e-5, blockerWeight);
+}
 
 float2 Rotate(float2 pos, float2 rotation)
 {
 	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
 }
 
-float ShadowPCF(sampler source, float2 coord, float radius, float receiverDepth, float2 rotation)
+float ShadowPCF(sampler source, float2 coord, float radius, float receiverDepth, float2 rotation, float lightSize)
 {
 	float shadow = 0.0;
+
+#if PCSS_QUALITY > 0
+	float depth = receiverDepth / mPSSMDepthZMax;
+	float avgBlockerDepth = FindBlocker(source, coord, receiverDepth, lightSize) / mPSSMDepthZMax;
+
+	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * (lightSize * lightSize / 10);
+	float filterSize = max(penumbraRatio / depth, 1);
+#else
+	float filterSize = 2;
+#endif
 
 	[unroll]
 	for (int i = 0; i < SHADOW_POISSON_COUNT; i++) 
 	{
-		float2 pos = coord + Rotate(Poisson[i] * radius, rotation);
-		shadow += saturate(exp(-20 * (receiverDepth - tex2Dlod(source, float4(pos, 0, 0)).r)));
+		float2 pos = coord + Rotate(Poisson[i] * filterSize * radius, rotation);
+		shadow += receiverDepth > tex2Dlod(source, float4(pos, 0, 0)).r ? 0 : 1;
 	}
 
 	return shadow / SHADOW_POISSON_COUNT;
 }
 
-float ShadingShadow(MaterialParam material, float3 viewPosition)
+float ShadingShadow(MaterialParam material, float3 viewPosition, float angle)
 {
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
@@ -89,32 +159,30 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 		clip(tex2Dlod(_PSSM4_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
-	float radius = 2.0 / SHADOW_MAP_SIZE;
-
-	float angle = PseudoRandom(coord.xy * SHADOW_MAP_SIZE) * PI_2;
+	float radius = 1.0 / SHADOW_MAP_SIZE;
 	float2 rotation = float2(cos(angle), sin(angle));
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth, rotation, 50);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius / 2, receiverDepth, rotation, 50);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius / 4, receiverDepth, rotation, 50);
 	else
-		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth, rotation);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius / 8, receiverDepth, rotation, 50);
 
 	return shadow;
 }
 
 float4 ScreenSapceShadowMapFragment(
-	in float2 coord : TEXCOORD0,
+	in float4 uv : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1) : COLOR
 {
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(uv.xy, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv.xy, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(uv.xy, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(uv.xy, 0, 0));
 
 	MaterialParam material;
 	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
@@ -122,9 +190,9 @@ float4 ScreenSapceShadowMapFragment(
 	clip(any(material.visibility) - 1e-5);
 
 	float3 view = normalize(viewdir);
-	float3 viewPosition = view * material.linearDepth / view.z;
+	float3 viewPosition = ComputeViewSpacePosition(uv.xy, SampleLinearEyeDepth(uv.xy));
 
-	return ShadingShadow(material, viewPosition);
+	return ShadingShadow(material, viewPosition, PseudoRandom(uv.zw) * PI_2);
 }
 
 #if SHADOW_BLUR_COUNT

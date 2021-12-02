@@ -45,7 +45,7 @@ float4 HorizonOcclusion(
 {
 	float2 sampleStepDelta = direction * maxRadius / HBAO_SAMPLER_COUNT;
 	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
-	float2 sampleTexelSize = _CamraColorTexture_TexelSize * (ViewportSize.y / 1080);
+	float2 sampleTexelSize = _CameraColorTexture_TexelSize * (ViewportSize.y / 1080);
 
 	float4 sampleOcclustion = 0.0f;
 

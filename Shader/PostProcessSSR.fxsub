@@ -141,7 +141,7 @@ float4 SSRConeTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 	float fadeOnPerpendicular = saturate(atten);
 	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
 
-	float4 totalColor = tex2Dlod(ShadingMapPointSamp, float4(hitPixel, 0, 0));
+	float4 totalColor = tex2Dlod(_CameraColorTexture_PointSampler, float4(hitPixel, 0, 0));
 	return float4(totalColor.rgb, 1) * fadeOnTotal;
 }
 
@@ -197,8 +197,7 @@ float4 SSRFinalCombiePS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOOR
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
-	float3 f0 = material.specular;
-	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, f0);
+	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, material.specular);
 
 	return float4(color.rgb * fresnel, color.a * luminance(fresnel));
 }

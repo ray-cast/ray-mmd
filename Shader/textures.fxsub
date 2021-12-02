@@ -18,20 +18,20 @@ texture _CameraColorAttachment : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "A16B16G16R16F";
 >;
-texture _CamraColorTexture : RENDERCOLORTARGET<
+texture _CameraColorTexture : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
-texture _CamraColorTempTexture : RENDERCOLORTARGET<
+texture _CameraColorTempTexture : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
-texture _CamraSpecularTexture : RENDERCOLORTARGET<
+texture _CameraSpecularTexture : RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
 	string Format = "A16B16G16R16F";
 >;
-sampler _CamraSpecularTexture_PointSampler = sampler_state {
-	texture = <_CamraSpecularTexture>;
+sampler _CameraSpecularTexture_PointSampler = sampler_state {
+	texture = <_CameraSpecularTexture>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
@@ -40,23 +40,23 @@ sampler _CameraColorAttachment_PointSampler = sampler_state {
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraColorTexture_PointSampler = sampler_state {
-	texture = <_CamraColorTexture>;
+sampler _CameraColorTexture_PointSampler = sampler_state {
+	texture = <_CameraColorTexture>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraColorTexture_LinearSampler = sampler_state {
-	texture = <_CamraColorTexture>;
+sampler _CameraColorTexture_LinearSampler = sampler_state {
+	texture = <_CameraColorTexture>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraColorTempTexture_PointSampler = sampler_state {
-	texture = <_CamraColorTempTexture>;
+sampler _CameraColorTempTexture_PointSampler = sampler_state {
+	texture = <_CameraColorTempTexture>;
 	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
-sampler _CamraColorTempTexture_LinearSampler = sampler_state {
-	texture = <_CamraColorTempTexture>;
+sampler _CameraColorTempTexture_LinearSampler = sampler_state {
+	texture = <_CameraColorTempTexture>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
@@ -422,5 +422,5 @@ sampler _PreIntegratedSkinLut_LinearSampler = sampler_state
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static const float2 _CamraColorTexture_TexelSize = 1.0f / ViewportSize;
-static const float2 _CamraColorAttachment_TexelSize = 1.0f / ViewportSize;
+static const float2 _CameraColorTexture_TexelSize = 1.0f / ViewportSize;
+static const float2 _CameraColorAttachment_TexelSize = 1.0f / ViewportSize;
