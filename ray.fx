@@ -215,8 +215,8 @@ technique DeferredLighting<
 	"Pass=ScreenSapceContactShadow;"
 #endif
 #if SHADOW_BLUR_COUNT
-	"RenderColorTarget=_CameraShadowTextureTemp;	Pass=ScreenSpaceShadowBilateralFilterX;"
-	"RenderColorTarget=_CameraShadowTexture;		Pass=ScreenSpaceShadowBilateralFilterY;"
+	"RenderColorTarget=_CameraShadowTextureTemp;	Clear=Color; Pass=ScreenSpaceShadowBilateralFilterX;"
+	"RenderColorTarget=_CameraShadowTexture;		Clear=Color; Pass=ScreenSpaceShadowBilateralFilterY;"
 #endif
 #endif
 
