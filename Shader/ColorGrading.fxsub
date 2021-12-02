@@ -21,6 +21,17 @@ float3 ColorVignette(float3 color, float2 coord)
 	return color * smoothstep(mVignetteOuter - mVignette * 2, mVignetteInner - mVignette, L);		
 }
 
+float3 ColorVibrance(float3 color, float coff)
+{
+	float3 lumCoeff = float3(0.212656, 0.715158, 0.072186);
+	float luma = dot(lumCoeff, color);
+	float max_color = max(color.r, max(color.g,color.b));
+	float min_color = min(color.r, min(color.g,color.b));
+	float color_saturation = max_color - min_color;
+	color.rgb = lerp(luma, color.rgb, (1.0 + (coff * (1.0 - (sign(coff) * color_saturation)))));
+	return color;
+}
+
 float3 ColorCorrect(
 	float3 color,
 	float colorSaturation,

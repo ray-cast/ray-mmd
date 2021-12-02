@@ -83,6 +83,7 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 	color = ColorToneMapping(color, aveLum);
 
 	color = linear2srgb(color);
+	color = ColorVibrance(color, mColorVibrance);
 	color = ColorDithering(color, uv.xy);
 
 	return float4(color, 1);

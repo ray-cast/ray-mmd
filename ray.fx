@@ -50,6 +50,8 @@ float mContrastP : CONTROLOBJECT<string name="ray_controller.pmx"; string item =
 float mContrastM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Contrast-";>;
 float mSaturationP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Saturation+";>;
 float mSaturationM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Saturation-";>;
+float mVibranceP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vibrance+";>;
+float mVibranceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vibrance-";>;
 float mGammaP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Gamma+";>;
 float mGammaM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Gamma-";>;
 float mColBalanceRP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BalanceR+";>;
@@ -64,14 +66,15 @@ float mTemperatureM : CONTROLOBJECT<string name="ray_controller.pmx"; string ite
 static float mSunIntensity = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mSunLightP), 0, mSunLightM);
 static float mSunTemperature = lerp(lerp(6600, 1000, mSunTemperatureP), 40000, mSunTemperatureM);
 static float mAmbientOcclusionRadius = lerp(lerp(20.0, mAmbientOcclusionMaxRadius, mSSAORadiusP), mAmbientOcclusionMinRadius, mSSAORadiusM);
-static float mAmbientOcclusionIntensity = lerp(lerp(5, mAmbientOcclusionIntensityMax, mSSAOP), mAmbientOcclusionIntensityMin, mSSAOM);
-static float mDirectionalOcclusionIntensity = lerp(lerp(5, mAmbientOcclusionIntensityMax, mSSDOP), mAmbientOcclusionIntensityMin, mSSDOM);
+static float mAmbientOcclusionIntensity = lerp(lerp(4, mAmbientOcclusionIntensityMax, mSSAOP), mAmbientOcclusionIntensityMin, mSSAOM);
+static float mDirectionalOcclusionIntensity = lerp(lerp(4, mAmbientOcclusionIntensityMax, mSSDOP), mAmbientOcclusionIntensityMin, mSSDOM);
 static float mSSSSScale = lerp(lerp(mSSSSIntensityMin, mSSSSIntensityMax, mSSSSP), 0.25, mSSSSM);
 static float mExposure = lerp(lerp(1.0, mExposureMax, mExposureP), mExposureMin, mExposureM);
 static float mBloomRadius = lerp(lerp(0.65, 1.0, mBloomRadiusP), 0.0, mBloomRadiusM);
 static float mBloomThreshold = lerp(lerp(1.0, mBloomThresholdMax, mBloomThresholdP), mBloomThresholdMin, mBloomThresholdM);
 static float mColorContrast = lerp(lerp(1, 2, mContrastP), 0.5, mContrastM);
 static float mColorSaturation = lerp(lerp(1, 2, mSaturationP), 0.0, mSaturationM);
+static float mColorVibrance = lerp(lerp(0, 1, mVibranceP), 0.0, mVibranceM);
 static float mColorGamma = lerp(lerp(1.0, 2.2, mGammaP), 0.45, mGammaM);
 static float mColorTemperature = lerp(lerp(mTemperature, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mFstop = lerp(lerp(5.6, 32.0, mFstopP), 1.0, mFstopM);
