@@ -147,9 +147,9 @@ float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L)
 	return sss;
 }
 
-float3 SubsurfaceShadingPreIntegratedSkinLut(MaterialParam material, float3 N, float3 L)
+float3 SubsurfaceShadingPreIntegratedSkinLUT(MaterialParam material, float3 N, float3 L)
 {
-	return pow(tex2Dlod(_PreIntegratedSkinLut_LinearSampler, float4(dot(N, L) * 0.5 + 0.5, material.customDataA, 0, 0)).rgb, 2.2);
+	return pow(tex2Dlod(_PreIntegratedSkinLut_LinearSampler, float4(dot(N, L) * 0.55 + 0.45, material.customDataA, 0, 0)).rgb, 2.2);
 }
 
 float BurleyBRDF(float nl, float nv, float vh, float roughness)
@@ -329,7 +329,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 
 	[branch]
 	if (material.lightModel == SHADINGMODELID_SKIN)
-		diffuse = SubsurfaceShadingPreIntegratedSkinLut(material, N, L) * shadow;
+		diffuse = SubsurfaceShadingPreIntegratedSkinLUT(material, N, L) * shadow;
 #if TOON_ENABLE
 	else if (material.lightModel == SHADINGMODELID_CEL)
 		diffuse = CelShading(dot(N, L), vh, nv, material.customDataB, material.specular, shadow, roughness, material.customDataA);
@@ -374,7 +374,7 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 Ld, float3 Ls, f
 	float3 diffuse = 0;
 
 	if (material.lightModel == SHADINGMODELID_SKIN)
-		diffuse = SubsurfaceShadingPreIntegratedSkinLut(material, N, Ld);
+		diffuse = SubsurfaceShadingPreIntegratedSkinLUT(material, N, Ld);
 	else
 		diffuse = BurleyBRDF(nld, nv, vh, roughness) + SubsurfaceShading(material, N, Ld);
 
