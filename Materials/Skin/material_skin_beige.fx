@@ -1,11 +1,11 @@
 #define ALBEDO_MAP_FROM 3
 #define ALBEDO_MAP_UV_FLIP 0
-#define ALBEDO_MAP_APPLY_SCALE 1
+#define ALBEDO_MAP_APPLY_SCALE 0
 #define ALBEDO_MAP_APPLY_DIFFUSE 1
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = float3(247, 199, 149) / 255;
+const float3 albedo = 1.0;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -14,7 +14,7 @@ const float2 albedoMapLoopNum = 1.0;
 #define ALBEDO_SUB_MAP_APPLY_SCALE 0
 #define ALBEDO_SUB_MAP_FILE "albedo.png"
 
-const float3 albedoSub = 1.0;
+const float3 albedoSub = 0.0;
 const float2 albedoSubMapLoopNum = 1.0;
 
 #define ALPHA_MAP_FROM 3
@@ -38,7 +38,7 @@ const float normalMapLoopNum = 1.0;
 #define NORMAL_SUB_MAP_UV_FLIP 0
 #define NORMAL_SUB_MAP_FILE "../_MaterialMap/skin.png"
 
-const float normalSubMapScale = 1.5;
+const float normalSubMapScale = 1.0;
 const float normalSubMapLoopNum = 80.0;
 
 #define SMOOTHNESS_MAP_FROM 0
@@ -48,7 +48,7 @@ const float normalSubMapLoopNum = 80.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.45;
+const float smoothness = 0.1;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -112,7 +112,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.6;
+const float customA = 0.8;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 0
@@ -120,7 +120,9 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_APPLY_SCALE 0
 #define CUSTOM_B_MAP_FILE "custom.png"
+#define SSS_SKIN_TRANSMITTANCE(x) exp((1 - saturate(x)) * float3(-8, -40, -64))
 
-const float3 customB = pow(float3(238, 104, 94) / 255, 1.0 / 2.2);
+const float3 customB = SSS_SKIN_TRANSMITTANCE(0.85);
+const float customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"
