@@ -32,7 +32,7 @@ float4 SSSGaussBlurPS(
 {
 	const float offsets[6] = { 0.352, 0.719, 1.117, 1.579, 2.177, 3.213 };
 
-	const float3 profileVarArr[2] = { float3(6.6, 5.6, 2.8), float3(9.6, 2.8, 2.2) };
+	const float3 profileVarArr[2] = { float3(6.6, 5.6, 2.8), float3(19.2, 2.8, 2.2) };
 	const float4 profileSpikeRadArr[2] = { float4(0.30, 0.30, 0.80, 8.0 ), float4(0.35, 0.40, 0.50, 1.0) };
 
 	MaterialParam material = SampleOpacityGbuffer(uv);
@@ -55,7 +55,7 @@ float4 SSSGaussBlurPS(
 
 		float3 sampleWeight = 1;
 		float4 sampleColor = tex2Dlod(source, float4(uv, 0, 0));
-		float2 sampleStep = direction * sssRadius / material.linearDepth;
+		float2 sampleStep = direction * sssRadius * atan(matProject._m11) / material.linearDepth;
 
 		[unroll]
 		for (int i = 0; i < 6; i++)
