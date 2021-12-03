@@ -7,6 +7,7 @@
 #include "../../shader/gbuffer_sampler.fxsub"
 #include "../../shader/BRDF.fxsub"
 #include "../../shader/MonteCarlo.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
 
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
@@ -35,26 +36,37 @@ float mMediumColorHP :  CONTROLOBJECT<string name="(self)"; string item = "Mediu
 float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "MediumS+";>;
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
 float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
+float mSunColorHP :  CONTROLOBJECT<string name="(self)"; string item = "SunH+";>;
+float mSunColorSP :  CONTROLOBJECT<string name="(self)"; string item = "SunS+";>;
+float mSunColorVP :  CONTROLOBJECT<string name="(self)"; string item = "SunV+";>;
+float mSunColorVM :  CONTROLOBJECT<string name="(self)"; string item = "SunV-";>;
+float mSunExponentP :  CONTROLOBJECT<string name="(self)"; string item = "SunExponent+";>;
+float mSunExponentM :  CONTROLOBJECT<string name="(self)"; string item = "SunExponent-";>;
 
 static const float3 mTopColor = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))));
 static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))));
 static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))));
+static const float3 mSunColor = srgb2linear_fast(hsv2rgb(float3(mSunColorHP, mSunColorSP, lerp(lerp(1, 2, mSunColorVP), 0, mSunColorVM))));
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
+static const float mSunExponent = lerp(lerp(0.5, 1, mSunExponentP), 0, mSunExponentM);
 #else
 #if USE_RGB_COLORSPACE
 	static const float3 mTopColor = srgb2linear_fast(TopColor);
 	static const float3 mBottomColor = srgb2linear_fast(BottomColor);
 	static const float3 mMediumColor = srgb2linear_fast(MediumColor);
+	static const float3 mSunColor = srgb2linear_fast(SunColor);
 #else
 	static const float3 mTopColor = srgb2linear_fast(hsv2rgb(TopColor));
 	static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(BottomColor));
 	static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(MediumColor));
+	static const float3 mSunColor = srgb2linear_fast(hsv2rgb(SunColor));
 #endif
 
 static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
+static const float mSunExponent = SunExponent;
 #endif
 
 static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
@@ -69,19 +81,27 @@ sampler BRDFSamp = sampler_state {
 	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = NONE;
 	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
 };
+texture SpecularMap<string ResourceName = "Textures/skyspec_hdr.dds";>;
+sampler SpecularMapSamp = sampler_state {
+	texture = <SpecularMap>;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = CLAMP; ADDRESSV = CLAMP;
+};
 
-float3 SampleSky(float3 N)
+float3 SampleSky(float3 N, float3 V)
 {
 	float3 color = 0;
 	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), mTopExponent));
-	color = lerp(color, mBottomColor, pow(max(0, -N.y), mBottomExponent));	
+	color = lerp(color, mBottomColor, pow(max(0, -N.y), mBottomExponent));
+	color = lerp(color, mSunColor, ComputePhaseMieHG(dot(V, -MainLightDirection), mSunExponent));
+
 	return color;
 }
 
-float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 prefilteredDiffuse)
+float3 ImageBasedLightSubsurface(MaterialParam material, float3 N, float3 V, float3 prefilteredDiffuse)
 {
 	float3 dependentSplit = 0.5 + (1 - material.visibility);
-	float3 scattering = prefilteredDiffuse + SampleSky(-N);
+	float3 scattering = prefilteredDiffuse + SampleSky(-N, V);
 	scattering *= material.customDataB * material.customDataA * dependentSplit;
 	return scattering * mEnvIntensitySSS / PI;
 }
@@ -110,12 +130,12 @@ float3 ImportanceSampleDiffuseSky(float3 N, float3 V, float roughness)
 	{
 		float2 E = HammersleyNoBitOps(i, NumSamples);
 		float3 L = TangentToWorld(N, HammersleySampleCos(E));
-		float3 H = normalize(V + L);
+		float3 H = normalize(N + L);
 
 		float nl = saturate(dot(N, L));
 		if (nl > 0.0)
 		{
-			lighting += SampleSky(L) * nl;
+			lighting += SampleSky(L, V) * nl;
 			weight += nl;
 		}
 	}
@@ -134,12 +154,12 @@ float3 ImportanceSampleSpecularSky(float3 N, float3 V, float roughness)
 	{
 		float2 E = HammersleyNoBitOps(i, NumSamples);
 		float3 H = TangentToWorld(N, HammersleySampleGGX(E, roughness));
-		float3 L = 2 * dot(V, H) * H - V;
+		float3 L = 2 * dot(N, H) * H - N;
 
 		float nl = saturate(dot(N, L));
 		if (nl > 0)
 		{
-			lighting += SampleSky(L) * nl;
+			lighting += SampleSky(L, V) * nl;
 			weight += nl;
 		}
 	}
@@ -171,8 +191,11 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 		R = ComputeAnisotropyDominantDir(N, V, SmoothnessToRoughness(material.smoothness), material.customDataA, material.customDataB.r);
 	}
 
-	float3 prefilteredDiffuse = ImportanceSampleDiffuseSky(N, N, roughness);
-	float3 prefilteredSpeculr = ImportanceSampleSpecularSky(R, R, roughness);
+	float mipLayer = EnvironmentMip(6, material.smoothness);
+
+	float3 prefilteredDiffuse = ImportanceSampleDiffuseSky(N, V, roughness);
+	float3 prefilteredSpeculr = ImportanceSampleSpecularSky(R, V, roughness);
+	prefilteredSpeculr *= luminance(DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(SampleLatlong(R), 0, mipLayer)))) * PI_2;
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
@@ -181,7 +204,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 		material.lightModel == SHADINGMODELID_SUBSURFACE ||
 		material.lightModel == SHADINGMODELID_GLASS)
 	{
-		diffuse += ImageBasedLightSubsurface(material, N, prefilteredDiffuse);
+		diffuse += ImageBasedLightSubsurface(material, N, V, prefilteredDiffuse);
 	}
 }
 

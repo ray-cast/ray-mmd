@@ -2,6 +2,7 @@
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/Color.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
 
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
@@ -24,26 +25,37 @@ float mMediumColorHP :  CONTROLOBJECT<string name="(self)"; string item = "Mediu
 float mMediumColorSP :  CONTROLOBJECT<string name="(self)"; string item = "MediumS+";>;
 float mMediumColorVP :  CONTROLOBJECT<string name="(self)"; string item = "MediumV+";>;
 float mMediumColorVM :  CONTROLOBJECT<string name="(self)"; string item = "MediumV-";>;
+float mSunColorHP :  CONTROLOBJECT<string name="(self)"; string item = "SunH+";>;
+float mSunColorSP :  CONTROLOBJECT<string name="(self)"; string item = "SunS+";>;
+float mSunColorVP :  CONTROLOBJECT<string name="(self)"; string item = "SunV+";>;
+float mSunColorVM :  CONTROLOBJECT<string name="(self)"; string item = "SunV-";>;
+float mSunExponentP :  CONTROLOBJECT<string name="(self)"; string item = "SunExponent+";>;
+float mSunExponentM :  CONTROLOBJECT<string name="(self)"; string item = "SunExponent-";>;
 
 static const float3 mTopColor    = srgb2linear_fast(hsv2rgb(float3(mTopColorHP, mTopColorSP, lerp(lerp(1, 2, mTopColorVP), 0, mTopColorVM))));
 static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(float3(mBottomColorHP, mBottomColorSP, lerp(lerp(1, 2, mBottomColorVP), 0, mBottomColorVM))));
 static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(float3(mMediumColorHP, mMediumColorSP, lerp(lerp(1, 2, mMediumColorVP), 0, mMediumColorVM))));
+static const float3 mSunColor = srgb2linear_fast(hsv2rgb(float3(mSunColorHP, mSunColorSP, lerp(lerp(1, 2, mSunColorVP), 0, mSunColorVM))));
 
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
+static const float mSunExponent = lerp(lerp(0.5, 1, mSunExponentP), 0, mSunExponentM);
 #else
 #if USE_RGB_COLORSPACE
 	static const float3 mTopColor = srgb2linear_fast(TopColor);
 	static const float3 mBottomColor = srgb2linear_fast(BottomColor);
 	static const float3 mMediumColor = srgb2linear_fast(MediumColor);
+	static const float3 mSunColor = srgb2linear_fast(SunColor);
 #else
 	static const float3 mTopColor = srgb2linear_fast(hsv2rgb(TopColor));
 	static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(BottomColor));
 	static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(MediumColor));
+	static const float3 mSunColor = srgb2linear_fast(hsv2rgb(SunColor));
 #endif
 
 static const float mTopExponent = TopExponent;
 static const float mBottomExponent = BottomExponent;
+static const float mSunExponent = SunExponent;
 #endif
 
 static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
@@ -64,6 +76,7 @@ float4 SkyboxPS(in float3 viewdir : TEXCOORD0) : COLOR
   	float3 color = 0;
   	color = lerp(mMediumColor, mTopColor, pow(max(0, V.y), mTopExponent));
   	color = lerp(color, mBottomColor, pow(max(0, -V.y), mBottomExponent));
+  	color = lerp(color, mSunColor, ComputePhaseMieHG(dot(V, -MainLightDirection), mSunExponent));
   	
 	return float4(linear2srgb(color), 1);
 }
