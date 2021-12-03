@@ -177,7 +177,12 @@ static const float2 Poisson64[64] = {
 	float2(-0.4230408, -0.7129914),
 };
 
-float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadius)
+float2 Rotate(float2 pos, float2 rotation)
+{
+	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
+}
+
+float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadius, float2 rotation)
 {
     float blockerWeight = 0;
     float blockerDepthSum = 0.0;
@@ -185,9 +190,9 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
     for (int i = 0; i < SHADOW_BLOCKER_COUNT; i++)
     {
 #if SHADOW_BLOCKER_COUNT == 15
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Poisson15[i] * searchRadius, 0, 0)).r;
+		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(Poisson15[i], rotation) * searchRadius, 0, 0)).r;
 #elif SHADOW_BLOCKER_COUNT == 32
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Poisson32[i] * searchRadius, 0, 0)).r;
+		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(Poisson32[i], rotation) * searchRadius, 0, 0)).r;
 #endif
         if (sampleDepth < depth)
         {
@@ -199,31 +204,26 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
     return float2(blockerDepthSum / max(1e-5, blockerWeight), blockerWeight);
 }
 
-float2 Rotate(float2 pos, float2 rotation)
-{
-	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
-}
-
 float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation, float lightSize)
 {
 #if PCSS_QUALITY > 0
-	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / SHADOW_MAP_SIZE);
+	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / SHADOW_MAP_SIZE, rotation);
 
 	float depth = receiverDepth / mPSSMDepthZMax;
 	float avgBlockerDepth = blocker.x / mPSSMDepthZMax;
 
-	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * (lightSize * 5);
+	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * (lightSize * 2);
 	float filterSize = max(penumbraRatio / depth, 1) * radius;
+
+	[branch]
+	if (blocker.y <= 0)
+	{
+		return 1;
+	}
 #else
 	float filterSize = 2 * radius;
 	float2 blocker = 1;
 #endif
-
-	[branch]
-    if (blocker.y <= 0)
-    {
-		return 1;
-    }
 
 	float shadow = 0.0;
 
@@ -232,27 +232,27 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 	{
 		float2 samplePoints[4];
 #if SHADOW_POISSON_COUNT == 32
-		samplePoints[0] = Rotate(Poisson32[i] * filterSize, rotation);
-		samplePoints[1] = Rotate(Poisson32[i+1] * filterSize, rotation);
-		samplePoints[2] = Rotate(Poisson32[i+2] * filterSize, rotation);
-		samplePoints[3] = Rotate(Poisson32[i+3] * filterSize, rotation);
+		samplePoints[0] = Rotate(Poisson32[i], rotation);
+		samplePoints[1] = Rotate(Poisson32[i+1], rotation);
+		samplePoints[2] = Rotate(Poisson32[i+2], rotation);
+		samplePoints[3] = Rotate(Poisson32[i+3], rotation);
 #elif SHADOW_POISSON_COUNT == 36
-		samplePoints[0] = Rotate(Poisson36[i] * filterSize, rotation);
-		samplePoints[1] = Rotate(Poisson36[i+1] * filterSize, rotation);
-		samplePoints[2] = Rotate(Poisson36[i+2] * filterSize, rotation);
-		samplePoints[3] = Rotate(Poisson36[i+3] * filterSize, rotation);
+		samplePoints[0] = Rotate(Poisson36[i], rotation);
+		samplePoints[1] = Rotate(Poisson36[i+1], rotation);
+		samplePoints[2] = Rotate(Poisson36[i+2], rotation);
+		samplePoints[3] = Rotate(Poisson36[i+3], rotation);
 #elif SHADOW_POISSON_COUNT == 64
-		samplePoints[0] = Rotate(Poisson64[i] * filterSize, rotation);
-		samplePoints[1] = Rotate(Poisson64[i+1] * filterSize, rotation);
-		samplePoints[2] = Rotate(Poisson64[i+2] * filterSize, rotation);
-		samplePoints[3] = Rotate(Poisson64[i+3] * filterSize, rotation);
+		samplePoints[0] = Rotate(Poisson64[i], rotation);
+		samplePoints[1] = Rotate(Poisson64[i+1], rotation);
+		samplePoints[2] = Rotate(Poisson64[i+2], rotation);
+		samplePoints[3] = Rotate(Poisson64[i+3], rotation);
 #endif
 		
 		float4 sampleLinearDepth;
-		sampleLinearDepth[0] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[0], 0, 0)).r;
-		sampleLinearDepth[1] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[1], 0, 0)).r;
-		sampleLinearDepth[2] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[2], 0, 0)).r;
-		sampleLinearDepth[3] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[3], 0, 0)).r;
+		sampleLinearDepth[0] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
+		sampleLinearDepth[1] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[1] * filterSize, 0, 0)).r;
+		sampleLinearDepth[2] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[2] * filterSize, 0, 0)).r;
+		sampleLinearDepth[3] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[3] * filterSize, 0, 0)).r;
 
 		shadow += sum(saturate(exp(20 * (sampleLinearDepth - receiverDepth))));
 	}
@@ -261,8 +261,16 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 	return shadow / SHADOW_POISSON_COUNT;
 }
 
-float ShadingShadow(MaterialParam material, float3 viewPosition, float angle)
+float4 ScreenSapceShadowMapFragment(
+	in float4 uv : TEXCOORD0,
+	in float3 viewdir : TEXCOORD1) : COLOR
 {
+	MaterialParam material = SampleTransparentGbuffer(uv.xy);
+	clip(any(material.visibility) - 1e-5);
+
+	float3 view = normalize(viewdir);
+	float3 viewPosition = ComputeViewSpacePosition(uv.xy, SampleLinearEyeDepth(uv.xy));
+
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
 	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
@@ -299,40 +307,21 @@ float ShadingShadow(MaterialParam material, float3 viewPosition, float angle)
 
 	float shadow = 0;
 	float radius = 1.0 / SHADOW_MAP_SIZE;
-	float lightSize = SHADOW_MAP_SIZE * 0.01; 
+	float lightSize = SHADOW_MAP_SIZE * 0.02; 
+	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
 
 	[branch]
 	if (coord.w == 0)
 		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius / 2, receiverDepth, rotation, lightSize);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 2);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius / 4, receiverDepth, rotation, lightSize);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 4);
 	else
-		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius / 8, receiverDepth, rotation, lightSize);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 8);
 
 	return shadow;
-}
-
-float4 ScreenSapceShadowMapFragment(
-	in float4 uv : TEXCOORD0,
-	in float3 viewdir : TEXCOORD1) : COLOR
-{
-	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(uv.xy, 0, 0));
-	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(uv.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(uv.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(uv.xy, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, material);
-
-	clip(any(material.visibility) - 1e-5);
-
-	float3 view = normalize(viewdir);
-	float3 viewPosition = ComputeViewSpacePosition(uv.xy, SampleLinearEyeDepth(uv.xy));
-
-	return ShadingShadow(material, viewPosition, PseudoRandom(uv.zw) * PI_2);
 }
 
 #if SHADOW_BLUR_COUNT
