@@ -174,7 +174,7 @@ float4 ScreenSpaceLightingFinalFragment(
 
 #if FOG_ENABLE
 	float4 fog = tex2Dlod(_CameraFogTexture_PointSampler, float4(uv, 0, 0));
-	lighting = lerp(lighting, fog.rgb, 1 - TransmittanceFromOpticalDepth(fog.a));
+	lighting = lerp(lighting, fog.rgb, OpacityFromOpticalDepth(fog.a));
 #endif
 
 	return float4(lighting, material.linearDepth);
