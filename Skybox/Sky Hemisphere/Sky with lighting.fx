@@ -171,8 +171,8 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 {
 	float3 worldNormal = mul(material.normal, (float3x3)matViewInverse);
 
-	float3 V = mul(matTransform, worldView);
-	float3 N = mul(matTransform, worldNormal);
+	float3 V = worldView;
+	float3 N = worldNormal;
 	float3 R = EnvironmentReflect(N, V);
 
 	float nv = abs(dot(worldNormal, worldView));
@@ -195,7 +195,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 
 	float3 prefilteredDiffuse = ImportanceSampleDiffuseSky(N, V, roughness);
 	float3 prefilteredSpeculr = ImportanceSampleSpecularSky(R, V, roughness);
-	prefilteredSpeculr *= luminance(DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(SampleLatlong(R), 0, mipLayer)))) * PI_2;
+	prefilteredSpeculr *= luminance(DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(SampleLatlong(mul(matTransform, R)), 0, mipLayer)))) * PI_2;
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpeculr * fresnel * mEnvIntensitySpec;
