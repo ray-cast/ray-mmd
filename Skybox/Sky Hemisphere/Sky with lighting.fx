@@ -195,7 +195,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 
 	float3 prefilteredDiffuse = ImportanceSampleDiffuseSky(N, V, roughness);
 	float3 prefilteredSpecular = ImportanceSampleSpecularSky(R, V, roughness);
-	prefilteredSpecular *= lerp(luminance(DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(SampleLatlong(mul(matTransform, R)), 0, mipLayer)))) * PI_2, 1, luminance(material.albedo));
+	prefilteredSpecular *= lerp(1, luminance(DecodeRGBT(tex2Dlod(SpecularMapSamp, float4(SampleLatlong(mul(matTransform, R)), 0, mipLayer)))) * PI_2, saturate(luminance(material.specular) / 0.08 - 1));
 
 	diffuse = prefilteredDiffuse * mEnvIntensityDiff;
 	specular = prefilteredSpecular * fresnel * mEnvIntensitySpec;
