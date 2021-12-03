@@ -51,6 +51,7 @@ Features:
 * IES light profiles (point and spot light support)
 * Soft shadow (PCF, VSM, PSSM)
 * Omni light shadow based on dual-paraboloid projection
+* Percentage Closer Soft Shadow
 * HDR linear lighting
 * Volumetric light (point, spot and ies light source support)
 * Volumetric fog (cube and sphere fog support)
@@ -59,8 +60,9 @@ Features:
 * Ground fog effect
 * Skybox based on RGBT encode
 * Image-based lighting based on RGBT encode
-* Horizon Based Ambient Occlusition
+* Screen Space Ambient Occlusition (HBAO)
 * Screen Space Reflection
+* Screen Space Contact Shadow
 * Screen Space Subsurface Scattering
 * Post-Process Bokeh - Depth Of Field
 * Post-Process Bloom
