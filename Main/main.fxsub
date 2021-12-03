@@ -1,6 +1,7 @@
 #include "../ray.conf"
 #include "../shader/math.fxsub"
 #include "../shader/common.fxsub"
+#include "../shader/color.fxsub"
 
 #define TEXTURE_FILTER LINEAR
 #define TEXTURE_MIP_FILTER LINEAR
