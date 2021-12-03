@@ -122,7 +122,7 @@ const float customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_APPLY_SCALE 0
 #define CUSTOM_B_MAP_FILE "customB.png"
 
-const float3 customB = float3(1.0, 0.81, 0.65);
+const float3 customB = float3(0.65, 1.0, 0.81);
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"

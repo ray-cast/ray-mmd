@@ -368,13 +368,13 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB.r * 2 - 1, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_HAIR)
 	{
-		float shift = material.customDataB.b * 2 - 1;
+		float shift = material.customDataB.r * 2 - 1;
 		float3 X = normalize(cross(N, mul(float3(0,1,0), (float3x3)matView)) + N * shift);
 		float3 Y = normalize(cross(X, N) - N * shift);
 		float3 fresnel = fresnelSchlick(material.specular, 1, vh);
 
-		float3 anisotropic = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataB.r, shift, normalizeFactor);
-		specular = lerp(anisotropic, SpecularBRDF_KajiyaKay(Y, V, L, exp2(10 * material.customDataB.g + 1), 1), fresnel);
+		float3 anisotropic = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataB.g, shift, normalizeFactor);
+		specular = lerp(anisotropic, SpecularBRDF_KajiyaKay(Y, V, L, exp2(10 * material.customDataB.b + 1), 1), fresnel);
 	}
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);

@@ -186,7 +186,7 @@ void ShadingMaterial(MaterialParam material, float3 worldView, out float3 diffus
 	else
 		fresnel = EnvironmentSpecularLUT(BRDFSamp, nv, material.smoothness, material.specular);
 
-	if (material.lightModel == SHADINGMODELID_ANISOTROPY)
+	if (material.lightModel == SHADINGMODELID_ANISOTROPY || material.lightModel == SHADINGMODELID_HAIR)
 	{
 		R = ComputeAnisotropyDominantDir(N, V, SmoothnessToRoughness(material.smoothness), material.customDataA, material.customDataB.r);
 	}
