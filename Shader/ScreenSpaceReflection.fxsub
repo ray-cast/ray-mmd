@@ -199,7 +199,7 @@ float4 ScreenSpaceReflectionFinalPS(in float2 coord : TEXCOORD0, in float3 viewd
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
-	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, 1);
+	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, material.specular);
 
-	return float4(color.rgb * FresnelSchlickGlass(N, V, material.smoothness, 1), color.a);
+	return float4(color.rgb * fresnel, color.a);
 }
