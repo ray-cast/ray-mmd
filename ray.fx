@@ -107,6 +107,10 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/ScreenSpaceHorizonOcclusion.fxsub"
 #endif
 
+#if SSR_QUALITY
+#	include "shader/ScreenSpaceReflection.fxsub"
+#endif
+
 #if SSSS_QUALITY
 #	include "shader/ScreenSpaceSubsurfaceScattering.fxsub"
 #endif
@@ -117,10 +121,6 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 
 #if TOON_ENABLE == 2
 #	include "shader/PostProcessDiffusion.fxsub"
-#endif
-
-#if SSR_QUALITY
-#	include "shader/PostProcessSSR.fxsub"
 #endif
 
 #if BOKEH_MODE
@@ -240,24 +240,21 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraColorTempTexture;	Clear=Color; Pass=ScreenSpaceSubsurfaceBlurY;"
 #endif
 
-	"RenderColorTarget=_CameraColorTexture;		Clear=Color; Pass=ScreenSpaceLightingFinal;"
-
 #if SSR_QUALITY
-	"RenderColorTarget=SSRLightX1Map;"
-	"Clear=Color;"
-	"Pass=SSRConeTracing;"
+	"RenderColorTarget=_CameraReflectionTextureX1; 		Clear=Color; Pass=ScreenSpaceReflectionTracing;"
+	"RenderColorTarget=_CameraReflectionTextureX1Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX1;"
+	"RenderColorTarget=_CameraReflectionTextureX1;	  	Clear=Color; Pass=ScreenSpaceReflectionBlurY1;"
+	"RenderColorTarget=_CameraReflectionTextureX2Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX2;"
+	"RenderColorTarget=_CameraReflectionTextureX2;	  	Clear=Color; Pass=ScreenSpaceReflectionBlurY2;"
+	"RenderColorTarget=_CameraReflectionTextureX3Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX3;"
+	"RenderColorTarget=_CameraReflectionTextureX3;	  	Clear=Color; Pass=ScreenSpaceReflectionBlurY3;"
+	"RenderColorTarget=_CameraReflectionTextureX4Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX4;"
+	"RenderColorTarget=_CameraReflectionTextureX4;	  	Clear=Color; Pass=ScreenSpaceReflectionBlurY4;"
 
-	"RenderColorTarget=SSRLightX1MapTemp; 	Pass=SSRGaussionBlurX1;"
-	"RenderColorTarget=SSRLightX1Map;	  	Pass=SSRGaussionBlurY1;"
-	"RenderColorTarget=SSRLightX2MapTemp; 	Pass=SSRGaussionBlurX2;"
-	"RenderColorTarget=SSRLightX2Map;	  	Pass=SSRGaussionBlurY2;"
-	"RenderColorTarget=SSRLightX3MapTemp; 	Pass=SSRGaussionBlurX3;"
-	"RenderColorTarget=SSRLightX3Map;	  	Pass=SSRGaussionBlurY3;"
-	"RenderColorTarget=SSRLightX4MapTemp; 	Pass=SSRGaussionBlurX4;"
-	"RenderColorTarget=SSRLightX4Map;	  	Pass=SSRGaussionBlurY4;"
-
-	"RenderColorTarget=_CameraColorTexture;	Pass=SSRFinalCombie;"
+	"RenderColorTarget=_CameraSpecularTexture; Pass=ScreenSpaceReflectionFinal;"
 #endif
+
+	"RenderColorTarget=_CameraColorTexture;	Clear=Color; Pass=ScreenSpaceLightingFinal;"
 
 #if BOKEH_MODE
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
@@ -468,66 +465,66 @@ technique DeferredLighting<
 	}
 #endif
 #if SSR_QUALITY
-	pass SSRConeTracing<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionTracing<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSRConeTracingPS();
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionTracingPS();
 	}
-	pass SSRGaussionBlurX1<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX1Samp, SSROffsetX1);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1_LinearSampler, SSROffsetX1);
 	}
-	pass SSRGaussionBlurY1<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurY1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX1SampTemp, SSROffsetY1);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1Temp_LinearSampler, SSROffsetY1);
 	}
-	pass SSRGaussionBlurX2<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurX2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX1Samp, SSROffsetX2);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1_LinearSampler, SSROffsetX2);
 	}
-	pass SSRGaussionBlurY2<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurY2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 2);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX2SampTemp, SSROffsetY2);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX2Temp_LinearSampler, SSROffsetY2);
 	}
-	pass SSRGaussionBlurX3<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurX3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 2);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX2Samp, SSROffsetX3);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX2_LinearSampler, SSROffsetX3);
 	}
-	pass SSRGaussionBlurY3<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurY3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 4);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX3SampTemp, SSROffsetY3);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX3Temp_LinearSampler, SSROffsetY3);
 	}
-	pass SSRGaussionBlurX4<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurX4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 4);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX3Samp, SSROffsetX4);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX3_LinearSampler, SSROffsetX4);
 	}
-	pass SSRGaussionBlurY4<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionBlurY4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 8);
-		PixelShader  = compile ps_3_0 SSRGaussionBlurPS(SSRLightX4SampTemp, SSROffsetY4);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX4Temp_LinearSampler, SSROffsetY4);
 	}
-	pass SSRFinalCombie<string Script= "Draw=Buffer;";>{
+	pass ScreenSpaceReflectionFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
-		PixelShader  = compile ps_3_0 SSRFinalCombiePS();
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionFinalPS();
 	}
 #endif
 #if BOKEH_MODE
