@@ -110,7 +110,7 @@ void ScreenSpaceOpacityLightingFragment(
 	specular += tex2Dlod(_CameraLightingTexture1_PointSampler, float4(uv, 0, 0)).rgb;
 #endif
 
-	oColor0 = float4(diffuse, material.linearDepth * any(material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE));
+	oColor0 = float4(diffuse, material.linearDepth * any(material.lightModel == SHADINGMODELID_SKIN || material.lightModel == SHADINGMODELID_SUBSURFACE || material.lightModel == SHADINGMODELID_HAIR));
 	oColor1 = float4(specular, 0);
 }
 

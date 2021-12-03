@@ -332,6 +332,7 @@ Shading Model ID
     | 7  | Subsurface        | Curvature  | Transmittance color |
     | 8  | Cel Shading       | Threshold  | Shadow color |
     | 9  | ToonBased Shading | Haredness  | Shadow color |
+    | 10 | Hair              | Curvature  | Anisotropic |
 
 * ##### CUSTOM_A_MAP_FROM  (see [ALBEDO_MAP_FROM](#ALBEDO_MAP_FROM))
 * ##### CUSTOM_A_MAP_UV_FLIP (see [ALBEDO_MAP_UV_FLIP](#ALBEDO_MAP_UV_FLIP))

@@ -142,7 +142,7 @@ float3 SubsurfaceShadingPennerSkin(MaterialParam material, float3 N, float3 L, f
 
 	float ir = material.customDataA;
 	float brdf = pndl;
-	float3 sss = material.customDataB * pow2(1.0 - pndl) * pow(1.0-nndl,3.0 / (ir + 0.001)) * saturate(ir - 0.04);
+	float3 sss = pow2(1.0 - pndl) * pow(1.0-nndl,3.0 / (ir + 0.001)) * saturate(ir - 0.04);
 
 	return sss + saturate(dot(V, -normalize(L + N * (1 - ir))));
 }
@@ -196,6 +196,20 @@ float3 CelShading(float nl, float vh, float nv, float3 shadowColor, float3 specu
 	float3 I = lerp(shadowColor, 1.0, smoothstep(x - bias, x, darkness));
 
 	return I;
+}
+
+float3 SpecularBRDF_KajiyaKay(float3 T, float3 V, float3 L, float exponent, float3 specular)
+{
+    float3 H = normalize(L + V);
+
+    float TdotH = dot(T, H);
+    float sinTHSq = saturate(1.0 - TdotH * TdotH);
+
+    float dirAttn = saturate(TdotH + 1.0);
+    float n = exponent;
+    float norm = (n + 2) * rcp(2 * PI);
+
+    return dirAttn * norm * pow(sinTHSq, 0.5 * n) * specular;
 }
 
 float3 SpecularBRDF_Blinn(float nh, float nl, float vh, float nv, float smoothness, float3 specular, float NormalizationFactor)
@@ -308,7 +322,9 @@ float3 ClearCoatShading(MaterialParam material, float nh, float nl, float vh, fl
 float3 SubsurfaceShading(MaterialParam material, float3 N, float3 L, float3 V)
 {
 	if (material.lightModel == SHADINGMODELID_SUBSURFACE)
-		return SubsurfaceShadingPennerSkin(material, N, L, V);
+		return SubsurfaceShadingPennerSkin(material, N, L, V) *  material.customDataB;
+	else if (material.lightModel == SHADINGMODELID_HAIR)
+		return SubsurfaceShadingPennerSkin(material, N, L, V) *  material.albedo * material.albedo;
 	else
 		return 0;
 }
@@ -349,7 +365,17 @@ float2x3 SurfaceEnergy(MaterialParam material, float3 N, float3 L, float3 V, flo
 	else if (material.lightModel == SHADINGMODELID_GLASS)
 		specular = SpecularBRDF_Blinn(nh, nl, vh, nv, material.smoothness, material.specular, normalizeFactor);
 	else if (material.lightModel == SHADINGMODELID_ANISOTROPY)
-		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB, normalizeFactor);
+		specular = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataA, material.customDataB.r * 2 - 1, normalizeFactor);
+	else if (material.lightModel == SHADINGMODELID_HAIR)
+	{
+		float shift = material.customDataB.b * 2 - 1;
+		float3 X = normalize(cross(N, mul(float3(0,1,0), (float3x3)matView)) + N * shift);
+		float3 Y = normalize(cross(X, N) - N * shift);
+		float3 fresnel = fresnelSchlick(material.specular, 1, vh);
+
+		float3 anisotropic = SpecularBRDF_GGXAniso(N, H, nh, nl, vh, nv, material.specular, roughness, material.customDataB.r, shift, normalizeFactor);
+		specular = lerp(anisotropic, SpecularBRDF_KajiyaKay(Y, V, L, exp2(10 * material.customDataB.g + 1), 1), fresnel);
+	}
 	else
 		specular = SpecularBRDF_GGX(nh, nl, vh, nv, roughness, material.specular, normalizeFactor);
 

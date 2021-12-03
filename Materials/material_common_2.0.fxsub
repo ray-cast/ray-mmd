@@ -94,7 +94,8 @@ static float3 MorphTemperature = ColorTemperature(lerp(lerp(6600, 12500, mTemper
 #define SHADINGMODELID_SUBSURFACE 7
 #define SHADINGMODELID_CEL        8
 #define SHADINGMODELID_TONEBASED  9
-#define SHADINGMODELID_MASK       10
+#define SHADINGMODELID_HAIR		  10
+#define SHADINGMODELID_MASK       11
 
 #define MIDPOINT_8_BIT (127.0f / 255.0f)
 #define MAX_FRACTIONAL_8_BIT (255.0f / 256.0f)

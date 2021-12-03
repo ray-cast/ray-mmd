@@ -5,7 +5,7 @@
 #define ALBEDO_MAP_APPLY_MORPH_COLOR 0
 #define ALBEDO_MAP_FILE "albedo.png"
 
-const float3 albedo = 1.0;
+const float3 albedo = 0.0;
 const float2 albedoMapLoopNum = 1.0;
 
 #define ALBEDO_SUB_ENABLE 0
@@ -48,7 +48,7 @@ const float normalSubMapLoopNum = 1.0;
 #define SMOOTHNESS_MAP_APPLY_SCALE 0
 #define SMOOTHNESS_MAP_FILE "smoothness.png"
 
-const float smoothness = 0.55;
+const float smoothness = 0.7;
 const float smoothnessMapLoopNum = 1.0;
 
 #define METALNESS_MAP_FROM 0
@@ -67,7 +67,7 @@ const float metalnessMapLoopNum = 1.0;
 #define SPECULAR_MAP_APPLY_SCALE 0
 #define SPECULAR_MAP_FILE "specular.png"
 
-const float3 specular = 0.5;
+const float3 specular = 0.25;
 const float2 specularMapLoopNum = 1.0;
 
 #define OCCLUSION_MAP_FROM 0
@@ -103,7 +103,7 @@ const float3 emissiveBlink = 1.0;
 const float  emissiveIntensity = 1.0;
 const float2 emissiveMapLoopNum = 1.0;
 
-#define CUSTOM_ENABLE 7
+#define CUSTOM_ENABLE 10
 
 #define CUSTOM_A_MAP_FROM 0
 #define CUSTOM_A_MAP_UV_FLIP 0
@@ -115,14 +115,14 @@ const float2 emissiveMapLoopNum = 1.0;
 const float customA = 0.4;
 const float customAMapLoopNum = 1.0;
 
-#define CUSTOM_B_MAP_FROM 3
+#define CUSTOM_B_MAP_FROM 0
 #define CUSTOM_B_MAP_TYPE 1
 #define CUSTOM_B_MAP_UV_FLIP 0
 #define CUSTOM_B_MAP_COLOR_FLIP 0
 #define CUSTOM_B_MAP_APPLY_SCALE 0
 #define CUSTOM_B_MAP_FILE "customB.png"
 
-const float3 customB = 1.0;
+const float3 customB = float3(1.0, 0.81, 0.65);
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"
