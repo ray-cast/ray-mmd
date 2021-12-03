@@ -161,7 +161,7 @@ float GetSampleRadius()
 float2 GetSamplePoint()
 {
 	float4 proj = ComputeScreenPos(mul(float4(AcsPosition, 1), matViewProject));
-	return proj.xy / proj.w * step(0.25, mMeasureMode);
+	return lerp(0.5, proj.xy / proj.w, step(0.25, mMeasureMode));
 }
 
 float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 14.f)
