@@ -141,10 +141,10 @@ float4 ScreenSpaceReflectionTracingPS(in float4 coord : TEXCOORD0, in float3 vie
 	float fadeOnPerpendicular = saturate(atten);
 	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
 
-	float4 diffuse = tex2Dlod(_CameraColorTexture_PointSampler, float4(hitPixel, 0, 0));
+	float4 diffuse = tex2Dlod(_CameraColorTempTexture_PointSampler, float4(hitPixel, 0, 0));
 	float4 specular = tex2Dlod(_CameraSpecularTexture_PointSampler, float4(hitPixel, 0, 0));
 
-	return float4(diffuse.rgb * material.albedo + specular.rgb, 1) * fadeOnTotal;
+	return float4(diffuse.rgb * SampleOpacityAlbedo(hitPixel) + specular.rgb, 1) * fadeOnTotal;
 }
 
 float4 ScreenSpaceReflectionBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
