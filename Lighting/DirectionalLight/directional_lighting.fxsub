@@ -1,16 +1,13 @@
-#include "../../../ray.conf"
-#include "../../../ray_advanced.conf"
-#include "../../../shader/math.fxsub"
-#include "../../../shader/common.fxsub"
-#include "../../../shader/Color.fxsub"
-#include "../../../shader/Packing.fxsub"
-#include "../../../shader/gbuffer.fxsub"
-#include "../../../shader/gbuffer_sampler.fxsub"
-#include "../../../shader/BRDF.fxsub"
-
-#if SHADOW_MAP_FROM >= 1
-#	include "../../../shader/Shadow.fxsub"
-#endif
+#include "../../ray.conf"
+#include "../../ray_advanced.conf"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/BRDF.fxsub"
+#include "../../shader/Shadow.fxsub"
 
 float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
 float mSP : CONTROLOBJECT<string name = "(self)"; string item = "S+";>;
@@ -41,6 +38,7 @@ static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensit
 
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
+#if SHADOW_MAP_FROM >= 1
 #if SUN_SHADOW_QUALITY == 1
 #	define SHADOW_MAP_SIZE 1024
 #elif SUN_SHADOW_QUALITY == 2
@@ -62,8 +60,8 @@ texture PSSM1 : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../PSSM1.fx;"
-		"*.pmd = ../PSSM1.fx;"
+		"*.pmx = PSSM1.fx;"
+		"*.pmd = PSSM1.fx;"
 		"* = hide";
 >;
 texture PSSM2 : OFFSCREENRENDERTARGET<
@@ -77,8 +75,8 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../PSSM2.fx;"
-		"*.pmd = ../PSSM2.fx;"
+		"*.pmx = PSSM2.fx;"
+		"*.pmd = PSSM2.fx;"
 		"* = hide";
 >;
 texture PSSM3 : OFFSCREENRENDERTARGET<
@@ -92,8 +90,8 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../PSSM3.fx;"
-		"*.pmd = ../PSSM3.fx;"
+		"*.pmx = PSSM3.fx;"
+		"*.pmd = PSSM3.fx;"
 		"* = hide";
 >;
 texture PSSM4 : OFFSCREENRENDERTARGET<
@@ -107,8 +105,8 @@ texture PSSM4 : OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../PSSM4.fx;"
-		"*.pmd = ../PSSM4.fx;"
+		"*.pmx = PSSM4.fx;"
+		"*.pmd = PSSM4.fx;"
 		"* = hide";
 >;
 sampler PSSM1Samp = sampler_state { texture = <PSSM1>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
