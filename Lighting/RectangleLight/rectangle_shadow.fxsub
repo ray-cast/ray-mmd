@@ -31,14 +31,17 @@ void ShadowMapVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
+	oPosition = mul(Position, matLightViewProject);
+	oPosition.z = oPosition.z * oPosition.w;
+	
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = oPosition = mul(Position, matLightViewProject);
+	oTexcoord1 = oPosition;
 }
 
 float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
-	clip(!opadd - 0.001f);  
+	clip(!opadd - 0.001f);	
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
 	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord).a;

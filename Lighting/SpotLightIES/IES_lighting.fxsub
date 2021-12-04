@@ -100,7 +100,7 @@ float ShadingShadow(MaterialParam material, float3 P)
 		}
 	}
 
-	float linearDepth = length(mul(float4(P, 1), matLightViewFromCameraView));
+	float linearDepth = dot(float4(P, 1), matLightViewFromCameraView._13_23_33_43);
 	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
 }
 #endif

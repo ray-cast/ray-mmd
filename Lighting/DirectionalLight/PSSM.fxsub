@@ -27,7 +27,7 @@ static const float3 LightDirection = normalize(mDirection - mPosition);
 
 static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
-static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static const float4x4 matLightViewProject = mul(mul(matLightView, matLightProject), CreateReversedDepthMatrix());
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
 
@@ -44,35 +44,31 @@ sampler DiffuseMapSamp = sampler_state
 void CascadeShadowMapVS(
 	in float4 Position : POSITION,
 	in float2 Texcoord : TEXCOORD0,
-	out float2 oTexcoord0 : TEXCOORD0,
-	out float4 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord : TEXCOORD0,
 	out float4 oPosition : POSITION)
 {
-	oTexcoord0 = Texcoord;
+	oPosition = mul(Position, matLightViewProject);
+	oPosition.xy = oPosition.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
 
-	oTexcoord1 = mul(Position, matLightViewProject);
-	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
-
-	oPosition = oTexcoord1;
+	oTexcoord = float4(Texcoord, oPosition.z, 1);
 }
 
-float4 CascadeShadowMapPS(
-	in float4 coord0 : TEXCOORD0,
-	in float4 coord1 : TEXCOORD1) : COLOR
+float4 CascadeShadowMapPS(in float4 uv : TEXCOORD0) : COLOR
 {
 #if CASTER_ALPHA_ENABLE
 	float alpha = MaterialDiffuse.a;
 #if CASTER_ALPHA_MAP_ENABLE
-	if (use_texture) alpha *= tex2D(DiffuseMapSamp, coord0.xy).a;
+	if (use_texture) alpha *= tex2D(DiffuseMapSamp, uv.xy).a;
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return ComputeMoments(coord1.z * mPSSMDepthZMax).xxyy;
+	return ComputeMoments(uv.z * mPSSMDepthZMax).xxyy;
 }
 
 technique DepthTech<string MMDPass = "object_ss";
 >{
 	pass CascadeShadowMap {
+		ZFunc = Greater;
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 CascadeShadowMapVS();
 		PixelShader  = compile ps_3_0 CascadeShadowMapPS();

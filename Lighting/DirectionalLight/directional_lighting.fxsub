@@ -54,7 +54,7 @@ texture PSSM1 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -69,7 +69,7 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -84,7 +84,7 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -99,7 +99,7 @@ texture PSSM4 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -181,7 +181,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	else
 		shadow = ShadowPCF(PSSM4Samp, coord.xy, receiverDepth);
 
-	return ChebyshevUpperBound(shadow, receiverDepth, 0.01, LightHardness);
+	return ChebyshevUpperBound((1 - receiverDepth / mPSSMDepthZMax) * mPSSMDepthZMax, shadow, 0.01, LightHardness);
 }
 #endif
 

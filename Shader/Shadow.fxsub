@@ -115,6 +115,8 @@ float4x4 CreateOrthoProject(float width, float height, float near, float far)
 
 float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far)
 {
+	// http://www.mvps.org/directx/articles/linear_z/linearz.htm
+
 	float h = 1.0f / tan(fov);
 	float w = h / aspect;
 	float q = far / (far - near);
@@ -122,8 +124,8 @@ float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far
 	float4x4 m;
 	m[0] = float4(w, 0, 0, 0);
 	m[1] = float4(0, h, 0, 0);
-	m[2] = float4(0, 0, q, 1);
-	m[3] = float4(0, 0, -near * q, 0);
+	m[2] = float4(0, 0, q / far, 1);
+	m[3] = float4(0, 0, -near * q / far, 0);
 
 	return m;
 }
