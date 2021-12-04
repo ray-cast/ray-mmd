@@ -214,7 +214,7 @@ technique DeferredLighting<
 	"Clear=Color;"
 	"Pass=ScreenSapceShadowMap;"
 	"ClearSetColor=BackColor;"
-#if CONTACT_SHADOW_QUALITY
+#if SUN_CONTACT_SHADOW_QUALITY
 	"Pass=ScreenSapceContactShadow;"
 #endif
 #if SHADOW_BLUR_COUNT
