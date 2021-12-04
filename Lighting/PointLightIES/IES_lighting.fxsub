@@ -20,20 +20,20 @@ float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
 float mSP : CONTROLOBJECT<string name = "(self)"; string item = "S+";>;
 float mVP : CONTROLOBJECT<string name = "(self)"; string item = "V+";>;
 float mVM : CONTROLOBJECT<string name = "(self)"; string item = "V-";>;
+float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
+float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 float mBlink : CONTROLOBJECT<string name = "(self)"; string item = "Blink";>;
 float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name = "(self)"; string item = "Range-";>;
 float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
-float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
-float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
 float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
 float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
 float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
 
 static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHardnessP);
-static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
@@ -44,7 +44,6 @@ static const float3 LightDirection = normalize(mDirection - mPosition);
 static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensity2 * LightBlink);
 
 static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).xyz;
-static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_FROM > 0
 #if SHADOW_MAP_QUALITY == 0
@@ -63,6 +62,7 @@ static const float3 viewLightDirection = normalize(mul(LightDirection, (float3x3
 #   define SHADOW_MAP_WIDTH 256
 #   define SHADOW_MAP_HEIGHT 512
 #endif
+
 
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for PointLightIES";
@@ -122,11 +122,166 @@ sampler IESTextureSamp = sampler_state
 	AddressU  = CLAMP; AddressV = CLAMP;
 };
 
-float3 ComputeIESLightProfile1D(float3 L, float3 Ld)
+float3 ComputeIESLightProfile1D(sampler source, float3 L, float3 Ld)
 {
 	L = mul(L, (float3x3)matViewInverse);
 	float angle = (1 - acos(dot(L, Ld)) / PI);
-	return tex2Dlod(IESTextureSamp, float4(angle, 0, 0, 0)).rgb;
+	return tex2Dlod(source, float4(angle, 0, 0, 0)).rgb;
 }
 
-void ShadingMaterial(MaterialParam material, float3 P, float3 
+void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightColor, float shadow, inout float3 diffuse, inout float3 specular)
+{
+	float3 L = viewLightPosition - P;
+	float3 L2 = normalize(L);
+
+	float3 atten = GetPhysicalLightAttenuation(L, LightRange, LightAttenuationBulb) * lightColor;
+	atten *= ComputeIESLightProfile1D(IESTextureSamp, L2, LightDirection);
+
+	float2x3 energy = SurfaceEnergy(material, material.normal, L2, V, shadow);
+	diffuse = energy[0];
+	diffuse *= atten;
+	
+#if LIGHT_PARAMS_TYPE == 0
+	specular = energy[1];
+	specular *= atten;
+#endif
+}
+
+void GetGbufferParams(float4 texcoord, out MaterialParam material, out MaterialParam materialAlpha)
+{
+	float2 coord = texcoord.xy / texcoord.w;
+
+	float4 MRT5 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
+	float4 MRT6 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
+	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
+	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT5, MRT6, MRT7, MRT8, materialAlpha);
+
+	clip(sum(materialAlpha.albedo + materialAlpha.specular) - 1e-5);
+
+	float4 MRT1 = tex2Dlod(Gbuffer1Map, float4(coord, 0, 0));
+	float4 MRT2 = tex2Dlod(Gbuffer2Map, float4(coord, 0, 0));
+	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(coord, 0, 0));
+	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(coord, 0, 0));
+
+	DecodeGbuffer(MRT1, MRT2, MRT3, MRT4, material);
+}
+
+void LightSourceVS(
+	in float4 Position : POSITION,
+	in float3 Normal : NORMAL,
+	in float2 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float4 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	out float4 oPosition  : POSITION)
+{
+	Position.xyz = LightPosition + Normal * LightRange;
+	oTexcoord1 = -mul(Position, matView);
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+	oTexcoord2 = hsv2rgb(LightColor);
+	oTexcoord2 = ColorTemperature(oTexcoord2, LightTemperature);
+}
+
+void LightSourcePS(
+	float4 texcoord : TEXCOORD0, 
+	float3 viewdir : TEXCOORD1,
+	float3 lightColor : TEXCOORD2,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
+{
+	MaterialParam material;
+	MaterialParam materialAlpha;
+	GetGbufferParams(texcoord, material, materialAlpha);
+
+	float3 V = normalize(viewdir);
+
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
+
+	float shadow = 1;
+#if SHADOW_MAP_FROM > 0
+	shadow = ShadingShadow(materialAlpha, P2);
+	clip(shadow - 1e-5);
+#endif
+
+	float3 diffuse, specular = 0;
+	ShadingMaterial(material, P1, V, lightColor, shadow, diffuse, specular);
+
+	float3 diffuseAlpha, specularAlpha = 0;
+	ShadingMaterial(materialAlpha, P2, V, lightColor, shadow, diffuseAlpha, specularAlpha);
+
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
+}
+
+void LightSourceShadowlessPS(
+	float4 texcoord : TEXCOORD0, 
+	float3 viewdir : TEXCOORD1,
+	float3 lightColor : TEXCOORD2,
+	out float4 oColor0 : COLOR0,
+	out float4 oColor1 : COLOR1,
+	out float4 oColor2 : COLOR2)
+{
+	MaterialParam material;
+	MaterialParam materialAlpha;
+	GetGbufferParams(texcoord, material, materialAlpha);
+
+	float3 V = normalize(viewdir);
+	
+	float3 P1 = V * material.linearDepth / V.z;
+	float3 P2 = V * materialAlpha.linearDepth / V.z;
+
+	float3 diffuse, specular = 0;
+	ShadingMaterial(material, P1, V, lightColor, 1, diffuse, specular);
+
+	float3 diffuseAlpha, specularAlpha = 0;
+	ShadingMaterial(materialAlpha, P2, V, lightColor, 1, diffuseAlpha, specularAlpha);
+
+	oColor0 = float4(diffuse, 0);
+	oColor1 = float4(specular, 0);
+	oColor2 = float4(diffuseAlpha * materialAlpha.albedo + specularAlpha, 0);
+}
+
+technique MainTech0<string MMDPass = "object";
+	string Script = 
+		"RenderColorTarget0=;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
+		"Pass=DrawObject;"
+;>{
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 LightSourceVS();
+		PixelShader  = compile ps_3_0 LightSourceShadowlessPS();
+	}
+}
+
+technique MainTechBS0<string MMDPass = "object_ss";
+	string Script = 
+		"RenderColorTarget0=;"
+		"RenderColorTarget1=LightSpecMap;"
+		"RenderColorTarget2=LightAlphaMap;"
+		"Pass=DrawObject;"
+;>{
+	pass DrawObject {
+		ZEnable = false; ZWriteEnable = false;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 LightSourceVS();
+		PixelShader  = compile ps_3_0 LightSourcePS();
+	}
+}
+
+technique EdgeTec<string MMDPass = "edge";>{}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
