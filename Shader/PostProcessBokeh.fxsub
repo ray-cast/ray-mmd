@@ -167,7 +167,7 @@ float2 GetSamplePoint()
 
 float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 14.f)
 {
-	return min(0.05f, maxRadius / viewportSize.y) / float2(viewportSize.x / viewportSize.y, 1.0);
+	return min(0.05f, maxRadius / 1080) / float2(viewportSize.x / viewportSize.y, 1.0);
 }
 
 float GetFocalDistance()
