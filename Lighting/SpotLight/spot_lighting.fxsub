@@ -50,22 +50,10 @@ static const float3 viewLightPosition = mul(float4(LightPosition, 1), matView).x
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_FROM > 0
-#if SHADOW_MAP_QUALITY == 0
-#   define SHADOW_MAP_SIZE 256
-#elif SHADOW_MAP_QUALITY == 1
-#   define SHADOW_MAP_SIZE 512
-#elif SHADOW_MAP_QUALITY >= 2
-#   define SHADOW_MAP_SIZE 1024
-#elif SHADOW_MAP_QUALITY >= 3
-#   define SHADOW_MAP_SIZE 2048
-#else
-#   define SHADOW_MAP_SIZE 256
-#endif
-
 texture ShadowMap: OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for SpotLight";
 	string Format = "G32R32F";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE, MULTI_SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect = 
@@ -84,8 +72,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
-static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset  = 0.5 / MULTI_SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / MULTI_SHADOW_MAP_SIZE;
 
 static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);

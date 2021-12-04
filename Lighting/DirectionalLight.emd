@@ -1,0 +1,5 @@
+[Info]
+Version = 3
+
+[Effect]
+Obj = ../main.fx

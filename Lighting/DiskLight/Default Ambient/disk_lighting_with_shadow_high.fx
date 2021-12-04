@@ -6,7 +6,6 @@ static const float3 lightAttenuationBulbParams = float3(1.0, 0.0, 5.0);
 static const float3 lightTemperatureLimits = float3(6600, 1000, 12500);
 
 #define SHADOW_MAP_FROM 1
-#define SHADOW_MAP_QUALITY 2
 
 static const float2 shadowHardness = float2(0.15, 0.5);
 

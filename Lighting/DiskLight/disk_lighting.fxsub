@@ -58,22 +58,10 @@ static const float3 viewLightRight = normalize(cross(float3(0.0f, 1.0f, 0.0f), v
 static const float3 viewLightUp = cross(viewLightDirection, viewLightRight);
 
 #if SHADOW_MAP_FROM > 0
-#if SHADOW_MAP_QUALITY == 0
-#   define SHADOW_MAP_SIZE 256
-#elif SHADOW_MAP_QUALITY == 1
-#   define SHADOW_MAP_SIZE 512
-#elif SHADOW_MAP_QUALITY >= 2
-#   define SHADOW_MAP_SIZE 1024
-#elif SHADOW_MAP_QUALITY >= 3
-#   define SHADOW_MAP_SIZE 2048
-#else
-#   define SHADOW_MAP_SIZE 256
-#endif
-
 texture ShadowMap: OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DiskLight";
 	string Format = "G32R32F";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE, MULTI_SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect = 
@@ -92,8 +80,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / SHADOW_MAP_SIZE;
-static float2 ShadowmapOffset2 = 1.0 / SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset  = 0.5 / MULTI_SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / MULTI_SHADOW_MAP_SIZE;
 
 static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
@@ -136,7 +124,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightCol
 	float3 points[4];
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
-	diffuse = SubsurfaceShading(material, material.normal, L);
+	diffuse = SubsurfaceShading(material, material.normal, L, V);
 	diffuse += LTC_EvaluateDisk(material.normal, V, P, viewLightDirection, points);
 	diffuse *= atten;
 

@@ -17,7 +17,7 @@ static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLi
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
+static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
 
 static const float2 Poisson15[15] =
 {
@@ -207,7 +207,7 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation, float lightSize)
 {
 #if PCSS_QUALITY > 0
-	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / SHADOW_MAP_SIZE, rotation);
+	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / CASCADE_SHADOW_MAP_SIZE, rotation);
 
 	float depth = 1 - receiverDepth;
 	float avgBlockerDepth = 1- blocker.x;
@@ -294,7 +294,7 @@ float4 ScreenSapceShadowMapFragment(
 	receiverDepth /= mPSSMDepthZMax;
 	receiverDepth = 1 - receiverDepth;
 
-	coord.xy += 0.5 / float(SHADOW_MAP_SIZE);
+	coord.xy += 0.5 / float(CASCADE_SHADOW_MAP_SIZE);
 
 	[branch]
 	if (coord.w == 0)
@@ -307,8 +307,8 @@ float4 ScreenSapceShadowMapFragment(
 		clip(tex2Dlod(_PSSM4_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
-	float radius = 1.0 / SHADOW_MAP_SIZE;
-	float lightSize = SHADOW_MAP_SIZE * 0.02; 
+	float radius = 1.0 / CASCADE_SHADOW_MAP_SIZE;
+	float lightSize = CASCADE_SHADOW_MAP_SIZE * 0.02; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
 	float4 receiverDepth4 = mad(float4(0.001, 0.0012, 0.0015, 0.002) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 

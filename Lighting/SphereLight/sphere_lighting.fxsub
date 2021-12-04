@@ -77,26 +77,9 @@ float3 DecodeHDR(float4 rgbx)
 #endif
 
 #if SHADOW_MAP_FROM > 0
-#if SHADOW_MAP_QUALITY == 0
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
-#elif SHADOW_MAP_QUALITY == 1
-#   define SHADOW_MAP_WIDTH 512
-#   define SHADOW_MAP_HEIGHT 1024
-#elif SHADOW_MAP_QUALITY >= 2
-#   define SHADOW_MAP_WIDTH 1024
-#   define SHADOW_MAP_HEIGHT 2048
-#elif SHADOW_MAP_QUALITY >= 3
-#   define SHADOW_MAP_WIDTH 2048
-#   define SHADOW_MAP_HEIGHT 4096
-#else
-#   define SHADOW_MAP_WIDTH 256
-#   define SHADOW_MAP_HEIGHT 512
-#endif
-
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for SphereLight";
-	int2 Dimensions = {SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT};
+	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
@@ -115,8 +98,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static const float2 ShadowmapOffset  = 0.5 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
-static const float2 ShadowmapOffset2 = 1.0 / float2(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+static const float2 ShadowmapOffset  = 0.5 / float2(MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE);
+static const float2 ShadowmapOffset2 = 1.0 / float2(MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE);
 
 float ShadingShadow(MaterialParam material, float3 viewPosition)
 {
@@ -127,7 +110,7 @@ float ShadingShadow(MaterialParam material, float3 viewPosition)
 	float depth = (mPointLightFar / linearDepth) * (linearDepth - mPointLightNear) / (mPointLightFar - mPointLightNear);
 
 	float2 shadow = 0.0;
-	float2 coord = CalcDualShadowCoord(L / linearDepth, SHADOW_MAP_HEIGHT);
+	float2 coord = CalcDualShadowCoord(L / linearDepth, MULTI_SHADOW_MAP_SIZE);
 
 	[unroll]
 	for (int x = -sampleRadius; x <= sampleRadius; x++) 

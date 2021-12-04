@@ -1,11 +1,11 @@
 #if SUN_SHADOW_QUALITY == 1
-#	define SHADOW_MAP_SIZE 1024
+#	define CASCADE_SHADOW_MAP_SIZE 1024
 #elif SUN_SHADOW_QUALITY == 2
-#	define SHADOW_MAP_SIZE 2048
+#	define CASCADE_SHADOW_MAP_SIZE 2048
 #elif SUN_SHADOW_QUALITY == 3
-#	define SHADOW_MAP_SIZE 4096
+#	define CASCADE_SHADOW_MAP_SIZE 4096
 #elif SUN_SHADOW_QUALITY == 4
-#	define SHADOW_MAP_SIZE 8192
+#	define CASCADE_SHADOW_MAP_SIZE 8192
 #endif
 
 texture _CameraDepthAttachment : RENDERDEPTHSTENCILTARGET<
@@ -242,7 +242,7 @@ sampler _CameraOcclusionTextureTemp_PointSampler = sampler_state {
 #if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
 shared texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
+	int2 Dimensions = { CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -258,7 +258,7 @@ shared texture PSSM1 : OFFSCREENRENDERTARGET<
 >;
 shared texture PSSM2 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
+	int2 Dimensions = { CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -274,7 +274,7 @@ shared texture PSSM2 : OFFSCREENRENDERTARGET<
 >;
 shared texture PSSM3 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
+	int2 Dimensions = { CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -290,7 +290,7 @@ shared texture PSSM3 : OFFSCREENRENDERTARGET<
 >;
 shared texture PSSM4 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
-	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
+	int2 Dimensions = { CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
