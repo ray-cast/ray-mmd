@@ -1,5 +1,6 @@
 #include "../../ray.conf"
 #include "../../ray_advanced.conf"
+#include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/Shadow.fxsub"
 
@@ -30,7 +31,7 @@ static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin,
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection, LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
@@ -55,7 +56,6 @@ void CascadeShadowMapVS(
 	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
 
 	oPosition = oTexcoord1;
-	oPosition.z /= mPSSMDepthZMax;
 }
 
 float4 CascadeShadowMapPS(
@@ -69,7 +69,7 @@ float4 CascadeShadowMapPS(
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return ComputeMoments(coord1.z).xxyy;
+	return ComputeMoments(coord1.z * mPSSMDepthZMax).xxyy;
 }
 
 technique DepthTech<string MMDPass = "object_ss";

@@ -127,7 +127,7 @@ static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -Ligh
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
 
 float2 ShadowPCF(sampler source, float2 coord, float receiverDepth) 
 {
