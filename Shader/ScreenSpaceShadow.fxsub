@@ -311,7 +311,7 @@ float4 ScreenSapceShadowMapFragment(
 	float lightSize = CASCADE_SHADOW_MAP_SIZE * 0.02; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
-	float4 receiverDepth4 = mad(float4(0.001, 0.0015, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
+	float4 receiverDepth4 = mad(float4(0.0015, 0.002, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
 
 	[branch]
 	if (coord.w == 0)
