@@ -95,7 +95,7 @@ texture LightMap: OFFSCREENRENDERTARGET<
 		"SphereLight.pmx =./Lighting/SphereLight/Default/sphere_lighting.fx;"
 		"TubeLight.pmx =./Lighting/TubeLight/Default/tube_lighting.fx;"
 		"LED.pmx =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
-		"RectangleLight.pmx =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
+		"RectangleLight.pmx =./Lighting/RectangleLight/rectangle_lighting.fx;"
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET<
