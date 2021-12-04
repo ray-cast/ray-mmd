@@ -96,11 +96,14 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/ColorGrading.fxsub"
 #include "shader/VolumeRendering.fxsub"
 #include "shader/ScreenSpaceLighting.fxsub"
-#include "shader/ScreenSpaceContactShadow.fxsub"
 #include "shader/Shadow.fxsub"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ScreenSpaceShadow.fxsub"
+#endif
+
+#if SUN_CONTACT_SHADOW_QUALITY
+#	include "shader/ScreenSpaceContactShadow.fxsub"
 #endif
 
 #if SSDO_QUALITY && (IBL_QUALITY || SUN_LIGHT_ENABLE)
@@ -379,7 +382,7 @@ technique DeferredLighting<
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ScreenSapceShadowMapFragment();
 	}
-#if CONTACT_SHADOW_QUALITY
+#if SUN_CONTACT_SHADOW_QUALITY
 	pass ScreenSapceContactShadow<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
