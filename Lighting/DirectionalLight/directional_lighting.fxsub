@@ -9,7 +9,7 @@
 #include "../../../shader/BRDF.fxsub"
 
 #if SHADOW_MAP_FROM >= 1
-#	include "../../../shader/ShadowCommon.fxsub"
+#	include "../../../shader/Shadow.fxsub"
 #endif
 
 float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
