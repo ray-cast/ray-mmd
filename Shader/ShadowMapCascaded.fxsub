@@ -40,14 +40,6 @@ float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float Ligh
 					mul(-LightDirection * LightDistance, rotation), 1);
 }
 
-float4 CreateFrustumSplitPoint(float n, float f, float lambda)
-{
-	float4 p = float4(0.25,0.5,0.75,1.0);
-	float4 p0 = n + (f - n) / n * p;
-	float4 p1 = n * pow(f / n, p);
-	return lerp(p0, p1, lambda);
-}
-
 float4 CreateFrustumFromProjInverse()
 {
 	float r = dot(float4( 1, 0, 0, 1), matProjectInverse._11_21_31_41);
@@ -104,53 +96,14 @@ float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumI
 	return float4(scale, offset);
 }
 
-float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float shadowMapSize)
+float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float2 cascadeDistance, float4 cascadeSplitsPoints, float shadowMapSize)
 {
 	const float4 frustumInfo = CreateFrustumFromProjInverse();
-	const float4 frustumSplit = CreateFrustumSplitPoint(mPSSMCascadeZMin, mPSSMCascadeZMax, mPSSMCascadeLambda);
+	const float4 frustumSplit = cascadeSplitsPoints * cascadeDistance.y;
 
 	return float4x4(
-		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, mPSSMCascadeZMin, frustumSplit.x),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, cascadeDistance.x, frustumSplit.x),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.x, frustumSplit.y),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
-}
-
-float ShadowSlopeScaledBias(float depth)
-{
-	float dx = abs(ddx(depth));
-	float dy = abs(ddy(depth));
-	float depthSlope = min(dx, dy);
-	return depthSlope;
-}
-
-float linstep(float a, float b, float v)
-{
-	return saturate((v - a) / (b - a));
-}
-
-float ReduceLightBleeding(float p_max, float amount)
-{
-	return linstep(amount, 1.0, p_max);
-}
-
-float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
-{
-	float p = (t < moments.x);
-	float variance = max(moments.y - (moments.x * moments.x), minVariance);
-	float d = t - moments.x;
-	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);
-	return max(p, p_max);
-}
-
-float2 ComputeMoments(float depth)
-{
-	float dx = ddx(depth);
-	float dy = ddy(depth);
-
-	float2 moments;
-	moments.x = depth;
-	moments.y = depth * depth + 0.25 * (dx * dx + dy * dy);
-
-	return moments;
 }

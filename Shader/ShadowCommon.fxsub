@@ -98,6 +98,14 @@ float2 CalcFishShadowCoord(float2 P, float bias)
 	return P / distortFactor;
 }
 
+float ShadowSlopeScaledBias(float depth)
+{
+	float dx = abs(ddx(depth));
+	float dy = abs(ddy(depth));
+	float depthSlope = min(dx, dy);
+	return depthSlope;
+}
+
 float linstep(float a, float b, float v)
 {
 	return saturate((v - a) / (b - a));
