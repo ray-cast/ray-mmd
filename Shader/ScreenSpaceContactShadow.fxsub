@@ -5,7 +5,7 @@ float4 ScreenSapceContactShadowFragment(in float4 uv : TEXCOORD0) : COLOR
 	MaterialParam material = SampleTransparentGbuffer(uv.xy);
 	clip(any(material.visibility) - 1e-5);
 
-	float rayLength = max(0.5, 0.01 * material.linearDepth);
+	float rayLength = max(0.5, 0.02 * material.linearDepth);
 	float rayStep = 1.0f / CONTACT_SHADOW_SAMPLES;
 	float raySampleTime = rayStep * (1 + InterleavedGradientNoise(uv.zw, 1.0f / elapsed));
 
