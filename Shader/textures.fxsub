@@ -1,13 +1,3 @@
-#if SUN_SHADOW_QUALITY == 1
-#	define CASCADE_SHADOW_MAP_SIZE 1024
-#elif SUN_SHADOW_QUALITY == 2
-#	define CASCADE_SHADOW_MAP_SIZE 2048
-#elif SUN_SHADOW_QUALITY == 3
-#	define CASCADE_SHADOW_MAP_SIZE 4096
-#elif SUN_SHADOW_QUALITY == 4
-#	define CASCADE_SHADOW_MAP_SIZE 8192
-#endif
-
 texture _CameraDepthAttachment : RENDERDEPTHSTENCILTARGET<
 	float2 ViewportRatio = {1.0,1.0};
 	string Format = "D24S8";

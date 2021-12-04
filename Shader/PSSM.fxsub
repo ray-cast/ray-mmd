@@ -4,16 +4,6 @@
 #include "../shader/common.fxsub"
 #include "../shader/Shadow.fxsub"
 
-#if SUN_SHADOW_QUALITY == 1
-#	define CASCADE_SHADOW_MAP_SIZE 1024
-#elif SUN_SHADOW_QUALITY == 2
-#	define CASCADE_SHADOW_MAP_SIZE 2048
-#elif SUN_SHADOW_QUALITY == 3
-#	define CASCADE_SHADOW_MAP_SIZE 4096
-#elif SUN_SHADOW_QUALITY == 4
-#	define CASCADE_SHADOW_MAP_SIZE 8192
-#endif
-
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection * mLightDistance);
 static float4x4 matLightViewProject = mul(mul(matLightView, matLightProject), CreateReversedDepthMatrix());

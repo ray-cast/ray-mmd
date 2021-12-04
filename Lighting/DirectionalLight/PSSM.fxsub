@@ -4,16 +4,6 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/Shadow.fxsub"
 
-#if SUN_SHADOW_QUALITY == 1
-#	define SHADOW_MAP_SIZE 1024
-#elif SUN_SHADOW_QUALITY == 2
-#	define SHADOW_MAP_SIZE 2048
-#elif SUN_SHADOW_QUALITY == 3
-#	define SHADOW_MAP_SIZE 4096
-#elif SUN_SHADOW_QUALITY == 4
-#	define SHADOW_MAP_SIZE 8192
-#endif
-
 float mRangeP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range+";>;
 float mRangeM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item="Range-";>;
 
@@ -29,7 +19,7 @@ static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin,
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection * LightRange);
 static const float4x4 matLightViewProject = mul(mul(matLightView, matLightProject), CreateReversedDepthMatrix());
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
-static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
 
 #if CASTER_ALPHA_MAP_ENABLE
 texture DiffuseMap: MATERIALTEXTURE;
