@@ -86,7 +86,7 @@ texture LightMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"DirectionalLight.pmx =./Lighting/DirectionalLight/Default/directional_lighting.fx;"
+		"DirectionalLight.pmx =./Lighting/DirectionalLight/directional_lighting.fx;"
 		"PointLight.pmx =./Lighting/PointLight/Default/point_lighting.fx;"
 		"PointLightIES.pmx =./Lighting/PointLightIES/Default/IES_lighting.fx;"
 		"SpotLight.pmx =./Lighting/SpotLight/Default/spot_lighting.fx;"
@@ -95,7 +95,7 @@ texture LightMap: OFFSCREENRENDERTARGET<
 		"SphereLight.pmx =./Lighting/SphereLight/Default/sphere_lighting.fx;"
 		"TubeLight.pmx =./Lighting/TubeLight/Default/tube_lighting.fx;"
 		"LED.pmx =./Lighting/RectangleLight/Default LED/rectangle_lighting.fx;"
-		"RectangleLight.pmx =./Lighting/RectangleLight/rectangle_lighting.fx;"
+		"RectangleLight.pmx =./Lighting/RectangleLight/Default/rectangle_lighting.fx;"
 		"* = hide;";
 >;
 shared texture LightSpecMap : RENDERCOLORTARGET<
