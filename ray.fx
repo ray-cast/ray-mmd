@@ -97,7 +97,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #include "shader/VolumeRendering.fxsub"
 #include "shader/ScreenSpaceLighting.fxsub"
 #include "shader/ScreenSpaceContactShadow.fxsub"
-#include "shader/ShadowCommon.fxsub"
+#include "shader/Shadow.fxsub"
 
 #if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
 #	include "shader/ScreenSpaceShadow.fxsub"
