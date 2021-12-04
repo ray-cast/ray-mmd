@@ -1,0 +1,242 @@
+float4x4 CreateReversedDepthMatrix()
+{
+	float4x4 m;
+	m[0] = float4( 1,  0,  0, 0);
+	m[1] = float4( 0,  1,  0, 0);
+	m[2] = float4( 0,  0, -1, 0);
+	m[3] = float4( 0,  0,  1, 1);
+
+	return m;
+}
+
+float4x4 CreateLightViewMatrix(float3 forward, float3 LightPosition)
+{
+	float3 right = cross(float3(0.0f, 1.0f, 0.0f), forward);
+	float3 up;
+
+	if (any(right))
+	{
+		right = normalize(right);
+		up = cross(forward, right);
+	}
+	else
+	{
+		right = float3(1.0f, 0.0f, 0.0f);
+		up = float3(0.0f, 0.0f, -sign(forward.y));
+	}
+
+	float3x3 rotation = {right.x, up.x, forward.x,
+						 right.y, up.y, forward.y,
+						 right.z, up.z, forward.z };
+
+	return float4x4(rotation[0], 0,
+					rotation[1], 0,
+					rotation[2], 0,
+					mul(-LightPosition, rotation), 1);
+}
+
+float4x4 CreateLightViewMatrix(float3 forward, float3 LightDirection, float LightDistance)
+{
+	float3 right = cross(float3(0.0f, 0.0f, 1.0f), forward);
+	float3 up;
+
+	if (any(right))
+	{
+		right = normalize(right);
+		up = cross(forward, right);
+	}
+	else
+	{
+		right = float3(1.0f, 0.0f, 0.0f);
+		up = float3(0.0f, 0.0f, -sign(forward.y));
+	}
+
+	float3x3 rotation = {right.x, up.x, forward.x,
+						 right.y, up.y, forward.y,
+						 right.z, up.z, forward.z };
+
+	return float4x4(rotation[0], 0,
+					rotation[1], 0,
+					rotation[2], 0,
+					mul(-LightDirection * LightDistance, rotation), 1);
+}
+
+float4x4 CreateOrthoProject(float width, float height, float near, float far)
+{
+	float cx = 2.0f / width;
+	float cy = 2.0f / height;
+	float cz = 1.0f / (far - near);
+	float tz = near / (near - far);
+
+	float4x4 m;
+	m[0] = float4(cx,  0,  0, 0);
+	m[1] = float4( 0, cy,  0, 0);
+	m[2] = float4( 0,  0, cz, 0);
+	m[3] = float4( 0,  0, tz, 1);
+
+	return m;
+}
+
+float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far)
+{
+	float h = 1.0f / tan(fov);
+	float w = h / aspect;
+	float q = far / (far - near);
+
+	float4x4 m;
+	m[0] = float4(w, 0, 0, 0);
+	m[1] = float4(0, h, 0, 0);
+	m[2] = float4(0, 0, q, 1);
+	m[3] = float4(0, 0, -near * q, 0);
+
+	return m;
+}
+
+float4x4 CreateDualViewMatrix(float3 LightPosition, float face)
+{
+	return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,
+					 0.0f, face, 0.0f, 0.0f,
+					 0.0f, 0.0f, face, 0.0f,
+					 -LightPosition.x, -LightPosition.y * face, -LightPosition.z*face, 1.0f);
+}
+
+float4x4 CreateDualProjMatrix(float4 P, float near, float far, float face)
+{
+	float L = length(P);
+	float vL = 1.0f / L;
+	float z = far * vL * (L - near) / (far - near);
+	return float4x4( vL, 0.0f, 0.0f,  0.0f,
+					 0.0f,   0.5f*vL, 0.0f,  0.0f,
+					 0.0f,   0.5f*vL*face,  z*vL,  vL,  
+					 0.0f,   0.5f*face,     z,     1.0f );
+}
+
+float2 CalcDualShadowCoord(float3 L, float height)
+{
+	bool face = (L.z >= 0) ? true : false;
+	if (!face) L.yz = -L.yz;
+	float2 coord = L.xy / (1.0f + L.z);
+	coord = PosToCoord(coord);
+	coord.y = face ? 0.5f * coord.y : 0.5f * (coord.y + 1.0f) + 1.0f / height;
+	return coord;
+}
+
+float2 CalcFishShadowProj(float2 P, float bias)
+{
+	float dist = length(P);
+	float distortFactor = (1.0 - bias) + dist * bias;
+	return P / distortFactor;
+}
+
+float2 CalcFishShadowCoord(float2 P, float bias)
+{
+	float dist = sqrt(dot(P, P));
+	float distortFactor = (1.0 - bias) + dist * bias;
+	return P / distortFactor;
+}
+
+float ShadowSlopeScaledBias(float depth)
+{
+	float dx = abs(ddx(depth));
+	float dy = abs(ddy(depth));
+	float depthSlope = min(dx, dy);
+	return depthSlope;
+}
+
+float linstep(float a, float b, float v)
+{
+	return saturate((v - a) / (b - a));
+}
+
+float ReduceLightBleeding(float p_max, float amount)
+{
+	return linstep(amount, 1.0, p_max);
+}
+
+float ChebyshevUpperBound(float2 moments, float t, float minVariance, float amount)
+{
+	float p = (t < moments.x);
+	float variance = max(moments.y - (moments.x * moments.x), minVariance);
+	float d = t - moments.x;
+	float p_max = ReduceLightBleeding(variance / (variance + d * d), amount);
+	return max(p, p_max);
+}
+
+float2 ComputeMoments(float depth)
+{
+	float2 delta = float2(ddx(depth), ddy(depth));
+
+	float2 moments;
+	moments.x = depth;
+	moments.y = depth * depth;// + clamp(0.25 * dot(delta, delta), -1, 1);
+
+	return moments;
+}
+
+float4 CreateFrustumFromProjInverse()
+{
+	float r = dot(float4( 1, 0, 0, 1), matProjectInverse._11_21_31_41);
+	float l = dot(float4(-1, 0, 0, 1), matProjectInverse._11_21_31_41);
+	float t = dot(float4( 0, 1, 0, 1), matProjectInverse._12_22_32_42);
+	float b = dot(float4( 0,-1, 0, 1), matProjectInverse._12_22_32_42);
+	return float4(r, l, t, b);
+}
+
+float4 CreateLightCropParam(float4x4 matLightViewFromCameraView, float4 frustumInfo, int shadowMapSize, float near, float far)
+{
+	float4 zfar = float4(far.xxx, 1);
+	float4 znear = float4(near.xxx, 1);
+
+	float4 rtn = float4(frustumInfo.xz, 1, 1) * znear;
+	float4 rtf = float4(frustumInfo.xz, 1, 1) * zfar;
+	float4 lbn = float4(frustumInfo.yw, 1, 1) * znear;
+	float4 lbf = float4(frustumInfo.yw, 1, 1) * zfar;
+
+	float4 rbn = float4(rtn.x, lbn.yzw);
+	float4 rbf = float4(rtf.x, lbf.yzw);
+	float4 ltn = float4(lbn.x, rtn.yzw);
+	float4 ltf = float4(lbf.x, rtf.yzw);
+
+	float2 vrtn = mul(rtn, matLightViewFromCameraView).xy;
+	float2 vrtf = mul(rtf, matLightViewFromCameraView).xy;
+	float2 vlbn = mul(lbn, matLightViewFromCameraView).xy;
+	float2 vlbf = mul(lbf, matLightViewFromCameraView).xy;
+	float2 vrbn = mul(rbn, matLightViewFromCameraView).xy;
+	float2 vrbf = mul(rbf, matLightViewFromCameraView).xy;
+	float2 vltn = mul(ltn, matLightViewFromCameraView).xy;
+	float2 vltf = mul(ltf, matLightViewFromCameraView).xy;
+
+	float4 minBB = float4(vrtn, vrtf);
+	float4 maxBB = minBB;
+	minBB = min(float4(vlbn, vlbf), minBB);
+	maxBB = max(float4(vlbn, vlbf), maxBB);
+	minBB = min(float4(vrbn, vrbf), minBB);
+	maxBB = max(float4(vrbn, vrbf), maxBB);
+	minBB = min(float4(vltn, vltf), minBB);
+	maxBB = max(float4(vltn, vltf), maxBB);
+
+	float4 cropBB = float4(min(minBB.xy, minBB.zw), max(maxBB.xy, maxBB.zw));
+
+	// approximate flickering removal
+	float quantizer = 64.0f;
+
+	float2 scale = 2.0 / (cropBB.zw - cropBB.xy);
+	scale = quantizer / ceil(quantizer / scale);
+
+	float2 offset = -0.5 * (cropBB.xy + cropBB.zw) * scale;
+	offset = ceil(offset * shadowMapSize * 0.5) / (shadowMapSize * 0.5);
+
+	return float4(scale, offset);
+}
+
+float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float2 cascadeDistance, float4 cascadeSplitsPoints, float shadowMapSize)
+{
+	const float4 frustumInfo = CreateFrustumFromProjInverse();
+	const float4 frustumSplit = cascadeSplitsPoints * cascadeDistance.y;
+
+	return float4x4(
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, cascadeDistance.x, frustumSplit.x),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.x, frustumSplit.y),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
+		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
+}

@@ -11,7 +11,7 @@
 #include "../../../shader/LTC.fxsub"
 
 #if SHADOW_MAP_FROM > 0
-#	include "../../../shader/shadowcommon.fxsub"
+#	include "../../../shader/Shadow.fxsub"
 #endif
 
 #define RECTANGLELIGHT_MAX_WIDTH 50

@@ -1,7 +1,7 @@
 #include "../../ray.conf"
 #include "../../ray_advanced.conf"
 #include "../../shader/common.fxsub"
-#include "../../shader/ShadowMapCascaded.fxsub"
+#include "../../shader/Shadow.fxsub"
 
 #if SHADOW_QUALITY == 1
 #	define SHADOW_MAP_SIZE 1024

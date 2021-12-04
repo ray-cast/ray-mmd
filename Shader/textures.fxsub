@@ -247,7 +247,7 @@ shared texture PSSM1 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -263,7 +263,7 @@ shared texture PSSM2 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -279,7 +279,7 @@ shared texture PSSM3 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -295,7 +295,7 @@ shared texture PSSM4 : OFFSCREENRENDERTARGET<
 	int2 Dimensions = { SHADOW_MAP_SIZE, SHADOW_MAP_SIZE };
 	string Format = "R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect =
 		"self = hide;"
 		"*fog.pmx=hide;"

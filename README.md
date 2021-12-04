@@ -49,6 +49,7 @@ Features:
 * Physical light units
 * Multiple light sources (Point, spot, sun, reactangle, disk, sphere, tube, ies)
 * IES light profiles (point and spot light support)
+* Reversed Depth
 * Soft shadow (PCF, VSM, PSSM)
 * Omni light shadow based on dual-paraboloid projection
 * Percentage Closer Soft Shadow

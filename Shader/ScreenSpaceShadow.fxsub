@@ -194,7 +194,7 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 #elif SHADOW_BLOCKER_COUNT == 32
 		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(Poisson32[i], rotation) * searchRadius, 0, 0)).r;
 #endif
-        if (sampleDepth < depth)
+        if (sampleDepth > depth)
         {
             blockerDepthSum += sampleDepth;
             blockerWeight++;
@@ -209,8 +209,8 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 #if PCSS_QUALITY > 0
 	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / SHADOW_MAP_SIZE, rotation);
 
-	float depth = receiverDepth / mPSSMDepthZMax;
-	float avgBlockerDepth = blocker.x / mPSSMDepthZMax;
+	float depth = 1 - receiverDepth;
+	float avgBlockerDepth = 1- blocker.x;
 
 	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * (lightSize * 2);
 	float filterSize = max(penumbraRatio / depth, 1) * radius;
@@ -254,7 +254,7 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		sampleLinearDepth[2] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[2] * filterSize, 0, 0)).r;
 		sampleLinearDepth[3] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[3] * filterSize, 0, 0)).r;
 
-		shadow += sum(saturate(exp(20 * (sampleLinearDepth - receiverDepth))));
+		shadow += sum(saturate(exp(mPSSMDepthZMax * 20 * (receiverDepth - sampleLinearDepth))));
 	}
     
 
@@ -292,6 +292,8 @@ float4 ScreenSapceShadowMapFragment(
 
 	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
 	receiverDepth -= material.linearDepth * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
+	receiverDepth /= mPSSMDepthZMax;
+	receiverDepth = 1 - receiverDepth;
 
 	coord.xy += 0.5 / float(SHADOW_MAP_SIZE);
 

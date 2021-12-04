@@ -2,7 +2,7 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
-#include "../../shader/shadowcommon.fxsub"
+#include "../../shader/Shadow.fxsub"
 
 float3 LightPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 

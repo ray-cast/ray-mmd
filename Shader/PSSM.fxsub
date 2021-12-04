@@ -17,7 +17,7 @@
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection, mLightDistance);
-static float4x4 matLightViewProject = mul(matLightView, matLightProject);
+static float4x4 matLightViewProject = mul(mul(matLightView, matLightProject), CreateReversedDepthMatrix());
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
 
@@ -44,7 +44,6 @@ void CascadeShadowMapVS(
 	oTexcoord1.xy = oTexcoord1.xy * lightCropParams[PSSM_LAYERED_NUM].xy + lightCropParams[PSSM_LAYERED_NUM].zw;
 
 	oPosition = oTexcoord1;
-	oPosition.z /= mPSSMDepthZMax;
 }
 
 float4 CascadeShadowMapPS(
@@ -64,6 +63,7 @@ float4 CascadeShadowMapPS(
 technique DepthTech<string MMDPass = "object_ss";
 >{
 	pass CascadeShadowMap {
+		ZFunc = Greater;
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 CascadeShadowMapVS();
 		PixelShader  = compile ps_3_0 CascadeShadowMapPS();
