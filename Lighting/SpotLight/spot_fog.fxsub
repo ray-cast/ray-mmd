@@ -48,22 +48,10 @@ static const float4x4 matLightView = CreateLightViewMatrix(FogDirection, FogPosi
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
 #if VOLUMETRIC_FOG_ENABLE
-#if VOLUMETRIC_FOG_QUALITY == 0
-#	define VOLUMETRIC_FOG_SIZE 256
-#elif VOLUMETRIC_FOG_QUALITY == 1
-#	define VOLUMETRIC_FOG_SIZE 512
-#elif VOLUMETRIC_FOG_QUALITY >= 2
-#	define VOLUMETRIC_FOG_SIZE 1024
-#elif VOLUMETRIC_FOG_QUALITY >= 3
-#	define VOLUMETRIC_FOG_SIZE 2048
-#else
-#	define VOLUMETRIC_FOG_SIZE 256
-#endif
-
 texture VolumetricMap: OFFSCREENRENDERTARGET <
 	string Description = "Volumetric fog Rendering for SpotLight";
-	int Width = VOLUMETRIC_FOG_SIZE;
-	int Height = VOLUMETRIC_FOG_SIZE;
+	int Width = FOG_SHADOW_MAP_SIZE;
+	int Height = FOG_SHADOW_MAP_SIZE;
 	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
@@ -81,8 +69,8 @@ sampler VolumetricMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / VOLUMETRIC_FOG_SIZE;
-static float2 ShadowmapOffset2 = 1.0 / VOLUMETRIC_FOG_SIZE;
+static float2 ShadowmapOffset  = 0.5 / FOG_SHADOW_MAP_SIZE;
+static float2 ShadowmapOffset2 = 1.0 / FOG_SHADOW_MAP_SIZE;
 #endif
 
 struct FogParams
@@ -188,7 +176,7 @@ float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, flo
 	return tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r < linearDepth ? 0 : 1;
 }
 
-float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
+float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = MULTI_VOLUMETRIC_SAMPLES)
 {
 	float3 sampleStep = (end - start) / stepNum;
 	float3 sampleStart = start + sampleStep * jitter;

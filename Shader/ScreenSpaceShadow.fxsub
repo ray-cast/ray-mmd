@@ -1,8 +1,8 @@
-#if PCSS_QUALITY == 1
+#if SUN_PCSS_QUALITY == 1
 #	define SHADOW_BLOCKER_COUNT 15
 #	define SHADOW_POISSON_COUNT 36
 #	define SHADOW_BLUR_COUNT 6
-#elif PCSS_QUALITY == 2
+#elif SUN_PCSS_QUALITY == 2
 #	define SHADOW_BLOCKER_COUNT 32
 #	define SHADOW_POISSON_COUNT 64
 #	define SHADOW_BLUR_COUNT 6
@@ -206,7 +206,7 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 
 float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation, float lightSize)
 {
-#if PCSS_QUALITY > 0
+#if SUN_PCSS_QUALITY > 0
 	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / CASCADE_SHADOW_MAP_SIZE, rotation);
 
 	float depth = 1 - receiverDepth;

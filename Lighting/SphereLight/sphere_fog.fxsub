@@ -39,27 +39,10 @@ static const float3 FogPosition = mPosition;
 static const float3 FogColor = float3(mHP, mSP, FogIntensity * FogBlink);
 
 #if VOLUMETRIC_FOG_ENABLE
-#if VOLUMETRIC_FOG_QUALITY == 0
-#	define VOLUMETRIC_FOG_WIDTH 256
-#	define VOLUMETRIC_FOG_HEIGHT 512
-#elif VOLUMETRIC_FOG_QUALITY == 1
-#	define VOLUMETRIC_FOG_WIDTH 512
-#	define VOLUMETRIC_FOG_HEIGHT 1024
-#elif VOLUMETRIC_FOG_QUALITY >= 2
-#	define VOLUMETRIC_FOG_WIDTH 1024
-#	define VOLUMETRIC_FOG_HEIGHT 2048
-#elif VOLUMETRIC_FOG_QUALITY >= 3
-#	define VOLUMETRIC_FOG_WIDTH 2048
-#	define VOLUMETRIC_FOG_HEIGHT 4096
-#else
-#	define VOLUMETRIC_FOG_WIDTH 256
-#	define VOLUMETRIC_FOG_HEIGHT 512
-#endif
-
 texture VolumetricMap: OFFSCREENRENDERTARGET <
 	string Description = "Volumetric fog Rendering for SphereLight";
-	int Width = VOLUMETRIC_FOG_WIDTH;
-	int Height = VOLUMETRIC_FOG_HEIGHT;
+	int Width = FOG_SHADOW_MAP_SIZE / 2;
+	int Height = FOG_SHADOW_MAP_SIZE;
 	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 1.0;
@@ -140,7 +123,7 @@ float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3
 	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < depth ? 0 : 1;
 }
 
-float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = VOLUMETRIC_FOG_SAMPLES_LENGTH)
+float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = MULTI_VOLUMETRIC_SAMPLES)
 {
 	float3 sampleStep = (end - start) / stepNum;
 	float3 sampleStart = start + sampleStep * jitter;
@@ -155,7 +138,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 	{
 		float density = sampleLength;
 #if VOLUMETRIC_FOG_ENABLE
-		density *= HitShadowTest(param, VolumetricMapSamp, VOLUMETRIC_FOG_HEIGHT, sampleStart);
+		density *= HitShadowTest(param, VolumetricMapSamp, FOG_SHADOW_MAP_SIZE, sampleStart);
 #endif
 		if (density > 0)
 		{
