@@ -1,0 +1,143 @@
+#if SSGI_QUALITY == 1
+#	define SSGI_DIRECTION_COUNT 4
+#	define SSGI_SAMPLER_COUNT 4
+#	define SSGI_BLUR_RADIUS 5
+#elif SSGI_QUALITY == 2
+#	define SSGI_DIRECTION_COUNT 6
+#	define SSGI_SAMPLER_COUNT 4
+#	define SSGI_BLUR_RADIUS 4
+#elif SSGI_QUALITY == 3
+#	define SSGI_DIRECTION_COUNT 8
+#	define SSGI_SAMPLER_COUNT 4
+#	define SSGI_BLUR_RADIUS 3
+#elif SSGI_QUALITY == 4
+#	define SSGI_DIRECTION_COUNT 6
+#	define SSGI_SAMPLER_COUNT 8
+#	define SSGI_BLUR_RADIUS 2
+#elif SSGI_QUALITY == 5
+#	define SSGI_DIRECTION_COUNT 8
+#	define SSGI_SAMPLER_COUNT 8
+#	define SSGI_BLUR_RADIUS 2
+#elif SSGI_QUALITY == 6
+#	define SSGI_DIRECTION_COUNT 10
+#	define SSGI_SAMPLER_COUNT 8
+#	define SSGI_BLUR_RADIUS 2
+#else
+#	define SSGI_DIRECTION_COUNT 4
+#	define SSGI_SAMPLER_COUNT 4
+#	define SSGI_BLUR_RADIUS 5
+#endif
+
+float3 GatherIllumination(
+	float2 uv,
+	float3 viewNormal,
+	float3 viewPosition,
+	float2 direction,
+	float  maxRadius,
+	float  jitter,
+	float  bias)
+{
+	float2 sampleStepDelta = direction * maxRadius / SSGI_SAMPLER_COUNT;
+	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
+	float2 sampleTexelSize = _CameraColorTexture_TexelSize * (ViewportSize.y / 1080);
+
+	float3 sampleOcclustion = 0.0f;
+
+	for (int j = 0; j < SSGI_SAMPLER_COUNT; j+=4)
+	{
+		float2 samplePoint[4];
+		samplePoint[0] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[1] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[2] = round(sampleDirection); sampleDirection += sampleStepDelta;
+		samplePoint[3] = round(sampleDirection); sampleDirection += sampleStepDelta;
+
+		float2 sampleOffset[4];
+		sampleOffset[0] = mad(samplePoint[0], sampleTexelSize, uv);
+		sampleOffset[1] = mad(samplePoint[1], sampleTexelSize, uv);
+		sampleOffset[2] = mad(samplePoint[2], sampleTexelSize, uv);
+		sampleOffset[3] = mad(samplePoint[3], sampleTexelSize, uv);
+
+		float3 samplePosition[4];
+		samplePosition[0] = ComputeViewSpacePosition(sampleOffset[0], SampleLinearEyeDepth(sampleOffset[0] + ViewportOffset));
+		samplePosition[1] = ComputeViewSpacePosition(sampleOffset[1], SampleLinearEyeDepth(sampleOffset[1] + ViewportOffset));
+		samplePosition[2] = ComputeViewSpacePosition(sampleOffset[2], SampleLinearEyeDepth(sampleOffset[2] + ViewportOffset));
+		samplePosition[3] = ComputeViewSpacePosition(sampleOffset[3], SampleLinearEyeDepth(sampleOffset[3] + ViewportOffset));
+
+		float3 sampleDirection[4];
+		sampleDirection[0] = samplePosition[0] - viewPosition;
+		sampleDirection[1] = samplePosition[1] - viewPosition;
+		sampleDirection[2] = samplePosition[2] - viewPosition;
+		sampleDirection[3] = samplePosition[3] - viewPosition;
+
+		float4 sampleLength2 = float4(
+			dot(sampleDirection[0], sampleDirection[0]),
+			dot(sampleDirection[1], sampleDirection[1]),
+			dot(sampleDirection[2], sampleDirection[2]),
+			dot(sampleDirection[3], sampleDirection[3]));
+
+		float4 sampleLengthInv = rsqrt(sampleLength2);
+
+		sampleDirection[0] *= sampleLengthInv[0];
+		sampleDirection[1] *= sampleLengthInv[1];
+		sampleDirection[2] *= sampleLengthInv[2];
+		sampleDirection[3] *= sampleLengthInv[3];
+
+		float4 sampleAngle = float4(
+			dot(sampleDirection[0], viewNormal),
+			dot(sampleDirection[1], viewNormal),
+			dot(sampleDirection[2], viewNormal),
+			dot(sampleDirection[3], viewNormal));
+
+		float4 sampleFalloff = float4(
+				Falloff(sampleLength2.x, maxRadius),
+				Falloff(sampleLength2.y, maxRadius),
+				Falloff(sampleLength2.z, maxRadius),
+				Falloff(sampleLength2.w, maxRadius)
+			);
+
+		float4 sh = saturate(sampleAngle) * saturate(sampleFalloff);
+
+		sampleOcclustion += sh.x * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[0] + ViewportOffset, 0, 0));
+		sampleOcclustion += sh.y * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[1] + ViewportOffset, 0, 0));
+		sampleOcclustion += sh.z * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[2] + ViewportOffset, 0, 0));
+		sampleOcclustion += sh.w * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[3] + ViewportOffset, 0, 0));
+	}
+
+	return sampleOcclustion;
+}
+
+float4 ScreenSpaceGlobalIlluminationFragment(in float4 uv : TEXCOORD0, in float2 screen : SV_POSITION) : COLOR
+{
+	float maxRadius = mAmbientOcclusionRadius;
+	if (floor(fmod(screen.x, 2)) > 0) maxRadius *= 0.5;
+	if (floor(fmod(screen.y, 2)) > 0) maxRadius *= 0.5;
+
+	float2 samplePixel = screen / ViewportSize;
+	float3 sampleNormal = SampleTransparentNormal(uv.xy);
+	float3 samplePosition = ComputeViewSpacePosition(samplePixel, SampleLinearEyeDepth(uv.xy));
+	float2 sampleRandom = float2(InterleavedGradientNoise(screen, 1.0f / elapsed), PseudoRandom(screen));
+
+	float alpha = PI_2 / SSGI_DIRECTION_COUNT;
+	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
+	float radius = clamp(maxRadius * log2(samplePosition.z) * atan(matProject._m11), SSGI_SAMPLER_COUNT, maxRadiusPixels);
+
+	float3 illumination = 0;
+
+	[loop]
+	for (int d = 0; d < SSGI_DIRECTION_COUNT; ++d)
+	{
+		float angle = alpha * (d + sampleRandom.x);
+
+		float cosA, sinA;
+		sincos(angle, sinA, cosA);
+
+		float2 direction = float2(cos(angle), sin(angle));
+
+		illumination += GatherIllumination(samplePixel, sampleNormal, samplePosition, direction, radius, sampleRandom.y, mAmbientOcclusionBias);
+	}
+
+	illumination *= (1.0f / (SSGI_SAMPLER_COUNT * SSGI_DIRECTION_COUNT));
+	illumination.xyz *= SampleTransparentAlbedo(uv.xy);
+
+	return float4(illumination, 0);
+}

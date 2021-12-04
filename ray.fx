@@ -110,12 +110,16 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/ScreenSpaceHorizonOcclusion.fxsub"
 #endif
 
+#if SSSS_QUALITY
+#	include "shader/ScreenSpaceSubsurfaceScattering.fxsub"
+#endif
+
 #if SSR_QUALITY
 #	include "shader/ScreenSpaceReflection.fxsub"
 #endif
 
-#if SSSS_QUALITY
-#	include "shader/ScreenSpaceSubsurfaceScattering.fxsub"
+#if SSGI_QUALITY
+#	include "shader/ScreenSpaceGlobalIllumination.fxsub"
 #endif
 
 #if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
@@ -257,7 +261,11 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraSpecularTexture; Pass=ScreenSpaceReflectionFinal;"
 #endif
 
-	"RenderColorTarget=_CameraColorTexture;	Clear=Color; Pass=ScreenSpaceLightingFinal;"
+	"RenderColorTarget=_CameraColorTexture;	Clear=Color;"
+	"Pass=ScreenSpaceLightingFinal;"
+#if SSGI_QUALITY
+	"Pass=ScreenSpaceGlobalIllumination;"
+#endif
 
 #if BOKEH_MODE
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
@@ -528,6 +536,15 @@ technique DeferredLighting<
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ScreenSpaceReflectionFinalPS();
+	}
+#endif
+#if SSGI_QUALITY
+	pass ScreenSpaceGlobalIllumination<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = true; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		SrcBlend = ONE; DestBlend = ONE;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
+		PixelShader  = compile ps_3_0 ScreenSpaceGlobalIlluminationFragment();
 	}
 #endif
 #if BOKEH_MODE

@@ -4,6 +4,12 @@ float3 SampleOpacityAlbedo(float2 uv)
 	return DecodeGBufferAlbedo(MRT1);
 }
 
+float3 SampleTransparentAlbedo(float2 uv)
+{
+	float4 MRT1 = tex2Dlod(Gbuffer5Map, float4(uv, 0, 0));
+	return DecodeGBufferAlbedo(MRT1);
+}
+
 float3 SampleOpacityEmissive(float2 uv)
 {
 	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(uv, 0, 0));

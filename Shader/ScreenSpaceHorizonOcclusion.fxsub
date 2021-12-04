@@ -24,8 +24,8 @@
 #	define HBAO_BLUR_RADIUS 2
 #else
 #	define HBAO_DIRECTION_COUNT 4
-#	define HBAO_SAMPLER_COUNT 8
-#	define HBAO_BLUR_RADIUS 2
+#	define HBAO_SAMPLER_COUNT 4
+#	define HBAO_BLUR_RADIUS 5
 #endif
 
 float Falloff(float distanceSquare, float maxRadius)
