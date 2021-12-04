@@ -112,7 +112,7 @@ const float2 emissiveMapLoopNum = 1.0;
 #define CUSTOM_A_MAP_APPLY_SCALE 0
 #define CUSTOM_A_MAP_FILE "custom.png"
 
-const float customA = 0.4;
+const float customA = 0.3;
 const float customAMapLoopNum = 1.0;
 
 #define CUSTOM_B_MAP_FROM 0
