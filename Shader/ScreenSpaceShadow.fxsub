@@ -1,11 +1,11 @@
 #if SUN_PCSS_QUALITY == 1
 #	define SHADOW_BLOCKER_COUNT 15
 #	define SHADOW_POISSON_COUNT 36
-#	define SHADOW_BLUR_COUNT 6
+#	define SHADOW_BLUR_COUNT 4
 #elif SUN_PCSS_QUALITY == 2
 #	define SHADOW_BLOCKER_COUNT 32
 #	define SHADOW_POISSON_COUNT 64
-#	define SHADOW_BLUR_COUNT 6
+#	define SHADOW_BLUR_COUNT 4
 #else
 #	define SHADOW_BLOCKER_COUNT 15
 #	define SHADOW_POISSON_COUNT 36
@@ -221,7 +221,7 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		return 1;
 	}
 #else
-	float filterSize = 2 * radius;
+	float filterSize = 10 * radius;
 	float2 blocker = 1;
 #endif
 
@@ -311,7 +311,7 @@ float4 ScreenSapceShadowMapFragment(
 	float lightSize = CASCADE_SHADOW_MAP_SIZE * 0.02; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
-	float4 receiverDepth4 = mad(float4(0.001, 0.0012, 0.0015, 0.002) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
+	float4 receiverDepth4 = mad(float4(0.001, 0.0015, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
 
 	[branch]
 	if (coord.w == 0)
