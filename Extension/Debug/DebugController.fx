@@ -182,7 +182,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 		float depth2 = tex2Dlod(PSSM2Samp, float4(coord * 2.0 - float2(1.0, 0.0), 0, 0)).r;		
 		float depth3 = tex2Dlod(PSSM3Samp, float4(coord * 2.0 - float2(0.0, 1.0), 0, 0)).r;		
 		float depth4 = tex2Dlod(PSSM4Samp, float4(coord * 2.0 - float2(1.0, 1.0), 0, 0)).r;		
-		result += pow(saturate((depth1 + depth2 + depth3 + depth4) / 1500), 2) * showPSSM;
+		result += pow(saturate((depth1 + depth2 + depth3 + depth4)), 2) * showPSSM;
 	#endif
 
 	if (material.lightModel == SHADINGMODELID_SKIN)

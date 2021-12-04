@@ -15,7 +15,7 @@
 #endif
 
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
-static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection, mLightDistance);
+static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection * mLightDistance);
 static float4x4 matLightViewProject = mul(mul(matLightView, matLightProject), CreateReversedDepthMatrix());
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
