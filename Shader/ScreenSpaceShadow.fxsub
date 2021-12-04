@@ -273,8 +273,8 @@ float4 ScreenSapceShadowMapFragment(
 
 	float4 proj = mul(float4(viewPosition, 1), matLightProjectFromCameraView);
 
-	float4 lightPPos01 = proj.xyxy * float4(lightCropParams[0].xy, lightCropParams[1].xy) + float4(lightCropParams[0].zw, lightCropParams[1].zw);
-	float4 lightPPos23 = proj.xyxy * float4(lightCropParams[2].xy, lightCropParams[3].xy) + float4(lightCropParams[2].zw, lightCropParams[3].zw);
+	float4 lightPPos01 = mad(proj.xyxy, float4(lightCropParams[0].xy, lightCropParams[1].xy), float4(lightCropParams[0].zw, lightCropParams[1].zw));
+	float4 lightPPos23 = mad(proj.xyxy, float4(lightCropParams[2].xy, lightCropParams[3].xy), float4(lightCropParams[2].zw, lightCropParams[3].zw));
 
 	float4 lightCoord01 = PosToCoord(lightPPos01);
 	float4 lightCoord23 = PosToCoord(lightPPos23);
@@ -291,7 +291,6 @@ float4 ScreenSapceShadowMapFragment(
 	clip(coord.z);
 
 	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
-	receiverDepth -= material.linearDepth * 0.0035 + max(0, material.linearDepth - 100) * 0.007;
 	receiverDepth /= mPSSMDepthZMax;
 	receiverDepth = 1 - receiverDepth;
 
@@ -312,16 +311,17 @@ float4 ScreenSapceShadowMapFragment(
 	float lightSize = SHADOW_MAP_SIZE * 0.02; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
+	float4 receiverDepth4 = mad(float4(0.001, 0.0012, 0.0015, 0.002) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize);
+		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth4.x, rotation, lightSize);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 2);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth4.y, rotation, lightSize / 2);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 4);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth4.z, rotation, lightSize / 4);
 	else
-		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth, rotation, lightSize / 8);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth4.w, rotation, lightSize / 8);
 
 	return shadow;
 }
