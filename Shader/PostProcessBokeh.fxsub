@@ -165,7 +165,7 @@ float2 GetSamplePoint()
 	return lerp(0.5, proj.xy, step(0.25, mMeasureMode) && !any(saturate(abs(proj.xy * 2 - 1) - 1 - GetSampleRadius())));
 }
 
-float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 16.f)
+float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 20.f)
 {
 	return min(0.05f, maxRadius / 1080) / float2(viewportSize.x / viewportSize.y, 1.0);
 }
