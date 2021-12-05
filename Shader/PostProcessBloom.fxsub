@@ -19,17 +19,117 @@ texture _BloomDownMap7 : RENDERCOLORTARGET<float2 ViewportRatio={0.00390625, 0.0
 texture _BloomDownMap8 : RENDERCOLORTARGET<float2 ViewportRatio={0.001953125, 0.001953125}; string Format="A16B16G16R16F";>;
 texture _BloomDownMap9 : RENDERCOLORTARGET<float2 ViewportRatio={0.0009765625, 0.0009765625}; string Format="A16B16G16R16F";>;
 
-static float2 _BloomMap0_TexelSize = 2 / ViewportSize;
-static float2 _BloomMap1_TexelSize = 4 / ViewportSize;
-static float2 _BloomMap2_TexelSize = 8 / ViewportSize;
-static float2 _BloomMap3_TexelSize = 16 / ViewportSize;
-static float2 _BloomMap4_TexelSize = 32 / ViewportSize;
-static float2 _BloomMap5_TexelSize = 64 / ViewportSize;
-static float2 _BloomMap6_TexelSize = 128 / ViewportSize;
-static float2 _BloomMap7_TexelSize = 256 / ViewportSize;
-static float2 _BloomMap8_TexelSize = 512 / ViewportSize;
-static float2 _BloomMap9_TexelSize = 1024 / ViewportSize;
+static float4 _BloomMap0_TexelSize = float4(2	 / ViewportSize, ViewportSize * 0.5);
+static float4 _BloomMap1_TexelSize = float4(4	 / ViewportSize, ViewportSize * 0.25);
+static float4 _BloomMap2_TexelSize = float4(8	 / ViewportSize, ViewportSize * 0.125);
+static float4 _BloomMap3_TexelSize = float4(16	 / ViewportSize, ViewportSize * 0.0625);
+static float4 _BloomMap4_TexelSize = float4(32	 / ViewportSize, ViewportSize * 0.03125);
+static float4 _BloomMap5_TexelSize = float4(64	 / ViewportSize, ViewportSize * 0.015625);
+static float4 _BloomMap6_TexelSize = float4(128	 / ViewportSize, ViewportSize * 0.0078125);
+static float4 _BloomMap7_TexelSize = float4(256	 / ViewportSize, ViewportSize * 0.00390625);
+static float4 _BloomMap8_TexelSize = float4(512	 / ViewportSize, ViewportSize * 0.001953125);
+static float4 _BloomMap9_TexelSize = float4(1024 / ViewportSize, ViewportSize * 0.0009765625);
 
+sampler _BloomDownMap0_PointSampler = sampler_state {
+	texture = <_BloomDownMap0>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap0_PointSampler = sampler_state {
+	texture = <_BloomUpMap0>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap1_PointSampler = sampler_state {
+	texture = <_BloomDownMap1>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap1_PointSampler = sampler_state {
+	texture = <_BloomUpMap1>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap2_PointSampler = sampler_state {
+	texture = <_BloomDownMap2>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap2_PointSampler = sampler_state {
+	texture = <_BloomUpMap2>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap3_PointSampler = sampler_state {
+	texture = <_BloomDownMap3>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap3_PointSampler = sampler_state {
+	texture = <_BloomUpMap3>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap4_PointSampler = sampler_state {
+	texture = <_BloomDownMap4>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap4_PointSampler = sampler_state {
+	texture = <_BloomUpMap4>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap5_PointSampler = sampler_state {
+	texture = <_BloomDownMap5>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap5_PointSampler = sampler_state {
+	texture = <_BloomUpMap5>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap6_PointSampler = sampler_state {
+	texture = <_BloomDownMap6>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap6_PointSampler = sampler_state {
+	texture = <_BloomUpMap6>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap7_PointSampler = sampler_state {
+	texture = <_BloomDownMap7>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap7_PointSampler = sampler_state {
+	texture = <_BloomUpMap7>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap8_PointSampler = sampler_state {
+	texture = <_BloomDownMap8>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap8_PointSampler = sampler_state {
+	texture = <_BloomUpMap8>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomDownMap9_PointSampler = sampler_state {
+	texture = <_BloomDownMap9>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
+sampler _BloomUpMap9_PointSampler = sampler_state {
+	texture = <_BloomUpMap9>;
+	MinFilter = Point; MagFilter = Point; MipFilter = NONE;
+	AddressU = BORDER; AddressV = BORDER; BorderColor = 0.0;
+};
 sampler _BloomDownMap0_LinearSampler = sampler_state {
 	texture = <_BloomDownMap0>;
 	MinFilter = Linear; MagFilter = Linear; MipFilter = NONE;
@@ -216,7 +316,7 @@ float4 BloomPrefilterPS(
 	return float4(bloom, 0);
 }
 
-float4 GaussianBlurBloomH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float2 _MainTex_TexelSize) : COLOR
+float4 GaussianBlurBloomH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float texelSize = _MainTex_TexelSize.x * 2;
 
@@ -237,7 +337,7 @@ float4 GaussianBlurBloomH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, un
 	return color;
 }
 
-float4 GaussianBlurBloomV(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float2 _MainTex_TexelSize) : COLOR
+float4 GaussianBlurBloomV(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float texelSize = _MainTex_TexelSize.y;
 
@@ -257,11 +357,11 @@ float4 GaussianBlurBloomV(in float2 uv : TEXCOORD0, uniform sampler _MainTex, un
 float4 UpsampleBloomPS(
 	in float2 uv : TEXCOORD,
 	uniform int mipLevel,
-	uniform sampler _MainTex, uniform float2 _MainTex_TexelSize,
-	uniform sampler _MainTexLowMip, uniform float2 _MainTexLowMip_TexelSize) : COLOR
+	uniform sampler _MainTex, uniform float4 _MainTex_TexelSize,
+	uniform sampler _MainTexLowMip, uniform float4 _MainTexLowMip_TexelSize) : COLOR
 {
-    float4 highMip = tex2Dlod(_MainTex, float4(uv + _MainTex_TexelSize * 0.5, 0, 0));
-    float4 lowMip = tex2Dlod(_MainTexLowMip, float4(uv + _MainTexLowMip_TexelSize * 0.5, 0, 0));
+    float4 highMip = tex2Dlod(_MainTex, float4(uv + _MainTex_TexelSize.xy * 0.5, 0, 0));
+    float4 lowMip = tex2D_bicubic(_MainTexLowMip, uv + _MainTexLowMip_TexelSize.xy * 0.5, _MainTexLowMip_TexelSize.zw);
 
 	float maxSize = max(ViewportSize.x, ViewportSize.y);
 	float iterations = floor(log2(maxSize) - 2);
