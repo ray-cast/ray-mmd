@@ -167,11 +167,6 @@ float4 ScreenSpaceLightingFinalFragment(
 
 	lighting += lerp(emissive0, emissive1, material.alpha) * lerp(1.0, float3(0.6,0.45,0.25), pow(1.0 - saturate(dot(material.normal, V)), 2.5));
 
-//#if OUTLINE_QUALITY
-//	float4 outline = tex2Dlod(_CameraOutlineTexture_PointSampler, float4(uv, 0, 0));
-//	lighting = lerp(lighting, outline.rgb, outline.a > 0 && step(outline.a, material.linearDepth));
-//#endif
-
 #if FOG_ENABLE
 	float4 fog = tex2Dlod(_CameraFogTexture_PointSampler, float4(uv, 0, 0));
 	lighting = lerp(lighting, fog.rgb, OpacityFromOpticalDepth(fog.a));
@@ -179,3 +174,14 @@ float4 ScreenSpaceLightingFinalFragment(
 
 	return float4(lighting, material.linearDepth);
 }
+
+#if OUTLINE_QUALITY
+float4 ScreenSpaceOutlineFragment(
+	in float2 uv: TEXCOORD0) : COLOR
+{
+	float4 color = tex2Dlod(_CameraColorTexture_PointSampler, float4(uv, 0, 0));
+	float4 outline = tex2Dlod(_CameraOutlineTexture_PointSampler, float4(uv, 0, 0));
+
+	return outline.a > 0 && step(outline.a, color.a) ? outline : color;
+}
+#endif

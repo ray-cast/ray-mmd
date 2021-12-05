@@ -239,7 +239,7 @@ float4 ComputeBokehWeightPS(
 	in float2 uv : TEXCOORD0,
 	in float4 focalCameraParams : TEXCOORD1) : COLOR
 {
-	return ComputeDepthCoC(SampleLinearEyeDepth(uv), focalCameraParams);
+	return ComputeDepthCoC(tex2Dlod(_CameraColorTexture_PointSampler, float4(uv, 0, 0)).a, focalCameraParams);
 }
 
 float4 ComputeBokehPrefilterPS(

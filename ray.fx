@@ -263,8 +263,13 @@ technique DeferredLighting<
 
 	"RenderColorTarget=_CameraColorTexture;	Clear=Color;"
 	"Pass=ScreenSpaceLightingFinal;"
+
 #if SSGI_QUALITY
 	"Pass=ScreenSpaceGlobalIllumination;"
+#endif
+
+#if OUTLINE_QUALITY
+	"Pass=ScreenSpaceOutline;"
 #endif
 
 #if BOKEH_MODE
@@ -458,6 +463,14 @@ technique DeferredLighting<
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 SSSGaussBlurVS();
 		PixelShader  = compile ps_3_0 SSSGaussBlurPS(_CameraColorTexture_PointSampler, _CameraColorTempTexture_PointSampler,float2(0.0, 1.0));
+	}
+#endif
+#if OUTLINE_QUALITY
+	pass ScreenSpaceOutline<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ScreenSpaceOutlineFragment();
 	}
 #endif
 #if TOON_ENABLE == 2
