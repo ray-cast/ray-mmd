@@ -3,11 +3,11 @@
 
 static const float _HexagonalBokehAngle = 1.236;
 
-static const float2 _CameraCoCTexture_TexelSize = 1.0f / ViewportSize;
-static const float2 _CameraPingTexture_TexelSize = 2.0f / ViewportSize;
-static const float2 _CameraPongTexture_TexelSize = 2.0f / ViewportSize;
-static const float2 _CameraBokehTexture_TexelSize = 2.0f / ViewportSize;
-static const float2 _CameraHexagonalBokehTexture_TexelSize = 2.0f / ViewportSize;
+static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
+static const float4 _CameraPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize * 0.5);
+static const float4 _CameraPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize * 0.5);
+static const float4 _CameraBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize * 0.5);
+static const float4 _CameraHexagonalBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize * 0.5);
 
 texture _CameraFocalDistanceTexture : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
 texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
@@ -212,7 +212,7 @@ float GetFocalDistance()
 	return max(1, focalDistance);
 }
 
-float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 4.f)
+float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 20.f)
 {
 	return min(0.05f, maxRadius / 1080) / float2(viewportSize.x / viewportSize.y, 1.0);
 }
@@ -234,7 +234,7 @@ float ComputeDepthCoC(float depth, float4 focalParams)
 	// put CoC into a % of the image sensor height
 	float percentOfSensor = CoC / sensorHeight * sign(D - P);
 
-	return clamp(percentOfSensor, -1, 10);
+	return clamp(percentOfSensor, -1, 2);
 }
 
 float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0) : COLOR
@@ -287,7 +287,7 @@ float4 ComputeBokehPrefilterPS(
 	in float2 uv : TEXCOORD0,
 	in float4 focalCameraParams : TEXCOORD1,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float3 duv = _MainTex_TexelSize.xyx * float3(0.5, 0.5, -0.5);
 	float2 uv0 = uv - duv.xy;
@@ -322,7 +322,7 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
-float4 ComputeHexagonalFarBlur(sampler _MainTex, float2 _MainTex_TexelSize, float CoC, float2 uv, float2 offset)
+float4 ComputeHexagonalFarBlur(sampler _MainTex, float4 _MainTex_TexelSize, float CoC, float2 uv, float2 offset)
 {
 	float4 colors = 0.0f;
 
@@ -349,10 +349,10 @@ float4 ComputeHexagonalBlurXVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float2 oTexcoord1 : TEXCOORD1,
 	out float2 oTexcoord2 : TEXCOORD2,
-	uniform float2 _MainTex_TexelSize) : POSITION
+	uniform float4 _MainTex_TexelSize) : POSITION
 {
 	oTexcoord0 = Texcoord.xyxy;
-	oTexcoord0.xy += _MainTex_TexelSize * 0.5;
+	oTexcoord0.xy += _MainTex_TexelSize.xy * 0.5;
 	oTexcoord1 = GetMaxBokehRadius(ViewportSize) * float2(cos(_HexagonalBokehAngle + PI / 2), sin(_HexagonalBokehAngle + PI / 2));
 	oTexcoord2 = GetMaxBokehRadius(ViewportSize) * float2(cos(_HexagonalBokehAngle - PI / 6), sin(_HexagonalBokehAngle - PI / 6));
 	return Position;
@@ -364,10 +364,10 @@ float4 ComputeHexagonalBlurYVS(
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float2 oTexcoord1 : TEXCOORD1,
 	out float2 oTexcoord2 : TEXCOORD2,
-	uniform float2 _MainTex_TexelSize) : POSITION
+	uniform float4 _MainTex_TexelSize) : POSITION
 {
 	oTexcoord0 = Texcoord.xyxy;
-	oTexcoord0.xy += _MainTex_TexelSize * 0.5;
+	oTexcoord0.xy += _MainTex_TexelSize.xy * 0.5;
 	oTexcoord1 = GetMaxBokehRadius(ViewportSize) * float2(cos(_HexagonalBokehAngle - PI / 6    ), sin(_HexagonalBokehAngle - PI / 6));
 	oTexcoord2 = GetMaxBokehRadius(ViewportSize) * float2(cos(_HexagonalBokehAngle - PI / 6 * 5), sin(_HexagonalBokehAngle - PI / 6 * 5));
 	return Position;
@@ -380,7 +380,7 @@ void ComputeHexagonalBlurXPS(
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize)
+	uniform float4 _MainTex_TexelSize)
 {
 	float CoC = tex2Dlod(_MainTex, float4(coord.xy, 0, 0)).a;
 
@@ -403,7 +403,7 @@ float4 ComputeHexagonalBlurYPS(
 	uniform sampler bokeh,
 	uniform sampler vertical,
 	uniform sampler diagonal,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float CoC = tex2Dlod(bokeh, float4(coord.xy, 0, 0)).a;
 
@@ -418,7 +418,7 @@ float4 ComputeHexagonalBlurYPS(
    	return float4((color1.rgb + color2.rgb) * (1.0f / 3.0f), CoC);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 nearAcc)
+void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 nearAcc)
 {
 	float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
 
@@ -428,7 +428,7 @@ void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0
 	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 nearAcc)
+void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 nearAcc)
 {
 	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
 
@@ -442,7 +442,7 @@ void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0
 float4 ComputeBokehBlurPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 nearAcc = 0.0;
 	float2 maxRadius = GetMaxBokehRadius(ViewportSize);
@@ -469,7 +469,7 @@ float4 ComputeBokehBlurPS(
 float4 ComputeBilinearBlurPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 duv = _MainTex_TexelSize.xyxy * float4(0.5, 0.5, -0.5, 0);
 
@@ -485,11 +485,11 @@ float4 ComputeBilinearBlurPS(
 float4 ComputeBokehFinalPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
-	float4 dof = tex2Dlod(_MainTex, float4(uv, 0, 0));
+	float4 dof = tex2D_bicubic(_MainTex, uv + _MainTex_TexelSize.xy * 0.5, _MainTex_TexelSize.zw);
 
-	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv, 0, 0)).r;
+	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv + _CameraCoCTexture_TexelSize.xy * 0.5, 0, 0)).r;
 
 	float ffa = smoothstep(_MainTex_TexelSize.y * 2.0, _MainTex_TexelSize.y * 4.0, coc * GetMaxBokehRadius(ViewportSize).y);
 	float alpha = ffa + dof.a - ffa * dof.a;

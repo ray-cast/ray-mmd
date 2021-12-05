@@ -1,6 +1,6 @@
-static const float2 _CameraCoCTexture_TexelSize = 1.0f / ViewportSize;
-static const float2 _CameraPingTexture_TexelSize = 2.0f / ViewportSize;
-static const float2 _CameraPongTexture_TexelSize = 2.0f / ViewportSize;
+static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
+static const float4 _CameraPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
 
 texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
 
@@ -246,7 +246,7 @@ float4 ComputeBokehPrefilterPS(
 	in float2 uv : TEXCOORD0,
 	in float4 focalCameraParams : TEXCOORD1,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float3 duv = _MainTex_TexelSize.xyx * float3(0.5, 0.5, -0.5);
 	float2 uv0 = uv - duv.xy;
@@ -281,7 +281,7 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 farAcc, inout float4 nearAcc)
+void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 farAcc, inout float4 nearAcc)
 {
 	float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
 
@@ -295,7 +295,7 @@ void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0
 	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 farAcc, inout float4 nearAcc)
+void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 farAcc, inout float4 nearAcc)
 {
 	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
 
@@ -313,7 +313,7 @@ void ComputeBokehAccum(sampler _MainTex, float2 _MainTex_TexelSize, float4 samp0
 float4 ComputeBokehBlurPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 farAcc = 0.0;
 	float4 nearAcc = 0.0;
@@ -342,7 +342,7 @@ float4 ComputeBokehBlurPS(
 float4 ComputeBilinearBlurPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 duv = _MainTex_TexelSize.xyxy * float4(0.5, 0.5, -0.5, 0);
 
@@ -358,11 +358,11 @@ float4 ComputeBilinearBlurPS(
 float4 ComputeBokehFinalPS(
 	in float2 uv : TEXCOORD0,
 	uniform sampler _MainTex,
-	uniform float2 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize) : COLOR
 {
-	float4 dof = tex2Dlod(_MainTex, float4(uv, 0, 0));
+	float4 dof = tex2D_bicubic(_MainTex, uv + _MainTex_TexelSize.xy * 0.5, _MainTex_TexelSize.zw);
 
-	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv, 0, 0)).r;
+	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv + _CameraCoCTexture_TexelSize.xy * 0.5, 0, 0)).r;
 
 	float ffa = smoothstep(_MainTex_TexelSize.y * 2.0, _MainTex_TexelSize.y * 4.0, coc * GetMaxBokehRadius(ViewportSize).y);
 	float alpha = ffa + dof.a - ffa * dof.a;

@@ -410,5 +410,5 @@ sampler _PreIntegratedSkinLut_LinearSampler = sampler_state
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static const float2 _CameraColorTexture_TexelSize = 1.0f / ViewportSize;
-static const float2 _CameraColorAttachment_TexelSize = 1.0f / ViewportSize;
+static const float4 _CameraColorTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
+static const float4 _CameraColorAttachment_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
