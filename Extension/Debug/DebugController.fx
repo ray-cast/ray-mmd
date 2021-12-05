@@ -174,7 +174,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	#endif
 
 	#if SSR_QUALITY > 0
-		result += DecodeRGBM(tex2Dlod(_CameraReflectionTextureX0_PointSampler, float4(coord, 0, 0))) * showSSR;
+		result += tex2Dlod(_CameraReflectionTextureX0_PointSampler, float4(coord, 0, 0)) * showSSR;
 	#endif
 
 	#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
