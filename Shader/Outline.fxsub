@@ -1,9 +1,19 @@
 #include "../../shader/Common.fxsub"
 
+texture DiffuseMap : MATERIALTEXTURE;
+sampler DiffuseMapSamp = sampler_state
+{
+	texture = DiffuseMap;
+	MINFILTER = LINEAR; MAGFILTER = LINEAR; MIPFILTER = LINEAR;
+	ADDRESSU = WRAP; ADDRESSV = WRAP;
+};
+
 void OutlineVertex(
 	in float4 Position : POSITION,
+	in float4 Texcoord : TEXCOORD0,
 	in float3 Normal : NORMAL,
-	out float4 oWorldPos  : TEXCOORD0,
+	out float4 oTexcoord  : TEXCOORD0,
+	out float4 oWorldPos  : TEXCOORD1,
 	out float4 oPosition  : POSITION)
 {
 	float3 viewNormal = mul(Normal, (float3x3)matWorldView);
@@ -15,12 +25,18 @@ void OutlineVertex(
 	oPosition = mul(Position, matWorldViewProject);
 	oPosition.xy += ndcNormal.xy * float2(ViewportSize.y / ViewportSize.x, 1) * oPosition.w * 0.000025 * fov * outlinePadding;
 
+	oTexcoord = Texcoord;
 	oWorldPos = float4(Position.xyz, oPosition.w);
 }
 
-float4 OutlineFragment(in float4 worldPos : TEXCOORD0) : COLOR
+float4 OutlineFragment(in float2 uv : TEXCOORD0, in float4 worldPos : TEXCOORD1) : COLOR
 {
-	return float4(pow(outlineColor, 2.2), worldPos.w);
+#if OUTLINE_COLOR_TYPE == 1
+	float3 color = tex2Dlod(DiffuseMapSamp, float4(uv, 0, 0)).rgb;
+	return float4(pow(color * outlineColor, 2.2), worldPos.w);
+#else
+	return float4(outlineColor, worldPos.w);
+#endif
 }
 
 technique MainTecSS<string MMDPass = "object_ss";>{
