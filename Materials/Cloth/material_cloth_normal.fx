@@ -120,7 +120,7 @@ const float2 customAMapLoopNum = 1.0;
 #define CUSTOM_B_MAP_APPLY_SCALE 0
 #define CUSTOM_B_MAP_FILE "custom.png"
 
-const float3 customB = pow(0.04, 1.0 / 2.2); // base reflectivity with sRGB color-space
+const float3 customB = pow(0.08, 1.0 / 2.2); // base reflectivity with sRGB color-space
 const float2 customBMapLoopNum = 1.0;
 
 #include "../material_common_2.0.fxsub"
