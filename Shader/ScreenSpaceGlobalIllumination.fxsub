@@ -41,7 +41,7 @@ float3 GatherIllumination(
 	float2 sampleDirection = direction + frac(jitter) * sampleStepDelta;
 	float2 sampleTexelSize = _CameraColorTexture_TexelSize * (ViewportSize.y / 1080);
 
-	float3 sampleOcclustion = 0.0f;
+	float3 illumination = 0.0f;
 
 	for (int j = 0; j < SSGI_SAMPLER_COUNT; j+=4)
 	{
@@ -97,13 +97,13 @@ float3 GatherIllumination(
 
 		float4 sh = saturate(sampleAngle) * saturate(sampleFalloff);
 
-		sampleOcclustion += sh.x * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[0] + ViewportOffset, 0, 0));
-		sampleOcclustion += sh.y * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[1] + ViewportOffset, 0, 0));
-		sampleOcclustion += sh.z * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[2] + ViewportOffset, 0, 0));
-		sampleOcclustion += sh.w * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[3] + ViewportOffset, 0, 0));
+		illumination += sh.x * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[0] + ViewportOffset, 0, 0));
+		illumination += sh.y * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[1] + ViewportOffset, 0, 0));
+		illumination += sh.z * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[2] + ViewportOffset, 0, 0));
+		illumination += sh.w * tex2Dlod(_CameraColorTexture_LinearSampler, float4(sampleOffset[3] + ViewportOffset, 0, 0));
 	}
 
-	return sampleOcclustion;
+	return illumination;
 }
 
 float4 ScreenSpaceGlobalIlluminationFragment(in float4 uv : TEXCOORD0, in float2 screen : SV_POSITION) : COLOR

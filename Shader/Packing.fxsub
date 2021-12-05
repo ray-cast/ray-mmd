@@ -20,7 +20,7 @@ float3 DecodeNormal(float3 enc)
 	return normalize(normal);
 }
 
-float4 EncodeRGBM(float3 color, float range = 6)
+float4 EncodeRGBM(float3 color, float range = 8)
 {
 	color *= (1.0 / range);
 	float4 rgbm;
@@ -30,7 +30,7 @@ float4 EncodeRGBM(float3 color, float range = 6)
 	return rgbm;
 }
 
-float3 DecodeRGBM(float4 rgbm, float range = 6)
+float3 DecodeRGBM(float4 rgbm, float range = 8)
 {
 	return rgbm.rgb * rgbm.a * range;
 }

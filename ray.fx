@@ -248,7 +248,7 @@ technique DeferredLighting<
 #endif
 
 #if SSR_QUALITY
-	"RenderColorTarget=_CameraReflectionTextureX1; 		Clear=Color; Pass=ScreenSpaceReflectionTracing;"
+	"RenderColorTarget=_CameraReflectionTextureX0; 		Clear=Color; Pass=ScreenSpaceReflectionTracing;"
 	"RenderColorTarget=_CameraReflectionTextureX1Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX1;"
 	"RenderColorTarget=_CameraReflectionTextureX1;	  	Clear=Color; Pass=ScreenSpaceReflectionBlurY1;"
 	"RenderColorTarget=_CameraReflectionTextureX2Temp; 	Clear=Color; Pass=ScreenSpaceReflectionBlurX2;"
@@ -485,56 +485,56 @@ technique DeferredLighting<
 	pass ScreenSpaceReflectionBlurX1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1_LinearSampler, SSROffsetX1);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture0_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurH(_CameraReflectionTextureX0_LinearSampler, _CameraReflectionTexture0_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurY1<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1Temp_LinearSampler, SSROffsetY1);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture1_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurV(_CameraReflectionTextureX1Temp_LinearSampler, _CameraReflectionTexture1_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurX2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX1_LinearSampler, SSROffsetX2);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture1_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurH(_CameraReflectionTextureX1_LinearSampler, _CameraReflectionTexture1_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurY2<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 2);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX2Temp_LinearSampler, SSROffsetY2);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture2_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurV(_CameraReflectionTextureX2Temp_LinearSampler, _CameraReflectionTexture2_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurX3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 2);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX2_LinearSampler, SSROffsetX3);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture2_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurH(_CameraReflectionTextureX2_LinearSampler, _CameraReflectionTexture2_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurY3<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 4);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX3Temp_LinearSampler, SSROffsetY3);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture3_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurV(_CameraReflectionTextureX3Temp_LinearSampler, _CameraReflectionTexture3_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurX4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 4);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX3_LinearSampler, SSROffsetX4);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture3_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurH(_CameraReflectionTextureX3_LinearSampler, _CameraReflectionTexture3_TexelSize);
 	}
 	pass ScreenSpaceReflectionBlurY4<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(ViewportOffset2.x * 8);
-		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurPS(_CameraReflectionTextureX4Temp_LinearSampler, SSROffsetY4);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraReflectionTexture4_TexelSize);
+		PixelShader  = compile ps_3_0 ScreenSpaceReflectionBlurV(_CameraReflectionTextureX4Temp_LinearSampler, _CameraReflectionTexture4_TexelSize);
 	}
 	pass ScreenSpaceReflectionFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = ONE; DestBlend = INVSRCALPHA;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(float2(0, 0));
 		PixelShader  = compile ps_3_0 ScreenSpaceReflectionFinalPS();
 	}
 #endif

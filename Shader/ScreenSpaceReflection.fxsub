@@ -8,27 +8,26 @@
 #	define SSR_SAMPLER_COUNT 32
 #endif
 
-static const float2 SSRScale = 512 * float2(ViewportAspect, 1);
+static const float2 _CameraReflectionMaxBlurPixelPercentage = 512 * float2(ViewportAspect, 1);
 
-static const float2 SSROffsetX1 = float2(1 / SSRScale.x, 0.0);
-static const float2 SSROffsetX2 = float2(2 / SSRScale.x, 0.0);
-static const float2 SSROffsetX3 = float2(4 / SSRScale.x, 0.0);
-static const float2 SSROffsetX4 = float2(8 / SSRScale.x, 0.0);
+static const float2 _CameraReflectionTexture0_TexelSize = 1 / ViewportSize;
+static const float2 _CameraReflectionTexture1_TexelSize = 1 / _CameraReflectionMaxBlurPixelPercentage;
+static const float2 _CameraReflectionTexture2_TexelSize = 2 / _CameraReflectionMaxBlurPixelPercentage;
+static const float2 _CameraReflectionTexture3_TexelSize = 4 / _CameraReflectionMaxBlurPixelPercentage;
+static const float2 _CameraReflectionTexture4_TexelSize = 8 / _CameraReflectionMaxBlurPixelPercentage;
 
-static const float2 SSROffsetY1 = float2(0.0, 1 / SSRScale.y);
-static const float2 SSROffsetY2 = float2(0.0, 2 / SSRScale.y);
-static const float2 SSROffsetY3 = float2(0.0, 4 / SSRScale.y);
-static const float2 SSROffsetY4 = float2(0.0, 8 / SSRScale.y);
+shared texture _CameraReflectionTextureX0 : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
 
-texture _CameraReflectionTextureX1 : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX2 : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX3 : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX4 : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX1Temp : RENDERCOLORTARGET<float2 ViewportRatio = {1.0, 1.0}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX2Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX3Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
-texture _CameraReflectionTextureX4Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX1 : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX2 : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX3 : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX4 : RENDERCOLORTARGET<float2 ViewportRatio = {0.0625, 0.0625}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX1Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.5, 0.5}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX2Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.25, 0.25}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX3Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.125, 0.125}; string Format = "A8B8G8R8";>;
+texture _CameraReflectionTextureX4Temp : RENDERCOLORTARGET<float2 ViewportRatio = {0.0625, 0.0625}; string Format = "A8B8G8R8";>;
 
+sampler _CameraReflectionTextureX0_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX0>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX1_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX1>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX2_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX2>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX3_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX3>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
@@ -37,6 +36,16 @@ sampler _CameraReflectionTextureX1Temp_LinearSampler = sampler_state { texture =
 sampler _CameraReflectionTextureX2Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX2Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX3Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX3Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX4Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX4Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
+
+float4 EncodeSSR(float3 color)
+{
+	return EncodeRGBM(color);
+}
+
+float3 DecodeSSR(float4 color)
+{
+	return DecodeRGBM(color);
+}
 
 bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float jitter, out float2 hitPixel)
 {
@@ -102,37 +111,33 @@ bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDista
 	return bestLen > 0 ? 1 : 0;
 }
 
-float4 ScreenSpaceReflectionTracingPS(in float4 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR 
+float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdir : TEXCOORD1, in float2 screen : SV_POSITION) : COLOR 
 {
-	float4 MRT0 = tex2Dlod(Gbuffer1Map, float4(coord.xy, 0, 0));
-	float4 MRT1 = tex2Dlod(Gbuffer2Map, float4(coord.xy, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer3Map, float4(coord.xy, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer4Map, float4(coord.xy, 0, 0));
-
-	MaterialParam material;
-	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+	MaterialParam material = SampleOpacityGbuffer(uv.xy);
 
 	float3 test = material.albedo + material.specular;
 	clip(sum(test) - 1e-5);
 
 	float3 view = normalize(viewdir);
-	float3 viewPosition = view * material.linearDepth / view.z;
-	float3 viewReflect = normalize(reflect(-view, material.normal));
 
-	float atten = dot(viewReflect, -view);
+	float2 samplePixel = screen / ViewportSize;
+	float3 samplePosition = ComputeViewSpacePosition(samplePixel, material.linearDepth);
+	float3 sampleReflect = normalize(reflect(-view, material.normal));
+
+	float atten = dot(sampleReflect, -view);
 	clip(atten - 1e-5);
 
-	float sampleJitter = PseudoRandom(coord.zw);
+	float sampleJitter = InterleavedGradientNoise(uv.zw);
 	float sampleDistance = mSSRRangeScale;
 	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth) +  material.linearDepth;
 	sampleDistance *= pow(1 - saturate(dot(view, material.normal)) * (1 - SSR_QUALITY * 0.1), 5 - SSR_QUALITY);
 
 	float2 hitPixel = 0;
-	bool hitTest = TraceScreenSpaceRay(viewPosition, viewReflect, sampleDistance, sampleJitter, hitPixel);
+	bool hitTest = TraceScreenSpaceRay(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel);
 	if (!hitTest)
 		clip(-1);
 
-	float2 boundary = abs(coord.xy * 2 - 1);
+	float2 boundary = abs(uv.xy * 2 - 1);
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
 	float fadeOnBorder = 1.0f - saturate((boundary.x - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
@@ -144,62 +149,80 @@ float4 ScreenSpaceReflectionTracingPS(in float4 coord : TEXCOORD0, in float3 vie
 	float4 diffuse = tex2Dlod(_CameraColorTempTexture_PointSampler, float4(hitPixel, 0, 0));
 	float4 specular = tex2Dlod(_CameraSpecularTexture_PointSampler, float4(hitPixel, 0, 0));
 
-	return float4(diffuse.rgb * SampleOpacityAlbedo(hitPixel) + specular.rgb, 1) * fadeOnTotal;
+	return EncodeSSR((diffuse.rgb * SampleOpacityAlbedo(hitPixel) + specular.rgb) * fadeOnTotal);
 }
 
-float4 ScreenSpaceReflectionBlurPS(in float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
+float4 ScreenSpaceReflectionBlurH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float2 _MainTex_TexelSize) : COLOR
 {
-	static const float weights[5] = {0.20236, 0.179044, 0.124009, 0.067234, 0.028532};
+	float texelSize = _MainTex_TexelSize.x * 2;
 
-	float2 start = coord - offset * 4;
+	float3 c0 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(texelSize * 4.0, 0.0), 0, 0)));
+	float3 c1 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(texelSize * 3.0, 0.0), 0, 0)));
+	float3 c2 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(texelSize * 2.0, 0.0), 0, 0)));
+	float3 c3 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(texelSize * 1.0, 0.0), 0, 0)));
+	float3 c4 = DecodeSSR(tex2Dlod(_MainTex, float4(uv                               , 0, 0)));
+	float3 c5 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(texelSize * 1.0, 0.0), 0, 0)));
+	float3 c6 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(texelSize * 2.0, 0.0), 0, 0)));
+	float3 c7 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(texelSize * 3.0, 0.0), 0, 0)));
+	float3 c8 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(texelSize * 4.0, 0.0), 0, 0)));
 
-	float4 color = 0;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[4]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[3]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[2]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[1]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[0]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[1]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[2]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[3]; start += offset;
-	color += tex2Dlod(source, float4(start, 0, 0)) * weights[4];
+    float3 color = c0 * 0.01621622 + c1 * 0.05405405 + c2 * 0.12162162 + c3 * 0.19459459
+                 + c4 * 0.22702703
+                 + c5 * 0.19459459 + c6 * 0.12162162 + c7 * 0.05405405 + c8 * 0.01621622;
 
-	return color;
+	return EncodeSSR(color);
 }
 
-float4 ScreenSpaceReflectionFinalPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
+float4 ScreenSpaceReflectionBlurV(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float2 _MainTex_TexelSize) : COLOR
 {
-	float4 MRT0 = tex2Dlod(Gbuffer5Map, float4(coord, 0, 0));
-	float4 MRT1 = tex2Dlod(Gbuffer6Map, float4(coord, 0, 0));
-	float4 MRT2 = tex2Dlod(Gbuffer7Map, float4(coord, 0, 0));
-	float4 MRT3 = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0));
+	float texelSize = _MainTex_TexelSize.y;
 
-	MaterialParam material;
-	DecodeGbuffer(MRT0, MRT1, MRT2, MRT3, material);
+	float3 c0 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(0.0, texelSize * 3.23076923), 0, 0)));
+	float3 c1 = DecodeSSR(tex2Dlod(_MainTex, float4(uv - float2(0.0, texelSize * 1.38461538), 0, 0)));
+	float3 c2 = DecodeSSR(tex2Dlod(_MainTex, float4(uv                                      , 0, 0)));
+	float3 c3 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(0.0, texelSize * 1.38461538), 0, 0)));
+	float3 c4 = DecodeSSR(tex2Dlod(_MainTex, float4(uv + float2(0.0, texelSize * 3.23076923), 0, 0)));
+
+    float3 color = c0 * 0.07027027 + c1 * 0.31621622
+                 + c2 * 0.22702703
+                 + c3 * 0.31621622 + c4 * 0.07027027;
+
+	return EncodeSSR(color);
+}
+
+float4 ScreenSpaceReflectionFinalPS(in float2 uv : TEXCOORD0, in float3 viewdir : TEXCOORD1) : COLOR
+{
+	MaterialParam material = SampleOpacityGbuffer(uv);
 
 	float gloss = material.smoothness;
 	float gloss2 = gloss * gloss;
 
 	float weight = frac(min(gloss2, 0.9999) * 3);
 
-	float4 refl0 = tex2Dlod(_CameraReflectionTextureX1_LinearSampler, float4(coord, 0, 0));
-	float4 refl1 = tex2Dlod(_CameraReflectionTextureX2_LinearSampler, float4(coord, 0, 0));
-	float4 refl2 = tex2Dlod(_CameraReflectionTextureX3_LinearSampler, float4(coord, 0, 0));
-	float4 refl3 = tex2Dlod(_CameraReflectionTextureX4_LinearSampler, float4(coord, 0, 0));
+	float3 refl0 = DecodeSSR(tex2Dlod(_CameraReflectionTextureX0_LinearSampler, float4(uv + _CameraReflectionTexture0_TexelSize, 0, 0)));
+	float3 refl1 = DecodeSSR(tex2Dlod(_CameraReflectionTextureX1_LinearSampler, float4(uv + _CameraReflectionTexture1_TexelSize, 0, 0)));
+	float3 refl2 = DecodeSSR(tex2Dlod(_CameraReflectionTextureX2_LinearSampler, float4(uv + _CameraReflectionTexture2_TexelSize, 0, 0)));
+	float3 refl3 = DecodeSSR(tex2Dlod(_CameraReflectionTextureX3_LinearSampler, float4(uv + _CameraReflectionTexture3_TexelSize, 0, 0)));
+	float3 refl4 = DecodeSSR(tex2Dlod(_CameraReflectionTextureX4_LinearSampler, float4(uv + _CameraReflectionTexture4_TexelSize, 0, 0)));
 
-	float4 color = 0;
+	float4 threshold4 = float4(3.0f, 2.0f, 1.0f, 0.0f) / 4.0f;
+	float4 weight4 = saturate((weight - threshold4) / 0.25);
+
+	float3 color = 0;
 
 	[branch]
-	if (gloss2 > 2.0 / 3.0)
-		color = lerp(refl1, refl0, weight * weight);
-	else if (gloss2 > 1.0 / 3.0)
-		color = lerp(refl2, refl1, weight);
+	if (gloss2 > threshold4.x)
+		color = lerp(refl1, refl0, weight4.x);
+	else if (gloss2 > threshold4.y)
+		color = lerp(refl2, refl1, weight4.y);
+	else if (gloss2 > threshold4.z)
+		color = lerp(refl3, refl2, weight4.z);
 	else
-		color = lerp(refl3, refl2, weight);
+		color = lerp(refl4, refl3, weight4.w);
 
 	float3 N = material.normal;
 	float3 V = normalize(viewdir);
 	float3 fresnel = EnvironmentSpecularUnreal4(abs(dot(N, V)), gloss, material.specular);
 
-	return float4(color.rgb * fresnel, color.a);
+	return float4(color.rgb * fresnel, 1);
 }

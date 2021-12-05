@@ -54,10 +54,10 @@ sampler _CameraOcclusionTextureSamp = sampler_state {
 #endif
 
 #if SSR_QUALITY > 0
-shared texture SSRayTracingMap: RENDERCOLORTARGET;
-sampler SSRayTracingSamp = sampler_state {
-	texture = <SSRayTracingMap>;
-	MinFilter = NONE; MagFilter = NONE; MipFilter = NONE;
+shared texture _CameraReflectionTextureX0: RENDERCOLORTARGET;
+sampler _CameraReflectionTextureX0_PointSampler = sampler_state {
+	texture = <_CameraReflectionTextureX0>;
+	MinFilter = POINT; MagFilter = POINT; MipFilter = NONE;
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 #endif
@@ -174,7 +174,7 @@ float4 DebugControllerPS(in float2 coord : TEXCOORD0) : COLOR
 	#endif
 
 	#if SSR_QUALITY > 0
-		result += tex2Dlod(SSRayTracingSamp, float4(coord, 0, 0)).rgb * showSSR;
+		result += DecodeRGBM(tex2Dlod(_CameraReflectionTextureX0_PointSampler, float4(coord, 0, 0))) * showSSR;
 	#endif
 
 	#if SUN_SHADOW_QUALITY && SUN_LIGHT_ENABLE
