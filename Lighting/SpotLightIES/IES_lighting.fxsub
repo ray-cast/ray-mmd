@@ -50,7 +50,7 @@ static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x
 #   define SHADOW_MAP_SIZE 256
 #elif SHADOW_MAP_QUALITY == 1
 #   define SHADOW_MAP_SIZE 512
-#elif SHADOW_MAP_QUALITY >= 2
+#elif SHADOW_MAP_QUALITY == 2
 #   define SHADOW_MAP_SIZE 1024
 #elif SHADOW_MAP_QUALITY >= 3
 #   define SHADOW_MAP_SIZE 2048
