@@ -37,68 +37,76 @@ sampler _CameraReflectionTextureX2Temp_LinearSampler = sampler_state { texture =
 sampler _CameraReflectionTextureX3Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX3Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX4Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX4Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 
-bool TraceScreenSpaceRay(float3 viewPosition, float3 viewReflect, float maxDistance, float jitter, out float2 hitPixel)
+bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLength, float jitter, out float3 hitPixel)
 {
-	float4 startPosition = float4(viewPosition, 1);
-	float4 startScreenPos = mul(startPosition, matProject);
+	float rayStep = 1.0 / (SSR_SAMPLER_COUNT - 1);
+	float rayLowHitTime = jitter * rayStep + rayStep;
+	float rayHighHitTime = jitter * rayStep + 1;
 
-	float4 endPosition = float4(viewPosition + viewReflect * maxDistance, 1);
-	float4 endScreenPos = mul(endPosition, matProject);
+	float4 rayStartClip = mul(float4(viewPosition, 1), matProject);
+	float4 rayEndClip = mul(float4(viewPosition + rayDirection * rayLength, 1), matProject);
+	
+	float4 rayStartScreen = ComputeScreenPos(rayStartClip);
+	float4 rayEndScreen = ComputeScreenPos(rayEndClip);
 
-	startScreenPos.xy = startScreenPos.xy * float2(0.5, -0.5) + 0.5 * startScreenPos.w;
-	endScreenPos.xy = endScreenPos.xy * float2(0.5, -0.5) + 0.5 * endScreenPos.w;
+	float4 rayStepScreen = rayEndScreen - rayStartScreen;
 
-	float4 deltaScreenPos = endScreenPos - startScreenPos;
+	float4 rayDepthClip = rayStartClip + mul(float4(0, 0, rayLength, 0), matProject);
+	float4 rayDepthScreen = float4(rayDepthClip.xyz / rayDepthClip.w, rayDepthClip.w);
 
-	float stepSize = 1.0 / SSR_SAMPLER_COUNT;
-	float stepLength = jitter * stepSize + stepSize;
+	float firstHitTime = -1.0;
+	float compareTolerance = abs(rayDepthClip.w - rayStartClip.w) * rayStep * 0.5;
 
-	float bestLen = 0;
-	float bestIntervalSize = maxDistance / (SSR_SAMPLER_COUNT * 1.6) * mSSRThreshold;
-
-	for (int i = 0; i < SSR_SAMPLER_COUNT; i += 4)
+#if 1
+	for (int i = 0; i < SSR_SAMPLER_COUNT; i++, rayLowHitTime += rayStep)
 	{
-		float4 sampleLength = stepLength + stepSize * float4(0, 1, 2, 3);
+		float sampleLength = rayLowHitTime;
+		float4 samplePosition = rayStartScreen + rayStepScreen * sampleLength;
 
-		float4 samplePos1 = startScreenPos + deltaScreenPos * sampleLength.x;
-		float4 samplePos2 = startScreenPos + deltaScreenPos * sampleLength.y;
-		float4 samplePos3 = startScreenPos + deltaScreenPos * sampleLength.z;
-		float4 samplePos4 = startScreenPos + deltaScreenPos * sampleLength.w;
-		float4 samplePosZ = float4(samplePos1.w, samplePos2.w, samplePos3.w, samplePos4.w);
+		float sampleDepth = SampleLinearEyeDepth(samplePosition.xy / samplePosition.w);
+		float sampleDepthDiff = samplePosition.w - sampleDepth;
 
-		float4 sampleDepth;
-		sampleDepth.r = tex2Dproj(Gbuffer8Map, samplePos1).r;
-		sampleDepth.g = tex2Dproj(Gbuffer8Map, samplePos2).r;
-		sampleDepth.b = tex2Dproj(Gbuffer8Map, samplePos3).r;
-		sampleDepth.a = tex2Dproj(Gbuffer8Map, samplePos4).r;
-
-		float4 depthDiff = samplePosZ - abs(sampleDepth);
-
-		bool4 hit = abs(depthDiff) < bestIntervalSize;
-		if (any(hit))
+		bool hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
+		if (hit)
 		{
-			float hitIndex = 3;
-			hitIndex = hit[2] ? 2 : hitIndex;
-			hitIndex = hit[1] ? 1 : hitIndex;
-			hitIndex = hit[0] ? 0 : hitIndex;
-			bestLen = stepLength + stepSize * hitIndex;
+			firstHitTime = sampleLength;
 			break;
 		}
-
-		stepLength += stepSize * 4;
 	}
+#else
+	for (int i = 0; i < SSR_SAMPLER_COUNT; i++)
+	{
+		float sampleLength = (rayLowHitTime + rayHighHitTime) * 0.5;
+		float4 samplePosition = rayStartScreen + rayStepScreen * sampleLength;
+		float2 sampleUv = samplePosition.xy / samplePosition.w;
 
-	float4 projPos = startScreenPos + deltaScreenPos * bestLen;
+		float sampleDepth = SampleLinearEyeDepth(sampleUv + ViewportOffset);
+		float sampleDepthDiff = samplePosition.w - sampleDepth;
+
+		bool hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
+		if (hit)
+		{
+			firstHitTime = sampleLength;
+			break;
+		}
+		
+		if (sampleDepthDiff > 0)
+		{
+			rayHighHitTime = sampleLength;
+		}
+		else
+		{
+			rayLowHitTime = sampleLength;
+		}
+	}
+#endif
+
+	float4 projPos = rayStartScreen + rayStepScreen * firstHitTime;
 	projPos.xy /= projPos.w;
 
-	hitPixel = projPos.xy;
+	hitPixel = float3(projPos.xy, firstHitTime);
 
-	if (hitPixel.x < 0.0 || hitPixel.x > 1.0 || hitPixel.y < 0.0 || hitPixel.y > 1.0)
-	{
-		bestLen = 0;
-	}
-
-	return bestLen > 0 ? 1 : 0;
+	return hitPixel.x > 0.0 && hitPixel.x < 1.0 && hitPixel.y > 0.0 && hitPixel.y < 1.0 && firstHitTime > 0 ? true : false;
 }
 
 float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdir : TEXCOORD1, in float2 screen : SV_POSITION) : COLOR 
@@ -115,31 +123,25 @@ float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdi
 	float3 sampleReflect = normalize(reflect(-view, material.normal));
 
 	float atten = dot(sampleReflect, -view);
-	clip(atten - 1e-5);
+	clip(atten - 1e-3);
 
 	float sampleJitter = InterleavedGradientNoise(uv.zw);
-	float sampleDistance = mSSRRangeScale;
-	sampleDistance *= max(0, mSSRRangeMax - material.linearDepth) +  material.linearDepth;
-	sampleDistance *= pow(1 - saturate(dot(view, material.normal)) * (1 - SSR_QUALITY * 0.1), 5 - SSR_QUALITY);
+	float sampleDistance = clamp(log2(material.linearDepth) * 10, 50, mSSRRangeMax);
 
-	float2 hitPixel = 0;
-	bool hitTest = TraceScreenSpaceRay(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel);
-	if (!hitTest)
+	float3 hitPixel = 0;
+	if (!ScreenSpaceRayTrace(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel))
 		clip(-1);
 
 	float2 boundary = abs(uv.xy * 2 - 1);
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
 	float fadeOnBorder = 1.0f - saturate((boundary.x - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
-	fadeOnBorder = smoothstep(0.0f, 1.0f, fadeOnBorder);
+	fadeOnBorder *= smoothstep(1.0f, 0.7, hitPixel.z);
 
-	float fadeOnPerpendicular = saturate(atten);
-	float fadeOnTotal = fadeOnBorder * fadeOnPerpendicular;
+	float4 diffuse = tex2Dlod(_CameraColorTempTexture_PointSampler, float4(hitPixel.xy, 0, 0));
+	float4 specular = tex2Dlod(_CameraSpecularTexture_PointSampler, float4(hitPixel.xy, 0, 0));
 
-	float4 diffuse = tex2Dlod(_CameraColorTempTexture_PointSampler, float4(hitPixel, 0, 0));
-	float4 specular = tex2Dlod(_CameraSpecularTexture_PointSampler, float4(hitPixel, 0, 0));
-
-	return float4(diffuse.rgb * SampleOpacityAlbedo(hitPixel) + specular.rgb, 1) * fadeOnTotal;
+	return float4(diffuse.rgb * SampleOpacityAlbedo(hitPixel.xy) + specular.rgb, fadeOnBorder);
 }
 
 float4 ScreenSpaceReflectionBlurH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, uniform float2 _MainTex_TexelSize) : COLOR

@@ -571,7 +571,7 @@ technique DeferredLighting<
 	pass ScreenSpaceReflectionFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		SrcBlend = ONE; DestBlend = INVSRCALPHA;
+		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(float2(0, 0));
 		PixelShader  = compile ps_3_0 ScreenSpaceReflectionFinalPS();
 	}
