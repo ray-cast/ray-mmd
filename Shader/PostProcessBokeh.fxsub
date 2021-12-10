@@ -274,7 +274,7 @@ float4 ComputeBokehPrefilterPS(
 
 	float cocMin = min(coc0, min(min(coc1, coc2), coc3));
 	float cocMax = max(coc0, max(max(coc1, coc2), coc3));
-	float coc = (-cocMin > cocMax ? cocMin : cocMax) * GetMaxBokehRadius(_MainTex_TexelSize.zw).y;
+	float coc = (-cocMin > cocMax ? cocMin : cocMax) * GetMaxBokehRadius(ViewportSize).y;
 
 	avg *= smoothstep(0, _MainTex_TexelSize.y * 2.0, abs(coc));
 

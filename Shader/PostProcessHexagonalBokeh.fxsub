@@ -334,7 +334,7 @@ float4 ComputeHexagonalFarBlur(sampler _MainTex, float4 _MainTex_TexelSize, floa
 
 		float farCoC = max(min(CoC, samp.a), 0.0);
 		float dist = length(offset);
-		float margin = _MainTex_TexelSize.y;
+		float margin = _MainTex_TexelSize.y * 2.0;
 		float farWeight = saturate((farCoC - dist + margin) / margin);
 
 		colors += float4(samp.rgb, 1) * farWeight;
