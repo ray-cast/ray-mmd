@@ -1,4 +1,3 @@
-#include "Sky with box.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/Color.fxsub"
@@ -18,8 +17,6 @@ float mEnvDiffLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvDif
 float mEnvDiffLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvDiffLight-";>;
 float mEnvSpecLightP : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight+";>;
 float mEnvSpecLightM : CONTROLOBJECT<string name="(self)"; string item = "EnvSpecLight-";>;
-
-#if USE_CUSTOM_PARAMS == 0
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
 float mTopColorSP :  CONTROLOBJECT<string name="(self)"; string item = "TopS+";>;
 float mTopColorVP :  CONTROLOBJECT<string name="(self)"; string item = "TopV+";>;
@@ -51,29 +48,12 @@ static const float3 mSunColor = srgb2linear_fast(hsv2rgb(float3(mSunColorHP, mSu
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 static const float mSunExponent = lerp(lerp(0.5, 1, mSunExponentP), 0, mSunExponentM);
-#else
-#if USE_RGB_COLORSPACE
-	static const float3 mTopColor = srgb2linear_fast(TopColor);
-	static const float3 mBottomColor = srgb2linear_fast(BottomColor);
-	static const float3 mMediumColor = srgb2linear_fast(MediumColor);
-	static const float3 mSunColor = srgb2linear_fast(SunColor);
-#else
-	static const float3 mTopColor = srgb2linear_fast(hsv2rgb(TopColor));
-	static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(BottomColor));
-	static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(MediumColor));
-	static const float3 mSunColor = srgb2linear_fast(hsv2rgb(SunColor));
-#endif
 
-static const float mTopExponent = TopExponent;
-static const float mBottomExponent = BottomExponent;
-static const float mSunExponent = SunExponent;
-#endif
+static const float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
+static const float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
+static const float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
 
-static float mEnvIntensitySSS  = lerp(lerp(1, 5, mEnvSSSLightP),  0, mEnvSSSLightM);
-static float mEnvIntensitySpec = lerp(lerp(1, 5, mEnvSpecLightP), 0, mEnvSpecLightM);
-static float mEnvIntensityDiff = lerp(lerp(1, 5, mEnvDiffLightP), 0, mEnvDiffLightM);
-
-static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
+static const float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
 texture BRDF<string ResourceName = "Textures/BRDF.hdr"; int Miplevels = 1;>;
 sampler BRDFSamp = sampler_state {
@@ -129,7 +109,7 @@ float3 ImportanceSampleDiffuseSky(float3 N, float3 V, float roughness)
 	for (uint i = 0; i < NumSamples; i++)
 	{
 		float2 E = HammersleyNoBitOps(i, NumSamples);
-		float3 L = TangentToWorld(N, HammersleySampleCos(E));
+		float3 L = TangentToWorld(N, CosineSampleHemisphere(E)).xyz;
 		float3 H = normalize(N + L);
 
 		float nl = saturate(dot(N, L));

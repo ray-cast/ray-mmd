@@ -124,17 +124,18 @@ float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdi
 	float3 test = material.albedo + material.specular;
 	clip(sum(test) - 1e-5);
 
-	float3 view = normalize(viewdir);
+	float sampleJitter = PseudoRandom(uv.zw);
+	float sampleDistance = clamp(log2(material.linearDepth) * 10, 50, mSSRRangeMax);
+
+	float3 view = normalize(-viewdir);
 
 	float2 samplePixel = screen / ViewportSize;
 	float3 samplePosition = ComputeViewSpacePosition(samplePixel, material.linearDepth);
-	float3 sampleReflect = normalize(reflect(-view, material.normal));
+	float4 sampleDirection = TangentToWorld(material.normal, HammersleySampleGGX(sampleJitter, SmoothnessToRoughness(material.smoothness)));
+	float3 sampleReflect = normalize(reflect(view, material.normal));
 
-	float atten = dot(sampleReflect, -view);
+	float atten = dot(sampleReflect, view);
 	clip(atten - 1e-3);
-
-	float sampleJitter = InterleavedGradientNoise(uv.zw);
-	float sampleDistance = clamp(log2(material.linearDepth) * 10, 50, mSSRRangeMax);
 
 	float3 hitPixel = 0;
 	if (!ScreenSpaceRayMarching(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel))

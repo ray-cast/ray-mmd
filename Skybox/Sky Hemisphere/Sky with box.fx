@@ -1,4 +1,3 @@
-#include "Sky with box.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
 #include "../../shader/Color.fxsub"
@@ -7,8 +6,6 @@
 float mEnvRotateX : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateX";>;
 float mEnvRotateY : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateY";>;
 float mEnvRotateZ : CONTROLOBJECT<string name="(self)"; string item = "EnvRotateZ";>;
-
-#if USE_CUSTOM_PARAMS == 0
 float mTopColorHP :  CONTROLOBJECT<string name="(self)"; string item = "TopH+";>;
 float mTopColorSP :  CONTROLOBJECT<string name="(self)"; string item = "TopS+";>;
 float mTopColorVP :  CONTROLOBJECT<string name="(self)"; string item = "TopV+";>;
@@ -40,25 +37,18 @@ static const float3 mSunColor = srgb2linear_fast(hsv2rgb(float3(mSunColorHP, mSu
 static const float mTopExponent = lerp(lerp(1, 4, mTopExponentP), 1e-5, mTopExponentM);
 static const float mBottomExponent = lerp(lerp(0.5, 4, mBottomExponentP), 1e-5, mBottomExponentM);
 static const float mSunExponent = lerp(lerp(0.5, 1, mSunExponentP), 0, mSunExponentM);
-#else
-#if USE_RGB_COLORSPACE
-	static const float3 mTopColor = srgb2linear_fast(TopColor);
-	static const float3 mBottomColor = srgb2linear_fast(BottomColor);
-	static const float3 mMediumColor = srgb2linear_fast(MediumColor);
-	static const float3 mSunColor = srgb2linear_fast(SunColor);
-#else
-	static const float3 mTopColor = srgb2linear_fast(hsv2rgb(TopColor));
-	static const float3 mBottomColor = srgb2linear_fast(hsv2rgb(BottomColor));
-	static const float3 mMediumColor = srgb2linear_fast(hsv2rgb(MediumColor));
-	static const float3 mSunColor = srgb2linear_fast(hsv2rgb(SunColor));
-#endif
 
-static const float mTopExponent = TopExponent;
-static const float mBottomExponent = BottomExponent;
-static const float mSunExponent = SunExponent;
-#endif
+static const float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
 
-static float3x3 matTransform = CreateRotate(float3(mEnvRotateX, mEnvRotateY, mEnvRotateZ) * PI_2);
+float3 SampleSky(float3 N, float3 V)
+{
+	float3 color = 0;
+	color = lerp(mMediumColor, mTopColor, pow(max(0, N.y), mTopExponent));
+	color = lerp(color, mBottomColor, pow(max(0, -N.y), mBottomExponent));
+	color = lerp(color, mSunColor, ComputePhaseMieHG(dot(V, -MainLightDirection), mSunExponent));
+
+	return color;
+}
 
 void SkyboxVS(
 	in float4 Position   : POSITION,
@@ -71,14 +61,8 @@ void SkyboxVS(
 
 float4 SkyboxPS(in float3 viewdir : TEXCOORD0) : COLOR
 {
-  	float3 V = mul(matTransform, normalize(viewdir));
-
-  	float3 color = 0;
-  	color = lerp(mMediumColor, mTopColor, pow(max(0, V.y), mTopExponent));
-  	color = lerp(color, mBottomColor, pow(max(0, -V.y), mBottomExponent));
-  	color = lerp(color, mSunColor, ComputePhaseMieHG(dot(V, -MainLightDirection), mSunExponent));
-  	
-	return float4(linear2srgb(color), 1);
+  	float3 V = mul(matTransform, normalize(viewdir)); 	
+	return float4(linear2srgb(SampleSky(V, V)), 1);
 }
 
 const float4 ClearColor = 0.0;
