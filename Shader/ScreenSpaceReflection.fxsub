@@ -39,11 +39,10 @@ sampler _CameraReflectionTextureX2Temp_LinearSampler = sampler_state { texture =
 sampler _CameraReflectionTextureX3Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX3Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 sampler _CameraReflectionTextureX4Temp_LinearSampler = sampler_state { texture = <_CameraReflectionTextureX4Temp>; MinFilter = LINEAR; MagFilter = LINEAR; AddressU = CLAMP; AddressV = CLAMP; MipFilter = NONE;};
 
-bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLength, float jitter, out float3 hitPixel)
+bool ScreenSpaceRayMarching(float3 viewPosition, float3 rayDirection, float rayLength, float jitter, out float3 hitPixel)
 {
 	float rayStep = 1.0 / (SSR_SAMPLER_COUNT - 1);
-	float rayLowHitTime = jitter * rayStep + rayStep;
-	float rayHighHitTime = jitter * rayStep + 1;
+	float raySampleTime = jitter * rayStep + rayStep;
 
 	float4 rayStartClip = mul(float4(viewPosition, 1), matProject);
 	float4 rayEndClip = mul(float4(viewPosition + rayDirection * rayLength, 1), matProject);
@@ -61,7 +60,7 @@ bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLeng
 
 	for (int i = 0; i < SSR_SAMPLER_COUNT; i += 4)
 	{
-		float4 sampleLength = rayLowHitTime + float4(0,1,2,3) * rayStep;
+		float4 sampleLength = raySampleTime + float4(0,1,2,3) * rayStep;
 
 		float4 samplePosition[4];
 		samplePosition[0] = rayStartScreen + rayStepScreen * sampleLength.x;
@@ -70,14 +69,14 @@ bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLeng
 		samplePosition[3] = rayStartScreen + rayStepScreen * sampleLength.w;
 
 		float4 sampleDepth;
-		sampleDepth.x = SampleLinearEyeDepth(samplePosition[0].xy / samplePosition[0].w);
-		sampleDepth.y = SampleLinearEyeDepth(samplePosition[1].xy / samplePosition[1].w);
-		sampleDepth.z = SampleLinearEyeDepth(samplePosition[2].xy / samplePosition[2].w);
-		sampleDepth.w = SampleLinearEyeDepth(samplePosition[3].xy / samplePosition[3].w);
+		sampleDepth.x = SampleLinearEyeDepth(samplePosition[0].xy / samplePosition[0].w + ViewportOffset);
+		sampleDepth.y = SampleLinearEyeDepth(samplePosition[1].xy / samplePosition[1].w + ViewportOffset);
+		sampleDepth.z = SampleLinearEyeDepth(samplePosition[2].xy / samplePosition[2].w + ViewportOffset);
+		sampleDepth.w = SampleLinearEyeDepth(samplePosition[3].xy / samplePosition[3].w + ViewportOffset);
 
-		float4 sampleDepthDiff = float4(samplePosition[0].w, samplePosition[1].w, samplePosition[2].w, samplePosition[3].w) - sampleDepth;
+		float4 sampleDepthDiff = sampleDepth - float4(samplePosition[0].w, samplePosition[1].w, samplePosition[2].w, samplePosition[3].w);
 
-		bool4 hit = abs(sampleDepthDiff) < compareTolerance;
+		bool4 hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
 		if (any(hit))
 		{
 			float hitIndex = 3;
@@ -85,11 +84,11 @@ bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLeng
 			hitIndex = hit[1] ? 1 : hitIndex;
 			hitIndex = hit[0] ? 0 : hitIndex;
 
-			firstHitTime = rayLowHitTime + rayStep * hitIndex;
+			firstHitTime = raySampleTime + rayStep * hitIndex;
 			break;
 		}
 
-		rayLowHitTime += rayStep * 4;
+		raySampleTime += rayStep * 4;
 	}
 
 	if (firstHitTime > 0)
@@ -138,7 +137,7 @@ float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdi
 	float sampleDistance = clamp(log2(material.linearDepth) * 10, 50, mSSRRangeMax);
 
 	float3 hitPixel = 0;
-	if (!ScreenSpaceRayTrace(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel))
+	if (!ScreenSpaceRayMarching(samplePosition, sampleReflect, sampleDistance, sampleJitter, hitPixel))
 		clip(-1);
 
 	float2 boundary = abs(uv.xy * 2 - 1);
