@@ -36,8 +36,8 @@ void ShadowMapVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oPosition = mul(Position, matLightViewProject);
-	oPosition.z = oPosition.z * oPosition.w;
+	oPosition = mul(mul(Position, matLightViewProject), CreateReversedDepthMatrix());
+	oPosition.z = oPosition.z / oPosition.w;
 	
 	oTexcoord0 = Texcoord;
 	oTexcoord1 = oPosition;
@@ -58,6 +58,7 @@ float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 
 technique DepthTecSS<string MMDPass = "object_ss";> {
 	pass DrawObject {
+		ZFunc = Greater;
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapVS();
 		PixelShader  = compile ps_3_0 ShadowMapPS();

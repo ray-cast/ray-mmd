@@ -32,7 +32,6 @@ sampler DiffuseMapSamp = sampler_state
 void ShadowMapVS(
 	in float4 Position : POSITION,
 	in float4 Texcoord : TEXCOORD0,
-	in float3 Normal   : NORMAL,
 	out float4 oTexcoord0 : TEXCOORD0,
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)

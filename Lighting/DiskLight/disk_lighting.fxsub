@@ -63,7 +63,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET<
 	string Format = "G32R32F";
 	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE, MULTI_SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"

@@ -60,7 +60,7 @@ texture VolumetricMap: OFFSCREENRENDERTARGET <
 	int Height = FOG_SHADOW_MAP_SIZE;
 	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
@@ -178,7 +178,7 @@ float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, flo
 	proj.xy = PosToCoord(proj.xy / proj.w);
 	proj.xy += shadowOffset;
 
-	float linearDepth = length(mul(float4(worldPosition, 1), matLightView));
+	float linearDepth = mul(float4(worldPosition, 1), matLightView).z;
 	return tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r < linearDepth ? 0 : 1;
 }
 
