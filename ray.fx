@@ -123,7 +123,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/ScreenSpaceGlobalIllumination.fxsub"
 #endif
 
-#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+#if  EYE_ADAPTATION > 0
 #	include "shader/PostProcessEyeAdaptation.fxsub"
 #endif
 
@@ -335,7 +335,7 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraColorTexture; 		Pass=DiffusionBlurY;"
 #endif
 
-#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+#if  EYE_ADAPTATION > 0
 	"RenderColorTarget=_EyeLumMap0;		Clear=Color; Pass=EyePrefilter;"
 	"RenderColorTarget=_EyeLumMap1;		Clear=Color; Pass=EyeLumDownsample1;"
 	"RenderColorTarget=_EyeLumMap2;		Clear=Color; Pass=EyeLumDownsample2;"
