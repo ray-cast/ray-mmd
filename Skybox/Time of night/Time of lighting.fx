@@ -6,7 +6,7 @@
 #include "../../shader/Packing.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
-#include "../../shader/ibl.fxsub"
+#include "../../shader/BRDF.fxsub"
 #include "../../shader/phasefunctions.fxsub"
 
 #include "shader/common.fxsub"
