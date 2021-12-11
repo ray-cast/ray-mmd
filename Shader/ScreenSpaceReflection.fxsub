@@ -1,7 +1,9 @@
 #if SSR_QUALITY == 1
 #	define SSR_SAMPLER_COUNT 32
+#	define SSR_BINARY_COUNT 5
 #elif SSR_QUALITY == 2
-#	define SSR_SAMPLER_COUNT 64
+#	define SSR_SAMPLER_COUNT 60
+#	define SSR_BINARY_COUNT 5
 #elif SSR_QUALITY >= 3
 #	define SSR_SAMPLER_COUNT 128
 #else
@@ -57,56 +59,63 @@ bool ScreenSpaceRayTrace(float3 viewPosition, float3 rayDirection, float rayLeng
 	float firstHitTime = -1.0;
 	float compareTolerance = abs(rayDepthClip.w - rayStartClip.w) * rayStep * 0.5;
 
-#if 1
-	for (int i = 0; i < SSR_SAMPLER_COUNT; i++, rayLowHitTime += rayStep)
+	for (int i = 0; i < SSR_SAMPLER_COUNT; i += 4)
 	{
-		float sampleLength = rayLowHitTime;
-		float4 samplePosition = rayStartScreen + rayStepScreen * sampleLength;
+		float4 sampleLength = rayLowHitTime + float4(0,1,2,3) * rayStep;
 
-		float sampleDepth = SampleLinearEyeDepth(samplePosition.xy / samplePosition.w);
-		float sampleDepthDiff = samplePosition.w - sampleDepth;
+		float4 samplePosition[4];
+		samplePosition[0] = rayStartScreen + rayStepScreen * sampleLength.x;
+		samplePosition[1] = rayStartScreen + rayStepScreen * sampleLength.y;
+		samplePosition[2] = rayStartScreen + rayStepScreen * sampleLength.z;
+		samplePosition[3] = rayStartScreen + rayStepScreen * sampleLength.w;
 
-		bool hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
-		if (hit)
+		float4 sampleDepth;
+		sampleDepth.x = SampleLinearEyeDepth(samplePosition[0].xy / samplePosition[0].w);
+		sampleDepth.y = SampleLinearEyeDepth(samplePosition[1].xy / samplePosition[1].w);
+		sampleDepth.z = SampleLinearEyeDepth(samplePosition[2].xy / samplePosition[2].w);
+		sampleDepth.w = SampleLinearEyeDepth(samplePosition[3].xy / samplePosition[3].w);
+
+		float4 sampleDepthDiff = float4(samplePosition[0].w, samplePosition[1].w, samplePosition[2].w, samplePosition[3].w) - sampleDepth;
+
+		bool4 hit = abs(sampleDepthDiff) < compareTolerance;
+		if (any(hit))
 		{
-			firstHitTime = sampleLength;
+			float hitIndex = 3;
+			hitIndex = hit[2] ? 2 : hitIndex;
+			hitIndex = hit[1] ? 1 : hitIndex;
+			hitIndex = hit[0] ? 0 : hitIndex;
+
+			firstHitTime = rayLowHitTime + rayStep * hitIndex;
 			break;
 		}
+
+		rayLowHitTime += rayStep * 4;
 	}
-#else
-	for (int i = 0; i < SSR_SAMPLER_COUNT; i++)
+
+	if (firstHitTime > 0)
 	{
-		float sampleLength = (rayLowHitTime + rayHighHitTime) * 0.5;
-		float4 samplePosition = rayStartScreen + rayStepScreen * sampleLength;
-		float2 sampleUv = samplePosition.xy / samplePosition.w;
+		for (int j = 0; j < SSR_BINARY_COUNT; j++)
+		{
+			float sampleLength = firstHitTime;
+			float4 samplePosition = rayStartScreen + rayStepScreen * sampleLength;
 
-		float sampleDepth = SampleLinearEyeDepth(sampleUv + ViewportOffset);
-		float sampleDepthDiff = samplePosition.w - sampleDepth;
+			float sampleDepth = SampleLinearEyeDepth(samplePosition.xy / samplePosition.w + ViewportOffset);
 
-		bool hit = abs(sampleDepthDiff + compareTolerance) < compareTolerance;
-		if (hit)
-		{
-			firstHitTime = sampleLength;
-			break;
-		}
-		
-		if (sampleDepthDiff > 0)
-		{
-			rayHighHitTime = sampleLength;
-		}
-		else
-		{
-			rayLowHitTime = sampleLength;
+			if (samplePosition.w > sampleDepth)
+				firstHitTime -= rayStep * 0.25;
+			else
+				firstHitTime += rayStep * 0.25;
 		}
 	}
-#endif
 
 	float4 projPos = rayStartScreen + rayStepScreen * firstHitTime;
 	projPos.xy /= projPos.w;
 
 	hitPixel = float3(projPos.xy, firstHitTime);
 
-	return hitPixel.x > 0.0 && hitPixel.x < 1.0 && hitPixel.y > 0.0 && hitPixel.y < 1.0 && firstHitTime > 0 ? true : false;
+	float2 borderCheck = abs(hitPixel.xy * 2 - 1) - 1;
+
+	return borderCheck.x < 0.0 && borderCheck.y < 0.0 && firstHitTime > 0 ? true : false;
 }
 
 float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdir : TEXCOORD1, in float2 screen : SV_POSITION) : COLOR 
@@ -136,7 +145,7 @@ float4 ScreenSpaceReflectionTracingPS(in float4 uv : TEXCOORD0, in float3 viewdi
 	float fadeDiffRcp = 1.0f / max(0.01, 1 - mSSRFadeStart);
 	float fadeOnBorder = 1.0f - saturate((boundary.x - mSSRFadeStart) * fadeDiffRcp);
 	fadeOnBorder *= 1.0f - saturate((boundary.y - mSSRFadeStart) * fadeDiffRcp);
-	fadeOnBorder *= smoothstep(1.0f, 0.7, hitPixel.z);
+	fadeOnBorder *= smoothstep(1.0f, 0.6, hitPixel.z);
 
 	float4 diffuse = tex2Dlod(_CameraColorTempTexture_PointSampler, float4(hitPixel.xy, 0, 0));
 	float4 specular = tex2Dlod(_CameraSpecularTexture_PointSampler, float4(hitPixel.xy, 0, 0));
