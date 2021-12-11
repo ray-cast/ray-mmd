@@ -151,7 +151,7 @@ shared texture MaterialMap: OFFSCREENRENDERTARGET<
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
 		"Volumetric*.pmx=hide;"
-		"sky*box*.* = ./materials/material_skybox.fx;"
+		"Sky*box*.* = ./materials/material_skybox.fx;"
 		"Image Based Sky.pmx = ./materials/material_skybox.fx;"
 		"LED*.pmx =./materials/Video/material_screen_led.fx;"
 		"*Light*.pmx =./materials/Emissive/material_lighting.fx;"
