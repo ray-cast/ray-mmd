@@ -60,6 +60,9 @@ texture FogMap : OFFSCREENRENDERTARGET<
 		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
 		"VolumetricCube.pmx =./Fog/VolumetricCube/volumetric_cube.fx;"
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
+		"Time of day.pmx=./Skybox/Time of day/Time of fog with godray.fx;"
+		"Time of day fast.pmx=./Skybox/Time of day/Time of fog.fx;"
+		"Time of night.pmx=./Skybox/Time of night/Time of fog.fx;"
 		"* = hide;";
 >;
 sampler _CameraFogTexture_PointSampler = sampler_state {
@@ -120,8 +123,10 @@ texture EnvLightMap: OFFSCREENRENDERTARGET<
 	float4 ClearColor = { 0, MIDPOINT_8_BIT, 0, MIDPOINT_8_BIT };
 	float ClearDepth = 1.0;
 	string DefaultEffect =
-		"sky*box*.* =./Skybox/Image Based Lighting - Disable.fx;"
+		"Sky with box.pmx =./Skybox/Image Based Lighting - Disable.fx;"
 		"Image Based Sky.pmx =./Skybox/Image Based Lighting - Disable.fx;"
+		"Time of day.pmx=./Skybox/Time of day/Time of lighting.fx;"
+		"Time of night.pmx=./Skybox/Time of night/Time of lighting.fx;"
 		"*= hide;";
 >;
 shared texture EnvLightAlphaMap: RENDERCOLORTARGET<
