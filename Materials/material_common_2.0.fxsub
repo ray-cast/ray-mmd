@@ -77,7 +77,7 @@ float3 ColorTemperature(float kelvin)
 float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 
-static float3 MorphTemperature = ColorTemperature(lerp(lerp(6600, 12500, mTemperatureP), 1000, mTemperatureM));
+static float3 MorphTemperature = ColorTemperature(lerp(lerp(6600, 40000, mTemperatureP), 1000, mTemperatureM));
 #endif
 
 #define TEXTURE_FILTER ANISOTROPIC
