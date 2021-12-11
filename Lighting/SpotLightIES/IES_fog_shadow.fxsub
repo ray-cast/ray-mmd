@@ -2,7 +2,7 @@
 #include "../../ray_advanced.conf"
 #include "../../shader/math.fxsub"
 #include "../../shader/common.fxsub"
-#include "../../shader/shadowcommon.fxsub"
+#include "../../shader/Shadow.fxsub"
 
 float mAngleP : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle+";>;
 float mAngleM : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Angle-";>;
@@ -37,12 +37,9 @@ void ShadowMapVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	float cosAngle = 1 - saturate(dot(Normal, -FogDirection));
-	float distanceSqr = sqrt(distance(Position.xyz, CameraPosition));
-	float distanceBias = cosAngle * distanceSqr * 0.05;
 	oTexcoord0 = Texcoord;
-	oTexcoord1 = mul(Position, matLightView);
-	oPosition = mul(Position + float4(Normal * distanceBias, 0), matLightViewProject);
+	oTexcoord1 = mul(Position, matLightViewProject);
+	oPosition = mul(oTexcoord1, CreateReversedDepthMatrix());
 }
 
 float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) : COLOR
@@ -55,11 +52,12 @@ float4 ShadowMapPS(in float4 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return length(position);
+	return position.w;
 }
 
 technique DepthTecSS<string MMDPass = "object_ss";> {
 	pass DrawObject {
+		ZFunc = Greater;
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapVS();
 		PixelShader  = compile ps_3_0 ShadowMapPS();

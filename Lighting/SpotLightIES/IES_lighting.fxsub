@@ -40,7 +40,7 @@ static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
 static const float LightIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
-static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.y, mTemperatureP), lightTemperatureLimits.z, mTemperatureM);
+static const float LightTemperature = lerp(lerp(lightTemperatureLimits.x, lightTemperatureLimits.z, mTemperatureP), lightTemperatureLimits.y, mTemperatureM);
 
 static const float3 LightPosition = mPosition;
 static const float3 LightDirection = normalize(mDirection - mPosition);
@@ -55,7 +55,7 @@ texture ShadowMap: OFFSCREENRENDERTARGET<
 	string Format = "G32R32F";
 	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE, MULTI_SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
