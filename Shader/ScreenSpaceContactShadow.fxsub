@@ -7,7 +7,7 @@ float4 ScreenSapceContactShadowFragment(in float4 uv : TEXCOORD0) : COLOR
 
 	float rayLength = max(0.5, 0.01 * material.linearDepth);
 	float rayStep = 1.0f / CONTACT_SHADOW_SAMPLES;
-	float raySampleTime = rayStep * (1 + InterleavedGradientNoise(uv.zw, 1.0f / elapsed));
+	float raySampleTime = rayStep * (1 + InterleavedGradientNoise(uv.zw));
 
 	float3 viewPosition = ComputeViewSpacePosition(uv.xy, material.linearDepth);
 
