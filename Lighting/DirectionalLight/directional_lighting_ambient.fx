@@ -3,7 +3,7 @@
 static const float3 lightBlink = 0.0;
 static const float3 lightColor = 1.0;
 static const float3 lightIntensityLimits = float3(1.0, 0.0, 10.0);
-static const float3 lightTemperatureLimits = float3(6600, 1000, 12500);
+static const float3 lightTemperatureLimits = float3(6600, 1000, 40000);
 
 #define SHADOW_MAP_FROM 0
 
