@@ -122,7 +122,7 @@ float4 HorizonBasedAmbientOcclusionFragment(in float4 uv : TEXCOORD0, in float2 
 	float2 samplePixel = screen / ViewportSize;
 	float3 sampleNormal = SampleTransparentNormal(uv.xy);
 	float3 samplePosition = ComputeViewSpacePosition(samplePixel, SampleLinearEyeDepth(uv.xy));
-	float2 sampleRandom = float2(InterleavedGradientNoise(screen, 1.0f / elapsed), PseudoRandom(screen));
+	float2 sampleRandom = float2(InterleavedGradientNoise(screen), PseudoRandom(screen));
 
 	float alpha = PI_2 / HBAO_DIRECTION_COUNT;
 	float maxRadiusPixels = mAmbientOcclusionMaxRadiusPixelPercentage * ViewportSize.y;
