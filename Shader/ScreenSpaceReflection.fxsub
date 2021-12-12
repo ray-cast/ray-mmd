@@ -9,6 +9,7 @@
 #	define SSR_BINARY_COUNT 5
 #else
 #	define SSR_SAMPLER_COUNT 32
+#	define SSR_BINARY_COUNT 5
 #endif
 
 static const float2 _CameraReflectionMaxBlurPixelPercentage = 512 * float2(ViewportAspect, 1);
