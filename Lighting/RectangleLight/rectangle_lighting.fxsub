@@ -9,6 +9,7 @@
 #include "../../../shader/BRDF.fxsub"
 #include "../../../shader/arealight.fxsub"
 #include "../../../shader/LTC.fxsub"
+#include "../../../shader/DeclareGbufferTexture.fxsub"
 
 #if SHADOW_MAP_FROM > 0
 #	include "../../../shader/Shadow.fxsub"
@@ -171,7 +172,7 @@ void ShadingMaterial(MaterialParam material, float3 P, float3 V, float3 lightCol
 	float3 points[4];
 	LTC_InitRectPoints(viewLightPosition, viewLightRight, viewLightUp, LightWidth, LightHeight, points);
 
-	diffuse = SubsurfaceShading(material, material.normal, L2, V);
+	diffuse = SubsurfaceShading(material, material.normal, L2, V) * saturate(dot(L2, material.normal));
 #if VIDEO_MAP_FROM
 	diffuse += LTC_EvaluateRectangle(VideoMapSamp, material.normal, V, P, viewLightDirection, points);
 #else
