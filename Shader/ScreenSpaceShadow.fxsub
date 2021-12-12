@@ -137,7 +137,7 @@ float4 ScreenSapceShadowMapFragment(
 		clip(tex2Dlod(_PSSM4_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
-	float lightSize = 0.05; 
+	float lightSize = 0.04; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
 	float4 receiverDepth4 = mad(float4(0.0015, 0.002, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
@@ -146,9 +146,9 @@ float4 ScreenSapceShadowMapFragment(
 	if (coord.w == 0)
 		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, lightSize, receiverDepth4.x, rotation);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, lightSize / 1.5, receiverDepth4.y, rotation);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, lightSize / 2.0, receiverDepth4.y, rotation);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, lightSize / 3.0, receiverDepth4.z, rotation);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, lightSize / 4.0, receiverDepth4.z, rotation);
 	else
 		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, lightSize / 13.5, receiverDepth4.w, rotation);
 
