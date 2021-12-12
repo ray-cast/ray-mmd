@@ -45,7 +45,7 @@ texture VolumetricMap: OFFSCREENRENDERTARGET <
 	int Height = FOG_SHADOW_MAP_SIZE;
 	string Format = "R16F";
 	float4 ClearColor = { 1, 1, 1, 1 };
-	float ClearDepth = 1.0;
+	float ClearDepth = 0.0;
 	string DefaultEffect = 
 		"self = hide;"
 		"*fog.pmx=hide;"
