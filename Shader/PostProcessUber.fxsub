@@ -1,4 +1,4 @@
-#if HDR_BLOOM_DIRT_ENABLE
+#if BLOOM_DIRT_ENABLE
 shared texture _DirtMaskMapSamp<string ResourceName = "shader/textures/DirtMaskTexture.png"; int Miplevels = 1;>; 
 sampler _DirtMaskMapSamp_LinearSampler = sampler_state
 {
@@ -68,10 +68,10 @@ float4 PostProcessUberPS(in float4 uv: TEXCOORD0, uniform sampler _MainTex) : CO
 	color *= ComputeExposureISO(aveLum, 12.5);
 #endif
 
-#if HDR_BLOOM_MODE > 0
+#if BLOOM_MODE > 0
 	float3 bloom = tex2Dlod(_BloomUpMap0_LinearSampler, float4(uv.xy + _BloomMap0_TexelSize.xy * 0.5, 0, 0)).rgb;
 	color += bloom;
-#	if HDR_BLOOM_DIRT_ENABLE > 0
+#	if BLOOM_DIRT_ENABLE > 0
 	color += bloom * tex2Dlod(_DirtMaskMapSamp_LinearSampler, float4(uv.xy, 0, 0)).rgb * mBloomDirtMaskIntensity;
 #	endif
 #endif

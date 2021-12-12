@@ -139,7 +139,7 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessHexagonalBokeh.fxsub"
 #endif
 
-#if HDR_BLOOM_MODE
+#if BLOOM_MODE
 #	include "shader/PostProcessBloom.fxsub"
 #endif
 
@@ -347,7 +347,7 @@ technique DeferredLighting<
 	"RenderColorTarget=_EyeLumAveMap; 	Pass=EyeAdapation;"
 #endif
 
-#if HDR_BLOOM_MODE
+#if BLOOM_MODE
 	"RenderColorTarget=_BloomDownMap0;  Clear=Color; Pass=BloomPrefilter;"
 	"RenderColorTarget=_BloomUpMap1;	Clear=Color; Pass=BloomBlurX1;"
 	"RenderColorTarget=_BloomDownMap1;	Clear=Color; Pass=BloomBlurY1;"
@@ -806,7 +806,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 EyeAdapationPS(_EyeLumMap6_PointSampler, _EyeLumMap6_TexelSize);
 	}
 #endif
-#if HDR_BLOOM_MODE
+#if BLOOM_MODE
 	pass BloomPrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

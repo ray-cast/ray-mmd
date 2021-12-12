@@ -284,14 +284,6 @@ float4 BloomPrefilterPS(
 	color *= ComputeExposureISO(aveLum, 12.5);
 #endif
 
-#if BLOOM_MODE == 1
-	float3 bloom = max(0, color - mBloomThreshold);
-#elif BLOOM_MODE == 2
-	float3 bloom = saturate(color - mBloomThreshold);
-#elif BLOOM_MODE == 3
-	float lum = luminance(color) * uv0.z;
-	float3 bloom = saturate(color * (lum - mBloomThreshold) / lum);
-#else
 	float brightness = max(max(color.r, color.g), color.b);
     float threshold = pow(mBloomThreshold * mBloomThreshold, 2.2);
     float thresholdKnee = threshold * 0.5f;
@@ -299,7 +291,6 @@ float4 BloomPrefilterPS(
     softness = (softness * softness) / (4.0 * thresholdKnee + 1e-4);
     float multiplier = max(brightness - threshold, softness) / max(brightness, 1e-4);
     float3 bloom = color * multiplier;
-#endif
 
 	bloom *= hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 
