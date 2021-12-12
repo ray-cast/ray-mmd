@@ -216,3 +216,23 @@ float4x4 CreateLightCropParams(float4x4 matLightViewFromCameraView, float2 casca
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.y, frustumSplit.z),
 		CreateLightCropParam(matLightViewFromCameraView, frustumInfo, shadowMapSize, frustumSplit.z, frustumSplit.w));
 }
+
+float2 SearchRegionRadius(float2 radius, float depth, float znear)
+{
+	return radius * (depth - znear) / depth;
+}
+
+float2 PenumbraRadius(float2 radius, float receiverDepth, float blockerDepth)
+{
+	return radius * (receiverDepth - blockerDepth) / blockerDepth;
+}
+
+float2 ProjectToLight(float2 size, float depth, float znear)
+{
+	return size * znear / depth;
+}
+
+float GetLinearDepth(float deviceDepth, float znear, float zfar)
+{
+	return zfar * znear / (zfar - deviceDepth * (zfar - znear));   
+}

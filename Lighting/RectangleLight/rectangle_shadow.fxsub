@@ -4,13 +4,15 @@
 #include "../../shader/common.fxsub"
 #include "../../shader/Shadow.fxsub"
 
+float mWidthP : CONTROLOBJECT<string name = "(OffscreenOwner)"; string item = "Width+";>;
+float mHeightP : CONTROLOBJECT<string name = "(OffscreenOwner)"; string item = "Height+";>;
 float3 mPosition : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name="(OffscreenOwner)"; string item = "Direction";>;
 
-static float3 LightPosition = mPosition;
-static float3 LightDirection = normalize(mDirection - mPosition);
+static const float3 LightPosition = mPosition;
+static const float3 LightDirection = normalize(mDirection - mPosition);
 
-static float4x4 matLightProject = CreatePerspectiveProject(60.0f / 180 * PI, 1, mLightPlaneNear, mLightPlaneFar);
+static float4x4 matLightProject = CreateOrthoProject(lerp(50, 100, mWidthP), lerp(50, 100, mHeightP), mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 
@@ -31,7 +33,7 @@ void ShadowMapVS(
 	out float4 oTexcoord1 : TEXCOORD1,
 	out float4 oPosition : POSITION)
 {
-	oPosition = mul(Position, matLightViewProject);
+	oPosition = mul(mul(Position, matLightViewProject), CreateReversedDepthMatrix());
 	oPosition.z = oPosition.z * oPosition.w;
 	
 	oTexcoord0 = Texcoord;
@@ -48,11 +50,12 @@ float4 ShadowMapPS(in float2 coord : TEXCOORD0, in float4 position : TEXCOORD1) 
 #endif
 	clip(alpha - CasterAlphaThreshold);
 #endif
-	return ComputeMoments(position.w).xyxy;
+	return position.z;
 }
 
 technique DepthTecSS<string MMDPass = "object_ss";> {
 	pass DrawObject {
+		ZFunc = Greater;
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		VertexShader = compile vs_3_0 ShadowMapVS();
 		PixelShader  = compile ps_3_0 ShadowMapPS();
