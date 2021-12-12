@@ -52,7 +52,6 @@ float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string it
 static const float LightWidth = lerp(1, RECTANGLE_LIGHT_MAX_WIDTH, mWidthP);
 static const float LightHeight = lerp(1, RECTANGLE_LIGHT_MAX_HEIGHT, mHeightP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
-static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHardnessP);
 static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
@@ -311,7 +310,7 @@ void LightSourcePS(
 	proj.xy += ShadowMapOffset;
 
 	float receiverDepth = mul(float4(P2, 1), matLightProjectFromCameraView).z;
-	float radius = LightWidth * LightHeight / MULTI_SHADOW_MAP_SIZE;
+	float radius = lerp(LightWidth * LightHeight * 10, 1, mHardnessP) / MULTI_SHADOW_MAP_SIZE;
 
 	float shadow = ShadingShadow(proj.xy, proj.w, receiverDepth, radius, PseudoRandom(screen));
 	oColor0 *= shadow;
