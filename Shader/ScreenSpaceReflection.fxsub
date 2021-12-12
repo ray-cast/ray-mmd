@@ -4,7 +4,7 @@
 #elif SSR_QUALITY == 2
 #	define SSR_SAMPLER_COUNT 60
 #	define SSR_BINARY_COUNT 5
-#elif SSR_QUALITY >= 3
+#elif SSR_QUALITY == 3
 #	define SSR_SAMPLER_COUNT 128
 #	define SSR_BINARY_COUNT 5
 #else

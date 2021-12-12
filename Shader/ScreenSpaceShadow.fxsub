@@ -1,14 +1,20 @@
 #if SUN_PCSS_QUALITY == 1
 #	define SHADOW_BLOCKER_COUNT 15
+#	define SHADOW_BLOCKER_POISSON Poisson15
 #	define SHADOW_POISSON_COUNT 36
+#	define SHADOW_POISSON Poisson36
 #	define SHADOW_BLUR_COUNT 4
 #elif SUN_PCSS_QUALITY == 2
 #	define SHADOW_BLOCKER_COUNT 32
+#	define SHADOW_BLOCKER_POISSON Poisson32
 #	define SHADOW_POISSON_COUNT 64
+#	define SHADOW_POISSON Poisson64
 #	define SHADOW_BLUR_COUNT 4
 #else
 #	define SHADOW_BLOCKER_COUNT 15
+#	define SHADOW_BLOCKER_POISSON Poisson15
 #	define SHADOW_POISSON_COUNT 36
+#	define SHADOW_POISSON Poisson36
 #	define SHADOW_BLUR_COUNT 6
 #endif
 
@@ -18,164 +24,6 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
-
-static const float2 Poisson15[15] =
-{
-	float2(0.545455, 0),
-	float2(0.168555, 0.518758),
-	float2(-0.441282, 0.32061),
-	float2(-0.441282, -0.32061),
-	float2(0.168555, -0.518758),
-	float2(1, 0),
-	float2(0.809017, 0.587785),
-	float2(0.309017, 0.951057),
-	float2(-0.309017, 0.951056),
-	float2(-0.809017, 0.587785),
-	float2(-1, -8.74228e-08),
-	float2(-0.809017, -0.587785),
-	float2(-0.309017, -0.951057),
-	float2(0.309017, -0.951056),
-	float2(0.809017, -0.587785)
-};
-static const float2 Poisson32[32] = {
-	float2(0.06407013, 0.05409927),
-	float2(0.7366577, 0.5789394),
-	float2(-0.6270542, -0.5320278),
-	float2(-0.4096107, 0.8411095),
-	float2(0.6849564, -0.4990818),
-	float2(-0.874181, -0.04579735),
-	float2(0.9989998, 0.0009880066),
-	float2(-0.004920578, -0.9151649),
-	float2(0.1805763, 0.9747483),
-	float2(-0.2138451, 0.2635818),
-	float2(0.109845, 0.3884785),
-	float2(0.06876755, -0.3581074),
-	float2(0.374073, -0.7661266),
-	float2(0.3079132, -0.1216763),
-	float2(-0.3794335, -0.8271583),
-	float2(-0.203878, -0.07715034),
-	float2(0.5912697, 0.1469799),
-	float2(-0.88069, 0.3031784),
-	float2(0.5040108, 0.8283722),
-	float2(-0.5844124, 0.5494877),
-	float2(0.6017799, -0.1726654),
-	float2(-0.5554981, 0.1559997),
-	float2(-0.3016369, -0.3900928),
-	float2(-0.5550632, -0.1723762),
-	float2(0.925029, 0.2995041),
-	float2(-0.2473137, 0.5538505),
-	float2(0.9183037, -0.2862392),
-	float2(0.2469421, 0.6718712),
-	float2(0.3916397, -0.4328209),
-	float2(-0.03576927, -0.6220032),
-	float2(-0.04661255, 0.7995201),
-	float2(0.4402924, 0.3640312),
-};
-static const float2 Poisson36[36] =
-{
-	float2(0.368421, 0),
-	float2(0.18421, 0.319062),
-	float2(-0.184211, 0.319062),
-	float2(-0.368421, -3.22084e-08),
-	float2(-0.18421, -0.319062),
-	float2(0.184211, -0.319062),
-	float2(0.684211, 0),
-	float2(0.592544, 0.342105),
-	float2(0.342105, 0.592544),
-	float2(-2.99078e-08, 0.684211),
-	float2(-0.342105, 0.592544),
-	float2(-0.592544, 0.342105),
-	float2(-0.684211, -5.98156e-08),
-	float2(-0.592544, -0.342105),
-	float2(-0.342105, -0.592544),
-	float2(8.15913e-09, -0.684211),
-	float2(0.342106, -0.592544),
-	float2(0.592544, -0.342105),
-	float2(1, 0),
-	float2(0.939693, 0.34202),
-	float2(0.766044, 0.642788),
-	float2(0.5, 0.866025),
-	float2(0.173648, 0.984808),
-	float2(-0.173648, 0.984808),
-	float2(-0.5, 0.866025),
-	float2(-0.766045, 0.642787),
-	float2(-0.939693, 0.34202),
-	float2(-1, -8.74228e-08),
-	float2(-0.939693, -0.34202),
-	float2(-0.766044, -0.642788),
-	float2(-0.5, -0.866025),
-	float2(-0.173648, -0.984808),
-	float2(0.173649, -0.984808),
-	float2(0.5, -0.866025),
-	float2(0.766045, -0.642787),
-	float2(0.939693, -0.34202)
-};
-static const float2 Poisson64[64] = {
-	float2(0.0617981, 0.07294159),
-	float2(0.6470215, 0.7474022),
-	float2(-0.5987766, -0.7512833),
-	float2(-0.693034, 0.6913887),
-	float2(0.6987045, -0.6843052),
-	float2(-0.9402866, 0.04474335),
-	float2(0.8934509, 0.07369385),
-	float2(0.1592735, -0.9686295),
-	float2(-0.05664673, 0.995282),
-	float2(-0.1203411, -0.1301079),
-	float2(0.1741608, -0.1682285),
-	float2(-0.09369049, 0.3196758),
-	float2(0.185363, 0.3213367),
-	float2(-0.1493771, -0.3147511),
-	float2(0.4452095, 0.2580113),
-	float2(-0.1080467, -0.5329178),
-	float2(0.1604507, 0.5460774),
-	float2(-0.4037193, -0.2611179),
-	float2(0.5947998, -0.2146744),
-	float2(0.3276062, 0.9244621),
-	float2(-0.6518704, -0.2503952),
-	float2(-0.3580975, 0.2806469),
-	float2(0.8587891, 0.4838005),
-	float2(-0.1596546, -0.8791054),
-	float2(-0.3096867, 0.5588146),
-	float2(-0.5128918, 0.1448544),
-	float2(0.8581337, -0.424046),
-	float2(0.1562584, -0.5610626),
-	float2(-0.7647934, 0.2709858),
-	float2(-0.3090832, 0.9020988),
-	float2(0.3935608, 0.4609676),
-	float2(0.3929337, -0.5010948),
-	float2(-0.8682281, -0.1990303),
-	float2(-0.01973724, 0.6478714),
-	float2(-0.3897587, -0.4665619),
-	float2(-0.7416366, -0.4377831),
-	float2(-0.5523247, 0.4272514),
-	float2(-0.5325066, 0.8410385),
-	float2(0.3085465, -0.7842533),
-	float2(0.8400612, -0.200119),
-	float2(0.6632416, 0.3067062),
-	float2(-0.4462856, -0.04265022),
-	float2(0.06892014, 0.812484),
-	float2(0.5149567, -0.7502338),
-	float2(0.6464897, -0.4666451),
-	float2(-0.159861, 0.1038342),
-	float2(0.6455986, 0.04419327),
-	float2(-0.7445076, 0.5035095),
-	float2(0.9430245, 0.3139912),
-	float2(0.0349884, -0.7968109),
-	float2(-0.9517487, 0.2963554),
-	float2(-0.7304786, -0.01006928),
-	float2(-0.5862702, -0.5531025),
-	float2(0.3029106, 0.09497032),
-	float2(0.09025345, -0.3503742),
-	float2(0.4356628, -0.0710125),
-	float2(0.4112572, 0.7500054),
-	float2(0.3401214, -0.3047142),
-	float2(-0.2192158, -0.6911137),
-	float2(-0.4676369, 0.6570358),
-	float2(0.6295372, 0.5629555),
-	float2(0.1253822, 0.9892166),
-	float2(-0.1154335, 0.8248222),
-	float2(-0.4230408, -0.7129914),
-};
 
 float2 Rotate(float2 pos, float2 rotation)
 {
@@ -189,11 +37,7 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 
     for (int i = 0; i < SHADOW_BLOCKER_COUNT; i++)
     {
-#if SHADOW_BLOCKER_COUNT == 15
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(Poisson15[i], rotation) * searchRadius, 0, 0)).r;
-#elif SHADOW_BLOCKER_COUNT == 32
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(Poisson32[i], rotation) * searchRadius, 0, 0)).r;
-#endif
+		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
         if (sampleDepth > depth)
         {
             blockerDepthSum += sampleDepth;
@@ -204,16 +48,16 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
     return float2(blockerDepthSum / max(1e-5, blockerWeight), blockerWeight);
 }
 
-float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation, float lightSize)
+float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation)
 {
 #if SUN_PCSS_QUALITY > 0
-	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, lightSize / CASCADE_SHADOW_MAP_SIZE, rotation);
+	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, radius, rotation);
 
 	float depth = 1 - receiverDepth;
 	float avgBlockerDepth = 1- blocker.x;
 
-	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * (lightSize * 2);
-	float filterSize = max(penumbraRatio / depth, 1) * radius;
+	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * radius;
+	float filterSize = penumbraRatio / depth;
 
 	[branch]
 	if (blocker.y <= 0)
@@ -221,8 +65,7 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		return 1;
 	}
 #else
-	float filterSize = 10 * radius;
-	float2 blocker = 1;
+	float filterSize = radius * 0.1;
 #endif
 
 	float shadow = 0.0;
@@ -231,22 +74,10 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 	for (int i = 0; i < SHADOW_POISSON_COUNT; i+=4) 
 	{
 		float2 samplePoints[4];
-#if SHADOW_POISSON_COUNT == 32
-		samplePoints[0] = Rotate(Poisson32[i], rotation);
-		samplePoints[1] = Rotate(Poisson32[i+1], rotation);
-		samplePoints[2] = Rotate(Poisson32[i+2], rotation);
-		samplePoints[3] = Rotate(Poisson32[i+3], rotation);
-#elif SHADOW_POISSON_COUNT == 36
-		samplePoints[0] = Rotate(Poisson36[i], rotation);
-		samplePoints[1] = Rotate(Poisson36[i+1], rotation);
-		samplePoints[2] = Rotate(Poisson36[i+2], rotation);
-		samplePoints[3] = Rotate(Poisson36[i+3], rotation);
-#elif SHADOW_POISSON_COUNT == 64
-		samplePoints[0] = Rotate(Poisson64[i], rotation);
-		samplePoints[1] = Rotate(Poisson64[i+1], rotation);
-		samplePoints[2] = Rotate(Poisson64[i+2], rotation);
-		samplePoints[3] = Rotate(Poisson64[i+3], rotation);
-#endif
+		samplePoints[0] = Rotate(SHADOW_POISSON[i], rotation);
+		samplePoints[1] = Rotate(SHADOW_POISSON[i+1], rotation);
+		samplePoints[2] = Rotate(SHADOW_POISSON[i+2], rotation);
+		samplePoints[3] = Rotate(SHADOW_POISSON[i+3], rotation);
 		
 		float4 sampleLinearDepth;
 		sampleLinearDepth[0] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
@@ -257,7 +88,6 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		shadow += sum(saturate(exp(mPSSMDepthZMax * 20 * (receiverDepth - sampleLinearDepth))));
 	}
     
-
 	return shadow / SHADOW_POISSON_COUNT;
 }
 
@@ -307,21 +137,20 @@ float4 ScreenSapceShadowMapFragment(
 		clip(tex2Dlod(_PSSM4_LinearSampler, float4(coord.xy, 0, 0)).r - 1e-5);
 
 	float shadow = 0;
-	float radius = 1.0 / CASCADE_SHADOW_MAP_SIZE;
-	float lightSize = CASCADE_SHADOW_MAP_SIZE * 0.02; 
+	float lightSize = 0.05; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
 	float4 receiverDepth4 = mad(float4(0.0015, 0.002, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, radius, receiverDepth4.x, rotation, lightSize);
+		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, lightSize, receiverDepth4.x, rotation);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, radius, receiverDepth4.y, rotation, lightSize / 2);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, lightSize / 1.5, receiverDepth4.y, rotation);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, radius, receiverDepth4.z, rotation, lightSize / 4);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, lightSize / 3.0, receiverDepth4.z, rotation);
 	else
-		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, radius, receiverDepth4.w, rotation, lightSize / 8);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, lightSize / 13.5, receiverDepth4.w, rotation);
 
 	return shadow;
 }
