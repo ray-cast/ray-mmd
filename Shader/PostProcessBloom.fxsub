@@ -294,16 +294,6 @@ float4 BloomPrefilterPS(
 
 	bloom *= hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 
-	float4 MRT3 = tex2Dlod(Gbuffer3Map, float4(uv0.xy, 0, 0));
-	float4 MRT4 = tex2Dlod(Gbuffer4Map, float4(uv0.xy, 0, 0));
-	float4 MRT7 = tex2Dlod(Gbuffer7Map, float4(uv0.xy, 0, 0));
-	float4 MRT8 = tex2Dlod(Gbuffer8Map, float4(uv0.xy, 0, 0));
-
-	float3 emissive0 = DecodeGBufferEmissive(MRT3, MRT4);
-	float3 emissive1 = DecodeGBufferEmissive(MRT7, MRT8);
-
-	bloom += max(0.0, lerp(emissive0, emissive1, MRT8.a) - 1.0);
-
 	return float4(bloom, 0);
 }
 
