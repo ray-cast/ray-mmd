@@ -6,7 +6,7 @@ static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightView
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
 
 #if defined(CASCADE_SHADOW_PCSS)
-float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadius, float2 rotation)
+float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float2 searchRadius, float2 rotation)
 {
     float blockerWeight = 0;
     float blockerDepthSum = 0.0;
