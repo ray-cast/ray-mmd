@@ -6,14 +6,6 @@ Ray-MMD
 
 　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](https://sites.google.com/view/vpvp/), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
 
-Screenshots:
-------------
-[![link text](./Shader/screenshots/screen1.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)
-[![link text](./Shader/screenshots/screen2.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen2.jpg)
-[![link text](./Shader/screenshots/screen3.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen3.jpg)
-[![link text](./Shader/screenshots/screen4.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen4.jpg)
-[![link text](./Shader/screenshots/screen5.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen5.jpg)
-
 Download:
 ------------
 　[![img](https://img.shields.io/badge/version-1.3.1v2-brightgreen.svg)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.zip)
@@ -23,20 +15,6 @@ Download:
 * [Ray-MMD - 1.3.1v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.tar.gz)  (updated: 27. Apr 2017)
 * [Ray-MMD - 1.4.0beta v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/140beta2.zip) (updated: 30. Jul 2017)
 * [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
-- Extension
-	- [ColorGrading - v1.0.0 (zip)](https://github.com/MikuMikuShaders/ColorGrading/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/ColorGrading)\])
-	- [FilmGrain - v1.0.0 (zip)](https://github.com/MikuMikuShaders/FilmGrain/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/FilmGrain)\])
-	- [FXAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/FXAA/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/FXAA)\])
-	- [LightBloom - v1.1.1 (zip)](https://github.com/MikuMikuShaders/LightBloom/archive/v1.1.1.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/LightBloom)\])
-	- [SMAA - v1.0.0 (zip)](https://github.com/MikuMikuShaders/SMAA/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/SMAA)\])
-	- [Spectrum - v1.4.0 (zip)](https://github.com/MikuMikuShaders/Spectrum/archive/v1.4.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/Spectrum)\])
-	- [StereoImage - v1.0.0 (zip)](https://github.com/MikuMikuShaders/StereoImage/archive/v1.0.0.zip) (updated: 2. Dec 2017, \[[Github](https://github.com/MikuMikuShaders/StereoImage)\])
-
-Requirement:
-------------
-* [MikuMikuDance](https://sites.google.com/view/vpvp/) - 926ver (x64) (Without Anti-Aliasing)
-* [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
-* Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
 Features:
 ------------
@@ -73,6 +51,20 @@ Features:
 * Post-Process Color Balance
 * Post-Process FXAA
 * Post-Process SMAA
+
+Gallery:
+------------
+[![link text](./Shader/screenshots/screen1.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen1.jpg)
+[![link text](./Shader/screenshots/screen2.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen2.jpg)
+[![link text](./Shader/screenshots/screen3.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen3.jpg)
+[![link text](./Shader/screenshots/screen4.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen4.jpg)
+[![link text](./Shader/screenshots/screen5.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen5.jpg)
+
+Requirement:
+------------
+* [MikuMikuDance](https://sites.google.com/view/vpvp/) - 926ver (x64) (Without Anti-Aliasing)
+* [MikuMikuEffect](https://bowlroll.net/file/35012) - 037ver (x64)
+* Direct3D 9 With Shader Model 3.0 (ps_3_0)
 
 Resources:
 ------------
