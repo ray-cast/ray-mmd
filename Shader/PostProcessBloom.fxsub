@@ -285,12 +285,12 @@ float4 BloomPrefilterPS(
 #endif
 
 	float brightness = max(max(color.r, color.g), color.b);
-    float threshold = pow(mBloomThreshold * mBloomThreshold, 2.2);
-    float thresholdKnee = threshold * 0.5f;
-    float softness = clamp(brightness - threshold + thresholdKnee, 0.0, 2.0 * thresholdKnee);
-    softness = (softness * softness) / (4.0 * thresholdKnee + 1e-4);
-    float multiplier = max(brightness - threshold, softness) / max(brightness, 1e-4);
-    float3 bloom = color * multiplier;
+	float threshold = pow(mBloomThreshold * mBloomThreshold, 2.2);
+	float thresholdKnee = threshold * 0.5f;
+	float softness = clamp(brightness - threshold + thresholdKnee, 0.0, 2.0 * thresholdKnee);
+	softness = (softness * softness) / (4.0 * thresholdKnee + 1e-4);
+	float multiplier = max(brightness - threshold, softness) / max(brightness, 1e-4);
+	float3 bloom = color * multiplier;
 
 	bloom *= hsv2rgb(float3(mBloomColorAllHP, mBloomColorAllSP, lerp(lerp(mBloomIntensityMin, mBloomIntensityMax, mBloomColorAllVP), 0, mBloomColorAllVM)));
 
@@ -311,9 +311,9 @@ float4 GaussianBlurBloomH(in float2 uv : TEXCOORD0, uniform sampler _MainTex, un
 	float4 c7 = tex2Dlod(_MainTex, float4(uv + float2(texelSize * 3.0, 0.0), 0, 0));
 	float4 c8 = tex2Dlod(_MainTex, float4(uv + float2(texelSize * 4.0, 0.0), 0, 0));
 
-    float4 color = c0 * 0.01621622 + c1 * 0.05405405 + c2 * 0.12162162 + c3 * 0.19459459
-                 + c4 * 0.22702703
-                 + c5 * 0.19459459 + c6 * 0.12162162 + c7 * 0.05405405 + c8 * 0.01621622;
+	float4 color = c0 * 0.01621622 + c1 * 0.05405405 + c2 * 0.12162162 + c3 * 0.19459459
+				 + c4 * 0.22702703
+				 + c5 * 0.19459459 + c6 * 0.12162162 + c7 * 0.05405405 + c8 * 0.01621622;
 
 	return color;
 }
@@ -328,9 +328,9 @@ float4 GaussianBlurBloomV(in float2 uv : TEXCOORD0, uniform sampler _MainTex, un
 	float4 c3 = tex2Dlod(_MainTex, float4(uv + float2(0.0, texelSize * 1.38461538), 0, 0));
 	float4 c4 = tex2Dlod(_MainTex, float4(uv + float2(0.0, texelSize * 3.23076923), 0, 0));
 
-    float4 color = c0 * 0.07027027 + c1 * 0.31621622
-                 + c2 * 0.22702703
-                 + c3 * 0.31621622 + c4 * 0.07027027;
+	float4 color = c0 * 0.07027027 + c1 * 0.31621622
+				 + c2 * 0.22702703
+				 + c3 * 0.31621622 + c4 * 0.07027027;
 
 	return color;
 }
@@ -341,17 +341,17 @@ float4 UpsampleBloomPS(
 	uniform sampler _MainTex, uniform float4 _MainTex_TexelSize,
 	uniform sampler _MainTexLowMip, uniform float4 _MainTexLowMip_TexelSize) : COLOR
 {
-    float4 highMip = tex2Dlod(_MainTex, float4(uv + _MainTex_TexelSize.xy * 0.5, 0, 0));
-    float4 lowMip = tex2D_bicubic(_MainTexLowMip, uv + _MainTexLowMip_TexelSize.xy * 0.5, _MainTexLowMip_TexelSize.zw);
+	float4 highMip = tex2Dlod(_MainTex, float4(uv + _MainTex_TexelSize.xy * 0.5, 0, 0));
+	float4 lowMip = tex2D_bicubic(_MainTexLowMip, uv + _MainTexLowMip_TexelSize.xy * 0.5, _MainTexLowMip_TexelSize.zw);
 
 	float maxSize = max(ViewportSize.x, ViewportSize.y);
 	float iterations = floor(log2(maxSize) - 2);
 
 	[flatten]
-    if (mipLevel < iterations)
-    	return lerp(highMip, lowMip, mBloomRadius);
-    else
-    	return highMip;
+	if (mipLevel < iterations)
+		return lerp(highMip, lowMip, mBloomRadius);
+	else
+		return highMip;
 }
 
 void GlarePrefilterVS(
