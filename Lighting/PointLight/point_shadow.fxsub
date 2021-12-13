@@ -48,7 +48,7 @@ float4 ShadowMapGenPS(
 	clip(alpha - CasterAlphaThreshold);
 #endif
 
-	return ComputeMoments(proj.z / proj.w).xyxy;
+	return 1 - proj.z / proj.w;
 }
 
 technique DepthTecSS<string MMDPass = "object_ss";

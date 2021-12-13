@@ -251,3 +251,8 @@ float GetLinearDepth(float deviceDepth, float znear, float zfar)
 {
 	return zfar * znear / (zfar - deviceDepth * (zfar - znear));   
 }
+
+float GetDeviceDepth(float linearDepth, float znear, float zfar)
+{
+	return (zfar - (zfar / linearDepth) * znear) / (zfar - znear);
+}
