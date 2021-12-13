@@ -39,13 +39,13 @@ static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensit
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_FROM >= 1
-#if SUN_SHADOW_QUALITY == 1
+#if SUN_SHADOW_MAP_QUALITY == 1
 #	define SHADOW_MAP_SIZE 1024
-#elif SUN_SHADOW_QUALITY == 2
+#elif SUN_SHADOW_MAP_QUALITY == 2
 #	define SHADOW_MAP_SIZE 2048
-#elif SUN_SHADOW_QUALITY == 3
+#elif SUN_SHADOW_MAP_QUALITY == 3
 #	define SHADOW_MAP_SIZE 4096
-#elif SUN_SHADOW_QUALITY == 4
+#elif SUN_SHADOW_MAP_QUALITY == 4
 #	define SHADOW_MAP_SIZE 8192
 #endif
 
