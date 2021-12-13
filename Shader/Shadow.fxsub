@@ -68,6 +68,21 @@ float4x4 CreatePerspectiveProject(float fov, float aspect, float near, float far
 	return m;
 }
 
+float4x4 CreateReversedPerspectiveProject(float fov, float aspect, float near, float far)
+{
+	float h = 1.0f / tan(fov);
+	float w = h / aspect;
+	float q = 1.0 / (far - near);
+
+	float4x4 m;
+	m[0] = float4(w, 0, 0, 0);
+	m[1] = float4(0, h, 0, 0);
+	m[2] = float4(0, 0, -near * q, 1);
+	m[3] = float4(0, 0,  near * far * q, 0);
+
+	return m;
+}
+
 float4x4 CreateDualViewMatrix(float3 LightPosition, float face)
 {
 	return float4x4( 1.0f, 0.0f, 0.0f, 0.0f,

@@ -10,6 +10,7 @@
 #include "../../../shader/arealight.fxsub"
 
 #if SHADOW_MAP_FROM > 0
+#	include "../../../shader/Poisson.fxsub"
 #	include "../../../shader/Shadow.fxsub"
 #endif
 
@@ -22,7 +23,8 @@ float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name = "(self)"; string item = "Range-";>;
 float mAngleP : CONTROLOBJECT<string name = "(self)"; string item = "Angle+";>;
 float mAngleM : CONTROLOBJECT<string name = "(self)"; string item = "Angle-";>;
-float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
+float mRadiusP : CONTROLOBJECT<string name = "(self)"; string item = "Radius+";>;
+float mRadiusM : CONTROLOBJECT<string name = "(self)"; string item = "Radius-";>;
 float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
@@ -33,9 +35,9 @@ float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string it
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
 
-static const float LightHardness = lerp(shadowHardness.x, shadowHardness.y, mHardnessP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
 static const float LightAngle = radians(lerp(lerp(45.0f, 60.0f, mAngleP), 30.0f, mAngleM));
+static const float LightRadius = lerp(lerp(lightRadiusLimits.x, lightRadiusLimits.z, mRadiusP), lightRadiusLimits.y, mRadiusM);
 static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
@@ -51,8 +53,8 @@ static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x
 
 #if SHADOW_MAP_FROM > 0
 texture ShadowMap: OFFSCREENRENDERTARGET<
-	string Description = "Shadow Rendering for SpotLightIES";
-	string Format = "G32R32F";
+	string Description = "Shadow Rendering for SpotLight";
+	string Format = "R32F";
 	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE, MULTI_SHADOW_MAP_SIZE};
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -61,8 +63,8 @@ texture ShadowMap: OFFSCREENRENDERTARGET<
 		"*fog.pmx=hide;"
 		"*controller*.pmx=hide;"
 		"*editor*.pmx=hide;"
-		"*.pmx = ../ies_shadow.fx;"
-		"*.pmd = ../ies_shadow.fx;"
+		"*.pmx = ../IES_shadow.fx;"
+		"*.pmd = ../IES_shadow.fx;"
 		"* = hide";
 >;
 
@@ -72,8 +74,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowmapOffset  = 0.5 / MULTI_SHADOW_MAP_SIZE;
-static float2 ShadowmapOffset2 = 1.0 / MULTI_SHADOW_MAP_SIZE;
+static float2 ShadowMapOffset  = 0.5 / MULTI_SHADOW_MAP_SIZE;
+static float2 ShadowMapOffset2 = 1.0 / MULTI_SHADOW_MAP_SIZE;
 
 static float4x4 matLightProject = CreatePerspectiveProject(LightAngle, 1, mLightPlaneNear, mLightPlaneFar);
 static float4x4 matLightView = CreateLightViewMatrix(LightDirection, LightPosition);
@@ -81,27 +83,76 @@ static float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
-float ShadingShadow(MaterialParam material, float3 P)
+#if defined(MULTI_SHADOW_PCSS)
+float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float2 searchRadius, float2 rotation)
+{
+    float blockerWeight = 0;
+    float blockerDepthSum = 0.0;
+
+    for (int i = 0; i < MULTI_SHADOW_BLOCKER_COUNT; i++)
+    {
+		float sampleDepth = 1 - tex2Dlod(_ShadowTex, float4(uv + Rotate(MULTI_SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
+        if (sampleDepth < depth)
+        {
+            blockerDepthSum += sampleDepth;
+            blockerWeight++;
+        }
+    }
+
+    return float2(blockerDepthSum / max(1e-5, blockerWeight), blockerWeight);
+}
+#endif
+
+float ShadingShadow(float3 P, float radius, float random)
 {
 	float4 proj = mul(float4(P, 1), matLightProjectFromCameraView);
-	proj.xy = PosToCoord(proj.xy / proj.w);
-	proj.xy += ShadowmapOffset;
+	proj = ComputeScreenPos(proj);
+	proj.xy /= proj.w;
+	proj.xy += ShadowMapOffset;
 
-	float2 shadow = 0.0;
+	float linearDepth = proj.w;
+	float receiverDepth = proj.z;
 
-	[unroll]
-	for (int x = -sampleRadius; x <= sampleRadius; x++) 
+	float2 rotation = float2(cos(random * PI_2), sin(random * PI_2));
+
+#if defined(MULTI_SHADOW_PCSS)
+	float2 searchRegionRadius = SearchRegionRadius(radius, linearDepth, mLightPlaneNear);
+	float2 blocker = FindBlocker(ShadowMapSamp, proj.xy, receiverDepth, searchRegionRadius, rotation);
+
+	float2 penumbraRatio = PenumbraRadius(radius, receiverDepth, GetLinearDepth(blocker.x, mLightPlaneNear * 0.5, mLightPlaneFar));
+	float2 filterSize = ProjectToLight(penumbraRatio, receiverDepth, mLightPlaneNear);
+
+	[branch]
+	if (blocker.y <= 0)
 	{
-		[unroll]
-		for (int y = -sampleRadius; y <= sampleRadius; y++)
-		{
-			float2 pos = proj.xy + float2(x, y) * ShadowmapOffset2;
-			shadow += tex2Dlod(ShadowMapSamp, float4(pos, 0, 0)).rg * sampleKernel[sampleRadius + x] * sampleKernel[sampleRadius + y];
-		}
+		return 1;
+	}
+#else
+	float2 filterSize = radius * 0.01;
+#endif
+
+	float shadow = 0;
+
+	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i+=4)
+	{
+		float2 samplePoints[4];
+		samplePoints[0] = Rotate(MULTI_SHADOW_POISSON[i], rotation);
+		samplePoints[1] = Rotate(MULTI_SHADOW_POISSON[i+1], rotation);
+		samplePoints[2] = Rotate(MULTI_SHADOW_POISSON[i+2], rotation);
+		samplePoints[3] = Rotate(MULTI_SHADOW_POISSON[i+3], rotation);
+		
+		float4 sampleDepth;
+		sampleDepth[0] = tex2Dlod(ShadowMapSamp, float4(proj.xy + samplePoints[0] * filterSize, 0, 0)).r;
+		sampleDepth[1] = tex2Dlod(ShadowMapSamp, float4(proj.xy + samplePoints[1] * filterSize, 0, 0)).r;
+		sampleDepth[2] = tex2Dlod(ShadowMapSamp, float4(proj.xy + samplePoints[2] * filterSize, 0, 0)).r;
+		sampleDepth[3] = tex2Dlod(ShadowMapSamp, float4(proj.xy + samplePoints[3] * filterSize, 0, 0)).r;
+
+		sampleDepth = 1 - sampleDepth;
+
+		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar)));
 	}
 
-	float linearDepth = dot(float4(P, 1), matLightViewFromCameraView._13_23_33_43);
-	return ChebyshevUpperBound(shadow, linearDepth, 1e-5, LightHardness);
+	return shadow / MULTI_SHADOW_POISSON_COUNT;
 }
 #endif
 
@@ -183,6 +234,7 @@ void LightSourcePS(
 	in float4 texcoord : TEXCOORD0,
 	in float3 viewdir : TEXCOORD1,
 	in float3 lightColor : TEXCOORD2,
+	in float2 screen : SV_POSITION,
 	out float4 oColor0 : COLOR0,
 	out float4 oColor1 : COLOR1,
 	out float4 oColor2 : COLOR2)
@@ -198,7 +250,7 @@ void LightSourcePS(
 
 	float shadow = 1;
 #if SHADOW_MAP_FROM
-	shadow = ShadingShadow(materialAlpha, P2);
+	shadow = ShadingShadow(P2, LightRadius, PseudoRandom(screen));
 	clip(shadow - 1e-5);
 #endif
 
