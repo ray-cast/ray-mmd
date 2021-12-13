@@ -39,19 +39,9 @@ static const float3 LightColor = float3(mHP, mSP, LightIntensity * LightIntensit
 static const float3 viewLightDirection = normalize(mul(-LightDirection, (float3x3)matView));
 
 #if SHADOW_MAP_FROM >= 1
-#if SUN_SHADOW_MAP_QUALITY == 1
-#	define SHADOW_MAP_SIZE 1024
-#elif SUN_SHADOW_MAP_QUALITY == 2
-#	define SHADOW_MAP_SIZE 2048
-#elif SUN_SHADOW_MAP_QUALITY == 3
-#	define SHADOW_MAP_SIZE 4096
-#elif SUN_SHADOW_MAP_QUALITY == 4
-#	define SHADOW_MAP_SIZE 8192
-#endif
-
 texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DirectionalLight";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -66,7 +56,7 @@ texture PSSM1 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM2 : OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DirectionalLight";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -81,7 +71,7 @@ texture PSSM2 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM3 : OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DirectionalLight";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -96,7 +86,7 @@ texture PSSM3 : OFFSCREENRENDERTARGET<
 >;
 texture PSSM4 : OFFSCREENRENDERTARGET<
 	string Description = "Shadow Rendering for DirectionalLight";
-	int2 Dimensions = {SHADOW_MAP_SIZE, SHADOW_MAP_SIZE};
+	int2 Dimensions = {CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE};
 	string Format = "G32R32F";
 	float4 ClearColor = { 0, 0, 0, 0 };
 	float ClearDepth = 0.0;
@@ -114,15 +104,15 @@ sampler PSSM2Samp = sampler_state { texture = <PSSM2>; MinFilter = LINEAR; MagFi
 sampler PSSM3Samp = sampler_state { texture = <PSSM3>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
 sampler PSSM4Samp = sampler_state { texture = <PSSM4>; MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE; AddressU = CLAMP; AddressV = CLAMP; };
 
-static const float2 ShadowMapOffset  = 0.5 / SHADOW_MAP_SIZE;
-static const float2 ShadowMapOffset2 = 1.0 / SHADOW_MAP_SIZE;
+static const float2 ShadowMapOffset  = 0.5 / CASCADE_SHADOW_MAP_SIZE;
+static const float2 ShadowMapOffset2 = 1.0 / CASCADE_SHADOW_MAP_SIZE;
 
 static const float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static const float4x4 matLightView = CreateLightViewMatrix(LightDirection, -LightDirection * LightRange);
 static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
-static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, SHADOW_MAP_SIZE);
+static const float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
 
 float2 ShadowPCF(sampler source, float2 coord, float receiverDepth) 
 {
