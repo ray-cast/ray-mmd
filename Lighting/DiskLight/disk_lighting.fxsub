@@ -120,7 +120,7 @@ float ShadingShadow(float3 P, float radius, float random)
 	proj.xy += ShadowMapOffset;
 
 	float linearDepth = proj.w;
-	float receiverDepth = proj.z;
+	float receiverDepth = proj.z - 1e-2 * proj.z;
 
 	float2 rotation = float2(cos(random * PI_2), sin(random * PI_2));
 
@@ -159,7 +159,7 @@ float ShadingShadow(float3 P, float radius, float random)
 
 		sampleDepth = 1 - sampleDepth;
 
-		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar)));
+		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar * 4)));
 	}
 
 	return shadow / MULTI_SHADOW_POISSON_COUNT;
