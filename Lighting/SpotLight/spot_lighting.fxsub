@@ -128,7 +128,7 @@ float ShadingShadow(float3 P, float radius, float random)
 		return 1;
 	}
 #else
-	float2 filterSize = radius * 0.01;
+	float2 filterSize = radius * 0.5;
 #endif
 
 	float shadow = 0;
