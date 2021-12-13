@@ -67,9 +67,12 @@ float4 SkyboxPS(in float3 normal : TEXCOORD0, in float4 screenPosition : SV_Posi
 	float2 uv = ComputeSphereCoord(N);
 
 #if SKYBOX_BLUR_ENABLE
-	float3 color = DecodeRGBT(tex2Dlod(SkyboxMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL)));
+	float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, (float)SKYBOX_BLUR_MIPMAP_LEVEL));
 #else
-	float3 color = DecodeRGBT(tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0)));
+	float4 color = tex2Dlod(SkyboxMapSamp, float4(uv, 0, 0));
+#endif
+#if SKYBOX_HDR_RGBT_ENABLE
+	color.rgb = DecodeRGBT(color);
 #endif
 	color.rgb = ApplyColorBalance(color.rgb);
 
