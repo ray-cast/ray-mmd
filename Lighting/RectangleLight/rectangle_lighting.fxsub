@@ -36,7 +36,8 @@ float mRangeP : CONTROLOBJECT<string name = "(self)"; string item = "Range+";>;
 float mRangeM : CONTROLOBJECT<string name = "(self)"; string item = "Range-";>;
 float mWidthP : CONTROLOBJECT<string name = "(self)"; string item = "Width+";>;
 float mHeightP : CONTROLOBJECT<string name = "(self)"; string item = "Height+";>;
-float mHardnessP : CONTROLOBJECT<string name = "(self)"; string item = "Hardness";>;
+float mRadiusP : CONTROLOBJECT<string name = "(self)"; string item = "Radius+";>;
+float mRadiusM : CONTROLOBJECT<string name = "(self)"; string item = "Radius-";>;
 float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
 float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
 float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
@@ -48,6 +49,7 @@ float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string it
 static const float LightWidth = lerp(1, RECTANGLE_LIGHT_MAX_WIDTH, mWidthP);
 static const float LightHeight = lerp(1, RECTANGLE_LIGHT_MAX_HEIGHT, mHeightP);
 static const float LightBlink = saturate(1 - SmoothTriangleWave(time * (mBlink * 10)));
+static const float LightRadius = lerp(lerp(lightRadiusLimits.x, lightRadiusLimits.z, mRadiusP), lightRadiusLimits.y, mRadiusM);
 static const float LightRange = lerp(lerp(lightRangeParams.x, lightRangeParams.z, mRangeP), lightRangeParams.y, mRangeM);
 static const float LightAttenuationBulb = lerp(lerp(lightAttenuationBulbParams.x, lightAttenuationBulbParams.z, mAttenuationBulbP), lightAttenuationBulbParams.y, mAttenuationBulbM);
 static const float LightIntensity = lerp(lerp(lightIntensityParams.x, lightIntensityParams.z, mVP), lightIntensityParams.y, mVM);
@@ -307,9 +309,8 @@ void LightSourcePS(
 	proj.xy += ShadowMapOffset;
 
 	float receiverDepth = mul(float4(P2, 1), matLightProjectFromCameraView).z;
-	float radius = lerp(LightWidth * LightHeight, 1, mHardnessP) / 1024;
 
-	float shadow = ShadingShadow(proj.xy, proj.w, receiverDepth, radius, PseudoRandom(screen));
+	float shadow = ShadingShadow(proj.xy, proj.w, receiverDepth, LightRadius, PseudoRandom(screen));
 	oColor0 *= shadow;
 	oColor1 *= shadow;
 	oColor2 *= shadow;
