@@ -33,8 +33,8 @@ static float3 MorphColor = hsv2rgb(float3(MorphHP, MorphSP, 1));
 float mIntensityP : CONTROLOBJECT<string name="(self)"; string item = "V+";>;
 float mIntensityM : CONTROLOBJECT<string name="(self)"; string item = "V-";>;
 
-static float emissiveIntensityMin = log(50);
-static float emissiveIntensityMax = log(2100);
+static float emissiveIntensityMin = log(100);
+static float emissiveIntensityMax = log(2000);
 static float LightIntensity = lerp(emissiveIntensityMin, emissiveIntensityMax, mIntensityP - mIntensityM);
 #endif
 
