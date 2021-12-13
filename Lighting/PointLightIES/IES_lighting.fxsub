@@ -123,13 +123,24 @@ float ShadingShadow(float3 viewPosition, float2 radius, float random)
 
 	float shadow = 0;
 
-	[loop]
-	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i++)
+	[unroll]
+	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i+=4)
 	{
-		float2 samplePoints = Rotate(MULTI_SHADOW_POISSON[i], rotation);
-		float sampleDepth = 1 - tex2Dlod(ShadowMapSamp, float4(uv + samplePoints * filterSize, 0, 0)).r;
+		float2 samplePoints[4];
+		samplePoints[0] = Rotate(MULTI_SHADOW_POISSON[i], rotation);
+		samplePoints[1] = Rotate(MULTI_SHADOW_POISSON[i+1], rotation);
+		samplePoints[2] = Rotate(MULTI_SHADOW_POISSON[i+2], rotation);
+		samplePoints[3] = Rotate(MULTI_SHADOW_POISSON[i+3], rotation);
 
-		shadow += saturate(exp((sampleDepth - receiverDepth) * mPointLightFar * 2));
+		float4 sampleDepth;
+		sampleDepth[0] = tex2Dlod(ShadowMapSamp, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
+		sampleDepth[1] = tex2Dlod(ShadowMapSamp, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
+		sampleDepth[2] = tex2Dlod(ShadowMapSamp, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
+		sampleDepth[3] = tex2Dlod(ShadowMapSamp, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
+
+		sampleDepth = 1 - sampleDepth;
+
+		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mPointLightFar * 2)));
 	}
 
 	return shadow / MULTI_SHADOW_POISSON_COUNT;
