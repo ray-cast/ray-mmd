@@ -175,7 +175,7 @@ float HitShadowTest(FogParams param, sampler shadowMap, float2 shadowOffset, flo
 	proj.xy += shadowOffset;
 
 	float linearDepth = mul(float4(worldPosition, 1), matLightView).z;
-	return tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r < linearDepth ? 0 : 1;
+	return (1 - tex2Dlod(shadowMap, float4(proj.xy, 0, 0)).r) < proj.z ? 0 : 1;
 }
 
 float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = MULTI_VOLUMETRIC_SAMPLES)
