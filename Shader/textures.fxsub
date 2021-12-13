@@ -59,6 +59,8 @@ texture FogMap : OFFSCREENRENDERTARGET<
 		"GroundFog*.*= ./Fog/GroundFog/ground_fog.fx;"
 		"AtmosphericFog*.*= ./Fog/AtmosphericFog/atmospheric_fog.fx;"
 		"VolumetricCube.pmx =./Fog/VolumetricCube/volumetric_cube.fx;"
+		"VolumetricPoint.pmx =./Fog/VolumetricPoint/volumetric_point_with_shadow.fx;"
+		"VolumetricSpot.pmx =./Fog/VolumetricSpot/volumetric_spot_with_shadow.fx;"
 		"VolumetricSphere.pmx =./Fog/VolumetricSphere/volumetric_sphere.fx;"
 		"Time of day.pmx=./Skybox/Time of day/Time of fog with godray.fx;"
 		"Time of day fast.pmx=./Skybox/Time of day/Time of fog.fx;"

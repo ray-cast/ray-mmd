@@ -1,0 +1,227 @@
+#include "../../ray.conf"
+#include "../../ray_advanced.conf"
+#include "../../shader/math.fxsub"
+#include "../../shader/common.fxsub"
+#include "../../shader/Shadow.fxsub"
+#include "../../shader/Color.fxsub"
+#include "../../shader/Packing.fxsub"
+#include "../../shader/gbuffer.fxsub"
+#include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/PhaseFunctions.fxsub"
+
+float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
+float mSP : CONTROLOBJECT<string name = "(self)"; string item = "S+";>;
+float mVP : CONTROLOBJECT<string name = "(self)"; string item = "V+";>;
+float mVM : CONTROLOBJECT<string name = "(self)"; string item = "V-";>;
+float mTemperatureP : CONTROLOBJECT<string name = "(self)"; string item = "Temperature+";>;
+float mTemperatureM : CONTROLOBJECT<string name = "(self)"; string item = "Temperature-";>;
+float mRangeP : CONTROLOBJECT<string name="(self)"; string item = "Range+";>;
+float mRangeM : CONTROLOBJECT<string name="(self)"; string item = "Range-";>;
+float mBlink : CONTROLOBJECT<string name="(self)"; string item = "Blink";>;
+float mAttenuationBulbP : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb+";>;
+float mAttenuationBulbM : CONTROLOBJECT<string name = "(self)"; string item = "AttenuationBulb-";>;
+float mMiePhaseP : CONTROLOBJECT<string name="(self)"; string item = "MiePhase+";>;
+float mMiePhaseM : CONTROLOBJECT<string name="(self)"; string item = "MiePhase-";>;
+float mMieDensityP : CONTROLOBJECT<string name="(self)"; string item = "MieDensity+";>;
+float mMieDensityM : CONTROLOBJECT<string name="(self)"; string item = "MieDensity-";>;
+float mMieIntensityP : CONTROLOBJECT<string name="(self)"; string item = "MieIntensity+";>;
+float mMieIntensityM : CONTROLOBJECT<string name="(self)"; string item = "MieIntensity-";>;
+float mMultiLightP : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight+";>;
+float mMultiLightM : CONTROLOBJECT<string name = "ray_controller.pmx"; string item = "MultiLight-";>;
+
+float3 mPosition : CONTROLOBJECT<string name="(self)"; string item = "Position";>;
+
+static const float FogBlink = saturate(1 - SmoothTriangleWave(time * mBlink * 10));
+static const float FogMiePhase  = lerp(lerp(FogMieParams.x, FogMieParams.z, mMiePhaseP), FogMieParams.y, mMiePhaseM);
+static const float FogRange = lerp(lerp(FogRangeParams.x, FogRangeParams.z / 1.5, mRangeP), FogRangeParams.y, mRangeM);
+static const float FogDensity = lerp(lerp(FogDensityParams.x, FogDensityParams.y, mMieDensityP), FogDensityParams.z, mMieDensityM);
+static const float FogIntensity = lerp(lerp(FogIntensityParams.x, FogIntensityParams.z, mMieIntensityP), FogIntensityParams.y, mMieIntensityM);
+static const float FogIntensity2 = lerp(lerp(mLightIntensityMin, mLightIntensityMax, mMultiLightP), 0, mMultiLightM);
+static const float FogAttenuationBulb = lerp(lerp(FogAttenuationBulbParams.x, FogAttenuationBulbParams.z, mAttenuationBulbP), FogAttenuationBulbParams.y, mAttenuationBulbM);
+static const float FogTemperature = lerp(lerp(FogTemperatureLimits.x, FogTemperatureLimits.z, mTemperatureP), FogTemperatureLimits.y, mTemperatureM);
+
+static const float3 FogPosition = mPosition;
+static const float3 FogColor = float3(mHP, mSP, FogIntensity * FogIntensity2 * FogBlink);
+
+#if VOLUMETRIC_FOG_ENABLE
+texture VolumetricMap: OFFSCREENRENDERTARGET <
+	string Description = "Volumetric fog Rendering for PointLight";
+	int Width = FOG_SHADOW_MAP_SIZE / 2;
+	int Height = FOG_SHADOW_MAP_SIZE;
+	string Format = "R16F";
+	float4 ClearColor = { 1, 1, 1, 1 };
+	float ClearDepth = 0.0;
+	string DefaultEffect = 
+		"self = hide;"
+		"*fog.pmx=hide;"
+		"*controller.pmx=hide;"
+		"*.pmx = ./shader/volumetric_point_shadow.fx;"
+		"*.pmd = ./shader/volumetric_point_shadow.fx;"
+		"* = hide";
+>;
+sampler VolumetricMapSamp = sampler_state {
+	texture = <VolumetricMap>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter = NONE;
+	AddressU = CLAMP; AddressV = CLAMP;
+};
+#endif
+
+struct FogParams
+{
+	float3 FogColor;
+	float3 FogPosition;
+
+	float FogRange;
+	float FogDensity;
+	float FogIntensity;
+	float FogMiePhase;
+	float FogAttenuationBulb;
+};
+
+float2 ComputeRaySphereIntersection(float3 position, float3 dir, float3 center, float radius)
+{
+	float3 origin = position - center;
+	float B = dot(origin, dir);
+	float C = dot(origin, origin) - radius * radius;
+	float D = B * B - C;
+
+	float2 minimaxIntersections;
+	if (D < 0.0)
+	{
+		minimaxIntersections = -1;
+	}
+	else
+	{
+		D = sqrt(D);
+		minimaxIntersections = float2(-B - D, -B + D);
+	}
+
+	return minimaxIntersections;
+}
+
+float ComputeOpticalDepth(FogParams param, float depth)
+{
+	return exp(-depth * param.FogDensity);
+}
+
+float GetPhysicalLightAttenuation(float3 L, float radius, float attenuationBulbSize)
+{
+	const float invRadius = 1 / radius;
+	float d = length(L);
+	float fadeoutFactor = saturate((radius - d) * (invRadius / 0.2h));
+	d = max(d - attenuationBulbSize, 0);
+	float denom = 1 + d / attenuationBulbSize;
+	float attenuation = fadeoutFactor * fadeoutFactor / (denom * denom);
+	return attenuation;
+}
+
+float HitShadowTest(FogParams param, sampler shadowMap, float shadowSize, float3 worldPosition)
+{
+	float3 L = worldPosition.xyz - param.FogPosition;
+
+	float linearDepth = length(L);
+	float receiverDepth = GetDeviceDepth(linearDepth, mPointLightNear, mPointLightFar);
+
+	float2 coord = CalcDualShadowCoord(L / linearDepth, shadowSize);
+	return tex2Dlod(shadowMap, float4(coord, 0, 0)).r < receiverDepth ? 0 : 1;
+}
+
+float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float jitter, int stepNum = MULTI_VOLUMETRIC_SAMPLES)
+{
+	float3 sampleStep = (end - start) / stepNum;
+	float3 sampleStart = start + sampleStep * jitter;
+
+	float sampleLength = length(sampleStep);
+	float sampleOpticalDepth = ComputeOpticalDepth(param, sampleLength);
+
+	float scatteringMie = 0;
+	float scatteringDepth = 1;
+
+	for (int i = 0; i < stepNum; i++, sampleStart += sampleStep, scatteringDepth *= sampleOpticalDepth)
+	{
+		float density = sampleLength;
+#if VOLUMETRIC_FOG_ENABLE
+		density *= HitShadowTest(param, VolumetricMapSamp, FOG_SHADOW_MAP_SIZE, sampleStart);
+#endif
+		if (density > 0)
+		{
+			float3 L = sampleStart - param.FogPosition;
+			float scattering = GetPhysicalLightAttenuation(L, param.FogRange, param.FogAttenuationBulb);
+			scattering *= density;
+			scattering *= sampleOpticalDepth;
+			scattering *= scatteringDepth;
+#if VOLUMETRIC_FOG_ANISOTROPY
+			scattering *= ComputePhaseMieHG(dot(-V, normalize(L)), param.FogMiePhase) * PI;
+#endif
+
+			scatteringMie += scattering;
+		}
+	}
+
+	float scattering = scatteringMie;
+	scattering *= param.FogIntensity;
+
+	return float4(param.FogColor * scattering + scattering * jitter / 255.0f, scattering * param.FogIntensity);
+}
+
+void SphereFogVS(
+	in float4 Position : POSITION,
+	in float3 Normal : NORMAL,
+	in float2 Texcoord : TEXCOORD0,
+	out float4 oTexcoord0 : TEXCOORD0,
+	out float3 oTexcoord1 : TEXCOORD1,
+	out float3 oTexcoord2 : TEXCOORD2,
+	out float4 oPosition  : POSITION)
+{
+	Position.xyz = FogPosition + Normal * FogRange;
+	oTexcoord0 = oPosition = mul(Position, matViewProject);
+	oTexcoord0.xy = PosToCoord(oTexcoord0.xy / oTexcoord0.w) + ViewportOffset;
+	oTexcoord0.xy = oTexcoord0.xy * oTexcoord0.w;
+	oTexcoord1 = normalize(Position.xyz - CameraPosition);
+	oTexcoord2 = hsv2rgb(FogColor);
+	oTexcoord2 = ColorTemperature(oTexcoord2, FogTemperature);
+}
+
+float4 SphereFogPS(
+	in float4 texcoord : TEXCOORD0,
+	in float3 viewdir  : TEXCOORD1,
+	in float3 fogColor : TEXCOORD2,
+	in float4 screenPosition : SV_Position) : COLOR
+{
+	FogParams param;
+	param.FogPosition = FogPosition;
+	param.FogRange = FogRange;
+	param.FogIntensity = FogIntensity;
+	param.FogColor = fogColor;
+	param.FogMiePhase = FogMiePhase;
+	param.FogAttenuationBulb = FogAttenuationBulb;
+	param.FogDensity = FogDensity;
+
+	float3 V = normalize(viewdir);
+	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
+	clip(intersections.y);
+
+	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
+	clip(linearDepth - intersections.x);
+
+	float3 start = CameraPosition + V * max(0, intersections.x);
+	float3 end = CameraPosition + V * min(linearDepth, intersections.y);
+
+	return VolumetricFog(param, V, start, end, PseudoRandom(screenPosition.xy * (time + PI)));
+}
+
+technique MainTechBS0<string MMDPass = "object_ss"
+;>{
+	pass DrawObject {
+		ZEnable = FALSE; ZWriteEnable = FALSE;
+		AlphaBlendEnable = TRUE; AlphaTestEnable = FALSE;
+		SrcBlend = ONE; DestBlend = ONE;
+		CullMode = CW;
+		VertexShader = compile vs_3_0 SphereFogVS();
+		PixelShader  = compile ps_3_0 SphereFogPS();
+	}
+}
+
+technique EdgeTec<string MMDPass = "edge";> {}
+technique ShadowTech<string MMDPass = "shadow";>{}
+technique ZplotTec<string MMDPass = "zplot";>{}
