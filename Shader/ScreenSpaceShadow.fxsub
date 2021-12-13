@@ -13,8 +13,8 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 
     for (int i = 0; i < CASCADE_SHADOW_BLOCKER_COUNT; i++)
     {
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(CASCADE_SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
-        if (sampleDepth > depth)
+		float sampleDepth = 1 - tex2Dlod(_ShadowTex, float4(uv + Rotate(CASCADE_SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
+        if (sampleDepth < depth)
         {
             blockerDepthSum += sampleDepth;
             blockerWeight++;
@@ -25,16 +25,15 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 }
 #endif
 
-float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation)
+float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float linearDepth, float receiverDepth, float2 rotation)
 {
 #if defined(CASCADE_SHADOW_PCSS)
-	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, radius, rotation);
+	float2 searchRegionRadius = SearchRegionRadius(radius, linearDepth, mPSSMDepthZMin);
+	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, searchRegionRadius, rotation);
 
-	float depth = 1 - receiverDepth;
-	float avgBlockerDepth = 1- blocker.x;
-
-	float penumbraRatio = (depth - avgBlockerDepth) / avgBlockerDepth * radius;
-	float filterSize = penumbraRatio / depth;
+	float avgBlockerDepth = blocker.x;
+	float penumbraRatio = PenumbraRadius(radius, receiverDepth, avgBlockerDepth);
+	float filterSize = ProjectToLight(penumbraRatio, receiverDepth, 1);
 
 	[branch]
 	if (blocker.y <= 0)
@@ -42,7 +41,7 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		return 1;
 	}
 #else
-	float filterSize = radius * 0.1;
+	float filterSize = radius * 0.01;
 #endif
 
 	float shadow = 0.0;
@@ -62,7 +61,9 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		sampleLinearDepth[2] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[2] * filterSize, 0, 0)).r;
 		sampleLinearDepth[3] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[3] * filterSize, 0, 0)).r;
 
-		shadow += sum(saturate(exp(mPSSMDepthZMax * 20 * (receiverDepth - sampleLinearDepth))));
+		sampleLinearDepth = 1 - sampleLinearDepth;
+
+		shadow += sum(saturate(exp(mPSSMDepthZMax * 20 * (sampleLinearDepth - receiverDepth))));
 	}
     
 	return shadow / CASCADE_SHADOW_POISSON_COUNT;
@@ -97,9 +98,8 @@ float4 ScreenSapceShadowMapFragment(
 	if (lightPPos0.z > 0) { coord = lightPPos0; }
 	clip(coord.z);
 
-	float receiverDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
-	receiverDepth /= mPSSMDepthZMax;
-	receiverDepth = 1 - receiverDepth;
+	float linearDepth = dot(float4(viewPosition, 1), matLightViewFromCameraView._13_23_33_43);
+	float receiverDepth = linearDepth / mPSSMDepthZMax;
 
 	coord.xy += 0.5 / float(CASCADE_SHADOW_MAP_SIZE);
 
@@ -117,17 +117,17 @@ float4 ScreenSapceShadowMapFragment(
 	float lightSize = 0.04; 
 	float angle = PseudoRandom(uv.zw) * PI_2;
 	float2 rotation = float2(cos(angle), sin(angle));
-	float4 receiverDepth4 = mad(float4(0.0015, 0.002, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
+	float4 receiverDepth4 = mad(-float4(0.0015, 0.002, 0.002, 0.0025) / mPSSMDepthZMax, material.linearDepth, receiverDepth); 
 
 	[branch]
 	if (coord.w == 0)
-		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, lightSize, receiverDepth4.x, rotation);
+		shadow = ShadowPCF(_PSSM1_LinearSampler, coord.xy, lightSize, linearDepth, receiverDepth4.x, rotation);
 	else if (coord.w == 1)
-		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, lightSize / 2.0, receiverDepth4.y, rotation);
+		shadow = ShadowPCF(_PSSM2_LinearSampler, coord.xy, lightSize / 2.0, linearDepth, receiverDepth4.y, rotation);
 	else if (coord.w == 2)
-		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, lightSize / 4.0, receiverDepth4.z, rotation);
+		shadow = ShadowPCF(_PSSM3_LinearSampler, coord.xy, lightSize / 4.0, linearDepth, receiverDepth4.z, rotation);
 	else
-		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, lightSize / 13.5, receiverDepth4.w, rotation);
+		shadow = ShadowPCF(_PSSM4_LinearSampler, coord.xy, lightSize / 13.5, linearDepth, receiverDepth4.w, rotation);
 
 	return shadow;
 }
