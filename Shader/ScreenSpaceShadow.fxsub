@@ -1,23 +1,3 @@
-#if SUN_PCSS_QUALITY == 1
-#	define SHADOW_BLOCKER_COUNT 15
-#	define SHADOW_BLOCKER_POISSON Poisson15
-#	define SHADOW_POISSON_COUNT 36
-#	define SHADOW_POISSON Poisson36
-#	define SHADOW_BLUR_COUNT 4
-#elif SUN_PCSS_QUALITY == 2
-#	define SHADOW_BLOCKER_COUNT 32
-#	define SHADOW_BLOCKER_POISSON Poisson32
-#	define SHADOW_POISSON_COUNT 64
-#	define SHADOW_POISSON Poisson64
-#	define SHADOW_BLUR_COUNT 4
-#else
-#	define SHADOW_BLOCKER_COUNT 15
-#	define SHADOW_BLOCKER_POISSON Poisson15
-#	define SHADOW_POISSON_COUNT 36
-#	define SHADOW_POISSON Poisson36
-#	define SHADOW_BLUR_COUNT 6
-#endif
-
 static float4x4 matLightProject = CreateOrthoProject(2, 2, mPSSMDepthZMin, mPSSMDepthZMax);
 static float4x4 matLightView = CreateLightViewMatrix(MainLightDirection, -MainLightDirection * mLightDistance);
 static float4x4 matLightViewProject = mul(matLightView, matLightProject);
@@ -25,19 +5,15 @@ static float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 static float4x4 lightCropParams = CreateLightCropParams(matLightViewFromCameraView, mPSSMCascadeDistance, mPSSMCascadeSplits, CASCADE_SHADOW_MAP_SIZE);
 
-float2 Rotate(float2 pos, float2 rotation)
-{
-	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
-}
-
+#if defined(CASCADE_SHADOW_PCSS)
 float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadius, float2 rotation)
 {
     float blockerWeight = 0;
     float blockerDepthSum = 0.0;
 
-    for (int i = 0; i < SHADOW_BLOCKER_COUNT; i++)
+    for (int i = 0; i < CASCADE_SHADOW_BLOCKER_COUNT; i++)
     {
-		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
+		float sampleDepth = tex2Dlod(_ShadowTex, float4(uv + Rotate(CASCADE_SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
         if (sampleDepth > depth)
         {
             blockerDepthSum += sampleDepth;
@@ -47,10 +23,11 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float searchRadiu
 
     return float2(blockerDepthSum / max(1e-5, blockerWeight), blockerWeight);
 }
+#endif
 
 float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth, float2 rotation)
 {
-#if SUN_PCSS_QUALITY > 0
+#if defined(CASCADE_SHADOW_PCSS)
 	float2 blocker = FindBlocker(_ShadowTex, uv, receiverDepth, radius, rotation);
 
 	float depth = 1 - receiverDepth;
@@ -71,13 +48,13 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 	float shadow = 0.0;
 
 	[unroll]
-	for (int i = 0; i < SHADOW_POISSON_COUNT; i+=4) 
+	for (int i = 0; i < CASCADE_SHADOW_POISSON_COUNT; i+=4) 
 	{
 		float2 samplePoints[4];
-		samplePoints[0] = Rotate(SHADOW_POISSON[i], rotation);
-		samplePoints[1] = Rotate(SHADOW_POISSON[i+1], rotation);
-		samplePoints[2] = Rotate(SHADOW_POISSON[i+2], rotation);
-		samplePoints[3] = Rotate(SHADOW_POISSON[i+3], rotation);
+		samplePoints[0] = Rotate(CASCADE_SHADOW_POISSON[i], rotation);
+		samplePoints[1] = Rotate(CASCADE_SHADOW_POISSON[i+1], rotation);
+		samplePoints[2] = Rotate(CASCADE_SHADOW_POISSON[i+2], rotation);
+		samplePoints[3] = Rotate(CASCADE_SHADOW_POISSON[i+3], rotation);
 		
 		float4 sampleLinearDepth;
 		sampleLinearDepth[0] = tex2Dlod(_ShadowTex, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
@@ -88,7 +65,7 @@ float ShadowPCF(sampler _ShadowTex, float2 uv, float radius, float receiverDepth
 		shadow += sum(saturate(exp(mPSSMDepthZMax * 20 * (receiverDepth - sampleLinearDepth))));
 	}
     
-	return shadow / SHADOW_POISSON_COUNT;
+	return shadow / CASCADE_SHADOW_POISSON_COUNT;
 }
 
 float4 ScreenSapceShadowMapFragment(
@@ -155,7 +132,6 @@ float4 ScreenSapceShadowMapFragment(
 	return shadow;
 }
 
-#if SHADOW_BLUR_COUNT
 float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform sampler source, uniform float2 offset) : COLOR
 {
 	float2 offset1 = coord + offset;
@@ -167,7 +143,7 @@ float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform s
 	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
 
 	[unroll]
-	for(int r = 1; r < SHADOW_BLUR_COUNT; r++)
+	for(int r = 1; r < CASCADE_SHADOW_BLUR_COUNT; r++)
 	{
 		float shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).r;
 		float shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).r;
@@ -175,8 +151,8 @@ float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform s
 		float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
 		float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
 
-		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, SHADOW_BLUR_COUNT, 10);
-		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, SHADOW_BLUR_COUNT, 10);
+		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, CASCADE_SHADOW_BLUR_COUNT, 10);
+		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, CASCADE_SHADOW_BLUR_COUNT, 10);
 
 		totalColor += shadow1 * bilateralWeight1;
 		totalColor += shadow2 * bilateralWeight2;
@@ -190,4 +166,3 @@ float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform s
 
 	return totalColor / totalWeight;
 }
-#endif

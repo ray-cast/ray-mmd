@@ -182,6 +182,11 @@ float3 SmoothTriangleWave(float3 x)
 	return SmoothCurve(TriangleWave(x));
 }
 
+float2 Rotate(float2 pos, float2 rotation)
+{
+	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
+}
+
 float w0(float a)
 {
 	return (1.0/6.0)*(a*(a*(-a + 3.0) - 3.0) + 1.0);

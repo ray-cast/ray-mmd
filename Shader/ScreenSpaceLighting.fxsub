@@ -9,7 +9,7 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 	L = dr < d ? normalize(d * L + normalize(s) * e) : R;
 
 	float shadow = 1;
-#if SUN_SHADOW_QUALITY
+#if SUN_SHADOW_MAP_QUALITY
 	shadow = tex2Dlod(_CameraShadowTexture_PointSampler, float4(uv, 0, 0)).r;
 #endif
 
@@ -26,7 +26,7 @@ float2x3 ComputeMainLighting(MaterialParam material, float3 V, float3 L, float3 
 	float3 diffuse = energy[0] * lightColor;
 	float3 specular = energy[1] * lightColor;
 
-#if SUN_SHADOW_QUALITY
+#if SUN_SHADOW_MAP_QUALITY
 	diffuse += mColorShadowSunP * (1 - shadow);
 #endif
 
@@ -49,7 +49,7 @@ float2x3 ComputeImageBasedLighting(sampler _MainTex, float2 _MainTex_TexelSize, 
 
 	float shadow = 1;
 
-#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_MAP_QUALITY
 	float shadowDepth = tex2Dlod(_CameraShadowTexture_PointSampler, float4(uv, 0, 0)).r;
 	shadowDepth = min(shadowDepth, saturate(dot(material.normal, L) * 3));
 	shadow = lerp(shadow, shadowDepth, mSunShadowVM);

@@ -236,7 +236,7 @@ sampler _CameraOcclusionTextureTemp_PointSampler = sampler_state {
 	AddressU = CLAMP;  AddressV = CLAMP;
 };
 #endif
-#if SUN_LIGHT_ENABLE && SUN_SHADOW_QUALITY
+#if SUN_LIGHT_ENABLE && SUN_SHADOW_MAP_QUALITY
 shared texture PSSM1 : OFFSCREENRENDERTARGET<
 	string Description = "Cascade shadow map for ray";
 	int2 Dimensions = { CASCADE_SHADOW_MAP_SIZE, CASCADE_SHADOW_MAP_SIZE };
@@ -419,3 +419,4 @@ sampler _PreIntegratedSkinLut_LinearSampler = sampler_state
 
 static const float4 _CameraColorTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
 static const float4 _CameraColorAttachment_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
+static const float4 _CameraShadowTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);

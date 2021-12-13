@@ -18,10 +18,6 @@
 
 #define RECTANGLE_LIGHT_MAX_WIDTH 50
 #define RECTANGLE_LIGHT_MAX_HEIGHT 50
-#define RECTANGLE_LIGHT_BLOCKER_COUNT 32
-#define RECTANGLE_LIGHT_BLOCKER_POISSON Poisson32
-#define RECTANGLE_LIGHT_POISSON_COUNT 64
-#define RECTANGLE_LIGHT_POISSON Poisson64
 
 float3 mPosition : CONTROLOBJECT<string name = "(self)"; string item = "Position";>;
 float3 mDirection : CONTROLOBJECT<string name = "(self)"; string item = "Direction";>;
@@ -99,19 +95,15 @@ static const float4x4 matLightViewProject = mul(matLightView, matLightProject);
 static const float4x4 matLightViewFromCameraView = mul(matViewInverse, matLightView);
 static const float4x4 matLightProjectFromCameraView = mul(matViewInverse, matLightViewProject);
 
-float2 Rotate(float2 pos, float2 rotation)
-{
-	return float2(pos.x * rotation.x - pos.y * rotation.y, pos.y * rotation.x + pos.x * rotation.y);
-}
-
+#if defined(MULTI_SHADOW_PCSS)
 float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float2 searchRadius, float2 rotation)
 {
     float blockerWeight = 0;
     float blockerDepthSum = 0.0;
 
-    for (int i = 0; i < RECTANGLE_LIGHT_BLOCKER_COUNT; i++)
+    for (int i = 0; i < MULTI_SHADOW_BLOCKER_COUNT; i++)
     {
-		float sampleDepth = 1 - tex2Dlod(_ShadowTex, float4(uv + Rotate(RECTANGLE_LIGHT_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
+		float sampleDepth = 1 - tex2Dlod(_ShadowTex, float4(uv + Rotate(MULTI_SHADOW_BLOCKER_POISSON[i], rotation) * searchRadius, 0, 0)).r;
         if (sampleDepth < depth)
         {
             blockerDepthSum += sampleDepth;
@@ -121,15 +113,17 @@ float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float2 searchRadi
 
     return float2(blockerDepthSum / max(1e-5, blockerWeight), blockerWeight);
 }
+#endif
 
 float ShadingShadow(float2 uv, float linearDepth, float receiverDepth, float radius, float random)
 {
 	float2 rotation = float2(cos(random * PI_2), sin(random * PI_2));
 
+#if defined(MULTI_SHADOW_PCSS)
 	float2 searchRegionRadius = SearchRegionRadius(radius, linearDepth, mLightPlaneNear);
 	float2 blocker = FindBlocker(ShadowMapSamp, uv, receiverDepth, searchRegionRadius, rotation);
 
-	float2 penumbraRatio = PenumbraRadius(radius, receiverDepth, GetLinearDepth(blocker.x, mLightPlaneNear, mLightPlaneFar));
+	float2 penumbraRatio = PenumbraRadius(radius, receiverDepth, GetLinearDepth(blocker.x, mLightPlaneNear / 2, mLightPlaneFar));
 	float2 filterSize = ProjectToLight(penumbraRatio, linearDepth, mLightPlaneNear);
 
 	[branch]
@@ -137,16 +131,19 @@ float ShadingShadow(float2 uv, float linearDepth, float receiverDepth, float rad
 	{
 		return 1;
 	}
+#else
+	float2 filterSize = radius * 0.01;
+#endif
 
 	float shadow = 0;
 
-	for (int i = 0; i < RECTANGLE_LIGHT_POISSON_COUNT; i+=4)
+	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i+=4)
 	{
 		float2 samplePoints[4];
-		samplePoints[0] = Rotate(RECTANGLE_LIGHT_POISSON[i], rotation);
-		samplePoints[1] = Rotate(RECTANGLE_LIGHT_POISSON[i+1], rotation);
-		samplePoints[2] = Rotate(RECTANGLE_LIGHT_POISSON[i+2], rotation);
-		samplePoints[3] = Rotate(RECTANGLE_LIGHT_POISSON[i+3], rotation);
+		samplePoints[0] = Rotate(MULTI_SHADOW_POISSON[i], rotation);
+		samplePoints[1] = Rotate(MULTI_SHADOW_POISSON[i+1], rotation);
+		samplePoints[2] = Rotate(MULTI_SHADOW_POISSON[i+2], rotation);
+		samplePoints[3] = Rotate(MULTI_SHADOW_POISSON[i+3], rotation);
 		
 		float4 sampleDepth;
 		sampleDepth[0] = tex2Dlod(ShadowMapSamp, float4(uv + samplePoints[0] * filterSize, 0, 0)).r;
@@ -159,7 +156,7 @@ float ShadingShadow(float2 uv, float linearDepth, float receiverDepth, float rad
 		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar)));
 	}
 
-	return shadow / RECTANGLE_LIGHT_POISSON_COUNT;
+	return shadow / MULTI_SHADOW_POISSON_COUNT;
 }
 #endif
 
@@ -310,7 +307,7 @@ void LightSourcePS(
 	proj.xy += ShadowMapOffset;
 
 	float receiverDepth = mul(float4(P2, 1), matLightProjectFromCameraView).z;
-	float radius = lerp(LightWidth * LightHeight * 10, 1, mHardnessP) / MULTI_SHADOW_MAP_SIZE;
+	float radius = lerp(LightWidth * LightHeight, 1, mHardnessP) / 1024;
 
 	float shadow = ShadingShadow(proj.xy, proj.w, receiverDepth, radius, PseudoRandom(screen));
 	oColor0 *= shadow;
