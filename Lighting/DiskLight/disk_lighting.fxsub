@@ -142,6 +142,7 @@ float ShadingShadow(float3 P, float radius, float random)
 
 	float shadow = 0;
 
+	[unroll]
 	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i+=4)
 	{
 		float2 samplePoints[4];

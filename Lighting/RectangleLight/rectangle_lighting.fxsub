@@ -139,6 +139,7 @@ float ShadingShadow(float2 uv, float linearDepth, float receiverDepth, float rad
 
 	float shadow = 0;
 
+	[unroll]
 	for (int i = 0; i < MULTI_SHADOW_POISSON_COUNT; i+=4)
 	{
 		float2 samplePoints[4];
