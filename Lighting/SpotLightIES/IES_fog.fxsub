@@ -217,9 +217,7 @@ float4 VolumetricFog(FogParams param, float3 V, float3 start, float3 end, float 
 			atten *= GetSpotLightAttenuation(Lnormalized, param.FogDirection, param.FogAngle);
 			atten *= density;
 			atten *= scatteringDepth;
-#if VOLUMETRIC_FOG_ANISOTROPY == 2
-			atten *= ComputePhaseMieHG(dot(-V, Lnormalized), param.FogMiePhase) * PI;
-#endif
+
 			scatteringMie += atten;
 		}
 	}
