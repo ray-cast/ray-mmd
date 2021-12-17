@@ -749,7 +749,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 SMAANeighborhoodBlendingPS(_CameraColorTempTexture_LinearSampler, ViewportOffset2, true);
 	}
 #endif
-#if  EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+#if  EYE_ADAPTATION > 0
 	pass EyePrefilter<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;

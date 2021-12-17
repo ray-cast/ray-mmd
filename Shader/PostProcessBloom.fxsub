@@ -279,7 +279,7 @@ float4 BloomPrefilterPS(
 
 	color *= mExposure;
 
-#if EYE_ADAPTATION > 0 || (HDR_TONEMAP_OPERATOR == 1)
+#if EYE_ADAPTATION > 0
 	float aveLum = tex2Dlod(_EyeLumAveMap_PointSampler, float4(0.5,0.5,0,0)).r;
 	color *= ComputeExposureISO(aveLum, 12.5);
 #endif
