@@ -399,10 +399,8 @@ float4 ComputeHexagonalBlurYPS(
    	return float4((color1.rgb + color2.rgb) * (1.0f / 3.0f), CoC);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 nearAcc)
+void ComputeBokehAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout float4 nearAcc)
 {
-	float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
-
 	float margin = _MainTex_TexelSize.y * 2.0;
 	float nearWeight = saturate((-samp.a + margin) / margin);
 
@@ -430,7 +428,7 @@ float4 ComputeBokehBlurPS(
 
 	float4 samp0 = tex2Dlod(_MainTex, float4(uv.xy, 0, 0));
 
-	ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, nearAcc);
+	ComputeBokehAccum(samp0, _MainTex_TexelSize, uv, nearAcc);
 
 	[loop]
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
