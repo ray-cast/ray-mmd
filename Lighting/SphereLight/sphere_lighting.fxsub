@@ -79,7 +79,7 @@ float3 DecodeHDR(float4 rgbx)
 #if SHADOW_MAP_FROM > 0
 texture ShadowMap: OFFSCREENRENDERTARGET <
 	string Description = "Shadow Rendering for PointLight";
-	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE};
+	int2 Dimensions = {MULTI_SHADOW_MAP_SIZE * 2, MULTI_SHADOW_MAP_SIZE};
 	string Format = "R32F";
 	float4 ClearColor = { 1, 1, 1, 1 };
 	float ClearDepth = 0.0;
@@ -98,8 +98,8 @@ sampler ShadowMapSamp = sampler_state {
 	AddressU = CLAMP; AddressV = CLAMP;
 };
 
-static float2 ShadowMapOffset  = 0.5 / float2(MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE);
-static float2 ShadowMapOffset2 = 1.0 / float2(MULTI_SHADOW_MAP_SIZE / 2, MULTI_SHADOW_MAP_SIZE);
+static float2 ShadowMapOffset  = 0.5 / float2(MULTI_SHADOW_MAP_SIZE * 2, MULTI_SHADOW_MAP_SIZE);
+static float2 ShadowMapOffset2 = 1.0 / float2(MULTI_SHADOW_MAP_SIZE * 2, MULTI_SHADOW_MAP_SIZE);
 
 #if defined(MULTI_SHADOW_PCSS)
 float2 FindBlocker(sampler _ShadowTex, float2 uv, float depth, float2 searchRadius, float2 rotation)
@@ -131,6 +131,7 @@ float ShadingShadow(float3 viewPosition, float2 radius, float random)
 
 	float linearDepth = length(L);
 	float receiverDepth = GetDeviceDepth(linearDepth, mPointLightNear, mPointLightFar);
+	receiverDepth -= 1e-4 * linearDepth;
 
 	float2 uv = CalcDualShadowCoord(L / linearDepth, MULTI_SHADOW_MAP_SIZE) + ShadowMapOffset;
 
@@ -169,7 +170,10 @@ float ShadingShadow(float3 viewPosition, float2 radius, float random)
 
 		sampleDepth = 1 - sampleDepth;
 
-		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mPointLightFar * 2)));
+		shadow += receiverDepth < sampleDepth.x ? 1: 0;
+		shadow += receiverDepth < sampleDepth.y ? 1: 0;
+		shadow += receiverDepth < sampleDepth.z ? 1: 0;
+		shadow += receiverDepth < sampleDepth.w ? 1: 0;
 	}
 
 	return shadow / MULTI_SHADOW_POISSON_COUNT;

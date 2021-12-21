@@ -156,7 +156,10 @@ float ShadingShadow(float2 uv, float linearDepth, float receiverDepth, float rad
 
 		sampleDepth = 1 - sampleDepth;
 
-		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar)));
+		shadow += receiverDepth < sampleDepth.x ? 1: 0;
+		shadow += receiverDepth < sampleDepth.y ? 1: 0;
+		shadow += receiverDepth < sampleDepth.z ? 1: 0;
+		shadow += receiverDepth < sampleDepth.w ? 1: 0;
 	}
 
 	return shadow / MULTI_SHADOW_POISSON_COUNT;
@@ -310,6 +313,7 @@ void LightSourcePS(
 	proj.xy += ShadowMapOffset;
 
 	float receiverDepth = mul(float4(P2, 1), matLightProjectFromCameraView).z;
+	receiverDepth -= 1e-3 * proj.w;
 
 	float shadow = ShadingShadow(proj.xy, proj.w, receiverDepth, LightRadius, PseudoRandom(screen));
 	oColor0 *= shadow;
