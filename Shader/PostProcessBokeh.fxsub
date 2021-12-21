@@ -329,10 +329,10 @@ float4 ComputeBokehPrefilterPS(
 	float3 c2 = tex2Dlod(_MainTex, float4(uv2, 0, 0)).xyz;
 	float3 c3 = tex2Dlod(_MainTex, float4(uv3, 0, 0)).xyz;
 
-	float coc0 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv0, 0, 0)).x;
-	float coc1 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv1, 0, 0)).x;
-	float coc2 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv2, 0, 0)).x;
-	float coc3 = tex2Dlod(_CameraCoCTexture_LinearSampler, float4(uv3, 0, 0)).x;
+	float coc0 = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv0, 0, 0)).x;
+	float coc1 = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv1, 0, 0)).x;
+	float coc2 = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv2, 0, 0)).x;
+	float coc3 = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv3, 0, 0)).x;
 
 	float w0 = abs(coc0) / (max(max(c0.x, c0.y), c0.z) + 1.0);
 	float w1 = abs(coc1) / (max(max(c1.x, c1.y), c1.z) + 1.0);
