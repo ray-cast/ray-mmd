@@ -1,23 +1,17 @@
-float3 EncodeNormal(float3 normal)
+float2 PackNormalOctQuadEncode(float3 n)
 {
-	float p = sqrt(-normal.z * 8 + 8);
-	float2 enc = normal.xy / p + 0.5f;
-	float2 enc255 = enc * 255;
-	float2 residual = floor(frac(enc255) * 16);
-	return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
+    n *= rcp(dot(abs(n), 1.0));
+    float t = saturate(-n.z);
+    return n.xy + (n.xy >= 0.0 ? t : -t);
 }
 
-float3 DecodeNormal(float3 enc)
+float3 UnpackNormalOctQuadEncode(float2 f)
 {
-	float nz = floor(enc.z * 255) / 16;
-	enc.xy += float2(floor(nz) / 16, frac(nz)) / 255;
-	float2 fenc = enc.xy * 4 - 2;
-	float f = dot(fenc, fenc);
-	float g = sqrt(1 - f / 4);
-	float3 normal;
-	normal.xy = fenc * g;
-	normal.z = f / 2 - 1;
-	return normalize(normal);
+    float3 n = float3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
+	float t = max(-n.z, 0.0);
+    n.xy += n.xy >= 0.0 ? -t.xx : t.xx;
+
+    return normalize(n);
 }
 
 float4 EncodeRGBM(float3 color, float range = 8)

@@ -502,6 +502,13 @@ float3 EncodeNormal(float3 normal)
 	return float3(floor(enc255), residual.x * 16 + residual.y) / 255;
 }
 
+float2 PackNormalOctQuadEncode(float3 n)
+{
+    n *= rcp(dot(abs(n), 1.0));
+    float t = saturate(-n.z);
+    return n.xy + (n.xy >= 0.0 ? t : -t);
+}
+
 float luminance(float3 rgb)
 {
 	return dot(rgb, float3(0.299, 0.587, 0.114));
@@ -755,29 +762,26 @@ float GeometricNormalFiltering(float perceptualSmoothness, float3 geometricNorma
 
 GbufferParam EncodeGbuffer(MaterialParam material, float linearDepth)
 {
+#if CUSTOM_ENABLE || EMISSIVE_ENABLE
+#	if EMISSIVE_ENABLE
+	material.customDataB = material.emissive * material.emissiveIntensity;
+#	elif CUSTOM_ENABLE != SHADINGMODELID_GLASS
+	material.customDataB *= (1 - material.metalness);
+#	endif
+#endif
+
 	GbufferParam gbuffer;
 	gbuffer.buffer1.xyz = material.albedo * (1 - material.metalness);
 	gbuffer.buffer1.w = material.smoothness;
 
-	gbuffer.buffer2.xyz = EncodeNormal(normalize(mul(material.normal, (float3x3)matWorldView)));
-	gbuffer.buffer2.w = material.customDataA;
+	gbuffer.buffer2.xy = PackNormalOctQuadEncode(normalize(mul(material.normal, (float3x3)matWorldView)));
+	gbuffer.buffer2.z = linearDepth;
+	gbuffer.buffer2.w = material.visibility;
 
 	gbuffer.buffer3.xyz = lerp(material.specular, max(0.02, material.albedo), material.metalness);
-	gbuffer.buffer3.w = 0;
+	gbuffer.buffer3.w = material.customDataA;
 
-#if CUSTOM_ENABLE || EMISSIVE_ENABLE
-	if (material.lightModel != SHADINGMODELID_DEFAULT)
-	{
-#if EMISSIVE_ENABLE
-		material.customDataB = material.emissive;
-#elif CUSTOM_ENABLE != SHADINGMODELID_GLASS
-		material.customDataB *= (1 - material.metalness);
-#endif
-		gbuffer.buffer3 = float4(luminance(gbuffer.buffer3.xyz), material.customDataB);
-	}
-#endif
-
-	gbuffer.buffer4 = float4(linearDepth, material.emissiveIntensity, material.visibility, material.lightModel);
+	gbuffer.buffer4 = float4(material.customDataB, material.lightModel);
 	gbuffer.buffer4.w += material.alpha * MAX_FRACTIONAL_8_BIT;
 
 	return gbuffer;

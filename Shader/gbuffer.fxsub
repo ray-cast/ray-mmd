@@ -39,30 +39,23 @@ struct GbufferParam
 void DecodeGbuffer(float4 buffer1, float4 buffer2, float4 buffer3, float4 buffer4, out MaterialParam material)
 {
 	material.albedo = buffer1.xyz;
-	material.specular = buffer3.xyz;
-
-	material.normal = DecodeNormal(buffer2.xyz);
 	material.smoothness = buffer1.w;
 
-	material.customDataA = buffer2.w;
-	material.customDataB = 0;
+	material.normal = UnpackNormalOctQuadEncode(buffer2.xy);
+	material.linearDepth = buffer2.z;
+	material.visibility = buffer2.w;
+
+	material.specular = buffer3.xyz;
+	material.customDataA = buffer3.w;
+
+	material.customDataB = buffer4.xyz;
 
 	material.alpha = frac(buffer4.w) / MAX_FRACTIONAL_8_BIT;
 
-	material.linearDepth = buffer4.x;
-	material.visibility = buffer4.z;
 	material.lightModel = (int)floor(buffer4.w);
 
 	if (material.lightModel >= SHADINGMODELID_MASK)
 		material.lightModel = SHADINGMODELID_DEFAULT;
-
-	if (material.lightModel != SHADINGMODELID_DEFAULT)
-	{
-		material.specular = buffer3.x;
-		material.customDataB = buffer3.yzw;
-		if (material.lightModel == SHADINGMODELID_EMISSIVE)
-			material.customDataA = buffer4.y;
-	}
 }
 
 float3 DecodeGBufferAlbedo(float4 buffer1)
@@ -72,7 +65,7 @@ float3 DecodeGBufferAlbedo(float4 buffer1)
 
 float3 DecodeGBufferNormal(float4 buffer2)
 {
-	return DecodeNormal(buffer2.rgb);
+	return UnpackNormalOctQuadEncode(buffer2.xy);
 }
 
 int DecodeLightModel(float4 buffer4)
@@ -86,13 +79,13 @@ float DecodeEmissiveIntensity(float4 buffer4)
 	return buffer4.y;
 }
 
-float3 DecodeGBufferEmissive(float4 buffer3, float4 buffer4)
+float3 DecodeGBufferEmissive(float4 buffer4)
 {
 	int lightModel = DecodeLightModel(buffer4);
 	if (lightModel != SHADINGMODELID_EMISSIVE)
 		return 0;
 	else
-		return buffer3.yzw * DecodeEmissiveIntensity(buffer4);
+		return buffer4.xyz;
 }
 
 float4 GetProjConstant()

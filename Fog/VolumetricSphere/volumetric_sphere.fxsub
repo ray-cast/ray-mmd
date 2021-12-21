@@ -7,6 +7,7 @@
 #include "../../shader/shadowcommon.fxsub"
 #include "../../shader/gbuffer.fxsub"
 #include "../../shader/gbuffer_sampler.fxsub"
+#include "../../shader/DeclareGbufferTexture.fxsub"
 #include "../../shader/PhaseFunctions.fxsub"
 
 float mR : CONTROLOBJECT<string name="(self)"; string item="R+";>;
@@ -146,7 +147,7 @@ float4 SphereFogPS(float4 texcoord : TEXCOORD0, float3 viewdir : TEXCOORD1) : CO
 
 	texcoord.xy /= texcoord.w;
 
-	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy, 0, 0)).r;
+	float linearDepth = SampleLinearEyeDepth(texcoord.xy / texcoord.w);
 	clip(linearDepth - intersections.x);
 
 	float3 start = CameraPosition + V * max(0, intersections.x);

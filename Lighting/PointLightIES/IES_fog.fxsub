@@ -7,6 +7,7 @@
 #include "../../../shader/Packing.fxsub"
 #include "../../../shader/gbuffer.fxsub"
 #include "../../../shader/gbuffer_sampler.fxsub"
+#include "../../../shader/DeclareGbufferTexture.fxsub"
 #include "../../../shader/PhaseFunctions.fxsub"
 
 float mHP : CONTROLOBJECT<string name = "(self)"; string item = "H+";>;
@@ -223,7 +224,7 @@ float4 SphereFogPS(
 	float2 intersections = ComputeRaySphereIntersection(CameraPosition, V, param.FogPosition, param.FogRange);
 	clip(intersections.y);
 
-	float linearDepth = tex2Dlod(Gbuffer8Map, float4(texcoord.xy / texcoord.w, 0, 0)).r;
+	float linearDepth = SampleLinearEyeDepth(texcoord.xy / texcoord.w);
 	clip(linearDepth - intersections.x);
 
 	float3 start = CameraPosition + V * max(0, intersections.x);

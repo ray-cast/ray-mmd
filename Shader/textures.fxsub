@@ -344,7 +344,7 @@ sampler _CameraShadowTextureTemp_PointSampler = sampler_state {
 #endif
 shared texture Gbuffer2RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A8R8G8B8";
+	string Format = "A32B32G32R32F";
 >;
 shared texture Gbuffer3RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
@@ -360,7 +360,7 @@ shared texture Gbuffer5RT: RENDERCOLORTARGET<
 >;
 shared texture Gbuffer6RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};
-	string Format = "A8R8G8B8";
+	string Format = "A32B32G32R32F";
 >;
 shared texture Gbuffer7RT: RENDERCOLORTARGET<
 	float2 ViewportRatio = {1.0, 1.0};

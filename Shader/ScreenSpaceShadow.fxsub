@@ -140,7 +140,7 @@ float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform s
 	float totalWeight = 1;
 	float totalColor = tex2Dlod(source, float4(coord, 0, 0)).r;
 
-	float center_d = tex2Dlod(Gbuffer8Map, float4(coord, 0, 0)).r;
+	float center_d = SampleLinearEyeDepth(coord);
 
 	[unroll]
 	for(int r = 1; r < CASCADE_SHADOW_BLUR_COUNT; r++)
@@ -148,8 +148,8 @@ float4 ScreenSapceShadowMapBilateralFilterPS(float2 coord : TEXCOORD0, uniform s
 		float shadow1 = tex2Dlod(source, float4(offset1, 0, 0)).r;
 		float shadow2 = tex2Dlod(source, float4(offset2, 0, 0)).r;
 
-		float depth1 = tex2Dlod(Gbuffer8Map, float4(offset1, 0, 0)).r;
-		float depth2 = tex2Dlod(Gbuffer8Map, float4(offset2, 0, 0)).r;
+		float depth1 = SampleLinearEyeDepth(offset1);
+		float depth2 = SampleLinearEyeDepth(offset2);
 
 		float bilateralWeight1 = BilateralWeight(r, depth1, center_d, CASCADE_SHADOW_BLUR_COUNT, 10);
 		float bilateralWeight2 = BilateralWeight(r, depth2, center_d, CASCADE_SHADOW_BLUR_COUNT, 10);
