@@ -608,7 +608,7 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraPingTexture_TexelSize.xy);
-		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraFocalPingTexture_LinearSampler, _CameraPingTexture_TexelSize);
+		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraFocalPingTexture_PointSampler, _CameraFocalPingTexture_LinearSampler, _CameraPingTexture_TexelSize);
 	}
 	pass ComputeBilinearBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

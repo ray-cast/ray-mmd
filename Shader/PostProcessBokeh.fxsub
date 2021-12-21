@@ -1,3 +1,5 @@
+#define DOF_POSSION_SAMPLES 80
+
 static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
 static const float4 _CameraPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
 static const float4 _CameraPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
@@ -11,6 +13,12 @@ texture _CameraFocalPongTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0
 sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
 {
 	texture=<_CameraFocalDistanceTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalPingTexture_PointSampler = sampler_state
+{
+	texture=<_CameraFocalPingTexture>;
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
@@ -39,109 +47,171 @@ sampler _CameraCoCTexture_LinearSampler = sampler_state
 	AddressU=CLAMP; AddressV=CLAMP;
 };
 
-#define DOF_POSSION_SAMPLES 48
-
 #if BOKEH_MODE == 1
 static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
-	float2(0.36, 0),
-	float2(0.254558, 0.254558),
-	float2(-1.57361e-08, 0.36),
-	float2(-0.254558, 0.254558),
-	float2(-0.36, -3.14722e-08),
-	float2(-0.254558, -0.254559),
-	float2(4.29296e-09, -0.36),
-	float2(0.254559, -0.254558),
-	float2(0.68, 0),
-	float2(0.628238, 0.260225),
-	float2(0.480833, 0.480833),
-	float2(0.260225, 0.628238),
-	float2(-2.97237e-08, 0.68),
-	float2(-0.260225, 0.628238),
-	float2(-0.480833, 0.480833),
-	float2(-0.628238, 0.260225),
-	float2(-0.68, -5.94475e-08),
-	float2(-0.628238, -0.260225),
-	float2(-0.480833, -0.480833),
-	float2(-0.260225, -0.628238),
-	float2(8.10892e-09, -0.68),
-	float2(0.260225, -0.628238),
-	float2(0.480833, -0.480832),
-	float2(0.628238, -0.260225),
-	float2(1, 0),
-	float2(0.965926, 0.258819),
-	float2(0.866025, 0.5),
-	float2(0.707107, 0.707107),
-	float2(0.5, 0.866025),
-	float2(0.258819, 0.965926),
-	float2(-4.37114e-08, 1),
-	float2(-0.258819, 0.965926),
-	float2(-0.5, 0.866025),
-	float2(-0.707107, 0.707107),
-	float2(-0.866026, 0.5),
-	float2(-0.965926, 0.258819),
-	float2(-1, -8.74228e-08),
-	float2(-0.965926, -0.258819),
-	float2(-0.866025, -0.5),
-	float2(-0.707107, -0.707107),
-	float2(-0.5, -0.866025),
-	float2(-0.258819, -0.965926),
-	float2(1.19249e-08, -1),
-	float2(0.258819, -0.965926),
-	float2(0.5, -0.866025),
-	float2(0.707107, -0.707107),
-	float2(0.866026, -0.5),
-	float2(0.965926, -0.258819)
+	{0.272727, 0},
+	{0.192847, 0.192847},
+	{-1.19213e-08, 0.272727},
+	{-0.192847, 0.192847},
+	{-0.272727, -2.38426e-08},
+	{-0.192847, -0.192847},
+	{3.25224e-09, -0.272727},
+	{0.192847, -0.192847},
+	{0.515152, 0},
+	{0.475938, 0.19714},
+	{0.364267, 0.364267},
+	{0.19714, 0.475938},
+	{-2.2518e-08, 0.515152},
+	{-0.19714, 0.475938},
+	{-0.364267, 0.364267},
+	{-0.475938, 0.19714},
+	{-0.515152, -4.5036e-08},
+	{-0.475938, -0.19714},
+	{-0.364267, -0.364267},
+	{-0.19714, -0.475938},
+	{6.14312e-09, -0.515152},
+	{0.19714, -0.475938},
+	{0.364267, -0.364267},
+	{0.475938, -0.19714},
+	{0.757576, 0},
+	{0.731762, 0.196075},
+	{0.65608, 0.378788},
+	{0.535687, 0.535687},
+	{0.378788, 0.65608},
+	{0.196075, 0.731762},
+	{-3.31147e-08, 0.757576},
+	{-0.196075, 0.731762},
+	{-0.378788, 0.65608},
+	{-0.535687, 0.535687},
+	{-0.65608, 0.378788},
+	{-0.731762, 0.196075},
+	{-0.757576, -6.62294e-08},
+	{-0.731762, -0.196075},
+	{-0.65608, -0.378788},
+	{-0.535687, -0.535687},
+	{-0.378788, -0.65608},
+	{-0.196075, -0.731762},
+	{9.034e-09, -0.757576},
+	{0.196075, -0.731762},
+	{0.378788, -0.65608},
+	{0.535687, -0.535687},
+	{0.65608, -0.378788},
+	{0.731762, -0.196075},
+	{1, 0},
+	{0.980785, 0.19509},
+	{0.92388, 0.382683},
+	{0.83147, 0.55557},
+	{0.707107, 0.707107},
+	{0.55557, 0.83147},
+	{0.382683, 0.92388},
+	{0.19509, 0.980785},
+	{-4.37114e-08, 1},
+	{-0.19509, 0.980785},
+	{-0.382684, 0.92388},
+	{-0.55557, 0.83147},
+	{-0.707107, 0.707107},
+	{-0.83147, 0.55557},
+	{-0.92388, 0.382683},
+	{-0.980785, 0.19509},
+	{-1, -8.74228e-08},
+	{-0.980785, -0.19509},
+	{-0.92388, -0.382683},
+	{-0.83147, -0.55557},
+	{-0.707107, -0.707107},
+	{-0.55557, -0.83147},
+	{-0.382683, -0.92388},
+	{-0.19509, -0.980785},
+	{1.19249e-08, -1},
+	{0.19509, -0.980785},
+	{0.382684, -0.923879},
+	{0.55557, -0.831469},
+	{0.707107, -0.707107},
+	{0.83147, -0.55557},
+	{0.92388, -0.382683},
+	{0.980785, -0.19509}
 };
 #else
 static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
-	float2(0.291246, 0),
-	float2(0.231134, 0.231134),
-	float2(-1.33859e-08, 0.306234),
-	float2(-0.208509, 0.208509),
-	float2(-0.36, -3.14722e-08),
-	float2(-0.208509, -0.208509),
-	float2(3.65181e-09, -0.306234),
-	float2(0.231134, -0.231134),
-	float2(0.550132, 0),
-	float2(0.550132, 0.227872),
-	float2(0.436587, 0.436587),
-	float2(0.211177, 0.509827),
-	float2(-2.52845e-08, 0.578443),
-	float2(-0.246911, 0.596096),
-	float2(-0.393851, 0.393851),
-	float2(-0.522698, 0.216508),
-	float2(-0.68, -5.94475e-08),
-	float2(-0.522697, -0.216508),
-	float2(-0.393851, -0.393851),
-	float2(-0.246911, -0.596096),
-	float2(6.89786e-09, -0.578443),
-	float2(0.211177, -0.509827),
-	float2(0.436587, -0.436587),
-	float2(0.550132, -0.227872),
-	float2(0.809017, 0),
-	float2(0.809017, 0.216775),
-	float2(0.809017, 0.467086),
-	float2(0.642039, 0.642039),
-	float2(0.413545, 0.716282),
-	float2(0.209676, 0.782523),
-	float2(-3.71831e-08, 0.850651),
-	float2(-0.249668, 0.931773),
-	float2(-0.44279, 0.766934),
-	float2(-0.579192, 0.579192),
-	float2(-0.704489, 0.406737),
-	float2(-0.837047, 0.224286),
-	float2(-1, -8.74228e-08),
-	float2(-0.837047, -0.224286),
-	float2(-0.704488, -0.406737),
-	float2(-0.579192, -0.579192),
-	float2(-0.44279, -0.766934),
-	float2(-0.249668, -0.931773),
-	float2(1.01439e-08, -0.850651),
-	float2(0.209676, -0.782523),
-	float2(0.413546, -0.716282),
-	float2(0.64204, -0.642039),
-	float2(0.809017, -0.467086),
-	float2(0.809017, -0.216776)
+	{0.236189, 0},
+	{0.172902, 0.172902},
+	{-1.19213e-08, 0.272727},
+	{-0.172902, 0.172902},
+	{-0.236189, -2.06483e-08},
+	{-0.172902, -0.172902},
+	{3.25224e-09, -0.272727},
+	{0.172902, -0.172902},
+	{0.446134, 0},
+	{0.446134, 0.184795},
+	{0.326593, 0.326593},
+	{0.172201, 0.415731},
+	{-2.2518e-08, 0.515152},
+	{-0.172201, 0.415731},
+	{-0.326593, 0.326593},
+	{-0.446134, 0.184795},
+	{-0.446134, -3.90023e-08},
+	{-0.446134, -0.184795},
+	{-0.326593, -0.326593},
+	{-0.172201, -0.415731},
+	{6.14312e-09, -0.515151},
+	{0.172201, -0.415731},
+	{0.326593, -0.326593},
+	{0.446134, -0.184795},
+	{0.65608, 0},
+	{0.65608, 0.175796},
+	{0.65608, 0.378788},
+	{0.480284, 0.480284},
+	{0.32804, 0.568182},
+	{0.175796, 0.65608},
+	{-3.31147e-08, 0.757576},
+	{-0.175796, 0.65608},
+	{-0.32804, 0.568182},
+	{-0.480284, 0.480284},
+	{-0.65608, 0.378788},
+	{-0.65608, 0.175796},
+	{-0.65608, -5.73563e-08},
+	{-0.65608, -0.175796},
+	{-0.65608, -0.378788},
+	{-0.480284, -0.480284},
+	{-0.32804, -0.568182},
+	{-0.175796, -0.65608},
+	{9.034e-09, -0.757576},
+	{0.175796, -0.65608},
+	{0.32804, -0.568182},
+	{0.480284, -0.480284},
+	{0.65608, -0.378788},
+	{0.65608, -0.175796},
+	{0.866025, 0},
+	{0.866025, 0.172263},
+	{0.866025, 0.358719},
+	{0.802872, 0.536462},
+	{0.633975, 0.633975},
+	{0.48217, 0.721619},
+	{0.334273, 0.807007},
+	{0.178422, 0.896988},
+	{-4.37114e-08, 1},
+	{-0.178422, 0.896988},
+	{-0.334273, 0.807007},
+	{-0.48217, 0.721619},
+	{-0.633975, 0.633975},
+	{-0.802872, 0.536462},
+	{-0.866025, 0.358719},
+	{-0.866025, 0.172263},
+	{-0.866025, -7.57103e-08},
+	{-0.866025, -0.172263},
+	{-0.866025, -0.358719},
+	{-0.802872, -0.536462},
+	{-0.633974, -0.633975},
+	{-0.48217, -0.721619},
+	{-0.334273, -0.807007},
+	{-0.178422, -0.896988},
+	{1.19249e-08, -1},
+	{0.178422, -0.896988},
+	{0.334273, -0.807007},
+	{0.48217, -0.721619},
+	{0.633975, -0.633974},
+	{0.802872, -0.536462},
+	{0.866026, -0.358719},
+	{0.866025, -0.172263}
 };
 #endif
 
@@ -205,16 +275,16 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0) : COLOR
 	float2 avgDepth = 0;
 
 	[loop]
-	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	for (int i = 0; i < 48; i++)
 	{
-		float depth = SampleLinearEyeDepth(samplePoint + _BokehKernel[i] * sampleRadius);
+		float depth = SampleLinearEyeDepth(samplePoint + Poisson48[i] * sampleRadius);
 		minDepth = min(minDepth, depth);
 	}
 
 	[loop]
-	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	for (int j = 0; j < 48; j++)
 	{
-		float depth = SampleLinearEyeDepth(samplePoint + _BokehKernel[j] * sampleRadius);
+		float depth = SampleLinearEyeDepth(samplePoint + Poisson48[j] * sampleRadius);
 		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
 	}
 
@@ -281,11 +351,9 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
-void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 farAcc, inout float4 nearAcc)
+void ComputeBokehAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout float4 farAcc, inout float4 nearAcc)
 {
-	float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
-
-	float farCoC = max(min(samp0.a, samp.a), 0.0);
+	float farCoC = max(samp.a, 0.0);
 
 	float margin = _MainTex_TexelSize.y * 2.0;
 	float farWeight = saturate((farCoC + margin) / margin);
@@ -312,22 +380,23 @@ void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0
 
 float4 ComputeBokehBlurPS(
 	in float2 uv : TEXCOORD0,
-	uniform sampler _MainTex,
+	uniform sampler _MainTex_PointSampler,
+	uniform sampler _MainTex_LinearSampler,
 	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 farAcc = 0.0;
 	float4 nearAcc = 0.0;
 	float2 maxRadius = GetMaxBokehRadius(ViewportSize);
 
-	float4 samp0 = tex2Dlod(_MainTex, float4(uv.xy, 0, 0));
+	float4 samp0 = tex2Dlod(_MainTex_PointSampler, float4(uv, 0, 0));
 
-	ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, farAcc, nearAcc);
+	ComputeBokehAccum(samp0, _MainTex_TexelSize, uv, farAcc, nearAcc);
 
 	[loop]
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		float2 disp = _BokehKernel[i].xy * maxRadius;
-		ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, disp, farAcc, nearAcc);
+		ComputeBokehAccum(_MainTex_LinearSampler, _MainTex_TexelSize, samp0, uv, disp, farAcc, nearAcc);
 	}
 
 	nearAcc.rgb /= max(1, nearAcc.a);
