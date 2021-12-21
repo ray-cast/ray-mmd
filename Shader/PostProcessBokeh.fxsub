@@ -1,12 +1,15 @@
+#define DOF_POSSION_RADIUS 30
 #define DOF_POSSION_SAMPLES 80
 
 static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
-static const float4 _CameraPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
-static const float4 _CameraPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraFocalBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraFocalPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraFocalPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
 
 texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
 
 texture _CameraFocalDistanceTexture : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
+texture _CameraFocalBokehTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F"; int Miplevels = 0;>;
 texture _CameraFocalPingTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 texture _CameraFocalPongTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 
@@ -14,6 +17,18 @@ sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
 {
 	texture=<_CameraFocalDistanceTexture>;
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalBokehTexture_PointSampler = sampler_state
+{
+	texture=<_CameraFocalBokehTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraFocalBokehTexture_LinearSampler = sampler_state
+{
+	texture=<_CameraFocalBokehTexture>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=LINEAR;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
 sampler _CameraFocalPingTexture_PointSampler = sampler_state
@@ -132,86 +147,86 @@ static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
 };
 #else
 static const float2 _BokehKernel[DOF_POSSION_SAMPLES] = {
-	{0.236189, 0},
-	{0.172902, 0.172902},
-	{-1.19213e-08, 0.272727},
-	{-0.172902, 0.172902},
-	{-0.236189, -2.06483e-08},
-	{-0.172902, -0.172902},
-	{3.25224e-09, -0.272727},
-	{0.172902, -0.172902},
-	{0.446134, 0},
-	{0.446134, 0.184795},
-	{0.326593, 0.326593},
-	{0.172201, 0.415731},
-	{-2.2518e-08, 0.515152},
-	{-0.172201, 0.415731},
-	{-0.326593, 0.326593},
-	{-0.446134, 0.184795},
-	{-0.446134, -3.90023e-08},
-	{-0.446134, -0.184795},
-	{-0.326593, -0.326593},
-	{-0.172201, -0.415731},
-	{6.14312e-09, -0.515151},
-	{0.172201, -0.415731},
-	{0.326593, -0.326593},
-	{0.446134, -0.184795},
-	{0.65608, 0},
-	{0.65608, 0.175796},
-	{0.65608, 0.378788},
-	{0.480284, 0.480284},
-	{0.32804, 0.568182},
-	{0.175796, 0.65608},
-	{-3.31147e-08, 0.757576},
-	{-0.175796, 0.65608},
-	{-0.32804, 0.568182},
-	{-0.480284, 0.480284},
-	{-0.65608, 0.378788},
-	{-0.65608, 0.175796},
-	{-0.65608, -5.73563e-08},
-	{-0.65608, -0.175796},
-	{-0.65608, -0.378788},
-	{-0.480284, -0.480284},
-	{-0.32804, -0.568182},
-	{-0.175796, -0.65608},
-	{9.034e-09, -0.757576},
-	{0.175796, -0.65608},
-	{0.32804, -0.568182},
-	{0.480284, -0.480284},
-	{0.65608, -0.378788},
-	{0.65608, -0.175796},
-	{0.866025, 0},
-	{0.866025, 0.172263},
-	{0.866025, 0.358719},
-	{0.802872, 0.536462},
-	{0.633975, 0.633975},
-	{0.48217, 0.721619},
-	{0.334273, 0.807007},
-	{0.178422, 0.896988},
-	{-4.37114e-08, 1},
-	{-0.178422, 0.896988},
-	{-0.334273, 0.807007},
-	{-0.48217, 0.721619},
-	{-0.633975, 0.633975},
-	{-0.802872, 0.536462},
-	{-0.866025, 0.358719},
-	{-0.866025, 0.172263},
-	{-0.866025, -7.57103e-08},
-	{-0.866025, -0.172263},
-	{-0.866025, -0.358719},
-	{-0.802872, -0.536462},
-	{-0.633974, -0.633975},
-	{-0.48217, -0.721619},
-	{-0.334273, -0.807007},
-	{-0.178422, -0.896988},
-	{1.19249e-08, -1},
-	{0.178422, -0.896988},
-	{0.334273, -0.807007},
-	{0.48217, -0.721619},
-	{0.633975, -0.633974},
-	{0.802872, -0.536462},
-	{0.866026, -0.358719},
-	{0.866025, -0.172263}
+	{0.220641, 0},
+	{0.175102, 0.175102},
+	{-1.01409e-08, 0.231996},
+	{-0.157962, 0.157962},
+	{-0.272727, -2.38426e-08},
+	{-0.157961, -0.157962},
+	{2.76652e-09, -0.231996},
+	{0.175102, -0.175102},
+	{0.416766, 0},
+	{0.416766, 0.17263},
+	{0.330748, 0.330748},
+	{0.159983, 0.386232},
+	{-1.91549e-08, 0.438214},
+	{-0.187054, 0.451588},
+	{-0.298372, 0.298372},
+	{-0.395983, 0.164021},
+	{-0.515152, -4.5036e-08},
+	{-0.395983, -0.164021},
+	{-0.298372, -0.298372},
+	{-0.187054, -0.451588},
+	{5.22565e-09, -0.438214},
+	{0.159983, -0.386232},
+	{0.330748, -0.330748},
+	{0.416766, -0.17263},
+	{0.612892, 0},
+	{0.612892, 0.164224},
+	{0.612892, 0.353853},
+	{0.486394, 0.486394},
+	{0.313292, 0.542638},
+	{0.158846, 0.59282},
+	{-2.8169e-08, 0.644432},
+	{-0.189142, 0.705889},
+	{-0.335447, 0.581011},
+	{-0.438782, 0.438782},
+	{-0.533704, 0.308134},
+	{-0.634126, 0.169914},
+	{-0.757576, -6.62294e-08},
+	{-0.634126, -0.169914},
+	{-0.533703, -0.308134},
+	{-0.438782, -0.438782},
+	{-0.335447, -0.581011},
+	{-0.189142, -0.705889},
+	{7.68478e-09, -0.644432},
+	{0.158846, -0.59282},
+	{0.313292, -0.542638},
+	{0.486394, -0.486393},
+	{0.612892, -0.353853},
+	{0.612892, -0.164224},
+	{0.809017, 0},
+	{0.809017, 0.160923},
+	{0.809017, 0.335106},
+	{0.809017, 0.540568},
+	{0.642039, 0.642039},
+	{0.466999, 0.698914},
+	{0.310555, 0.749745},
+	{0.158933, 0.79901},
+	{-3.71831e-08, 0.850651},
+	{-0.180896, 0.909428},
+	{-0.363104, 0.876612},
+	{-0.479077, 0.716989},
+	{-0.579192, 0.579192},
+	{-0.673192, 0.449813},
+	{-0.768673, 0.318395},
+	{-0.87373, 0.173796},
+	{-1, -8.74228e-08},
+	{-0.87373, -0.173796},
+	{-0.768673, -0.318395},
+	{-0.673192, -0.449813},
+	{-0.579192, -0.579192},
+	{-0.479077, -0.716989},
+	{-0.363104, -0.876612},
+	{-0.180896, -0.909428},
+	{1.01439e-08, -0.850651},
+	{0.158933, -0.79901},
+	{0.310555, -0.749745},
+	{0.466999, -0.698913},
+	{0.64204, -0.642039},
+	{0.809017, -0.540568},
+	{0.809017, -0.335106},
+	{0.809017, -0.160923}
 };
 #endif
 
@@ -235,7 +250,7 @@ float2 GetSamplePoint()
 	return lerp(0.5, proj.xy, step(0.25, mMeasureMode) && !any(saturate(abs(proj.xy * 2 - 1) - 1 - GetSampleRadius())));
 }
 
-float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = 20.f)
+float2 GetMaxBokehRadius(float2 viewportSize, float maxRadius = DOF_POSSION_RADIUS)
 {
 	return min(0.05f, maxRadius / 1080) / float2(viewportSize.x / viewportSize.y, 1.0);
 }
@@ -351,9 +366,13 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
-void ComputeBokehAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout float4 farAcc, inout float4 nearAcc)
+void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, inout float4 farAcc, inout float4 nearAcc)
 {
-	float farCoC = max(samp.a, 0.0);
+	float mip = min(4, abs(samp0.a) * DOF_POSSION_RADIUS * ViewportSize.y / 1080 * 2);
+	
+	float4 samp = tex2Dlod(_MainTex, float4(uv, 0, mip));
+
+	float farCoC = max(min(samp0.a, samp.a), 0.0);
 
 	float margin = _MainTex_TexelSize.y * 2.0;
 	float farWeight = saturate((farCoC + margin) / margin);
@@ -365,7 +384,9 @@ void ComputeBokehAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout 
 
 void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 farAcc, inout float4 nearAcc)
 {
-	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
+	float mip = min(4, abs(samp0.a) * DOF_POSSION_RADIUS * ViewportSize.y / 1080 * 2);
+
+	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, mip));
 
 	float farCoC = max(min(samp0.a, samp.a), 0.0);
 
@@ -390,7 +411,7 @@ float4 ComputeBokehBlurPS(
 
 	float4 samp0 = tex2Dlod(_MainTex_PointSampler, float4(uv, 0, 0));
 
-	ComputeBokehAccum(samp0, _MainTex_TexelSize, uv, farAcc, nearAcc);
+	ComputeBokehAccum(_MainTex_LinearSampler, _MainTex_TexelSize, samp0, uv, farAcc, nearAcc);
 
 	[loop]
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)

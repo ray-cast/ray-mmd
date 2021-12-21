@@ -281,7 +281,7 @@ technique DeferredLighting<
 #if BOKEH_MODE == 1 || BOKEH_MODE == 2
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
-	"RenderColorTarget=_CameraFocalPingTexture;		Clear=Color; Pass=ComputeBokehPrefilter;"
+	"RenderColorTarget=_CameraFocalBokehTexture;	Clear=Color; Pass=ComputeBokehPrefilter;"
 	"RenderColorTarget=_CameraFocalPongTexture; 	Clear=Color; Pass=ComputeBokehBlur;"
 	"RenderColorTarget=_CameraFocalPingTexture; 	Clear=Color; Pass=ComputeBilinearBlur;"
 
@@ -607,21 +607,21 @@ technique DeferredLighting<
 	pass ComputeBokehBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraPingTexture_TexelSize.xy);
-		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraFocalPingTexture_PointSampler, _CameraFocalPingTexture_LinearSampler, _CameraPingTexture_TexelSize);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraFocalBokehTexture_TexelSize.xy);
+		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraFocalBokehTexture_PointSampler, _CameraFocalBokehTexture_LinearSampler, _CameraFocalBokehTexture_TexelSize);
 	}
 	pass ComputeBilinearBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
-		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraPongTexture_TexelSize.xy);
-		PixelShader  = compile ps_3_0 ComputeBilinearBlurPS(_CameraFocalPongTexture_LinearSampler, _CameraPongTexture_TexelSize);
+		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraFocalPongTexture_TexelSize.xy);
+		PixelShader  = compile ps_3_0 ComputeBilinearBlurPS(_CameraFocalPongTexture_LinearSampler, _CameraFocalPongTexture_TexelSize);
 	}
 	pass ComputeBokehFinal<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = true; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		SrcBlend = SRCALPHA; DestBlend = INVSRCALPHA;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(float2(0, 0));
-		PixelShader  = compile ps_3_0 ComputeBokehFinalPS(_CameraFocalPingTexture_LinearSampler, _CameraPingTexture_TexelSize);
+		PixelShader  = compile ps_3_0 ComputeBokehFinalPS(_CameraFocalPingTexture_LinearSampler, _CameraFocalPingTexture_TexelSize);
 	}
 #endif
 #if BOKEH_MODE == 3
