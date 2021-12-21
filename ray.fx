@@ -653,13 +653,13 @@ technique DeferredLighting<
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ComputeHexagonalBlurYVS(_CameraBokehTexture_TexelSize);
-		PixelShader  = compile ps_3_0 ComputeHexagonalBlurYPS(_CameraBokehTexture_LinearSampler, _CameraFocalPingTexture_LinearSampler, _CameraFocalPongTexture_LinearSampler, _CameraBokehTexture_TexelSize);
+		PixelShader  = compile ps_3_0 ComputeHexagonalBlurYPS(_CameraFocalPingTexture_LinearSampler, _CameraFocalPongTexture_LinearSampler, _CameraBokehTexture_TexelSize);
 	}
 	pass ComputeBokehBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadOffsetVS(_CameraBokehTexture_TexelSize.xy);
-		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraBokehTexture_LinearSampler, _CameraBokehTexture_TexelSize);
+		PixelShader  = compile ps_3_0 ComputeBokehBlurPS(_CameraBokehTexture_PointSampler, _CameraBokehTexture_LinearSampler, _CameraBokehTexture_TexelSize);
 	}
 	pass ComputeBilinearBlur<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;

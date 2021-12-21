@@ -381,12 +381,11 @@ float4 ComputeHexagonalBlurYPS(
 	in float4 coord : TEXCOORD0,
 	in float2 direction1 : TEXCOORD1,
 	in float2 direction2 : TEXCOORD2,
-	uniform sampler bokeh,
 	uniform sampler vertical,
 	uniform sampler diagonal,
 	uniform float4 _MainTex_TexelSize) : COLOR
 {
-	float CoC = tex2Dlod(bokeh, float4(coord.xy, 0, 0)).a;
+	float CoC = tex2Dlod(vertical, float4(coord.xy, 0, 0)).a;
 
 	float2 maxRadius = GetMaxBokehRadius(ViewportSize);
 
@@ -420,13 +419,14 @@ void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0
 
 float4 ComputeBokehBlurPS(
 	in float2 uv : TEXCOORD0,
-	uniform sampler _MainTex,
+	uniform sampler _MainTex_PointSampler,
+	uniform sampler _MainTex_LinearSampler,
 	uniform float4 _MainTex_TexelSize) : COLOR
 {
 	float4 nearAcc = 0.0;
 	float2 maxRadius = GetMaxBokehRadius(ViewportSize);
 
-	float4 samp0 = tex2Dlod(_MainTex, float4(uv.xy, 0, 0));
+	float4 samp0 = tex2Dlod(_MainTex_PointSampler, float4(uv.xy, 0, 0));
 
 	ComputeBokehAccum(samp0, _MainTex_TexelSize, uv, nearAcc);
 
@@ -434,7 +434,7 @@ float4 ComputeBokehBlurPS(
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		float2 disp = _HexagonalBokehKernel[i].xy * maxRadius;
-		ComputeBokehAccum(_MainTex, _MainTex_TexelSize, samp0, uv, disp, nearAcc);
+		ComputeBokehAccum(_MainTex_LinearSampler, _MainTex_TexelSize, samp0, uv, disp, nearAcc);
 	}
 
 	nearAcc.rgb /= max(1, nearAcc.a);
