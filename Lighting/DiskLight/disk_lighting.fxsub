@@ -159,7 +159,10 @@ float ShadingShadow(float3 P, float radius, float random)
 
 		sampleDepth = 1 - sampleDepth;
 
-		shadow += sum(saturate(exp((sampleDepth - receiverDepth) * mLightPlaneFar * 4)));
+		shadow += receiverDepth < sampleDepth.x ? 1: 0;
+		shadow += receiverDepth < sampleDepth.y ? 1: 0;
+		shadow += receiverDepth < sampleDepth.z ? 1: 0;
+		shadow += receiverDepth < sampleDepth.w ? 1: 0;
 	}
 
 	return shadow / MULTI_SHADOW_POISSON_COUNT;
