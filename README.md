@@ -6,16 +6,6 @@ Ray-MMD
 
 　　Ray-MMD is a free, powerful library and an extension pack of [mikumikudance](https://sites.google.com/view/vpvp/), offering an easy way of adding physically-based rendering with high-freedom of operation. it is written in hlsl lang with DX9 env and based on [mikumikueffect](https://bowlroll.net/file/35012). 
 
-Download:
-------------
-　[![img](https://img.shields.io/badge/version-1.3.1v2-brightgreen.svg)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.zip)
-　[![img](https://img.shields.io/badge/version-1.4.0beta3-brightgreen.svg)](https://github.com/ray-cast/ray-mmd/archive/140beta3.zip)
-
-* [Ray-MMD - 1.3.1v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.zip)  (updated: 27. Apr 2017)
-* [Ray-MMD - 1.3.1v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.tar.gz)  (updated: 27. Apr 2017)
-* [Ray-MMD - 1.4.0beta v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/140beta2.zip) (updated: 30. Jul 2017)
-* [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
-
 Features:
 ------------
 * Physically-Based Material: albedo, metallic, smoothness/roughness, specular/reflectance, emissive, etc
@@ -59,6 +49,16 @@ Gallery:
 [![link text](./Shader/screenshots/screen3.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen3.jpg)
 [![link text](./Shader/screenshots/screen4.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen4.jpg)
 [![link text](./Shader/screenshots/screen5.jpg)](https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Shader/screenshots/screen5.jpg)
+
+Download:
+------------
+　[![img](https://img.shields.io/badge/version-1.3.1v2-brightgreen.svg)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.zip)
+　[![img](https://img.shields.io/badge/version-1.4.0beta3-brightgreen.svg)](https://github.com/ray-cast/ray-mmd/archive/140beta3.zip)
+
+* [Ray-MMD - 1.3.1v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.zip)  (updated: 27. Apr 2017)
+* [Ray-MMD - 1.3.1v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/1.3.1v2.tar.gz)  (updated: 27. Apr 2017)
+* [Ray-MMD - 1.4.0beta v2 (zip)](https://github.com/ray-cast/ray-mmd/archive/140beta2.zip) (updated: 30. Jul 2017)
+* [Ray-MMD - 1.4.0beta v2 (tar.gz)](https://github.com/ray-cast/ray-mmd/archive/140beta2.tar.gz) (updated: 30. Jul 2017)
 
 Requirement:
 ------------
