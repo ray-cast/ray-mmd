@@ -3,16 +3,26 @@
 
 static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
 static const float4 _CameraFocalBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
-static const float4 _CameraFocalPingTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
-static const float4 _CameraFocalPongTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraFocalBokehBlurTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
 
 texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
 
 texture _CameraFocalDistanceTexture : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
 texture _CameraFocalBokehTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F"; int Miplevels = 0;>;
-texture _CameraFocalPingTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
-texture _CameraFocalPongTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture _CameraFocalBokehBlurTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 
+sampler _CameraCoCTexture_PointSampler = sampler_state
+{
+	texture=<_CameraCoCTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
+sampler _CameraCoCTexture_LinearSampler = sampler_state
+{
+	texture=<_CameraCoCTexture>;
+	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
 sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
 {
 	texture=<_CameraFocalDistanceTexture>;
@@ -31,33 +41,15 @@ sampler _CameraFocalBokehTexture_LinearSampler = sampler_state
 	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=LINEAR;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalPingTexture_PointSampler = sampler_state
+sampler _CameraFocalBokehBlurTexture_PointSampler = sampler_state
 {
-	texture=<_CameraFocalPingTexture>;
+	texture=<_CameraFocalBokehBlurTexture>;
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalPingTexture_LinearSampler = sampler_state
+sampler _CameraFocalBokehBlurTexture_LinearSampler = sampler_state
 {
-	texture=<_CameraFocalPingTexture>;
-	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
-	AddressU=CLAMP; AddressV=CLAMP;
-};
-sampler _CameraFocalPongTexture_LinearSampler = sampler_state
-{
-	texture=<_CameraFocalPongTexture>;
-	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
-	AddressU=CLAMP; AddressV=CLAMP;
-};
-sampler _CameraCoCTexture_PointSampler = sampler_state
-{
-	texture=<_CameraCoCTexture>;
-	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
-	AddressU=CLAMP; AddressV=CLAMP;
-};
-sampler _CameraCoCTexture_LinearSampler = sampler_state
-{
-	texture=<_CameraCoCTexture>;
+	texture=<_CameraFocalBokehBlurTexture>;
 	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
@@ -427,22 +419,6 @@ float4 ComputeBokehBlurPS(
 	float3 rgb = lerp(farAcc.rgb, nearAcc.rgb, alpha);
 
 	return float4(rgb, alpha);
-}
-
-float4 ComputeBilinearBlurPS(
-	in float2 uv : TEXCOORD0,
-	uniform sampler _MainTex,
-	uniform float4 _MainTex_TexelSize) : COLOR
-{
-	float4 duv = _MainTex_TexelSize.xyxy * float4(0.5, 0.5, -0.5, 0);
-
-	float4 acc;
-	acc  = tex2Dlod(_MainTex, float4(uv - duv.xy, 0, 0));
-	acc += tex2Dlod(_MainTex, float4(uv - duv.zy, 0, 0));
-	acc += tex2Dlod(_MainTex, float4(uv + duv.zy, 0, 0));
-	acc += tex2Dlod(_MainTex, float4(uv + duv.xy, 0, 0));
-
-	return acc * 0.25;
 }
 
 float4 ComputeBokehFinalPS(
