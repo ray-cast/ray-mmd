@@ -132,11 +132,11 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessDiffusion.fxsub"
 #endif
 
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
 #	include "shader/PostProcessBokeh.fxsub"
 #endif
 
-#if BOKEH_MODE == 3
+#if BOKEH_MODE == 4
 #	include "shader/PostProcessHexagonalBokeh.fxsub"
 #endif
 
@@ -278,7 +278,7 @@ technique DeferredLighting<
 	"Pass=ScreenSpaceOutline;"
 #endif
 
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraFocalBokehTexture;	Clear=Color; Pass=ComputeBokehPrefilter;"
@@ -287,7 +287,7 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraColorTexture; Pass=ComputeBokehFinal;"
 #endif
 
-#if BOKEH_MODE == 3
+#if BOKEH_MODE == 4
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraBokehTexture;			Clear=Color; Pass=ComputeBokehPrefilter;"
@@ -584,7 +584,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ScreenSpaceGlobalIlluminationFragment();
 	}
 #endif
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2
+#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
@@ -617,7 +617,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ComputeBokehFinalPS(_CameraFocalBokehBlurTexture_LinearSampler, _CameraFocalBokehBlurTexture_TexelSize);
 	}
 #endif
-#if BOKEH_MODE == 3
+#if BOKEH_MODE == 4
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
