@@ -1,5 +1,5 @@
 #define DOF_BLUR_RADIUS 8
-#define DOF_POSSION_SAMPLES 48
+#define DOF_POSSION_SAMPLES 80
 
 static const float _HexagonalBokehAngle = 1.236;
 
@@ -84,106 +84,87 @@ sampler _CameraCoCTexture_LinearSampler = sampler_state
 	AddressU=CLAMP; AddressV=CLAMP;
 };
 
-static const float2 _CircularBokehKernel[DOF_POSSION_SAMPLES] = {
-	float2(0.36, 0),
-	float2(0.254558, 0.254558),
-	float2(-1.57361e-08, 0.36),
-	float2(-0.254558, 0.254558),
-	float2(-0.36, -3.14722e-08),
-	float2(-0.254558, -0.254559),
-	float2(4.29296e-09, -0.36),
-	float2(0.254559, -0.254558),
-	float2(0.68, 0),
-	float2(0.628238, 0.260225),
-	float2(0.480833, 0.480833),
-	float2(0.260225, 0.628238),
-	float2(-2.97237e-08, 0.68),
-	float2(-0.260225, 0.628238),
-	float2(-0.480833, 0.480833),
-	float2(-0.628238, 0.260225),
-	float2(-0.68, -5.94475e-08),
-	float2(-0.628238, -0.260225),
-	float2(-0.480833, -0.480833),
-	float2(-0.260225, -0.628238),
-	float2(8.10892e-09, -0.68),
-	float2(0.260225, -0.628238),
-	float2(0.480833, -0.480832),
-	float2(0.628238, -0.260225),
-	float2(1, 0),
-	float2(0.965926, 0.258819),
-	float2(0.866025, 0.5),
-	float2(0.707107, 0.707107),
-	float2(0.5, 0.866025),
-	float2(0.258819, 0.965926),
-	float2(-4.37114e-08, 1),
-	float2(-0.258819, 0.965926),
-	float2(-0.5, 0.866025),
-	float2(-0.707107, 0.707107),
-	float2(-0.866026, 0.5),
-	float2(-0.965926, 0.258819),
-	float2(-1, -8.74228e-08),
-	float2(-0.965926, -0.258819),
-	float2(-0.866025, -0.5),
-	float2(-0.707107, -0.707107),
-	float2(-0.5, -0.866025),
-	float2(-0.258819, -0.965926),
-	float2(1.19249e-08, -1),
-	float2(0.258819, -0.965926),
-	float2(0.5, -0.866025),
-	float2(0.707107, -0.707107),
-	float2(0.866026, -0.5),
-	float2(0.965926, -0.258819)
-};
-
-static const float2 _HexagonalBokehKernel[DOF_POSSION_SAMPLES] = {
-	float2(0.311769, 0),
-	float2(0.228231, 0.228231),
-	float2(-1.57361e-08, 0.36),
-	float2(-0.228231, 0.228231),
-	float2(-0.311769, -2.72557e-08),
-	float2(-0.228231, -0.228231),
-	float2(4.29296e-09, -0.36),
-	float2(0.228231, -0.228231),
-	float2(0.588897, 0),
-	float2(0.588897, 0.243929),
-	float2(0.431103, 0.431103),
-	float2(0.227306, 0.548765),
-	float2(-2.97237e-08, 0.68),
-	float2(-0.227306, 0.548765),
-	float2(-0.431103, 0.431103),
-	float2(-0.588897, 0.243929),
-	float2(-0.588897, -5.1483e-08),
-	float2(-0.588897, -0.243929),
-	float2(-0.431103, -0.431103),
-	float2(-0.227306, -0.548765),
-	float2(8.10892e-09, -0.68),
-	float2(0.227306, -0.548765),
-	float2(0.431103, -0.431103),
-	float2(0.588897, -0.243929),
-	float2(0.866025, 0),
-	float2(0.866025, 0.232051),
-	float2(0.866025, 0.5),
-	float2(0.633975, 0.633975),
-	float2(0.433013, 0.75),
-	float2(0.232051, 0.866025),
-	float2(-4.37114e-08, 1),
-	float2(-0.232051, 0.866025),
-	float2(-0.433013, 0.75),
-	float2(-0.633975, 0.633975),
-	float2(-0.866025, 0.5),
-	float2(-0.866025, 0.232051),
-	float2(-0.866025, -7.57103e-08),
-	float2(-0.866025, -0.232051),
-	float2(-0.866025, -0.5),
-	float2(-0.633975, -0.633975),
-	float2(-0.433013, -0.75),
-	float2(-0.232051, -0.866025),
-	float2(1.19249e-08, -1),
-	float2(0.232051, -0.866025),
-	float2(0.433013, -0.75),
-	float2(0.633975, -0.633974),
-	float2(0.866026, -0.5),
-	float2(0.866025, -0.232051)
+const float2 _HexagonalBokehKernel[] = {
+	{0.236189, 0},
+	{0.172902, 0.172902},
+	{-1.19213e-08, 0.272727},
+	{-0.172902, 0.172902},
+	{-0.236189, -2.06483e-08},
+	{-0.172902, -0.172902},
+	{3.25224e-09, -0.272727},
+	{0.172902, -0.172902},
+	{0.446134, 0},
+	{0.446134, 0.184795},
+	{0.326593, 0.326593},
+	{0.172201, 0.415731},
+	{-2.2518e-08, 0.515152},
+	{-0.172201, 0.415731},
+	{-0.326593, 0.326593},
+	{-0.446134, 0.184795},
+	{-0.446134, -3.90023e-08},
+	{-0.446134, -0.184795},
+	{-0.326593, -0.326593},
+	{-0.172201, -0.415731},
+	{6.14312e-09, -0.515151},
+	{0.172201, -0.415731},
+	{0.326593, -0.326593},
+	{0.446134, -0.184795},
+	{0.65608, 0},
+	{0.65608, 0.175796},
+	{0.65608, 0.378788},
+	{0.480284, 0.480284},
+	{0.32804, 0.568182},
+	{0.175796, 0.65608},
+	{-3.31147e-08, 0.757576},
+	{-0.175796, 0.65608},
+	{-0.32804, 0.568182},
+	{-0.480284, 0.480284},
+	{-0.65608, 0.378788},
+	{-0.65608, 0.175796},
+	{-0.65608, -5.73563e-08},
+	{-0.65608, -0.175796},
+	{-0.65608, -0.378788},
+	{-0.480284, -0.480284},
+	{-0.32804, -0.568182},
+	{-0.175796, -0.65608},
+	{9.034e-09, -0.757576},
+	{0.175796, -0.65608},
+	{0.32804, -0.568182},
+	{0.480284, -0.480284},
+	{0.65608, -0.378788},
+	{0.65608, -0.175796},
+	{0.866025, 0},
+	{0.866025, 0.172263},
+	{0.866025, 0.358719},
+	{0.802872, 0.536462},
+	{0.633975, 0.633975},
+	{0.48217, 0.721619},
+	{0.334273, 0.807007},
+	{0.178422, 0.896988},
+	{-4.37114e-08, 1},
+	{-0.178422, 0.896988},
+	{-0.334273, 0.807007},
+	{-0.48217, 0.721619},
+	{-0.633975, 0.633975},
+	{-0.802872, 0.536462},
+	{-0.866025, 0.358719},
+	{-0.866025, 0.172263},
+	{-0.866025, -7.57103e-08},
+	{-0.866025, -0.172263},
+	{-0.866025, -0.358719},
+	{-0.802872, -0.536462},
+	{-0.633974, -0.633975},
+	{-0.48217, -0.721619},
+	{-0.334273, -0.807007},
+	{-0.178422, -0.896988},
+	{1.19249e-08, -1},
+	{0.178422, -0.896988},
+	{0.334273, -0.807007},
+	{0.48217, -0.721619},
+	{0.633975, -0.633974},
+	{0.802872, -0.536462},
+	{0.866026, -0.358719},
+	{0.866025, -0.172263}
 };
 
 float CircleSDF(float2 uv, float2 pos, float radius)
@@ -246,16 +227,16 @@ float4 ComputeFocalDistancePS(in float2 coord : TEXCOORD0) : COLOR
 	float2 avgDepth = 0;
 
 	[loop]
-	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
+	for (int i = 0; i < 48; i++)
 	{
-		float depth = SampleLinearEyeDepth(samplePoint + _CircularBokehKernel[i] * sampleRadius);
+		float depth = SampleLinearEyeDepth(samplePoint + Poisson48[i] * sampleRadius);
 		minDepth = min(minDepth, depth);
 	}
 
 	[loop]
-	for (int j = 0; j < DOF_POSSION_SAMPLES; j++)
+	for (int j = 0; j < 48; j++)
 	{
-		float depth = SampleLinearEyeDepth(samplePoint + _CircularBokehKernel[j] * sampleRadius);
+		float depth = SampleLinearEyeDepth(samplePoint + Poisson48[j] * sampleRadius);
 		avgDepth += float2(depth, 1) * exp2(-abs(depth - minDepth));
 	}
 
@@ -322,7 +303,7 @@ float4 ComputeBokehPrefilterPS(
 	return float4(avg, coc);
 }
 
-float4 ComputeHexagonalFarBlur(sampler _MainTex, float4 _MainTex_TexelSize, float CoC, float2 uv, float2 offset)
+float4 ComputeHexagonalBlur(sampler _MainTex, float4 _MainTex_TexelSize, float CoC, float2 uv, float2 offset)
 {
 	float4 colors = 0.0f;
 
@@ -332,7 +313,7 @@ float4 ComputeHexagonalFarBlur(sampler _MainTex, float4 _MainTex_TexelSize, floa
 	{
 		float4 samp = tex2Dlod(_MainTex, float4(uv, 0, 0));
 
-		float farCoC = max(min(CoC, samp.a), 0.0);
+		float farCoC = max(min(CoC, samp.a), _MainTex_TexelSize.y * -2.0);
 		float dist = length(offset);
 		float margin = _MainTex_TexelSize.y * 2.0;
 		float farWeight = saturate((farCoC - dist + margin) / margin);
@@ -389,8 +370,8 @@ void ComputeHexagonalBlurXPS(
 	float2 blurDirection1 = direction1 * CoC / maxRadius.y / DOF_BLUR_RADIUS;
 	float2 blurDirection2 = direction2 * CoC / maxRadius.y / DOF_BLUR_RADIUS;
 
-	float4 color0 = ComputeHexagonalFarBlur(_MainTex, _MainTex_TexelSize, CoC, coord.xy, blurDirection1);
-	float4 color1 = ComputeHexagonalFarBlur(_MainTex, _MainTex_TexelSize, CoC, coord.xy, blurDirection2);
+	float4 color0 = ComputeHexagonalBlur(_MainTex, _MainTex_TexelSize, CoC, coord.xy, blurDirection1);
+	float4 color1 = ComputeHexagonalBlur(_MainTex, _MainTex_TexelSize, CoC, coord.xy, blurDirection2);
 
 	oColor0 = float4(color0.rgb, CoC);
 	oColor1 = float4(color0.rgb + color1.rgb, CoC);
@@ -412,8 +393,8 @@ float4 ComputeHexagonalBlurYPS(
 	float2 blurDirection1 = direction1 * CoC / maxRadius.y / DOF_BLUR_RADIUS;
 	float2 blurDirection2 = direction2 * CoC / maxRadius.y / DOF_BLUR_RADIUS;
 
-	float4 color1 = ComputeHexagonalFarBlur(vertical, _MainTex_TexelSize, CoC, coord.xy, blurDirection1);
-	float4 color2 = ComputeHexagonalFarBlur(diagonal, _MainTex_TexelSize, CoC, coord.xy, blurDirection2);
+	float4 color1 = ComputeHexagonalBlur(vertical, _MainTex_TexelSize, CoC, coord.xy, blurDirection1);
+	float4 color2 = ComputeHexagonalBlur(diagonal, _MainTex_TexelSize, CoC, coord.xy, blurDirection2);
 
    	return float4((color1.rgb + color2.rgb) * (1.0f / 3.0f), CoC);
 }
