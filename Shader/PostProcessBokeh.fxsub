@@ -4,14 +4,13 @@
 #define DOF_POSSION_SAMPLES (DOF_POSSION_RINGS * (DOF_POSSION_RINGS - 1) * DOF_POSSION_POINT_PER_RING / 2)
 
 static const float4 _CameraCoCTexture_TexelSize = float4(1.0f / ViewportSize, ViewportSize);
-static const float4 _CameraFocalBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
-static const float4 _CameraFocalBokehBlurTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraBokehTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
+static const float4 _CameraBokehBlurTexture_TexelSize = float4(2.0f / ViewportSize, ViewportSize / 2);
 
 texture _CameraCoCTexture : RENDERCOLORTARGET<float2 ViewportRatio={1, 1}; string Format="R16F";>;
-
 texture _CameraFocalDistanceTexture : RENDERCOLORTARGET<int2 Dimensions = {1, 1}; string Format="R16F";>;
-texture _CameraFocalBokehTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F"; int Miplevels = 0;>;
-texture _CameraFocalBokehBlurTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
+texture _CameraBokehTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F"; int Miplevels = 0;>;
+texture _CameraBokehBlurTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 
 texture _CameraBokehKernelTexture : RenderColorTarget
 <
@@ -21,8 +20,12 @@ texture _CameraBokehKernelTexture : RenderColorTarget
 	int Miplevels = 1;
 	string Format="A16B16G16R16F";
 >;
+
 float4 _CameraBokehKernel[DOF_POSSION_SAMPLES] : TEXTUREVALUE <
 	string TextureName = "_CameraBokehKernelTexture";
+>;
+float4 _CameraFocalDistance[1] : TEXTUREVALUE <
+	string TextureName = "_CameraFocalDistanceTexture";
 >;
 
 sampler _CameraCoCTexture_PointSampler = sampler_state
@@ -37,33 +40,27 @@ sampler _CameraCoCTexture_LinearSampler = sampler_state
 	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
+sampler _CameraBokehTexture_PointSampler = sampler_state
 {
-	texture=<_CameraFocalDistanceTexture>;
+	texture=<_CameraBokehTexture>;
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalBokehTexture_PointSampler = sampler_state
+sampler _CameraBokehTexture_LinearSampler = sampler_state
 {
-	texture=<_CameraFocalBokehTexture>;
-	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
-	AddressU=CLAMP; AddressV=CLAMP;
-};
-sampler _CameraFocalBokehTexture_LinearSampler = sampler_state
-{
-	texture=<_CameraFocalBokehTexture>;
+	texture=<_CameraBokehTexture>;
 	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=LINEAR;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalBokehBlurTexture_PointSampler = sampler_state
+sampler _CameraBokehBlurTexture_PointSampler = sampler_state
 {
-	texture=<_CameraFocalBokehBlurTexture>;
+	texture=<_CameraBokehBlurTexture>;
 	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
-sampler _CameraFocalBokehBlurTexture_LinearSampler = sampler_state
+sampler _CameraBokehBlurTexture_LinearSampler = sampler_state
 {
-	texture=<_CameraFocalBokehBlurTexture>;
+	texture=<_CameraBokehBlurTexture>;
 	MinFilter=LINEAR; MagFilter=LINEAR; MipFilter=NONE;
 	AddressU=CLAMP; AddressV=CLAMP;
 };
@@ -187,7 +184,7 @@ float4 ComputeBokehWeightVS(
 {
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;
-	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
+	oTexcoord1 = float4(_CameraFocalDistance[0].r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
 	return Position;
 }
 
