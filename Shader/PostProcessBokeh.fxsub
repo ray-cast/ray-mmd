@@ -171,7 +171,7 @@ float4 ComputeBokehKernelPS(in float2 screen : SV_POSITION) : COLOR
 	float bladeCount = floor(mBladeCount);
 	float curvature = bladeCount > 9 ? 0 : 1;
 
-	return float4(GetBokehKernel(ring, sample, bladeCount, curvature) , 0, 0);
+	return float4(GetBokehKernel(ring, sample, bladeCount, curvature), 0, 0);
 }
 
 float4 ComputeBokehWeightVS(
@@ -267,6 +267,7 @@ void ComputeBokehAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0
 
 float4 ComputeBokehBlurPS(
 	in float2 uv : TEXCOORD0,
+	in float2 screen : SV_POSITION,
 	uniform sampler _MainTex_PointSampler,
 	uniform sampler _MainTex_LinearSampler,
 	uniform float4 _MainTex_TexelSize) : COLOR
@@ -289,7 +290,7 @@ float4 ComputeBokehBlurPS(
 	nearAcc.rgb /= max(1, nearAcc.a);
 	farAcc.rgb /= max(1, farAcc.a);
 
-	float alpha = saturate(nearAcc.a * PI / (DOF_POSSION_SAMPLES + 1));
+	float alpha = saturate(nearAcc.a * PI / (DOF_POSSION_SAMPLES - 1));
 	float3 rgb = lerp(farAcc.rgb, nearAcc.rgb, alpha);
 
 	return float4(rgb, alpha);
