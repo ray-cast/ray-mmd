@@ -32,6 +32,7 @@ float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string i
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalRegionP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion+";>;
 float mFocalRegionM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion-";>;
+float mBladeCountM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BladeCount-";>;
 float mMeasureMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MeasureMode";>;
 float mTestMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "TestMode";>;
 float mVignette : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "Vignette";>;
@@ -80,6 +81,7 @@ static float mColorTemperature = lerp(lerp(mTemperature, 1000, mTemperatureP), 4
 static float mFstop = lerp(lerp(5.6, 32.0, mFstopP), 1.0, mFstopM);
 static float mFocalDistance = lerp(lerp(1, 10.0, mFocalDistanceP), -10.0, mFocalDistanceM);
 static float mFocalRegion = lerp(lerp(0.1, 10.0, mFocalRegionP), 0.0, mFocalRegionM);
+static float mBladeCount = lerp(10, 5, mBladeCountM);
 static float3 mColorShadowSunP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
 static float3 mColorBalanceP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
 static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceBM);
@@ -132,11 +134,11 @@ static float3 mColorBalanceM = float3(mColBalanceRM, mColBalanceGM, mColBalanceB
 #	include "shader/PostProcessDiffusion.fxsub"
 #endif
 
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
+#if BOKEH_MODE == 1
 #	include "shader/PostProcessBokeh.fxsub"
 #endif
 
-#if BOKEH_MODE == 4
+#if BOKEH_MODE == 2
 #	include "shader/PostProcessHexagonalBokeh.fxsub"
 #endif
 
@@ -278,8 +280,9 @@ technique DeferredLighting<
 	"Pass=ScreenSpaceOutline;"
 #endif
 
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
+#if BOKEH_MODE == 1
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
+	"RenderColorTarget=_CameraBokehBufferTexture;	Clear=Color; Pass=ComputeBokehKernel;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraFocalBokehTexture;	Clear=Color; Pass=ComputeBokehPrefilter;"
 	"RenderColorTarget=_CameraFocalBokehBlurTexture;Clear=Color; Pass=ComputeBokehBlur;"
@@ -287,7 +290,7 @@ technique DeferredLighting<
 	"RenderColorTarget=_CameraColorTexture; Pass=ComputeBokehFinal;"
 #endif
 
-#if BOKEH_MODE == 4
+#if BOKEH_MODE == 2
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraBokehTexture;			Clear=Color; Pass=ComputeBokehPrefilter;"
@@ -584,12 +587,18 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ScreenSpaceGlobalIlluminationFragment();
 	}
 #endif
-#if BOKEH_MODE == 1 || BOKEH_MODE == 2 || BOKEH_MODE == 3
+#if BOKEH_MODE == 1
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
 		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
 		PixelShader  = compile ps_3_0 ComputeFocalDistancePS();
+	}
+	pass ComputeBokehKernel<string Script= "Draw=Buffer;";>{
+		AlphaBlendEnable = false; AlphaTestEnable = false;
+		ZEnable = false; ZWriteEnable = false;
+		VertexShader = compile vs_3_0 ScreenSpaceQuadVS();
+		PixelShader  = compile ps_3_0 ComputeBokehKernelPS();
 	}
 	pass ComputeBokehWeight<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
@@ -617,7 +626,7 @@ technique DeferredLighting<
 		PixelShader  = compile ps_3_0 ComputeBokehFinalPS(_CameraFocalBokehBlurTexture_LinearSampler, _CameraFocalBokehBlurTexture_TexelSize);
 	}
 #endif
-#if BOKEH_MODE == 4
+#if BOKEH_MODE == 2
 	pass ComputeFocalDistance<string Script= "Draw=Buffer;";>{
 		AlphaBlendEnable = false; AlphaTestEnable = false;
 		ZEnable = false; ZWriteEnable = false;
