@@ -282,7 +282,7 @@ technique DeferredLighting<
 
 #if BOKEH_MODE == 1
 	"RenderColorTarget=_CameraFocalDistanceTexture; Clear=Color; Pass=ComputeFocalDistance;"
-	"RenderColorTarget=_CameraBokehBufferTexture;	Clear=Color; Pass=ComputeBokehKernel;"
+	"RenderColorTarget=_CameraBokehKernelTexture;	Clear=Color; Pass=ComputeBokehKernel;"
 	"RenderColorTarget=_CameraCoCTexture;			Clear=Color; Pass=ComputeBokehWeight;"
 	"RenderColorTarget=_CameraFocalBokehTexture;	Clear=Color; Pass=ComputeBokehPrefilter;"
 	"RenderColorTarget=_CameraFocalBokehBlurTexture;Clear=Color; Pass=ComputeBokehBlur;"
