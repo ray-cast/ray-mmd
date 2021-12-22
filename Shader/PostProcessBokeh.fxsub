@@ -167,11 +167,16 @@ float4 ComputeBokehKernelPS(in float2 screen : SV_POSITION) : COLOR
 {
 	float i = screen.x / DOF_POSSION_POINT_PER_RING;
 	float ring = floor((-1 + sqrt(1 + i * 8)) / 2) + 1;
-	float sample = screen.x - (ring - 1) * DOF_POSSION_POINT_PER_RING;
+	float ringHalf = ring * (DOF_POSSION_POINT_PER_RING / 2);
+	float sample1 = screen.x - (ring - 1) * DOF_POSSION_POINT_PER_RING;
+	float sample2 = sample1 >= ringHalf ? sample1 - ringHalf : sample1 + ringHalf;
 	float bladeCount = floor(mBladeCount);
 	float curvature = bladeCount > 9 ? 0 : 1;
 
-	return float4(GetBokehKernel(ring, sample, bladeCount, curvature), 0, 0);
+	float2 kernel1 = GetBokehKernel(ring, sample1, bladeCount, curvature);
+	float2 kernel2 = GetBokehKernel(ring, sample2, bladeCount, curvature);
+
+	return float4(kernel1, kernel2);
 }
 
 float4 ComputeBokehWeightVS(
