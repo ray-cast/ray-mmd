@@ -139,10 +139,10 @@ float ComputeDepthCoC(float depth, float4 focalParams)
 	// http://en.wikipedia.org/wiki/Circle_of_confusion
 	float CoC = A * (max(abs(D - P) - focalParams.w, 0) / D) * (F / (P - F));
 
-	float sensorHeight = mSensorHeight * 0.001f;
+	float sensorWidth = mSensorWidth * 0.001f;
 
-	// put CoC into a % of the image sensor height
-	float percentOfSensor = CoC / sensorHeight * sign(D - P);
+	// put CoC into a % of the image sensor width
+	float percentOfSensor = CoC / sensorWidth * sign(D - P);
 
 	return clamp(percentOfSensor, -1, 1);
 }
