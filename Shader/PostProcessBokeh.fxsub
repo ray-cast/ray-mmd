@@ -385,7 +385,7 @@ float4 ComputeBokehFinalPS(in float2 uv : TEXCOORD0) : COLOR
 
 	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv + _CameraCoCTexture_TexelSize.xy * 0.5, 0, 0)).r;
 
-	float ffa = smoothstep(_CameraBokehTexture_TexelSize.y * 2.0, _CameraBokehTexture_TexelSize.y * 4.0, coc * GetMaxBokehRadius(DOF_POSSION_RADIUS));
+	float ffa = smoothstep(_CameraBokehTexture_TexelSize.y * 2.0, _CameraBokehTexture_TexelSize.y * 4.0, abs(coc) * GetMaxBokehRadius(DOF_POSSION_RADIUS));
 	float alpha = ffa + dof.a - ffa * dof.a;
 
 	float2 samplePoint = GetSamplePoint();

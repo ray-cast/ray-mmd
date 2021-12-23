@@ -31,7 +31,6 @@ float mFstopM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "F
 float mFocalDistanceP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance+";>;
 float mFocalDistanceM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalDistance-";>;
 float mFocalRegionP : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion+";>;
-float mFocalRegionM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "FocalRegion-";>;
 float mBladeCountM : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "BladeCount-";>;
 float mMeasureMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "MeasureMode";>;
 float mTestMode : CONTROLOBJECT<string name="ray_controller.pmx"; string item = "TestMode";>;
@@ -80,7 +79,7 @@ static float mColorGamma = lerp(lerp(1.0, 2.2, mGammaP), 0.45, mGammaM);
 static float mColorTemperature = lerp(lerp(mTemperature, 1000, mTemperatureP), 40000, mTemperatureM);
 static float mFstop = lerp(lerp(5.6, 32.0, mFstopP), 1.0, mFstopM);
 static float mFocalDistance = lerp(lerp(1, 10.0, mFocalDistanceP), -10.0, mFocalDistanceM);
-static float mFocalRegion = lerp(lerp(0.1, 10.0, mFocalRegionP), 0.0, mFocalRegionM);
+static float mFocalRegion = lerp(0.0, 10.0, mFocalRegionP);
 static float mBladeCount = lerp(10, 5, mBladeCountM);
 static float3 mColorShadowSunP = pow(float3(mSunShadowRP, mSunShadowGP, mSunShadowBP), 2);
 static float3 mColorBalanceP = float3(mColBalanceRP, mColBalanceGP, mColBalanceBP);
