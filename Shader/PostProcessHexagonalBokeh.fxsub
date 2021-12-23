@@ -19,10 +19,12 @@ texture _CameraFocalPingTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0
 texture _CameraFocalPongTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 texture _CameraHexagonalBokehTexture : RENDERCOLORTARGET<float2 ViewportRatio={0.5, 0.5}; string Format="A16B16G16R16F";>;
 
-float4 _CameraFocalDistance[1] : TEXTUREVALUE <
-	string TextureName = "_CameraFocalDistanceTexture";
->;
-
+sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
+{
+	texture=<_CameraFocalDistanceTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
 sampler _CameraHexagonalBokehTexture_PointSampler = sampler_state
 {
 	texture=<_CameraHexagonalBokehTexture>;
@@ -253,7 +255,7 @@ float4 ComputeBokehWeightVS(
 {
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;
-	oTexcoord1 = float4(_CameraFocalDistance[0].r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
+	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
 	return Position;
 }
 

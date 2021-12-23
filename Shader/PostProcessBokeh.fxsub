@@ -28,10 +28,13 @@ texture _CameraBokehKernelTexture : RenderColorTarget
 float4 _CameraBokehKernel[DOF_POSSION_SAMPLES] : TEXTUREVALUE <
 	string TextureName = "_CameraBokehKernelTexture";
 >;
-float4 _CameraFocalDistance[1] : TEXTUREVALUE <
-	string TextureName = "_CameraFocalDistanceTexture";
->;
 
+sampler _CameraFocalDistanceTexture_PointSampler = sampler_state
+{
+	texture=<_CameraFocalDistanceTexture>;
+	MinFilter=POINT; MagFilter=POINT; MipFilter=NONE;
+	AddressU=CLAMP; AddressV=CLAMP;
+};
 sampler _CameraCoCTexture_PointSampler = sampler_state
 {
 	texture=<_CameraCoCTexture>;
@@ -212,7 +215,7 @@ float4 ComputeBokehWeightVS(
 {
 	oTexcoord0 = Texcoord.xyxy;
 	oTexcoord0.xy += ViewportOffset;
-	oTexcoord1 = float4(_CameraFocalDistance[0].r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
+	oTexcoord1 = float4(tex2Dlod(_CameraFocalDistanceTexture_PointSampler, float4(0.5,0.5, 0, 0)).r, GetCameraFocalLength(mSensorWidth), mFstop, mFocalRegion);
 	return Position;
 }
 
@@ -296,7 +299,7 @@ float4 ComputeBokehFarPS(
 	float4 samp0 = tex2Dlod(_MainTex_PointSampler, float4(uv, 0, 0));
 
 	float maxRadius = GetMaxBokehRadius(DOF_POSSION_RADIUS);
-	float mip = min(4, abs(samp0.a) / maxRadius * DOF_POSSION_RADIUS / DOF_POSSION_POINT_PER_RING / PI);
+	float mip = min(4, abs(samp0.a) / maxRadius * DOF_POSSION_RADIUS / DOF_POSSION_POINT_PER_RING * 0.5);
 
 	ComputeBokehFarAccum(_MainTex_PointSampler, _MainTex_TexelSize, samp0, uv, mip, farAcc);
 
