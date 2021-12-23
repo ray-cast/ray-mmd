@@ -230,7 +230,8 @@ float4 ComputeBokehPrefilterPS(
 	in float2 uv : TEXCOORD0,
 	in float4 focalCameraParams : TEXCOORD1,
 	uniform sampler _MainTex,
-	uniform float4 _MainTex_TexelSize) : COLOR
+	uniform float4 _MainTex_TexelSize,
+	uniform float _Negative) : COLOR
 {
 	float3 duv = _MainTex_TexelSize.xyx * float3(0.5, 0.5, -0.5);
 	float2 uv0 = uv - duv.xy;
@@ -260,7 +261,7 @@ float4 ComputeBokehPrefilterPS(
 	float cocMax = max(coc0, max(max(coc1, coc2), coc3));
 	float coc = (-cocMin > cocMax ? cocMin : cocMax) * GetMaxBokehRadius(DOF_POSSION_RADIUS);
 
-	avg *= smoothstep(0, _MainTex_TexelSize.y * 2.0, abs(coc));
+	avg *= smoothstep(0, _MainTex_TexelSize.y * 2.0, saturate(_Negative * coc));
 
 	return float4(avg, coc);
 }
@@ -288,6 +289,25 @@ void ComputeBokehFarAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 sa
 	farAcc += float4(samp.rgb, 1.0) * farWeight;
 }
 
+void ComputeBokehNearAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout float4 nearAcc)
+{
+	float margin = GetMaxBokehRadius(1);
+	float nearWeight = saturate((-samp.a + margin) / margin);
+
+	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
+}
+
+void ComputeBokehNearAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 nearAcc)
+{
+	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
+
+	float dist = length(disp);
+	float margin = GetMaxBokehRadius(1);
+	float nearWeight = saturate((-samp.a - dist + margin) / margin);
+
+	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
+}
+
 float4 ComputeBokehFarPS(
 	in float2 uv : TEXCOORD0,
 	in float2 screen : SV_POSITION,
@@ -312,26 +332,7 @@ float4 ComputeBokehFarPS(
 
 	farAcc.rgb /= max(1, farAcc.a);
 
-	return farAcc;
-}
-
-void ComputeBokehNearAccum(float4 samp, float4 _MainTex_TexelSize, float2 uv, inout float4 nearAcc)
-{
-	float margin = GetMaxBokehRadius(1);
-	float nearWeight = saturate((-samp.a + margin) / margin);
-
-	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
-}
-
-void ComputeBokehNearAccum(sampler _MainTex, float4 _MainTex_TexelSize, float4 samp0, float2 uv, float2 disp, inout float4 nearAcc)
-{
-	float4 samp = tex2Dlod(_MainTex, float4(uv + disp, 0, 0));
-
-	float dist = length(disp);
-	float margin = GetMaxBokehRadius(1);
-	float nearWeight = saturate((-samp.a - dist + margin) / margin);
-
-	nearAcc += float4(samp.rgb, 1.0) * nearWeight * step(_MainTex_TexelSize.y, -samp.a);
+	return float4(farAcc.rgb, saturate(farAcc.a / DOF_POSSION_SAMPLES * PI));
 }
 
 float4 ComputeBokehNearPS(
@@ -378,10 +379,11 @@ float4 ComputeBilinearBlurPS(
 
 float4 ComputeBokehFinalPS(in float2 uv : TEXCOORD0) : COLOR
 {
+	float4 color = tex2Dlod(_CameraColorTexture_PointSampler, float4(uv + _CameraColorTexture_TexelSize.xy * 0.5, 0, 0));
 	float4 farColor = tex2D_bicubic(_CameraBokehFarTexture_PointSampler, uv + _CameraBokehTexture_TexelSize.xy * 0.5, _CameraBokehTexture_TexelSize.zw);
 	float4 nearColor = tex2D_bicubic(_CameraBokehNearBlurTexture_PointSampler, uv + _CameraBokehTexture_TexelSize.xy * 0.5, _CameraBokehTexture_TexelSize.zw);
 
-	float4 dof = float4(lerp(farColor.rgb, nearColor.rgb, nearColor.a), nearColor.a);
+	float4 dof = float4(lerp(lerp(color.rgb, farColor.rgb, farColor.a), nearColor.rgb, nearColor.a), nearColor.a);
 
 	float coc = tex2Dlod(_CameraCoCTexture_PointSampler, float4(uv + _CameraCoCTexture_TexelSize.xy * 0.5, 0, 0)).r;
 
@@ -393,5 +395,5 @@ float4 ComputeBokehFinalPS(in float2 uv : TEXCOORD0) : COLOR
 	dof.rgb = lerp(dof.rgb, (coc > 0 ? float3(0,0.05,0.1) : float3(0.1,0.05,0)) * abs(coc), mTestMode);
 	dof.rgb = lerp(dof.rgb, float3(0.01, 0.4, 0.09), SDF * mTestMode * (1 - step(0.5, mMeasureMode)));
 
-	return float4(dof.rgb, lerp(alpha, 1, SDF * mTestMode));
+	return float4(lerp(color.rgb, dof.rgb, lerp(alpha, 1, SDF * mTestMode)), 1);
 }
